@@ -8,7 +8,7 @@ output only, so you can structure it your own way, in any language, with any lib
 
 The problems are in `problems/` and, nicer to read, in the web problem book
 (`book/problem-book.html`: open it in a browser). The book has a problem list
-with your progress, and for each checkpoint the statement, hints that open in order, an editor
+with your progress, and for each checkpoint the statement, hints that open in order, an Editorial with a solution proven to pass every test, an editor
 preloaded with the starter, and the example test cases. Its Submit button copies your code and
 shows the command to run; paste the checker's output back into Test Result to record the verdict.
 

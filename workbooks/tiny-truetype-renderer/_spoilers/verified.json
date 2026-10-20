@@ -1,0 +1,154 @@
+{
+  "01": {
+    "files": {
+      "_spoilers/reference/p01_byte_readers.cpp": "39a50123284455470f3c5aa81d9e442efb0d3ae0873e9e168a3a9da240364439"
+    },
+    "passed": 28,
+    "total": 28,
+    "date": "2026-10-21"
+  },
+  "02": {
+    "files": {
+      "_spoilers/reference/p02_table_directory.cpp": "532c2835a708050a475917e7279d5399fccdebf4ea32cde1f4283a1725cd48b9"
+    },
+    "passed": 13,
+    "total": 13,
+    "date": "2026-10-21"
+  },
+  "03": {
+    "files": {
+      "_spoilers/reference/p03_cmap.cpp": "fd8a138b2062ad2d84d0feee7daeb0780e39a044347ebdeaa049a2a9f6afc01f"
+    },
+    "passed": 24,
+    "total": 24,
+    "date": "2026-10-21"
+  },
+  "04": {
+    "files": {
+      "_spoilers/reference/p04_loca.cpp": "e7a1f8c98e4fc38cbfb973538ebed8f6e693a5851387147141cb2206e94146ab"
+    },
+    "passed": 18,
+    "total": 18,
+    "date": "2026-10-21"
+  },
+  "05": {
+    "files": {
+      "_spoilers/reference/p05_metrics.cpp": "eff88e7bd6c0c3403cbab1fbf17fec47408a367aa30b8ff5be45d860a3567d08"
+    },
+    "passed": 14,
+    "total": 14,
+    "date": "2026-10-21"
+  },
+  "06": {
+    "files": {
+      "_spoilers/reference/p06_canvas.cpp": "27dfc51bd5ec7f34f09cde5d24f801739db9166ca087c95ad6abdcdc3fa7e154"
+    },
+    "passed": 30,
+    "total": 30,
+    "date": "2026-10-21"
+  },
+  "07": {
+    "files": {
+      "_spoilers/reference/p07_simple_glyph.cpp": "cf5c3854eeee8b7beb88a03daca74e5568ad14ad76f0edfde4f2596c934aa524"
+    },
+    "passed": 151,
+    "total": 151,
+    "date": "2026-10-21"
+  },
+  "08": {
+    "files": {
+      "_spoilers/reference/p08_outline_lines.cpp": "2d4cb9d1f5bf9338988522389b51a8ec2a74f3f3029303a8a74aa7ea91b25030"
+    },
+    "passed": 22,
+    "total": 22,
+    "date": "2026-10-21"
+  },
+  "09": {
+    "files": {
+      "_spoilers/reference/p09_compound_glyph.cpp": "bdf7d6d817b61caa6cc5064c62864e65293dd96a02a966e95c8577cac4959fa7"
+    },
+    "passed": 36,
+    "total": 36,
+    "date": "2026-10-21"
+  },
+  "10": {
+    "files": {
+      "_spoilers/reference/p10_bezier.cpp": "489e4f9780638e11a63a2dfcabdc849e63e5ca21d3fb67128f2d236060c35a6e"
+    },
+    "passed": 24,
+    "total": 24,
+    "date": "2026-10-21"
+  },
+  "11": {
+    "files": {
+      "_spoilers/reference/p11_outline_curves.cpp": "66ac00a7f5ce744433bb90ea4375a99490f1c2be2109bf97ca8b653985fe4111"
+    },
+    "passed": 27,
+    "total": 27,
+    "date": "2026-10-21"
+  },
+  "12": {
+    "files": {
+      "_spoilers/reference/p12_segment_intersection.cpp": "ce70e01678850dde002ec3a876055bba433a6f473a4c1d27b8c88c934884344c"
+    },
+    "passed": 34,
+    "total": 34,
+    "date": "2026-10-21"
+  },
+  "13": {
+    "files": {
+      "_spoilers/reference/p13_line_curve_intersection.cpp": "a222958862f8a1eb3d550b3fff82c1f7bcd4b7eb20cbc77df53ab0bff80de930"
+    },
+    "passed": 35,
+    "total": 35,
+    "date": "2026-10-21"
+  },
+  "14": {
+    "files": {
+      "_spoilers/reference/p14_even_odd_fill.cpp": "922fc748479d8d2f7f61211700da58bab9e7fa9228b13404c415f96c408ef9cc",
+      "_spoilers/reference/common/scene.h": "3d1ceaac83aaece30cbfbab66c165eff641c85bb8861484021bb94ab1cf44048",
+      "_spoilers/reference/common/fill.h": "6f19cf767bd1244d53e370462de0374396d809f60f4f6abcdb579e5174970418"
+    },
+    "passed": 28,
+    "total": 28,
+    "date": "2026-10-21"
+  },
+  "15": {
+    "files": {
+      "_spoilers/reference/p15_bezier_min_y.cpp": "08f8f45cc0892f822818e2bd45ebe72be1a69f897adf09364a9f2eba502ad798"
+    },
+    "passed": 22,
+    "total": 22,
+    "date": "2026-10-21"
+  },
+  "16": {
+    "files": {
+      "_spoilers/reference/p16_nonzero_lines.cpp": "e1077b7f59264d7eb7948a29a59e5ecfa06804199b1b90c0957cd8b411379fe7",
+      "_spoilers/reference/common/scene.h": "3d1ceaac83aaece30cbfbab66c165eff641c85bb8861484021bb94ab1cf44048",
+      "_spoilers/reference/common/fill.h": "6f19cf767bd1244d53e370462de0374396d809f60f4f6abcdb579e5174970418"
+    },
+    "passed": 24,
+    "total": 24,
+    "date": "2026-10-21"
+  },
+  "17": {
+    "files": {
+      "_spoilers/reference/p17_nonzero_curves.cpp": "f5b34ca4adbfd5b22dc3a5c4c4df99d225fe164859792a4a0b36945c98ec5eab",
+      "_spoilers/reference/common/scene.h": "3d1ceaac83aaece30cbfbab66c165eff641c85bb8861484021bb94ab1cf44048",
+      "_spoilers/reference/common/fill.h": "6f19cf767bd1244d53e370462de0374396d809f60f4f6abcdb579e5174970418"
+    },
+    "passed": 24,
+    "total": 24,
+    "date": "2026-10-21"
+  },
+  "18": {
+    "files": {
+      "_spoilers/reference/p18_render_text.cpp": "5bab63794d1b55ba77909f5cc2c0129c757bca03236ecb0ba63901af141c0883",
+      "_spoilers/reference/common/font.h": "bf5cfba4bb3836ce7f941fed3ab9c37ad0b4f4ee09f2523fa7e9a853e7c84724",
+      "_spoilers/reference/common/fill.h": "6f19cf767bd1244d53e370462de0374396d809f60f4f6abcdb579e5174970418"
+    },
+    "passed": 18,
+    "total": 18,
+    "date": "2026-10-21"
+  }
+}

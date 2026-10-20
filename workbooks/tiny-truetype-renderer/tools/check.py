@@ -365,6 +365,53 @@ def dispute(checkpoint: str, case_file: CaseFile, test_id: str, reason: str) -> 
     return 0
 
 
+VERIFIED = ROOT / "_spoilers" / "verified.json"
+LOCAL_IMPORT = re.compile(r"""^\s*#\s*include\s+"([^"]+)"|require\(\s*['"](\.[^'"]+)['"]\s*\)|from\s+['"](\.[^'"]+)['"]""", re.M)
+
+
+def reference_sources(meta: dict) -> list:
+    """The reference solution's own source files: its main file, then every file under _spoilers/
+    it includes (recursively). Headers from include/ or third_party/ are the workbook's, not listed."""
+    main_file = ROOT / meta.get("referenceSource", f"_spoilers/reference/{Path(meta['solution']).name}")
+    found, queue = [], [main_file]
+    spoilers = (ROOT / "_spoilers").resolve()
+    while queue:
+        path = queue.pop(0).resolve()
+        if path in found or not path.is_file() or spoilers not in path.parents:
+            continue
+        found.append(path)
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for m in LOCAL_IMPORT.finditer(text):
+            name = next(g for g in m.groups() if g)
+            candidates = [path.parent / name] + ([path.parent / (name + ext) for ext in (".js", ".ts", ".py")]
+                                                 if not Path(name).suffix else [])
+            queue += [c for c in candidates if c.is_file()]
+        if path.suffix == ".py":
+            for m in re.finditer(r"^\s*(?:from|import)\s+([\w.]+)", text, re.M):
+                queue.append(path.parent / (m.group(1).replace(".", "/") + ".py"))
+    return found
+
+
+def fingerprint(paths: list) -> dict:
+    """sha256 of each file's text (line endings ignored), keyed by its path in the workbook."""
+    import hashlib
+    return {p.relative_to(ROOT).as_posix():
+            hashlib.sha256(p.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").encode()).hexdigest()
+            for p in paths}
+
+
+def record_verified(checkpoint: str, meta: dict, passed: int, total: int):
+    """Remembers that the reference, exactly as it is now, passes every committed test.
+    build_book.py shows the reference in the Editorial only with this proof attached."""
+    sources = reference_sources(meta)
+    if not sources:
+        return
+    data = json.loads(VERIFIED.read_text(encoding="utf-8")) if VERIFIED.exists() else {}
+    data[checkpoint] = {"files": fingerprint(sources), "passed": passed, "total": total,
+                        "date": date.today().isoformat()}
+    VERIFIED.write_text(json.dumps(dict(sorted(data.items())), indent=2) + "\n", encoding="utf-8")
+
+
 def still_blank(solution: str) -> bool:
     """True while the learner's file is unchanged from starters/blank/ (ignoring line endings)."""
     blank, mine = ROOT / "starters" / "blank" / Path(solution).name, ROOT / solution
@@ -540,6 +587,9 @@ def main(argv: list) -> int:
     if passed == len(results):
         note = f" ({len(set_aside)} disputed)" if set_aside else ""
         print(f"\nAccepted: {passed} / {len(results)} tests passed{note}.")
+        if use_ref and not custom and fresh is None and cases_path == ROOT / meta["cases"] and not set_aside:
+            record_verified(checkpoint, meta, passed, len(results))
+            print(f"Recorded in {VERIFIED.relative_to(ROOT).as_posix()}: the Editorial can show this solution.")
         return finish(0, verdict="accepted")
     tally = {}
     for r in results:
