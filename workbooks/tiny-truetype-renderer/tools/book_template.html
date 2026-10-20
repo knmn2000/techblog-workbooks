@@ -360,7 +360,47 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .tools-right { margin-left: auto; display: flex; align-items: center; gap: 2px; flex: none; }
 .confirm { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-right: 4px; }
 .confirm .btn { height: 26px; padding: 0 10px; font-size: 12px; }
-.editor { flex: 1; min-height: 0; position: relative; }
+.editor-row { flex: 1; min-height: 0; display: flex; }
+.editor { flex: 1; min-width: 0; min-height: 0; position: relative; }
+/* Files panel and open-file tabs (live mode) */
+.tree { flex: 0 0 210px; overflow: auto; border-right: 1px solid var(--line); background: var(--layer-head); padding: 6px 0 10px; font-size: 13px; }
+.tree-dir { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 4px 12px; color: var(--text-3); font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+.tree-add { width: 22px; height: 22px; border: 0; border-radius: 5px; background: none; color: var(--text-2); cursor: pointer; font-size: 16px; line-height: 1; }
+.tree-add:hover { background: var(--fill); color: var(--text); }
+.tree-item { width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 14px; border: 0; background: none; color: var(--text-2); cursor: pointer; text-align: left; font: 12.5px var(--font-mono); }
+.tree-item:hover { background: var(--fill); color: var(--text); }
+.tree-item.on { background: var(--fill-hover); color: var(--text); }
+.tree-item .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-item .tm { width: 12px; flex: none; font-weight: 700; }
+.tree-item .tm.ok { color: var(--ok); } .tree-item .tm.broke { color: var(--bad); }
+.tag-n { flex: none; min-width: 18px; height: 16px; padding: 0 5px; border-radius: 8px; background: var(--fill); color: var(--text-3); font: 600 10px/16px var(--font-ui); text-align: center; }
+.tree-empty { margin: 2px 12px 6px 14px; color: var(--text-3); font-size: 12px; line-height: 1.45; }
+.new-file { padding: 2px 10px 6px 14px; }
+.new-file input { width: 100%; height: 26px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--layer); padding: 0 8px; font: 12.5px var(--font-mono); color: var(--text); }
+.new-file input:focus { outline: none; border-color: var(--link); }
+.tree-foot { padding: 12px 10px 0 14px; }
+.tree-foot .btn { width: 100%; justify-content: center; height: 28px; font-size: 12px; }
+.ftabs { flex: none; display: flex; gap: 2px; padding: 4px 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; background: var(--layer); }
+.ftab { display: inline-flex; align-items: center; border-radius: 6px 6px 0 0; color: var(--text-3); white-space: nowrap; }
+.ftab button { border: 0; background: none; color: inherit; cursor: pointer; font: 12px var(--font-mono); height: 28px; padding: 0 10px; }
+.ftab .x { padding: 0 8px 0 0; font-size: 14px; }
+.ftab.on { background: var(--fill); color: var(--text); }
+.ftab.warn button:first-child { color: var(--medium); }
+.err-list .err { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 1px 0; font: inherit; color: inherit; cursor: pointer; }
+.err-list .err:hover .loc { text-decoration: underline; }
+.nudge { background: var(--fill); border-radius: 8px; padding: 12px 14px; margin: 4px 0 14px; display: grid; gap: 8px; font-size: 13px; color: var(--text-2); }
+.nudge b { color: var(--text); }
+.nudge code { font-size: 12px; background: var(--layer); padding: 1px 5px; border-radius: 4px; }
+.recheck { display: grid; gap: 2px; margin-top: 8px; }
+.rc-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 13px; }
+.rc-row:hover { background: var(--fill); text-decoration: none; }
+.rc-n { color: var(--text-3); } .rc-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-v { font-weight: 600; font-size: 12px; } .rc-v.ok { color: var(--ok); } .rc-v.bad { color: var(--bad); } .rc-v.warn { color: var(--medium); }
+.st-broke { color: var(--bad); font-weight: 700; display: inline-grid; place-items: center; width: 16px; }
+.finish h2 { color: var(--ok); }
+.finish table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.finish td { padding: 3px 0; vertical-align: top; color: var(--text-2); }
+.finish td:first-child { font-family: var(--font-mono); color: var(--text); padding-right: 8px; word-break: break-all; }
 .vim-btn { width: auto; padding: 0 8px; font: 600 12px var(--font-mono); }
 .vim-btn[aria-pressed="true"] { color: var(--ok); background: var(--fill); }
 /* Vim mode: block cursor in Normal mode, and the : / command line (CodeMirror's dialog addon). */
@@ -561,7 +601,7 @@ span.CodeMirror-selectedtext { background: none; }
 
     <div class="right" id="right">
       <section class="panel code" aria-label="Code">
-        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span></div>
+        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: shared code in common/ and every checkpoint's file"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
         <div class="code-tools">
           <span class="lang" id="lang" title="Only your program's output is checked, so any language works. To use another one, change build and run in workbook.json."></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
@@ -576,7 +616,8 @@ span.CodeMirror-selectedtext { background: none; }
             <button class="icon-btn" type="button" id="copy-code" aria-label="Copy the code" title="Copy the code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
           </div>
         </div>
-        <div class="editor" id="editor"></div>
+        <div class="ftabs" id="ftabs" role="tablist" aria-label="Open files" hidden></div>
+        <div class="editor-row"><nav class="tree" id="tree" aria-label="Files" hidden></nav><div class="editor" id="editor"></div></div>
         <div class="code-status"><span id="saved"></span><span id="pos"></span></div>
       </section>
 
@@ -703,6 +744,25 @@ span.CodeMirror-selectedtext { background: none; }
         <li><span><b>Build on your own work.</b> Code in <code>solutions/common/</code> is compiled into every checkpoint, so later ones (and the last one most of all) can call what you wrote earlier.</span></li>
         <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
       </ol></div>`;
+    if (CPS.length && done.length === CPS.length) renderFinish();
+  }
+
+  // Every checkpoint passes: show what the learner built, and how the pieces fit together.
+  function renderFinish() {
+    const card = document.createElement('div');
+    card.className = 'card finish';
+    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} checkpoints pass${LOCAL ? '. Here is your project:' : '. Open the workbook with study to see your project laid out.'}</p><div id="finish-files"></div>`;
+    $('#side').prepend(card);
+    if (!LOCAL) return;
+    api('/api/files').then(({ files }) => {
+      const cps = files.filter((f) => f.checkpoint), common = files.filter((f) => !f.checkpoint && !/\.(md|txt)$/i.test(f.path));
+      const lines = (list) => list.reduce((n, f) => n + f.lines, 0);
+      const users = (p) => cps.filter((f) => (f.uses || []).includes(p)).map((f) => (BY[f.checkpoint] || {}).num || f.checkpoint);
+      $('#finish-files').innerHTML = (common.length
+        ? `<table>${common.map((f) => `<tr><td>${esc(f.path.replace(/^solutions\//, ''))}</td><td>${f.lines} lines${users(f.path).length ? ` · used by ${users(f.path).join(', ')}` : ''}</td></tr>`).join('')}</table>`
+        : '<p class="note">Nothing in <code>solutions/common/</code> yet, so each checkpoint is still its own program.</p>')
+        + `<p class="note">${cps.length} checkpoint files (${lines(cps)} lines)${common.length ? ` and ${common.length} shared files (${lines(common)} lines)` : ''}.</p>`;
+    }).catch(() => {});
   }
 
   function renderRows() {
@@ -711,7 +771,8 @@ span.CodeMirror-selectedtext { background: none; }
       && (!filter.topic || topicsOf(c).includes(filter.topic))
       && (!q || (c.num + '. ' + c.title + ' ' + c.tags.flatMap((g) => g.text).join(' ')).toLowerCase().includes(q)));
     $('#rows').innerHTML = shown.map((c) => {
-      const st = solved(c.id) ? `<span class="st-ok" title="Solved">${I.check}</span>`
+      const st = store.get(c.id + ':broke') ? '<span class="st-broke" title="Solved before, failing since a re-check">!</span>'
+        : solved(c.id) ? `<span class="st-ok" title="Solved">${I.check}</span>`
         : drafted(c.id) ? `<span class="st-try" title="Attempted: a draft is saved">${I.tryIcon}</span>` : '';
       return `<tr data-id="${c.id}"><td class="st">${st}</td><td class="ti"><a href="#p${c.id}">${esc(c.num)}. ${esc(c.title)}</a></td>`
         + `<td class="te">${c.tests}</td><td class="di ${diffClass(c.difficulty)}">${esc(c.difficulty)}</td></tr>`;
@@ -1164,7 +1225,7 @@ span.CodeMirror-selectedtext { background: none; }
 
   function loadEditor(c) {
     // Live mode: the solution file on disk is the source of truth, not browser drafts.
-    const draft = LOCAL ? (live.disk[c.id] ? live.disk[c.id].text : null) : store.get(c.id + ':draft');
+    const draft = LOCAL ? (live.disk[c.solution] ? live.disk[c.solution].text : null) : store.get(c.id + ':draft');
     const start = starterOf(c, kindOf(c));
     if (cm) {
       if (!docs[c.id]) docs[c.id] = window.CodeMirror.Doc(draft !== null ? draft : start, c.lang.mime);
@@ -1181,11 +1242,11 @@ span.CodeMirror-selectedtext { background: none; }
     $('#confirm').hidden = true;
     showSaved();
     showPos();
-    if (LOCAL) loadFromDisk(c);
+    if (LOCAL) openCheckpointFiles(c);
   }
   function saveSoon() {
     if (live.quiet) return;
-    if (LOCAL) { saveToDiskSoon(); return; }
+    if (LOCAL) { saveSoonLive(); return; }
     clearTimeout(saveTimer);
     $('#saved').textContent = 'Saving…';
     const id = current;
@@ -1200,10 +1261,10 @@ span.CodeMirror-selectedtext { background: none; }
   function showSaved() {
     if (!current) return;
     if (LOCAL) {
-      const known = live.disk[current];
+      const path = live.active || BY[current].solution, known = live.disk[path];
       $('#saved').textContent = !live.online ? 'Not saved: the study server has stopped'
-        : live.conflict[current] ? 'The file changed on disk'
-        : known && known.text === code() ? `Saved to ${BY[current].solution}` : 'Saving…';
+        : live.conflict[path] ? 'The file changed on disk'
+        : known && known.text === code() ? `Saved to ${path}` : 'Saving…';
       return;
     }
     $('#saved').textContent = drafted(current) ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
@@ -1230,7 +1291,7 @@ span.CodeMirror-selectedtext { background: none; }
   // Save now: :w in Vim, or Ctrl+S anywhere in the problem view.
   function saveNow() {
     if (!current) return;
-    if (LOCAL) { saveToDisk(current); return; }
+    if (LOCAL) { saveAll(); return; }
     clearTimeout(saveTimer);
     const c = BY[current], text = code();
     if (text === starterOf(c, kindOf(c))) store.del(c.id + ':draft'); else store.set(c.id + ':draft', text);
@@ -1308,10 +1369,16 @@ span.CodeMirror-selectedtext { background: none; }
   }, true);
 
   // ---------------------------------------------------------------- live mode (.\study)
-  // Served by tools/serve.py, the page saves your file and runs the checker itself, so Run and
+  // Served by tools/serve.py, the page saves your files and runs the checker itself, so Run and
   // Submit show the verdict directly. The published copy of the book keeps the copy-and-paste steps.
+  // Everything here is keyed by file path: the checkpoint's file and the shared files in
+  // solutions/common/ are loaded, autosaved and watched the same way.
   const LOCAL = window.WORKBOOK_LOCAL || null;
-  const live = { online: !!LOCAL, disk: {}, conflict: {}, report: {}, marks: {}, busy: false, quiet: false };
+  const live = { online: !!LOCAL, disk: {}, conflict: {}, conflictData: {}, report: {}, marks: {}, busy: false,
+    quiet: false, tabs: [], active: null, project: [], showTree: false, tick: 0 };
+  const shared = {};                                    // path -> CodeMirror.Doc for files in solutions/common/
+  const BY_PATH = Object.fromEntries(CPS.map((c) => [c.solution, c]));
+  const pending = new Set();                            // files with unsaved edits
   let diskTimer = 0;
 
   async function api(path, options) {
@@ -1334,80 +1401,261 @@ span.CodeMirror-selectedtext { background: none; }
     el.title = !live.online ? 'The study server has stopped. Start it again (double-click study.cmd, or run .\\study), then reload this page.'
       : LOCAL.problem || `Run and Submit build and check your code in ${LOCAL.folder}`;
   }
-  function replaceQuietly(text) {
+
+  // ---- files
+  const isShared = (path) => !BY_PATH[path];
+  const shortName = (path) => path.replace(/^solutions\//, '');
+  const docOf = (path) => (BY_PATH[path] ? docs[BY_PATH[path].id] : shared[path]);
+  const textOf = (path) => (cm ? (docOf(path) ? docOf(path).getValue() : null) : path === live.active ? plainEditor.value : null);
+  const EXT_MODES = { cpp: 'text/x-c++src', cc: 'text/x-c++src', cxx: 'text/x-c++src', h: 'text/x-c++src', hpp: 'text/x-c++src',
+    c: 'text/x-csrc', java: 'text/x-java', cs: 'text/x-csharp', kt: 'text/x-kotlin', py: 'text/x-python', js: 'text/javascript',
+    mjs: 'text/javascript', ts: 'text/typescript', rs: 'text/x-rustsrc', go: 'text/x-go' };
+  const modeFor = (path) => EXT_MODES[(path.split('.').pop() || '').toLowerCase()] || 'text/plain';
+  const fromDisk = (f) => ({ mtime: f.mtime, text: (f.text === null ? '' : f.text).replace(/\r\n/g, '\n'), missing: f.text === null });
+
+  function setDocQuietly(path, text) {
     // Swap in text from disk without saving it straight back, keeping the cursor where it was.
     live.quiet = true;
-    const at = cm ? cm.getCursor() : null;
-    setCode(text);
-    if (cm && at) cm.setCursor(at);
+    const doc = docOf(path);
+    if (doc) { const at = doc.getCursor(); doc.setValue(text); doc.setCursor(at); }
+    else if (!cm && path === live.active) plainEditor.value = text;
     live.quiet = false;
   }
-  const fromDisk = (f) => ({ mtime: f.mtime, text: (f.text === null ? '' : f.text).replace(/\r\n/g, '\n'), missing: f.text === null });
-  async function loadFromDisk(c) {
+  async function loadFile(path) {
     try {
-      const f = fromDisk(await api('/api/solution/' + c.id));
+      const f = fromDisk(await api('/api/file?path=' + encodeURIComponent(path)));
       setOnline(true);
-      live.disk[c.id] = f;
-      if (current === c.id && !f.missing && code() !== f.text) replaceQuietly(f.text);
-    } catch (e) { setOnline(false); }
-    if (current === c.id) showSaved();
+      live.disk[path] = f;
+      if (!docOf(path) && isShared(path) && cm) shared[path] = window.CodeMirror.Doc(f.text, modeFor(path));
+      else if (!f.missing && textOf(path) !== f.text) setDocQuietly(path, f.text);
+    } catch (e) { if (!e.status) setOnline(false); }
+    if (path === live.active) showSaved();
   }
-  function saveToDiskSoon() {
+  function saveSoonLive() {
+    if (!live.active) return;
+    pending.add(live.active);
     clearTimeout(diskTimer);
     $('#saved').textContent = 'Saving…';
-    const id = current;
-    diskTimer = setTimeout(() => saveToDisk(id), 600);
+    diskTimer = setTimeout(saveAll, 600);
   }
-  async function saveToDisk(id) {
+  async function saveAll() {
     clearTimeout(diskTimer);
-    const text = cm ? (docs[id] ? docs[id].getValue() : null) : (id === current ? plainEditor.value : null);
-    if (text === null || live.conflict[id]) return;
-    if (live.disk[id] && live.disk[id].text === text) { if (id === current) showSaved(); return; }  // nothing new to save
-    const known = live.disk[id];
+    const paths = [...new Set([...pending, ...live.tabs])];
+    pending.clear();
+    for (const path of paths) await saveFile(path);
+  }
+  async function saveFile(path) {
+    const text = textOf(path);
+    if (text === null || live.conflict[path]) return;
+    const known = live.disk[path];
+    if (!known || known.text === text) { if (path === live.active) showSaved(); return; }  // not loaded yet, or nothing new
     try {
-      const r = await api('/api/solution/' + id, { method: 'PUT', body: JSON.stringify({ text, base: known ? known.mtime : null }) });
-      live.disk[id] = { mtime: r.mtime, text };
+      const r = await api('/api/file', { method: 'PUT', body: JSON.stringify({ path, text, base: known.mtime }) });
+      live.disk[path] = { mtime: r.mtime, text };
       setOnline(true);
     } catch (e) {
-      if (e.status === 409) conflict(id, fromDisk(e.body)); else setOnline(false);
+      if (e.status === 409) conflict(path, fromDisk(e.body)); else if (!e.status) setOnline(false);
     }
-    if (id === current) showSaved();
+    if (path === live.active) showSaved();
   }
-  // Both this page and another editor changed the file: let the learner pick, never overwrite silently.
-  function conflict(id, f) {
-    clearTimeout(diskTimer);
-    live.conflict[id] = true;
-    showSaved();
-    if (id !== current) return;
-    ask('The file changed on disk while you were typing here.', () => {
-      live.conflict[id] = false; live.disk[id] = f; replaceQuietly(f.text); showSaved();
+  // Both this page and another editor changed a file: let the learner pick, never overwrite silently.
+  function conflict(path, f) {
+    pending.delete(path);
+    live.conflict[path] = true;
+    live.conflictData[path] = f;
+    if (path === live.active) { showSaved(); askConflict(path); }
+    paintTabs();
+  }
+  function askConflict(path) {
+    const f = live.conflictData[path];
+    ask(`${shortName(path)} changed on disk while you were typing here.`, () => {
+      live.conflict[path] = false; live.disk[path] = f; setDocQuietly(path, f.text); showSaved(); paintTabs();
     }, ['Load the file', 'Keep mine'], () => {
-      live.conflict[id] = false; live.disk[id] = f; saveToDisk(id);
+      live.conflict[path] = false; live.disk[path] = f; saveFile(path); paintTabs();
     });
   }
-
-  // Edits made in another editor (VS Code, Notepad) show up here.
+  // Edits made in another editor (VS Code, Notepad) show up here, for every open file.
   async function watchDisk() {
-    if (!LOCAL || !current || document.hidden || live.busy || !$('#confirm').hidden) return;
-    const id = current;
-    try {
-      const f = fromDisk(await api('/api/solution/' + id));
-      setOnline(true);
-      const known = live.disk[id];
-      if (!known || f.mtime === known.mtime || id !== current) return;
-      if (f.text === code()) { live.disk[id] = f; return; }
-      if (known.text === code()) {  // nothing unsaved here: just take the new version
-        live.disk[id] = f;
-        replaceQuietly(f.text);
-        $('#saved').textContent = 'Updated from the file on disk';
-        return;
-      }
-      conflict(id, f);
-    } catch (e) { setOnline(false); }
+    if (!LOCAL || !live.active || document.hidden || live.busy || !$('#confirm').hidden) return;
+    for (const path of live.tabs) {
+      try {
+        const f = fromDisk(await api('/api/file?path=' + encodeURIComponent(path)));
+        setOnline(true);
+        const known = live.disk[path], mine = textOf(path);
+        if (!known || f.mtime === known.mtime || mine === null || live.conflict[path]) continue;
+        if (f.text === mine) { live.disk[path] = f; continue; }
+        if (known.text === mine) {  // nothing unsaved here: just take the new version
+          live.disk[path] = f;
+          setDocQuietly(path, f.text);
+          if (path === live.active) $('#saved').textContent = 'Updated from the file on disk';
+          continue;
+        }
+        conflict(path, f);
+      } catch (e) { if (!e.status) setOnline(false); }
+    }
+    if (live.showTree && ++live.tick % 3 === 0) refreshProject();
   }
   if (LOCAL) {
     setInterval(watchDisk, 2000);
-    document.addEventListener('visibilitychange', () => { if (document.hidden && current) saveToDisk(current); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) saveAll(); });
+  }
+
+  // ---- tabs: the checkpoint's own file, plus any shared files you opened (remembered)
+  function openCheckpointFiles(c) {
+    const kept = (() => { try { return JSON.parse(store.get('tabs') || '[]'); } catch (e) { return []; } })();
+    live.tabs = [c.solution, ...kept.filter((p) => isShared(p))];
+    live.active = c.solution;
+    loadFile(c.solution);
+    live.tabs.slice(1).forEach((p) => { if (!live.disk[p]) loadFile(p); });
+    paintFiles();
+  }
+  function openTab(path, line) {
+    if (BY_PATH[path] && BY_PATH[path].id !== current) { go('p' + BY_PATH[path].id); return; }
+    if (!live.tabs.includes(path)) live.tabs.push(path);
+    store.set('tabs', JSON.stringify(live.tabs.filter(isShared)));
+    activate(path, line);
+  }
+  function activate(path, line) {
+    live.active = path;
+    if (cm) {
+      if (!docOf(path)) { shared[path] = window.CodeMirror.Doc('', modeFor(path)); loadFile(path); }
+      cm.swapDoc(docOf(path));
+      if (line) { cm.setCursor({ line: line - 1, ch: 0 }); cm.scrollIntoView(null, 80); }
+      cm.focus();
+      requestAnimationFrame(() => cm.refresh());
+    }
+    paintFiles();
+    showSaved();
+    showPos();
+    if (live.conflict[path]) askConflict(path);
+  }
+  function closeTab(path) {
+    if (!isShared(path)) return;
+    saveFile(path);
+    live.tabs = live.tabs.filter((p) => p !== path);
+    store.set('tabs', JSON.stringify(live.tabs.filter(isShared)));
+    if (live.active === path) activate(live.tabs[0]); else paintFiles();
+  }
+  function paintTabs() {
+    const bar = $('#ftabs');
+    if (!LOCAL || !cm || live.tabs.length < 2) { bar.hidden = true; return; }
+    bar.hidden = false;
+    bar.innerHTML = live.tabs.map((p) => `<span class="ftab${p === live.active ? ' on' : ''}${live.conflict[p] ? ' warn' : ''}" role="tab" aria-selected="${p === live.active}">`
+      + `<button type="button" data-tab="${esc(p)}">${esc(shortName(p))}</button>`
+      + (isShared(p) ? `<button type="button" class="x" data-close="${esc(p)}" aria-label="Close ${esc(shortName(p))}">×</button>` : '') + '</span>').join('');
+  }
+  function paintFiles() {
+    const path = live.active, onCheckpoint = !isShared(path);
+    paintTabs();
+    $('#file').textContent = path || '';
+    const ext = (path || '').split('.').pop();
+    const names = { h: 'C/C++ header', hpp: 'C++ header', cpp: 'C++', cc: 'C++', cxx: 'C++', c: 'C', py: 'Python', js: 'JavaScript',
+      mjs: 'JavaScript', ts: 'TypeScript', rs: 'Rust', go: 'Go', java: 'Java', kt: 'Kotlin', cs: 'C#', md: 'Markdown', txt: 'Text', json: 'JSON' };
+    if (!onCheckpoint) $('#lang').textContent = names[ext.toLowerCase()] || ext.toUpperCase();
+    else if (current) $('#lang').innerHTML = `${esc(BY[current].lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
+    // The starter switch and Reset only make sense for the checkpoint's own file.
+    $('#kind').hidden = !onCheckpoint || !(current && BY[current].boilerplate);
+    $('#reset').hidden = !onCheckpoint;
+    renderTree();
+  }
+  $('#ftabs').addEventListener('click', (e) => {
+    const close = e.target.closest('[data-close]');
+    if (close) { closeTab(close.dataset.close); return; }
+    const tab = e.target.closest('[data-tab]');
+    if (tab) activate(tab.dataset.tab);
+  });
+
+  // ---- the Files panel: your project as it grows
+  async function refreshProject() {
+    try { live.project = (await api('/api/files')).files; setOnline(true); } catch (e) { if (!e.status) setOnline(false); }
+    renderTree();
+  }
+  function renderTree() {
+    const tree = $('#tree');
+    if (!LOCAL || !cm) return;
+    tree.hidden = !live.showTree;
+    $('#tree-btn').setAttribute('aria-pressed', String(live.showTree));
+    if (!live.showTree) return;
+    const files = live.project;
+    const common = files.filter((f) => !f.checkpoint);
+    const cps = files.filter((f) => f.checkpoint);
+    const usedBy = (p) => cps.filter((f) => (f.uses || []).includes(p)).map((f) => BY[f.checkpoint] ? BY[f.checkpoint].num : f.checkpoint);
+    const solvedCount = CPS.filter((c) => solved(c.id)).length;
+    tree.innerHTML = `<div class="tree-dir"><span>common/</span><button type="button" class="tree-add" id="new-file" title="New shared file" aria-label="New shared file">+</button></div>
+      <form class="new-file" id="new-file-form" hidden><input id="new-file-name" spellcheck="false" placeholder="name.h" aria-label="New file name"></form>
+      ${common.length ? common.map((f) => {
+        const users = usedBy(f.path);
+        return `<button type="button" class="tree-item${f.path === live.active ? ' on' : ''}" data-open="${esc(f.path)}" title="${esc(shortName(f.path))} · ${f.lines} lines${users.length ? ' · used by ' + users.join(', ') : ''}"><span class="nm">${esc(f.path.replace(/^solutions\/common\//, ''))}</span>${users.length ? `<span class="tag-n">${users.length}</span>` : ''}</button>`;
+      }).join('') : '<p class="tree-empty">Nothing shared yet. Code that later checkpoints can reuse goes here.</p>'}
+      <div class="tree-dir"><span>checkpoints</span></div>
+      ${cps.map((f) => {
+        const c = BY[f.checkpoint]; if (!c) return '';
+        const mark = store.get(c.id + ':broke') ? '<span class="tm broke" title="Passed before, failing now">!</span>'
+          : solved(c.id) ? '<span class="tm ok" title="Solved">✓</span>' : '<span class="tm"></span>';
+        return `<button type="button" class="tree-item${c.id === current ? ' on' : ''}" data-open="${esc(f.path)}" title="${esc(c.num)}. ${esc(c.title)}${(f.uses || []).length ? ' · uses ' + f.uses.map(shortName).join(', ') : ''}">${mark}<span class="nm">${esc(f.path.split('/').pop())}</span>${(f.uses || []).length ? `<span class="tag-n" title="uses ${f.uses.length} shared file(s)">${f.uses.length}</span>` : ''}</button>`;
+      }).join('')}
+      <div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>`;
+  }
+  $('#tree-btn').addEventListener('click', () => {
+    live.showTree = !live.showTree;
+    store.set('tree', live.showTree ? '1' : '0');
+    if (live.showTree) refreshProject(); else renderTree();
+    if (cm) requestAnimationFrame(() => cm.refresh());
+  });
+  $('#tree').addEventListener('click', (e) => {
+    const open = e.target.closest('[data-open]');
+    if (open) { openTab(open.dataset.open); return; }
+    if (e.target.closest('#new-file')) { const form = $('#new-file-form'); form.hidden = !form.hidden; if (!form.hidden) $('#new-file-name').focus(); return; }
+    if (e.target.closest('#recheck')) recheckSolved();
+  });
+  $('#tree').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#new-file-name').value.trim();
+    if (!/^[A-Za-z_][\w.-]*\.(h|hpp|c|cc|cpp|cxx|py|js|mjs|ts|rs|go|java|kt|cs|md|txt)$/.test(name)) {
+      $('#new-file-name').setCustomValidity('Use a name like bytes.h or bytes.cpp'); $('#new-file-name').reportValidity(); return;
+    }
+    const path = 'solutions/common/' + name;
+    const start = /\.(h|hpp)$/.test(name) ? '#pragma once\n\n' : '';
+    try {
+      await api('/api/file', { method: 'PUT', body: JSON.stringify({ path, text: start, base: '0' }) });  // '0': only if it doesn't exist yet
+    } catch (err) { if (err.status !== 409) { setOnline(!!err.status); return; } }
+    await refreshProject();
+    openTab(path);
+  });
+  $('#tree').addEventListener('input', (e) => { if (e.target.id === 'new-file-name') e.target.setCustomValidity(''); });
+
+  // ---- Re-check solved: catches a change to shared code that broke something you'd already passed
+  async function recheckSolved() {
+    const ids = CPS.filter((c) => solved(c.id)).map((c) => c.id);
+    if (!ids.length || live.busy) return;
+    await saveAll();
+    live.busy = true;
+    $('#run').disabled = $('#submit').disabled = true;
+    setBottom('result');
+    const rows = [];
+    for (const [k, id] of ids.entries()) {
+      $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>Re-checking your solved checkpoints: ${k + 1} of ${ids.length} (${esc(BY[id].num)}. ${esc(BY[id].title)})…</div>` + recheckTable(rows);
+      let r;
+      try { r = await api('/api/check/' + id, { method: 'POST', body: '{}' }); setOnline(true); } catch (e) { setOnline(false); r = { verdict: 'offline' }; }
+      live.report[id] = r;
+      if (r.verdict === 'accepted') store.del(id + ':broke'); else store.set(id + ':broke', '1');
+      rows.push({ id, r });
+    }
+    live.busy = false;
+    $('#run').disabled = $('#submit').disabled = false;
+    const broke = rows.filter((x) => x.r.verdict !== 'accepted');
+    $('#result').innerHTML = `<div class="verdict ${broke.length ? 'bad' : 'ok'}"><h2>${broke.length ? `${broke.length} broke` : 'All still pass'}</h2><span class="sub">${rows.length - broke.length} / ${rows.length} solved checkpoints pass</span></div>`
+      + `<p class="note">${broke.length ? 'These passed before and fail now, most likely because of a change to shared code. Open one to see its failing tests.' : 'Every checkpoint you solved still passes with your current code.'}</p>`
+      + recheckTable(rows);
+    renderTree();
+  }
+  function recheckTable(rows) {
+    const looks = { accepted: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'], 'compile-error': ['bad', 'Compile Error'],
+      'not-started': ['warn', 'Not started yet'], 'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'] };
+    return rows.length ? `<div class="recheck">${rows.map(({ id, r }) => {
+      const [kind, label] = looks[r.verdict] || ['unknown', 'Error'];
+      return `<a class="rc-row" href="#p${id}"><span class="rc-n">${esc(BY[id].num)}.</span><span class="rc-t">${esc(BY[id].title)}</span><span class="rc-v ${kind}">${label}${r.total ? ` ${r.passed}/${r.total}` : ''}</span></a>`;
+    }).join('')}</div>` : '';
   }
 
   // ---- Run / Submit, for real
@@ -1416,8 +1664,9 @@ span.CodeMirror-selectedtext { background: none; }
     if (!c || live.busy) return;
     const list = casesOf(c);
     const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
-    if (live.conflict[c.id]) { setBottom('result'); return; }
-    await saveToDisk(c.id);
+    const stuck = live.tabs.find((p) => live.conflict[p]);
+    if (stuck) { activate(stuck); return; }
+    await saveAll();
     live.busy = true;
     $('#run').disabled = $('#submit').disabled = true;
     setBottom('result');
@@ -1436,21 +1685,34 @@ span.CodeMirror-selectedtext { background: none; }
     report.test = test;
     report.fresh = !!options.fresh;
     live.report[c.id] = report;
-    if (report.verdict === 'accepted') setSolved(c.id, true);
-    markErrors(c, report);
+    if (report.verdict === 'accepted') { setSolved(c.id, true); store.del(c.id + ':broke'); }
+    await markErrors(c, report);
     if (current === c.id) { renderLiveResult(c); $('#result').scrollTop = 0; }
+    if (live.showTree) refreshProject();
   }
 
-  function markErrors(c, report) {
-    const doc = docs[c.id];
-    if (!doc) return;
-    (live.marks[c.id] || []).forEach((h) => doc.removeLineClass(h, 'background', 'cm-error-line'));
-    live.marks[c.id] = [];
-    const name = c.solution.split('/').pop();
-    (report.errors || []).filter((e) => e.kind === 'error' && e.file.split('/').pop() === name).forEach((e) => {
-      const line = Math.min(Math.max(e.line - 1, 0), doc.lineCount() - 1);
-      live.marks[c.id].push(doc.addLineClass(line, 'background', 'cm-error-line'));
+  // Compile errors are marked in whichever file they're in: the checkpoint's or a shared one.
+  function errorPath(c, file) {
+    const f = String(file || '').replace(/\\/g, '/');
+    const known = [c.solution, ...live.project.filter((x) => !x.checkpoint).map((x) => x.path), ...live.tabs];
+    return known.find((p) => f === p || f.endsWith('/' + p)) || null;
+  }
+  async function markErrors(c, report) {
+    Object.entries(live.marks).forEach(([path, handles]) => {
+      const doc = docOf(path);
+      if (doc) handles.forEach((h) => doc.removeLineClass(h, 'background', 'cm-error-line'));
     });
+    live.marks = {};
+    if (!cm) return;
+    if ((report.errors || []).some((e) => !errorPath(c, e.file))) await refreshProject();
+    for (const e of (report.errors || []).filter((x) => x.kind === 'error')) {
+      const path = errorPath(c, e.file);
+      if (!path) continue;
+      if (!docOf(path)) { shared[path] = window.CodeMirror.Doc('', modeFor(path)); await loadFile(path); }
+      const doc = docOf(path);
+      const line = Math.min(Math.max(e.line - 1, 0), doc.lineCount() - 1);
+      (live.marks[path] = live.marks[path] || []).push(doc.addLineClass(line, 'background', 'cm-error-line'));
+    }
   }
 
   const tail = (text, n) => String(text || '').trim().split('\n').slice(-n).join('\n');
@@ -1574,7 +1836,11 @@ span.CodeMirror-selectedtext { background: none; }
     h += `<p class="note">${liveHelp(r, c)}</p>`;
     if (r.verdict === 'compile-error') {
       const errs = (r.errors || []).filter((e) => e.kind === 'error').slice(0, 8);
-      if (errs.length) h += `<div class="err-list">${errs.map((e) => `<div><span class="loc">${esc(e.file.split('/').pop())}:${e.line}:${e.column}</span> ${esc(e.message)}</div>`).join('')}</div>`;
+      if (errs.length) h += `<div class="err-list">${errs.map((e) => {
+        const path = errorPath(c, e.file);
+        const body = `<span class="loc">${esc(e.file.split('/').pop())}:${e.line}:${e.column}</span> ${esc(e.message)}`;
+        return path ? `<button type="button" class="err" data-goto="${esc(path)}" data-line="${e.line}" title="Open ${esc(shortName(path))} at line ${e.line}">${body}</button>` : `<div>${body}</div>`;
+      }).join('')}</div>`;
       h += `<div class="field-k">Compiler output</div><pre class="raw">${esc(tail(r.build || r.text, 60))}</pre>`;
     }
     if (single && r.cases && r.cases[0]) h += caseBody(r.cases[0], r);
@@ -1596,20 +1862,39 @@ span.CodeMirror-selectedtext { background: none; }
     const intro = LOCAL.problem
       ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
       : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). What you type is saved to <code>${esc(c.solution)}</code>, and changes you make to that file in another editor show up here.</p>`;
-    $('#result').innerHTML = (r ? reportHtml(r, c) : intro)
-      + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button></div>`
+    // After an Accepted Submit (not the last checkpoint): suggest keeping the reusable parts in common/.
+    const last = CPS.indexOf(c) === CPS.length - 1;
+    const nudge = r && r.verdict === 'accepted' && !r.fresh && !last && cm ? (() => {
+      const slug = c.solution.split('/').pop().replace(/\.[^.]+$/, '').replace(/^p\d+_/, '');
+      const how = /C\+\+|^C$/.test(c.lang.label) ? `<code>common/${esc(slug)}.h</code> with a <code>.cpp</code> beside it, then <code>#include "common/${esc(slug)}.h"</code> here`
+        : c.lang.label === 'Python' ? `<code>common/${esc(slug)}.py</code>, then <code>from common.${esc(slug)} import ...</code> here`
+        : /JavaScript|TypeScript/.test(c.lang.label) ? `<code>common/${esc(slug)}.js</code>, then <code>require('./common/${esc(slug)}')</code> here`
+        : `a file in <code>common/</code>`;
+      return `<div class="nudge"><span><b>Keep it for later.</b> Later checkpoints build on what you just wrote, and the last one needs it all. Move the reusable parts into ${how}, then Submit again to check nothing broke. (Where this fits, under the statement, says which checkpoints come next.)</span>`
+        + `<span><button class="btn" type="button" id="open-files">Open the Files panel</button></span></div>`;
+    })() : '';
+    const solvedCount = CPS.filter((x) => solved(x.id)).length;
+    $('#result').innerHTML = (r ? reportHtml(r, c) : intro) + nudge
+      + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`
+      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Run every checkpoint you've solved again, to catch anything a change to shared code broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
       + `<details class="more"><summary>Think a test is wrong?</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
         <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside, so it no longer counts. Then ask Claude to review your disputes.</p></div></details>`;
   }
   if (LOCAL) {
-    $('#result').addEventListener('click', (e) => { if (e.target.closest('#live-fresh')) runLive('submit', { fresh: true }); });
+    $('#result').addEventListener('click', (e) => {
+      if (e.target.closest('#live-fresh')) { runLive('submit', { fresh: true }); return; }
+      if (e.target.closest('#recheck-all')) { recheckSolved(); return; }
+      if (e.target.closest('#open-files')) { if (!live.showTree) $('#tree-btn').click(); return; }
+      const goto = e.target.closest('[data-goto]');
+      if (goto) openTab(goto.dataset.goto, Number(goto.dataset.line));
+    });
   }
 
   // ---- navigation between checkpoints
   function openCheckpoint(id) {
     const c = BY[id];
     const changed = current !== id;
-    if (LOCAL && current && changed) saveToDisk(current);  // don't lose the last keystrokes
+    if (LOCAL && current && changed) saveAll();  // don't lose the last keystrokes
     current = id;
     $('#list-view').hidden = true;
     $('#ide-view').hidden = false;
@@ -1693,7 +1978,14 @@ span.CodeMirror-selectedtext { background: none; }
 
   renderListShell();
   initEditor();
-  if (LOCAL) paintLive();
+  if (LOCAL) {
+    paintLive();
+    if (cm) {  // the Files panel needs the full editor
+      $('#tree-btn').hidden = $('#tree-sep').hidden = false;
+      live.showTree = store.get('tree') === '1';
+      if (live.showTree) refreshProject();
+    }
+  }
   route(location.hash.slice(1));
 })();
 </script>

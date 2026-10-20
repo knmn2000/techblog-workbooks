@@ -36,6 +36,8 @@ appears right in the page, with the failing tests and pictures. Leave its window
 work; close it to stop. The first start sets up the build, which takes a few seconds. If a tool is
 missing, it tells you which; or ask Claude to set the workbook up.
 
+The **Files** panel in the editor shows the project growing: `solutions/common/` (code shared by checkpoints) and every checkpoint's file. Shared files open in tabs and can be created there. After an Accepted Submit, the book suggests moving the reusable parts into `common/` so later checkpoints, and the last one most of all, can call them. **Re-check solved** runs every solved checkpoint again, so a change to shared code that breaks an earlier checkpoint shows up at once (it's marked with a red `!`). Inputs still carry what earlier checkpoints would produce, so a bug in one checkpoint never blocks another unless you share the code. When everything passes, the problem list shows what you built: each shared file and the checkpoints that use it.
+
 You can also work in your own editor and check from a terminal, as below. The book picks up
 changes you save to the solution files.
 

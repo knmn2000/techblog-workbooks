@@ -35,6 +35,14 @@ CHECK = ROOT / "tools" / "check.py"
 IMAGE_ROOTS = ("build/cases/", "build/fresh/", "tests/")  # the only folders /files/ will read from
 MAX_BODY = 4 * 1024 * 1024
 CASE_ID = re.compile(r"^[\w.+-]+$")
+# Files the learner may create and edit in solutions/common/ from the page.
+SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go",
+               ".java", ".kt", ".cs", ".md", ".txt", ".json"}
+# How a checkpoint file pulls in shared code, per language: C/C++ includes, Python imports, JS imports.
+USES = [re.compile(r'^\s*#\s*include\s+"(common/[^"]+)"', re.M),
+        re.compile(r"^\s*from\s+(common(?:\.\w+)+)\s+import", re.M),
+        re.compile(r"^\s*import\s+(common(?:\.\w+)+)", re.M),
+        re.compile(r"""(?:require\(|from\s+)['"]\./(common/[^'"]+)['"]""", re.M)]
 
 
 class Workbook:
@@ -44,10 +52,45 @@ class Workbook:
         self.token = secrets.token_urlsafe(24)
         self.lock = threading.Lock()  # one checker run at a time: they share the build folder
         self.setup_error = None
+        self.solutions = {(ROOT / meta["solution"]).resolve(): cid for cid, meta in self.config["checkpoints"].items()}
 
     def solution(self, cid: str):
         meta = self.config["checkpoints"].get(cid)
         return ROOT / meta["solution"] if meta else None
+
+    def learner_file(self, rel: str):
+        """A path the page may read or write: a checkpoint's solution file, or a source file
+        anywhere under solutions/common/. Everything else is refused."""
+        target = (ROOT / rel.replace("\\", "/").lstrip("/")).resolve()
+        common = (ROOT / "solutions" / "common").resolve()
+        if target in self.solutions:
+            return target
+        if common in target.parents and target.suffix.lower() in SOURCE_EXTS:
+            return target
+        return None
+
+    def files(self) -> list:
+        """The learner's project: every checkpoint file (with the shared files it uses), then
+        everything in solutions/common/."""
+        def lines(p):
+            return p.read_text(encoding="utf-8", errors="replace").count("\n") + 1 if p.exists() else 0
+
+        out = []
+        for path, cid in sorted(self.solutions.items(), key=lambda kv: kv[1]):
+            text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+            uses = []
+            for pattern in USES:
+                for name in pattern.findall(text):
+                    rel = name if "/" in name else name.replace(".", "/") + ".py"
+                    uses.append("solutions/" + rel)
+            out.append({"path": path.relative_to(ROOT.resolve()).as_posix(), "checkpoint": cid,
+                        "lines": lines(path), "uses": sorted(set(uses))})
+        common = ROOT / "solutions" / "common"
+        if common.is_dir():
+            for p in sorted(common.rglob("*")):
+                if p.is_file() and p.suffix.lower() in SOURCE_EXTS:
+                    out.append({"path": p.relative_to(ROOT).as_posix(), "checkpoint": None, "lines": lines(p)})
+        return out
 
 
 def missing_tools(config: dict) -> list:
@@ -152,20 +195,30 @@ class Handler(BaseHTTPRequestHandler):
             if target is None:
                 return self.reply(404, {"error": "no such checkpoint"})
             return self.reply(200, file_state(target))
+        if path == "/api/files":
+            return self.reply(200, {"files": self.server.wb.files()})
+        if path == "/api/file":
+            target = self.server.wb.learner_file(query.get("path", [""])[0])
+            if target is None:
+                return self.reply(404, {"error": "not a file you can open here"})
+            return self.reply(200, file_state(target))
         return self.reply(404, {"error": "not found"})
 
     def do_PUT(self):
         path = unquote(urlsplit(self.path).path)
         if not self.allowed():
             return self.reply(403, {"error": "forbidden"})
-        m = re.match(r"^/api/solution/(\w+)$", path)
-        target = self.server.wb.solution(m.group(1)) if m else None
-        if target is None:
-            return self.reply(404, {"error": "no such checkpoint"})
         try:
             body = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
+        if path == "/api/file":
+            target = self.server.wb.learner_file(str(body.get("path", "")))
+        else:
+            m = re.match(r"^/api/solution/(\w+)$", path)
+            target = self.server.wb.solution(m.group(1)) if m else None
+        if target is None:
+            return self.reply(404, {"error": "not a file you can save here"})
         text, base = body.get("text"), body.get("base")
         if not isinstance(text, str):
             return self.reply(400, {"error": "text missing"})
