@@ -1,0 +1,7 @@
+# Build output and per-learner files inside each workbook
+build/
+disputes.json
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

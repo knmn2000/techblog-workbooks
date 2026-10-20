@@ -1,0 +1,8 @@
+# Text files get normalised line endings; test data and fonts must stay byte-for-byte.
+* text=auto
+*.bin binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.ppm binary
+*.sh text eol=lf
