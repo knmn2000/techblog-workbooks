@@ -227,6 +227,15 @@ body.in-ide { overflow: hidden; }
 .case-body { padding: 0 12px 12px; display: grid; gap: 8px; min-width: 0; }
 .case-body .field { margin-bottom: 0; }
 .case-body .field-v { background: var(--layer); max-height: 220px; }
+.field-v.diff { padding: 6px 0; }
+.diff .dl { display: block; width: max-content; min-width: 100%; padding: 0 12px; min-height: 1.6em; }
+.diff .dl.del.changed { background: color-mix(in srgb, var(--bad) 9%, transparent); }
+.diff .dl.del.extra { background: color-mix(in srgb, var(--bad) 20%, transparent); }
+.diff .dl.add.changed { background: color-mix(in srgb, var(--ok) 9%, transparent); }
+.diff .dl.add.missing { background: color-mix(in srgb, var(--ok) 20%, transparent); }
+.diff .dl.clip { color: var(--text-3); }
+.tk-del { background: color-mix(in srgb, var(--bad) 40%, transparent); border-radius: 3px; padding: 0 2px; }
+.tk-add { background: color-mix(in srgb, var(--ok) 40%, transparent); border-radius: 3px; padding: 0 2px; }
 .img-cmp { display: flex; flex-wrap: wrap; gap: 10px; }
 .img-cmp figure { margin: 0; display: grid; gap: 4px; justify-items: start; }
 .img-cmp img { width: 180px; max-width: 100%; height: auto; image-rendering: pixelated; border-radius: 6px; background: #000; display: block; }
@@ -352,6 +361,21 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .confirm { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-right: 4px; }
 .confirm .btn { height: 26px; padding: 0 10px; font-size: 12px; }
 .editor { flex: 1; min-height: 0; position: relative; }
+.vim-btn { width: auto; padding: 0 8px; font: 600 12px var(--font-mono); }
+.vim-btn[aria-pressed="true"] { color: var(--ok); background: var(--fill); }
+/* Vim mode: block cursor in Normal mode, and the : / command line (CodeMirror's dialog addon). */
+.cm-fat-cursor .CodeMirror-cursor { width: auto; border: 0 !important; background: color-mix(in srgb, var(--ok) 55%, transparent); }
+.cm-fat-cursor div.CodeMirror-cursors { z-index: 1; }
+.cm-fat-cursor .CodeMirror-line::selection, .cm-fat-cursor .CodeMirror-line > span::selection, .cm-fat-cursor .CodeMirror-line > span > span::selection { background: transparent; }
+.cm-fat-cursor { caret-color: transparent; }
+.cm-animate-fat-cursor { width: auto; border: 0; animation: blink 1.06s steps(1) infinite; background: color-mix(in srgb, var(--ok) 55%, transparent); }
+@keyframes blink { 50% { background-color: transparent; } }
+.CodeMirror-dialog { position: absolute; left: 0; right: 0; background: var(--layer-head); z-index: 15; padding: 2px 10px; overflow: hidden; color: var(--text); font: 13px var(--font-mono); }
+.CodeMirror-dialog-top { border-bottom: 1px solid var(--line); top: 0; }
+.CodeMirror-dialog-bottom { border-top: 1px solid var(--line); bottom: 0; }
+.CodeMirror-dialog input { border: none; outline: none; background: transparent; width: 20em; color: inherit; font: inherit; }
+.CodeMirror-dialog button { font-size: 70%; }
+.cm-searching { background: color-mix(in srgb, var(--medium) 35%, transparent); }
 .editor > .CodeMirror, .editor > .fallback-editor { position: absolute; inset: 0; height: auto; }
 .code-status { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line); }
 .fallback-editor { width: 100%; height: 100%; border: 0; resize: none; padding: 8px 12px; background: var(--layer); color: var(--text);
@@ -547,6 +571,7 @@ span.CodeMirror-selectedtext { background: none; }
           <span class="file" id="file"></span>
           <div class="tools-right">
             <span class="confirm" id="confirm" hidden><span id="confirm-text"></span> <button class="btn" type="button" id="confirm-yes">Replace</button><button class="btn" type="button" id="confirm-no">Cancel</button></span>
+            <button class="icon-btn vim-btn" type="button" id="vim" aria-pressed="false" title="Vim keys: Normal, Insert and Visual modes, / to search, :w to save">Vim</button>
             <button class="icon-btn" type="button" id="reset" aria-label="Reset to the starter code" title="Reset to the starter code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
             <button class="icon-btn" type="button" id="copy-code" aria-label="Copy the code" title="Copy the code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
           </div>
@@ -575,6 +600,9 @@ span.CodeMirror-selectedtext { background: none; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/runmode/runmode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/keymap/vim.min.js"></script>
 {{MODES}}
 <script type="application/json" id="book-data">{{DATA}}</script>
 <script>
@@ -1055,10 +1083,19 @@ span.CodeMirror-selectedtext { background: none; }
       cm = window.CodeMirror(host, {
         lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true, indentWithTabs: false,
         extraKeys: {
-          Tab: (ed) => (ed.somethingSelected() ? ed.indentSelection('add') : ed.replaceSelection(' '.repeat(ed.getOption('indentUnit')), 'end')),
-          'Shift-Tab': 'indentLess',
+          // In Vim's Normal and Visual modes, Tab belongs to Vim.
+          Tab: (ed) => (vimNormal(ed) ? window.CodeMirror.Pass
+            : ed.somethingSelected() ? ed.indentSelection('add') : ed.replaceSelection(' '.repeat(ed.getOption('indentUnit')), 'end')),
+          'Shift-Tab': (ed) => (vimNormal(ed) ? window.CodeMirror.Pass : ed.execCommand('indentLess')),
         },
       });
+      if (window.CodeMirror.Vim) {
+        window.CodeMirror.Vim.defineEx('write', 'w', () => saveNow());
+        cm.on('vim-mode-change', (e) => { vimMode = e.mode + (e.subMode ? ' ' + e.subMode : ''); showPos(); });
+        setVim(store.get('editor:vim') === '1');
+      } else {
+        $('#vim').hidden = true;  // the keymap didn't load
+      }
       cm.on('changes', saveSoon);
       cm.on('cursorActivity', showPos);
       if (window.ResizeObserver) {
@@ -1174,7 +1211,30 @@ span.CodeMirror-selectedtext { background: none; }
   function showPos() {
     if (!cm) { $('#pos').textContent = ''; return; }
     const p = cm.getCursor();
-    $('#pos').textContent = `Ln ${p.line + 1}, Col ${p.ch + 1}`;
+    $('#pos').textContent = (vimOn ? `${vimMode.toUpperCase()} · ` : '') + `Ln ${p.line + 1}, Col ${p.ch + 1}`;
+  }
+
+  // ---- Vim keys (CodeMirror's Vim keymap), remembered in this browser
+  let vimOn = false, vimMode = 'normal';
+  function vimNormal(ed) { return !!(ed.state.vim && !ed.state.vim.insertMode); }
+  function setVim(on) {
+    vimOn = !!(on && cm && window.CodeMirror.Vim);
+    if (cm) cm.setOption('keyMap', vimOn ? 'vim' : 'default');
+    vimMode = 'normal';
+    $('#vim').setAttribute('aria-pressed', String(vimOn));
+    if (vimOn) store.set('editor:vim', '1'); else store.del('editor:vim');
+    showPos();
+  }
+  $('#vim').addEventListener('click', () => { setVim(!vimOn); if (cm) cm.focus(); });
+
+  // Save now: :w in Vim, or Ctrl+S anywhere in the problem view.
+  function saveNow() {
+    if (!current) return;
+    if (LOCAL) { saveToDisk(current); return; }
+    clearTimeout(saveTimer);
+    const c = BY[current], text = code();
+    if (text === starterOf(c, kindOf(c))) store.del(c.id + ':draft'); else store.set(c.id + ':draft', text);
+    showSaved();
   }
 
   // ---- clipboard
@@ -1242,6 +1302,7 @@ span.CodeMirror-selectedtext { background: none; }
   $('#submit').addEventListener('click', () => act('submit'));
   document.addEventListener('keydown', (e) => {
     if (!current || !(e.ctrlKey || e.metaKey) || e.target.id === 'paste') return;
+    if (e.key === 's' || e.key === 'S') { e.preventDefault(); saveNow(); return; }
     if (e.key === 'Enter') { e.preventDefault(); act('submit'); }
     else if (e.key === "'") { e.preventDefault(); act('run'); }
   }, true);
@@ -1300,7 +1361,8 @@ span.CodeMirror-selectedtext { background: none; }
   async function saveToDisk(id) {
     clearTimeout(diskTimer);
     const text = cm ? (docs[id] ? docs[id].getValue() : null) : (id === current ? plainEditor.value : null);
-    if (text === null || live.conflict[id] || (live.disk[id] && live.disk[id].text === text)) return;
+    if (text === null || live.conflict[id]) return;
+    if (live.disk[id] && live.disk[id].text === text) { if (id === current) showSaved(); return; }  // nothing new to save
     const known = live.disk[id];
     try {
       const r = await api('/api/solution/' + id, { method: 'PUT', body: JSON.stringify({ text, base: known ? known.mtime : null }) });
@@ -1416,7 +1478,73 @@ span.CodeMirror-selectedtext { background: none; }
     }
   }
 
-  function caseBody(x) {
+  // ---- Your output vs expected: lines are lined up, then the differing words are marked. Words and
+  // numbers are compared the way the checker compares them (quoted strings are one word; numbers
+  // within the checkpoint's tolerance are equal), so only real differences light up.
+  const words = (line) => line.match(/"[^"]*"|\S+/g) || [];
+  const sameWord = (a, b, tol) => {
+    if (a === b) return true;
+    const x = Number(a), y = Number(b);
+    return tol > 0 && a.trim() !== '' && b.trim() !== '' && isFinite(x) && isFinite(y) && Math.abs(x - y) <= tol + 1e-12;
+  };
+  const sameLine = (a, b, tol) => a.length === b.length && a.every((w, k) => sameWord(w, b[k], tol));
+  function matchPairs(a, b, eq) {
+    // Longest common subsequence: which items of a and b line up. Falls back to position for huge inputs.
+    const n = a.length, m = b.length;
+    if (n * m > 400000) return Array.from({ length: Math.min(n, m) }, (_, i) => i).filter((i) => eq(a[i], b[i])).map((i) => [i, i]);
+    const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = eq(a[i], b[j]) ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const pairs = [];
+    for (let i = 0, j = 0; i < n && j < m;) {
+      if (eq(a[i], b[j])) { pairs.push([i, j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+    }
+    return pairs;
+  }
+  function diffOutputs(actual, expected, compare) {
+    const tol = (compare && compare.tolerance) || 0;
+    const clipped = (l) => /^\.\.\. \(\d+ more lines\)$/.test(l);
+    const A = actual.map((t) => ({ text: t, w: words(t), kind: clipped(t) ? 'clip' : 'same', marks: new Set() }));
+    const E = expected.map((t) => ({ text: t, w: words(t), kind: clipped(t) ? 'clip' : 'same', marks: new Set() }));
+    const eq = (a, b) => a.kind !== 'clip' && b.kind !== 'clip' && sameLine(a.w, b.w, tol);
+    if (compare && compare.mode === 'unordered') {  // any order: a line is fine if some expected line matches it
+      const used = new Set();
+      A.forEach((a) => { const j = E.findIndex((e, k) => !used.has(k) && eq(a, e)); if (j >= 0) used.add(j); else if (a.kind !== 'clip') a.kind = 'extra'; });
+      E.forEach((e, k) => { if (!used.has(k) && e.kind !== 'clip') e.kind = 'missing'; });
+      return { yours: A, expected: E };
+    }
+    const pairs = matchPairs(A, E, eq).concat([[A.length, E.length]]);
+    let i = 0, j = 0;
+    for (const [pi, pj] of pairs) {
+      // Lines between two matches: pair them up as changed lines, the rest are extra or missing.
+      while (i < pi && j < pj) {
+        const a = A[i++], e = E[j++];
+        if (a.kind === 'clip' || e.kind === 'clip') continue;
+        a.kind = e.kind = 'changed';
+        // Same number of words: the checker compares them position by position, so do that too.
+        const hit = a.w.length === e.w.length
+          ? a.w.map((w, k) => [k, k]).filter(([k]) => sameWord(a.w[k], e.w[k], tol))
+          : matchPairs(a.w, e.w, (x, y) => sameWord(x, y, tol));
+        const ha = new Set(hit.map((p) => p[0])), he = new Set(hit.map((p) => p[1]));
+        a.w.forEach((_, k) => { if (!ha.has(k)) a.marks.add(k); });
+        e.w.forEach((_, k) => { if (!he.has(k)) e.marks.add(k); });
+      }
+      while (i < pi) { if (A[i].kind !== 'clip') A[i].kind = 'extra'; i++; }
+      while (j < pj) { if (E[j].kind !== 'clip') E[j].kind = 'missing'; j++; }
+      i = pi + 1; j = pj + 1;
+    }
+    return { yours: A, expected: E };
+  }
+  function diffBlock(title, lines, tone) {
+    if (!lines.length) return `<div class="field"><div class="field-k">${title}</div><pre class="field-v diff"><span class="dl clip">(nothing)</span></pre></div>`;
+    const body = lines.map((l) => {
+      const inner = l.kind === 'clip' || !l.w.length ? esc(l.text)
+        : l.w.map((w, k) => (l.marks.has(k) ? `<span class="tk-${tone}">${esc(w)}</span>` : esc(w))).join(' ');
+      return `<span class="dl ${l.kind} ${tone}">${inner || ' '}</span>`;
+    }).join('');
+    return `<div class="field"><div class="field-k">${title}</div><pre class="field-v diff">${body}</pre></div>`;
+  }
+
+  function caseBody(x, report) {
     let h = x.message ? `<p class="note bad-text">${esc(x.message)}</p>` : '';
     if (x.causes && x.causes.length) h += `<p class="note">Likely cause: ${x.causes.map((k) => `<b>${esc(k.id)}</b> ${esc(k.text)}`).join('; ')}</p>`;
     if (x.images) {
@@ -1424,8 +1552,10 @@ span.CodeMirror-selectedtext { background: none; }
       h += `<div class="img-cmp">${pics.map(([t, p]) => `<figure><img src="${fileUrl(p)}" alt="${esc(t)}"><figcaption>${t}</figcaption></figure>`).join('')}</div>`;
       if (x.images.diff) h += '<p class="note">In the difference: red is ink you added, blue is ink you missed, magenta is the wrong colour, and yellow is forgiven (edges may move one pixel).</p>';
     } else {
-      const block = (title, lines) => `<div class="field"><div class="field-k">${title}</div><pre class="field-v">${esc((lines || []).join('\n')) || '(nothing)'}</pre></div>`;
-      h += block('Input', x.input) + block('Your output', x.actual) + block('Expected', x.expected);
+      const d = diffOutputs(x.actual || [], x.expected || [], report && report.compare);
+      h += `<div class="field"><div class="field-k">Input</div><pre class="field-v">${esc((x.input || []).join('\n'))}</pre></div>`
+        + diffBlock('Your output', d.yours, 'del') + diffBlock('Expected', d.expected, 'add')
+        + `<p class="note muted">Highlighted: what differs${report && report.compare && report.compare.tolerance ? ` (numbers within ${report.compare.tolerance} count as equal)` : ''}${report && report.compare && report.compare.mode === 'unordered' ? '; line order doesn\'t matter here' : ''}.</p>`;
     }
     if (x.source) h += `<p class="note muted">Expected values from: ${esc(x.source)}</p>`;
     return h;
@@ -1447,14 +1577,14 @@ span.CodeMirror-selectedtext { background: none; }
       if (errs.length) h += `<div class="err-list">${errs.map((e) => `<div><span class="loc">${esc(e.file.split('/').pop())}:${e.line}:${e.column}</span> ${esc(e.message)}</div>`).join('')}</div>`;
       h += `<div class="field-k">Compiler output</div><pre class="raw">${esc(tail(r.build || r.text, 60))}</pre>`;
     }
-    if (single && r.cases && r.cases[0]) h += caseBody(r.cases[0]);
+    if (single && r.cases && r.cases[0]) h += caseBody(r.cases[0], r);
     if (!single && r.requirements && r.requirements.length) {
       h += '<div class="req-rows">' + r.requirements.map((q) => `<div class="req-row${q.passed === q.total ? '' : ' fail'}"><span class="rid">${esc(q.id)}</span><span class="rq" title="${esc(q.text)}">${esc(q.text)}</span><span class="cnt">${q.passed} / ${q.total}</span><span class="bar"><i style="width:${q.total ? (q.passed / q.total) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
     }
     if (!single) {
       const failing = (r.cases || []).filter((x) => x.status !== 'pass');
       const shown = failing.filter((x) => x.message !== undefined);
-      h += shown.map((x, i) => `<details class="case-card"${i < 2 ? ' open' : ''}><summary><span class="id">${esc(x.id)}</span> <span class="t">${esc(x.title)}</span></summary><div class="case-body">${caseBody(x)}</div></details>`).join('');
+      h += shown.map((x, i) => `<details class="case-card"${i < 2 ? ' open' : ''}><summary><span class="id">${esc(x.id)}</span> <span class="t">${esc(x.title)}</span></summary><div class="case-body">${caseBody(x, r)}</div></details>`).join('');
       if (failing.length > shown.length) h += `<p class="note">…and ${failing.length - shown.length} more failing tests.</p>`;
     }
     if (r.verdict === 'error' && r.text) h += `<pre class="raw">${esc(tail(r.text, 40))}</pre>`;
