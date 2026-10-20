@@ -6,3 +6,4 @@
 *.png binary
 *.ppm binary
 *.sh text eol=lf
+*.cmd text eol=crlf

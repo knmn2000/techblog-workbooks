@@ -208,6 +208,30 @@ body.in-ide { overflow: hidden; }
 .act.submit { border-radius: 0 8px 8px 0; color: var(--ok); }
 .tb-prog { font-size: 12px; color: var(--text-3); white-space: nowrap; }
 .tb-prog b { color: var(--text); font-weight: 600; }
+.live { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 500; white-space: nowrap; cursor: help; }
+.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.live.on { color: var(--ok); } .live.warn { color: var(--medium); } .live.off { color: var(--bad); }
+.act:disabled { opacity: .55; cursor: progress; }
+.running { display: flex; align-items: center; gap: 10px; color: var(--text-2); padding: 6px 0 14px; }
+.spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--ok); animation: spin .8s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err-list { display: grid; gap: 4px; margin-bottom: 12px; font: 12.5px/1.5 var(--font-mono); }
+.err-list .loc { color: var(--bad); font-weight: 600; }
+.cm-error-line { background: color-mix(in srgb, var(--bad) 16%, transparent); }
+.bad-text { color: var(--bad) !important; }
+.note.muted { color: var(--text-3); font-size: 12px; }
+.case-card { background: var(--fill); border-radius: 8px; margin-bottom: 8px; min-width: 0; }
+.case-card > summary { cursor: pointer; padding: 9px 12px; display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.case-card > summary .id { font: 600 12.5px var(--font-mono); color: var(--bad); white-space: nowrap; }
+.case-card > summary .t { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.case-body { padding: 0 12px 12px; display: grid; gap: 8px; min-width: 0; }
+.case-body .field { margin-bottom: 0; }
+.case-body .field-v { background: var(--layer); max-height: 220px; }
+.img-cmp { display: flex; flex-wrap: wrap; gap: 10px; }
+.img-cmp figure { margin: 0; display: grid; gap: 4px; justify-items: start; }
+.img-cmp img { width: 180px; max-width: 100%; height: auto; image-rendering: pixelated; border-radius: 6px; background: #000; display: block; }
+.img-cmp figcaption { font-size: 12px; color: var(--text-3); }
+.live-actions { margin: 14px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .ide-main { flex: 1; min-height: 0; display: flex; }
 .panel { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .left { flex: 0 0 var(--left, 45%); }
@@ -495,7 +519,7 @@ span.CodeMirror-selectedtext { background: none; }
       <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
       <button class="act submit" id="submit" type="button" title="Copy your code and the command that runs every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
     </div>
-    <div class="tb-right"><span class="tb-prog" id="tb-prog"></span></div>
+    <div class="tb-right"><span class="live" id="live" hidden></span><span class="tb-prog" id="tb-prog"></span></div>
   </header>
 
   <div class="ide-main" id="ide-main">
@@ -644,8 +668,9 @@ span.CodeMirror-selectedtext { background: none; }
       </div>
       <div class="card how"><h2>How checking works</h2><ol>
         <li><span><b>Write it</b> in the editor here, or straight in <code>solutions/</code> in your own editor. Each starter is an empty <code>main</code>; switch to Boilerplate if you want the input and output code done for you.</span></li>
-        <li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
-        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved.</span></li>
+        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the checkpoint solved. Your code is saved to <code>solutions/</code> as you type.</span></li>`
+          : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
+        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
         <li><span><b>Any order.</b> Each input carries what the earlier checkpoints would produce, so every checkpoint stands alone.</span></li>
         <li><span><b>Build on your own work.</b> Code in <code>solutions/common/</code> is compiled into every checkpoint, so later ones (and the last one most of all) can call what you wrote earlier.</span></li>
         <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
@@ -1068,10 +1093,14 @@ span.CodeMirror-selectedtext { background: none; }
     $('#kind').hidden = !c.boilerplate;
     $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
   }
-  let pendingKind = null;
-  function ask(text, kind) {
-    pendingKind = kind;
+  // A one-line question in the code toolbar (the page can't use confirm()).
+  let onYes = null, onNo = null;
+  function ask(text, yes, labels, no) {
+    onYes = yes;
+    onNo = no || null;
     $('#confirm-text').textContent = text;
+    $('#confirm-yes').textContent = (labels && labels[0]) || 'Replace';
+    $('#confirm-no').textContent = (labels && labels[1]) || 'Cancel';
     $('#confirm').hidden = false;
     $('#confirm-yes').focus();
   }
@@ -1081,20 +1110,24 @@ span.CodeMirror-selectedtext { background: none; }
     if (!b || !c || b.dataset.kind === kindOf(c)) return;
     const text = code();
     if (text === c.starter || text === c.boilerplate) useStarter(c, b.dataset.kind);
-    else ask(`Replace your code with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, b.dataset.kind);
+    else ask(`Replace your code with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
   });
   $('#reset').addEventListener('click', () => {
     const c = BY[current];
-    ask(`Replace your code with the ${kindName(kindOf(c)).toLowerCase()} starter?`, kindOf(c));
+    ask(`Replace your code with the ${kindName(kindOf(c)).toLowerCase()} starter?`, () => useStarter(c, kindOf(c)));
   });
-  $('#confirm-no').addEventListener('click', () => { $('#confirm').hidden = true; });
+  $('#confirm-no').addEventListener('click', () => {
+    $('#confirm').hidden = true;
+    if (onNo) onNo();
+  });
   $('#confirm-yes').addEventListener('click', () => {
     $('#confirm').hidden = true;
-    if (current && pendingKind) useStarter(BY[current], pendingKind);
+    if (current && onYes) onYes();
   });
 
   function loadEditor(c) {
-    const draft = store.get(c.id + ':draft');
+    // Live mode: the solution file on disk is the source of truth, not browser drafts.
+    const draft = LOCAL ? (live.disk[c.id] ? live.disk[c.id].text : null) : store.get(c.id + ':draft');
     const start = starterOf(c, kindOf(c));
     if (cm) {
       if (!docs[c.id]) docs[c.id] = window.CodeMirror.Doc(draft !== null ? draft : start, c.lang.mime);
@@ -1111,8 +1144,11 @@ span.CodeMirror-selectedtext { background: none; }
     $('#confirm').hidden = true;
     showSaved();
     showPos();
+    if (LOCAL) loadFromDisk(c);
   }
   function saveSoon() {
+    if (live.quiet) return;
+    if (LOCAL) { saveToDiskSoon(); return; }
     clearTimeout(saveTimer);
     $('#saved').textContent = 'Saving…';
     const id = current;
@@ -1126,6 +1162,13 @@ span.CodeMirror-selectedtext { background: none; }
   }
   function showSaved() {
     if (!current) return;
+    if (LOCAL) {
+      const known = live.disk[current];
+      $('#saved').textContent = !live.online ? 'Not saved: the study server has stopped'
+        : live.conflict[current] ? 'The file changed on disk'
+        : known && known.text === code() ? `Saved to ${BY[current].solution}` : 'Saving…';
+      return;
+    }
     $('#saved').textContent = drafted(current) ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
   }
   function showPos() {
@@ -1171,6 +1214,7 @@ span.CodeMirror-selectedtext { background: none; }
   // ---- Run / Submit: copy the code, then show what to run in the terminal
   function act(kind) {
     if (!current) return;
+    if (LOCAL) { runLive(kind, {}); return; }
     const c = BY[current];
     const list = casesOf(c);
     const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
@@ -1202,10 +1246,240 @@ span.CodeMirror-selectedtext { background: none; }
     else if (e.key === "'") { e.preventDefault(); act('run'); }
   }, true);
 
+  // ---------------------------------------------------------------- live mode (.\study)
+  // Served by tools/serve.py, the page saves your file and runs the checker itself, so Run and
+  // Submit show the verdict directly. The published copy of the book keeps the copy-and-paste steps.
+  const LOCAL = window.WORKBOOK_LOCAL || null;
+  const live = { online: !!LOCAL, disk: {}, conflict: {}, report: {}, marks: {}, busy: false, quiet: false };
+  let diskTimer = 0;
+
+  async function api(path, options) {
+    const res = await fetch(path, Object.assign({ headers: { 'X-Workbook-Token': LOCAL.token, 'Content-Type': 'application/json' } }, options || {}));
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw Object.assign(new Error(body.error || res.statusText), { status: res.status, body });
+    }
+    return res.json();
+  }
+  function setOnline(ok) {
+    if (live.online !== ok) { live.online = ok; paintLive(); showSaved(); }
+  }
+  function paintLive() {
+    const el = $('#live');
+    if (!LOCAL) return;
+    el.hidden = false;
+    el.className = 'live ' + (!live.online ? 'off' : LOCAL.problem ? 'warn' : 'on');
+    el.textContent = !live.online ? 'Disconnected' : LOCAL.problem ? "Can't build yet" : 'Live';
+    el.title = !live.online ? 'The study server has stopped. Start it again (double-click study.cmd, or run .\\study), then reload this page.'
+      : LOCAL.problem || `Run and Submit build and check your code in ${LOCAL.folder}`;
+  }
+  function replaceQuietly(text) {
+    // Swap in text from disk without saving it straight back, keeping the cursor where it was.
+    live.quiet = true;
+    const at = cm ? cm.getCursor() : null;
+    setCode(text);
+    if (cm && at) cm.setCursor(at);
+    live.quiet = false;
+  }
+  const fromDisk = (f) => ({ mtime: f.mtime, text: (f.text === null ? '' : f.text).replace(/\r\n/g, '\n'), missing: f.text === null });
+  async function loadFromDisk(c) {
+    try {
+      const f = fromDisk(await api('/api/solution/' + c.id));
+      setOnline(true);
+      live.disk[c.id] = f;
+      if (current === c.id && !f.missing && code() !== f.text) replaceQuietly(f.text);
+    } catch (e) { setOnline(false); }
+    if (current === c.id) showSaved();
+  }
+  function saveToDiskSoon() {
+    clearTimeout(diskTimer);
+    $('#saved').textContent = 'Saving…';
+    const id = current;
+    diskTimer = setTimeout(() => saveToDisk(id), 600);
+  }
+  async function saveToDisk(id) {
+    clearTimeout(diskTimer);
+    const text = cm ? (docs[id] ? docs[id].getValue() : null) : (id === current ? plainEditor.value : null);
+    if (text === null || live.conflict[id] || (live.disk[id] && live.disk[id].text === text)) return;
+    const known = live.disk[id];
+    try {
+      const r = await api('/api/solution/' + id, { method: 'PUT', body: JSON.stringify({ text, base: known ? known.mtime : null }) });
+      live.disk[id] = { mtime: r.mtime, text };
+      setOnline(true);
+    } catch (e) {
+      if (e.status === 409) conflict(id, fromDisk(e.body)); else setOnline(false);
+    }
+    if (id === current) showSaved();
+  }
+  // Both this page and another editor changed the file: let the learner pick, never overwrite silently.
+  function conflict(id, f) {
+    clearTimeout(diskTimer);
+    live.conflict[id] = true;
+    showSaved();
+    if (id !== current) return;
+    ask('The file changed on disk while you were typing here.', () => {
+      live.conflict[id] = false; live.disk[id] = f; replaceQuietly(f.text); showSaved();
+    }, ['Load the file', 'Keep mine'], () => {
+      live.conflict[id] = false; live.disk[id] = f; saveToDisk(id);
+    });
+  }
+
+  // Edits made in another editor (VS Code, Notepad) show up here.
+  async function watchDisk() {
+    if (!LOCAL || !current || document.hidden || live.busy || !$('#confirm').hidden) return;
+    const id = current;
+    try {
+      const f = fromDisk(await api('/api/solution/' + id));
+      setOnline(true);
+      const known = live.disk[id];
+      if (!known || f.mtime === known.mtime || id !== current) return;
+      if (f.text === code()) { live.disk[id] = f; return; }
+      if (known.text === code()) {  // nothing unsaved here: just take the new version
+        live.disk[id] = f;
+        replaceQuietly(f.text);
+        $('#saved').textContent = 'Updated from the file on disk';
+        return;
+      }
+      conflict(id, f);
+    } catch (e) { setOnline(false); }
+  }
+  if (LOCAL) {
+    setInterval(watchDisk, 2000);
+    document.addEventListener('visibilitychange', () => { if (document.hidden && current) saveToDisk(current); });
+  }
+
+  // ---- Run / Submit, for real
+  async function runLive(kind, options) {
+    const c = BY[current];
+    if (!c || live.busy) return;
+    const list = casesOf(c);
+    const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
+    if (live.conflict[c.id]) { setBottom('result'); return; }
+    await saveToDisk(c.id);
+    live.busy = true;
+    $('#run').disabled = $('#submit').disabled = true;
+    setBottom('result');
+    const what = test ? `Running test ${esc(test)}…` : options.fresh ? 'Making a fresh set of tests and running them…' : `Building and running all ${c.tests} tests…`;
+    $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>${what}</div>`;
+    let report;
+    try {
+      report = await api('/api/check/' + c.id, { method: 'POST', body: JSON.stringify({ case: test, fresh: !!options.fresh }) });
+      setOnline(true);
+    } catch (e) {
+      setOnline(false);
+      report = { verdict: 'offline' };
+    }
+    live.busy = false;
+    $('#run').disabled = $('#submit').disabled = false;
+    report.test = test;
+    report.fresh = !!options.fresh;
+    live.report[c.id] = report;
+    if (report.verdict === 'accepted') setSolved(c.id, true);
+    markErrors(c, report);
+    if (current === c.id) { renderLiveResult(c); $('#result').scrollTop = 0; }
+  }
+
+  function markErrors(c, report) {
+    const doc = docs[c.id];
+    if (!doc) return;
+    (live.marks[c.id] || []).forEach((h) => doc.removeLineClass(h, 'background', 'cm-error-line'));
+    live.marks[c.id] = [];
+    const name = c.solution.split('/').pop();
+    (report.errors || []).filter((e) => e.kind === 'error' && e.file.split('/').pop() === name).forEach((e) => {
+      const line = Math.min(Math.max(e.line - 1, 0), doc.lineCount() - 1);
+      live.marks[c.id].push(doc.addLineClass(line, 'background', 'cm-error-line'));
+    });
+  }
+
+  const tail = (text, n) => String(text || '').trim().split('\n').slice(-n).join('\n');
+  const fileUrl = (path) => '/files/' + path.split('/').map(encodeURIComponent).join('/')
+    + '?t=' + encodeURIComponent(LOCAL.token) + '&v=' + Date.now();
+
+  function liveHelp(r, c) {
+    switch (r.verdict) {
+      case 'accepted': return 'Every test passes. Saved as solved; the Editorial tab is open now.';
+      case 'wrong-answer': return r.wroteNothing
+        ? "Your program ran but didn't write anything. It's started with two file names: the input to read and the output to write. Write your answer to the second one."
+        : 'Some tests failed. Each one below shows what was expected and what your program wrote.'
+          + (r.mostLikely ? ` Most of them point to <b>${esc(r.mostLikely.id)}</b>: ${esc(r.mostLikely.text)}.` : '');
+      case 'compile-error': return r.noMain
+        ? 'Your code has no <code>main</code> function, so it can\'t be built into a program. Add a <code>main</code> that reads the input file and writes the output file.'
+        : "Your code didn't build, so no tests ran. Lines with errors are marked in the editor; fix the first error first, since later ones often follow from it.";
+      case 'not-started': return r.empty
+        ? 'Your solution file is empty, so there was nothing to check. Write your program in the editor.'
+        : 'The editor still holds the blank starter, so there was nothing to check. Write your program, or pick Boilerplate above the editor for ready-made input/output code.';
+      case 'not-implemented': return `The boilerplate function <code>${esc(r.function || 'a function')}</code> still says it isn't written. Fill it in and Submit again.`;
+      case 'passed': return `This test passes. Submit runs all ${c.tests}.`;
+      case 'failed': return 'This test fails. Its input, your output and the expected output are below.';
+      case 'offline': return "The study server has stopped, so nothing ran. Start it again (double-click <code>study.cmd</code>, or run <code>.\\study</code> in the workbook folder), then reload this page.";
+      default: return esc(r.message || 'The checker ran into a problem.');
+    }
+  }
+
+  function caseBody(x) {
+    let h = x.message ? `<p class="note bad-text">${esc(x.message)}</p>` : '';
+    if (x.causes && x.causes.length) h += `<p class="note">Likely cause: ${x.causes.map((k) => `<b>${esc(k.id)}</b> ${esc(k.text)}`).join('; ')}</p>`;
+    if (x.images) {
+      const pics = [['Expected', x.images.expected], ['Yours', x.images.actual], ['Difference', x.images.diff]].filter((p) => p[1]);
+      h += `<div class="img-cmp">${pics.map(([t, p]) => `<figure><img src="${fileUrl(p)}" alt="${esc(t)}"><figcaption>${t}</figcaption></figure>`).join('')}</div>`;
+      if (x.images.diff) h += '<p class="note">In the difference: red is ink you added, blue is ink you missed, magenta is the wrong colour, and yellow is forgiven (edges may move one pixel).</p>';
+    } else {
+      const block = (title, lines) => `<div class="field"><div class="field-k">${title}</div><pre class="field-v">${esc((lines || []).join('\n')) || '(nothing)'}</pre></div>`;
+      h += block('Input', x.input) + block('Your output', x.actual) + block('Expected', x.expected);
+    }
+    if (x.source) h += `<p class="note muted">Expected values from: ${esc(x.source)}</p>`;
+    return h;
+  }
+
+  function reportHtml(r, c) {
+    const looks = { accepted: ['ok', 'Accepted'], passed: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'],
+      failed: ['bad', 'Wrong Answer'], 'compile-error': ['bad', 'Compile Error'], 'not-started': ['warn', 'Not started yet'],
+      'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'], dispute: ['ok', 'Dispute recorded'] };
+    const [kind, label] = looks[r.verdict] || ['unknown', 'Something went wrong'];
+    const single = r.verdict === 'passed' || r.verdict === 'failed';
+    const sub = [single ? `test ${esc(r.test || '')}` : r.total ? `${r.passed} / ${r.total} testcases passed` : '',
+      r.disputed && r.disputed.length ? `${r.disputed.length} disputed` : '', r.fresh ? 'fresh tests' : '',
+      r.seconds != null ? `${r.seconds} s` : ''].filter(Boolean).join(' · ');
+    let h = `<div class="verdict ${kind}"><h2>${esc(label)}</h2>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+    h += `<p class="note">${liveHelp(r, c)}</p>`;
+    if (r.verdict === 'compile-error') {
+      const errs = (r.errors || []).filter((e) => e.kind === 'error').slice(0, 8);
+      if (errs.length) h += `<div class="err-list">${errs.map((e) => `<div><span class="loc">${esc(e.file.split('/').pop())}:${e.line}:${e.column}</span> ${esc(e.message)}</div>`).join('')}</div>`;
+      h += `<div class="field-k">Compiler output</div><pre class="raw">${esc(tail(r.build || r.text, 60))}</pre>`;
+    }
+    if (single && r.cases && r.cases[0]) h += caseBody(r.cases[0]);
+    if (!single && r.requirements && r.requirements.length) {
+      h += '<div class="req-rows">' + r.requirements.map((q) => `<div class="req-row${q.passed === q.total ? '' : ' fail'}"><span class="rid">${esc(q.id)}</span><span class="rq" title="${esc(q.text)}">${esc(q.text)}</span><span class="cnt">${q.passed} / ${q.total}</span><span class="bar"><i style="width:${q.total ? (q.passed / q.total) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
+    }
+    if (!single) {
+      const failing = (r.cases || []).filter((x) => x.status !== 'pass');
+      const shown = failing.filter((x) => x.message !== undefined);
+      h += shown.map((x, i) => `<details class="case-card"${i < 2 ? ' open' : ''}><summary><span class="id">${esc(x.id)}</span> <span class="t">${esc(x.title)}</span></summary><div class="case-body">${caseBody(x)}</div></details>`).join('');
+      if (failing.length > shown.length) h += `<p class="note">…and ${failing.length - shown.length} more failing tests.</p>`;
+    }
+    if (r.verdict === 'error' && r.text) h += `<pre class="raw">${esc(tail(r.text, 40))}</pre>`;
+    return h;
+  }
+
+  function renderLiveResult(c) {
+    const r = live.report[c.id];
+    const intro = LOCAL.problem
+      ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
+      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). What you type is saved to <code>${esc(c.solution)}</code>, and changes you make to that file in another editor show up here.</p>`;
+    $('#result').innerHTML = (r ? reportHtml(r, c) : intro)
+      + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button></div>`
+      + `<details class="more"><summary>Think a test is wrong?</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
+        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside, so it no longer counts. Then ask Claude to review your disputes.</p></div></details>`;
+  }
+  if (LOCAL) {
+    $('#result').addEventListener('click', (e) => { if (e.target.closest('#live-fresh')) runLive('submit', { fresh: true }); });
+  }
+
   // ---- navigation between checkpoints
   function openCheckpoint(id) {
     const c = BY[id];
     const changed = current !== id;
+    if (LOCAL && current && changed) saveToDisk(current);  // don't lose the last keystrokes
     current = id;
     $('#list-view').hidden = true;
     $('#ide-view').hidden = false;
@@ -1214,10 +1488,10 @@ span.CodeMirror-selectedtext { background: none; }
     renderDesc(c);
     renderEditorial(c);
     renderCases(c);
-    renderResult(c);
+    if (LOCAL) renderLiveResult(c); else renderResult(c);
     loadEditor(c);
     setLeft('desc');
-    setBottom(store.get(c.id + ':result') ? 'result' : 'cases');
+    setBottom((LOCAL ? live.report[c.id] : store.get(c.id + ':result')) ? 'result' : 'cases');
     $('#desc').scrollTop = 0;
     const k = CPS.indexOf(c);
     $('#prev').disabled = k === 0;
@@ -1289,6 +1563,7 @@ span.CodeMirror-selectedtext { background: none; }
 
   renderListShell();
   initEditor();
+  if (LOCAL) paintLive();
   route(location.hash.slice(1));
 })();
 </script>
