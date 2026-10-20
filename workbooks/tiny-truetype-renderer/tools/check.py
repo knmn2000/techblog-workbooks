@@ -517,6 +517,7 @@ def main(argv: list) -> int:
     cases = [c for c in cases if c.id not in set_aside]
 
     how = parse_compare(case_file.header.get("compare", "records"))
+    REPORT["compare"] = {"mode": how.mode, "tolerance": how.tolerance}  # lets the book highlight real differences
     explain = dict(part.split("=", 1) for part in case_file.header.get("explain", "").split())
     work = ROOT / "build" / "cases" / checkpoint
     work.mkdir(parents=True, exist_ok=True)
