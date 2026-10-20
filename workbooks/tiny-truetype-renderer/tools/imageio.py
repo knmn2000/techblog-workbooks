@@ -117,15 +117,19 @@ def read_image(path: Path):
     raise ImageError("not a PNG or binary PPM (P6) file")
 
 
-def write_png(path: Path, width: int, height: int, rgb: bytes):
+def png_bytes(width: int, height: int, rgb: bytes, level: int = 9) -> bytes:
     rows = b"".join(b"\x00" + rgb[y * width * 3:(y + 1) * width * 3] for y in range(height))
 
     def chunk(kind, body):
         return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
 
-    Path(path).write_bytes(b"\x89PNG\r\n\x1a\n"
-                           + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
-                           + chunk(b"IDAT", zlib.compress(rows, 9)) + chunk(b"IEND", b""))
+    return (b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(rows, level)) + chunk(b"IEND", b""))
+
+
+def write_png(path: Path, width: int, height: int, rgb: bytes):
+    Path(path).write_bytes(png_bytes(width, height, rgb))
 
 
 # ---- Comparison -------------------------------------------------------------------
