@@ -1,0 +1,1194 @@
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* A problem book in the style of a coding-practice site: a problem list, then a split view with
+   the statement on the left and an editor + test cases on the right. Everything is rendered from
+   the JSON in #book-data (written by tools/build_book.py), so the template fits any workbook. */
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+
+  --bg: #f0f0f0;            /* page, behind the panels */
+  --layer: #ffffff;         /* panels and cards */
+  --layer-head: #fafafa;    /* panel tab bars */
+  --fill: #f2f3f5;          /* chips, input boxes, buttons */
+  --fill-hover: #e7e8eb;
+  --row-alt: #f7f8fa;       /* striped list rows */
+  --line: #e7e7e7;
+  --line-strong: #d4d4d8;
+  --text: #262626;
+  --text-2: #595959;
+  --text-3: #8c8c8c;
+  --brand: #ffa116;         /* orange accent */
+  --brand-ink: #b46a00;     /* orange that reads as text on light */
+  --link: #0a6fd8;
+  --easy: #00a38f;
+  --medium: #c98300;
+  --hard: #f02a50;
+  --ok: #2db55d;
+  --bad: #e5383b;
+  --on-color: #ffffff;      /* text on --ok / --brand */
+  --code-bg: #f5f6f7;
+  --sel: #cde2ff;
+  --sel-blur: #e3e6ea;
+  --active-line: #f6f8fb;
+  --icon-desc: #007aff;
+  --icon-ed: #f08c00;
+  --icon-code: #02a12f;
+  --syn-text: #262626; --syn-kw: #0000ff; --syn-type: #267f99; --syn-str: #a31515; --syn-num: #098658;
+  --syn-com: #008000; --syn-fn: #795e26; --syn-meta: #af00db; --syn-var: #001080;
+  /* Names the problem pages' own figures use. */
+  --ink: var(--text); --muted: var(--text-2); --rule: var(--line); --surface: var(--layer);
+  --node: #2f55e4; --handle: #d9591f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a1a; --layer: #262626; --layer-head: #2d2d2d; --fill: #353535; --fill-hover: #404040; --row-alt: #2b2b2b;
+    --line: #383838; --line-strong: #4a4a4a; --text: #e8e8ea; --text-2: #a9aaae; --text-3: #75767a;
+    --brand: #ffa116; --brand-ink: #ffa116; --link: #4ea1ff; --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+    --ok: #2cbb5d; --bad: #ef4743; --on-color: #ffffff; --code-bg: #2f2f2f; --sel: #264f78; --sel-blur: #3a3d41;
+    --active-line: #2c2c2c; --icon-desc: #4ea1ff; --icon-ed: #ffa116; --icon-code: #2cbb5d;
+    --syn-text: #d4d4d4; --syn-kw: #569cd6; --syn-type: #4ec9b0; --syn-str: #ce9178; --syn-num: #b5cea8;
+    --syn-com: #6a9955; --syn-fn: #dcdcaa; --syn-meta: #c586c0; --syn-var: #9cdcfe;
+    --node: #7f9cff; --handle: #ff8d5c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a1a; --layer: #262626; --layer-head: #2d2d2d; --fill: #353535; --fill-hover: #404040; --row-alt: #2b2b2b;
+  --line: #383838; --line-strong: #4a4a4a; --text: #e8e8ea; --text-2: #a9aaae; --text-3: #75767a;
+  --brand: #ffa116; --brand-ink: #ffa116; --link: #4ea1ff; --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+  --ok: #2cbb5d; --bad: #ef4743; --on-color: #ffffff; --code-bg: #2f2f2f; --sel: #264f78; --sel-blur: #3a3d41;
+  --active-line: #2c2c2c; --icon-desc: #4ea1ff; --icon-ed: #ffa116; --icon-code: #2cbb5d;
+  --syn-text: #d4d4d4; --syn-kw: #569cd6; --syn-type: #4ec9b0; --syn-str: #ce9178; --syn-num: #b5cea8;
+  --syn-com: #6a9955; --syn-fn: #dcdcaa; --syn-meta: #c586c0; --syn-var: #9cdcfe;
+  --node: #7f9cff; --handle: #ff8d5c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 14px/1.6 var(--font-ui); }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; border-radius: 4px; }
+code, pre, kbd, samp { font-family: var(--font-mono); }
+svg { flex: none; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.muted { color: var(--text-3); }
+
+/* ---------- shared bits ---------- */
+.chip { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 999px; border: 0;
+  background: var(--fill); color: var(--text-2); font-size: 12px; font-weight: 500; white-space: nowrap; }
+button.chip { cursor: pointer; }
+button.chip:hover { color: var(--text); background: var(--fill-hover); }
+.easy { color: var(--easy) !important; } .medium { color: var(--medium) !important; } .hard { color: var(--hard) !important; }
+.btn { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 0;
+  background: var(--fill); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.btn:hover { background: var(--fill-hover); }
+.btn.green { background: var(--ok); color: var(--on-color); }
+.btn.green:hover { filter: brightness(1.08); }
+.btn.done { color: var(--ok); }
+.icon-btn { width: 30px; height: 30px; border: 0; background: none; border-radius: 6px; display: inline-grid; place-items: center;
+  color: var(--text-2); cursor: pointer; }
+.icon-btn:hover { background: var(--fill); color: var(--text); }
+.icon-btn:disabled { opacity: .35; cursor: default; background: none; }
+.cmd { display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 8px; padding: 5px 5px 5px 12px; min-width: 0; }
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 12.5px; scrollbar-width: thin; }
+.cmd .btn { height: 26px; padding: 0 10px; font-size: 12px; background: var(--layer); }
+.cmd .btn:hover { background: var(--fill-hover); }
+
+/* ---------- problem list ---------- */
+.nav { background: var(--layer); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5;
+  padding-top: env(safe-area-inset-top, 0px); }
+.nav-in { max-width: 1200px; margin: 0 auto; min-height: 52px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; padding-block: 8px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600; font-size: 15px; }
+.brand:hover { text-decoration: none; }
+.logo { width: 26px; height: 26px; border-radius: 7px; background: var(--brand); color: #1a1a1a; display: grid; place-items: center;
+  font: 700 14px/1 var(--font-mono); }
+.nav-src { color: var(--text-3); font-size: 13px; margin-left: auto; }
+.list-wrap { max-width: 1200px; margin: 0 auto; padding-block: 28px 56px; display: grid; gap: 20px 28px;
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "prog" "plist" "how"; }
+.side { display: contents; }
+.side .prog { grid-area: prog; } .side .how { grid-area: how; }
+@media (min-width: 1000px) {
+  .list-wrap { grid-template-columns: minmax(0, 1fr) 300px; grid-template-areas: "hero side" "plist side"; align-items: start; }
+  .side { display: grid; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 72px); }
+  .side .prog, .side .how { grid-area: auto; }
+}
+.hero { grid-area: hero; display: grid; gap: 8px; }
+.hero .over { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--brand-ink); }
+.hero h1 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 600; text-wrap: balance; }
+.hero p { margin: 0; color: var(--text-2); max-width: 70ch; }
+.side { grid-area: side; gap: 16px; }
+.plist { grid-area: plist; display: grid; gap: 14px; min-width: 0; }
+.card { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { margin: 0; font-size: 14px; font-weight: 600; }
+
+.prog { grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 18px; }
+.ring { position: relative; width: 112px; height: 112px; }
+.ring svg { width: 112px; height: 112px; transform: rotate(-90deg); }
+.ring-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.15; }
+.ring-c b { font-size: 24px; font-weight: 600; }
+.ring-c span { color: var(--text-3); font-size: 13px; }
+.ring-c small { color: var(--text-2); font-size: 12px; }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 12px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.bar-row .n { color: var(--text-2); }
+.bar-row .n b { color: var(--text); font-weight: 600; }
+.bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--fill); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; background: currentColor; }
+.bar-row[aria-pressed="true"] .lbl { text-decoration: underline; text-underline-offset: 3px; }
+.how ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: how; }
+.how li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 13px; color: var(--text-2); counter-increment: how; }
+.how li::before { content: counter(how); width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2);
+  display: grid; place-items: center; font-size: 11px; font-weight: 600; margin-top: 1px; }
+.how b { color: var(--text); font-weight: 600; }
+.how code, .credits code { font-size: 12px; background: var(--fill); padding: 1px 5px; border-radius: 4px; }
+.path { font: 12px/1.5 var(--font-mono); color: var(--text-3); word-break: break-all; }
+
+.topics { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.topics.collapsed .tchip:nth-child(n + 13) { display: none; }
+.tchip { height: 28px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border: 0; border-radius: 999px;
+  background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.tchip:hover { color: var(--text); background: var(--fill); }
+.tchip sup { color: var(--text-3); font-size: 10px; }
+.tchip[aria-pressed="true"] { background: var(--text); color: var(--layer); }
+.tchip[aria-pressed="true"] sup { color: var(--layer); opacity: .7; }
+.topics .more { color: var(--link); background: none; border: 0; cursor: pointer; font-size: 13px; padding: 0 8px; height: 28px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 220px; max-width: 340px; height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 10px;
+  background: var(--fill); border-radius: 8px; color: var(--text-3); }
+.search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; color: var(--text); font-size: 13px; }
+.seg { display: inline-flex; background: var(--fill); border-radius: 8px; padding: 2px; }
+.seg button { height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--layer); color: var(--text); font-weight: 500; }
+.seg.small { flex: none; }
+.seg.small button { height: 24px; padding: 0 9px; font-size: 12px; }
+.pick { margin-left: auto; height: 32px; display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.pick span { width: 24px; height: 24px; border-radius: 50%; background: var(--ok); color: var(--on-color); display: grid; place-items: center; }
+.pick:hover { color: var(--text); }
+.table-scroll { overflow-x: auto; }
+.ptable { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.ptable th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 13px; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ptable td { padding: 11px 12px; white-space: nowrap; }
+.ptable tbody tr { cursor: pointer; }
+.ptable tbody tr:nth-child(odd) td { background: var(--row-alt); }
+.ptable tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+.ptable tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+.ptable tbody tr:hover td { background: var(--fill); }
+.ptable .st { width: 44px; }
+.ptable .ti { white-space: normal; min-width: 220px; }
+.ptable .ti a { color: var(--text); font-weight: 500; }
+.ptable .ti a:hover { color: var(--link); text-decoration: none; }
+.ptable .te { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2); width: 80px; }
+.ptable .di { width: 96px; font-weight: 500; }
+.ptable th.te { text-align: right; }
+.st-ok { color: var(--ok); display: inline-grid; }
+.st-try { color: var(--medium); display: inline-grid; }
+.credits { margin: 6px 0 0; color: var(--text-3); font-size: 12px; max-width: 80ch; }
+
+/* ---------- problem view ---------- */
+.ide { height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; padding-bottom: 10px; }
+body.in-ide { overflow: hidden; }
+.topbar { flex: none; height: 50px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.tb-left, .tb-right { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.tb-right { justify-self: end; gap: 10px; }
+.tb-left .logo { margin-right: 8px; }
+.tb-link { height: 32px; display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 6px; color: var(--text); font-weight: 500; white-space: nowrap; }
+.tb-link:hover { background: var(--fill); text-decoration: none; }
+.tb-mid { display: flex; gap: 1px; }
+.act { height: 34px; display: inline-flex; align-items: center; gap: 7px; padding: 0 16px; border: 0; background: var(--fill); cursor: pointer; font-weight: 600; }
+.act:hover { background: var(--fill-hover); }
+.act.run { border-radius: 8px 0 0 8px; color: var(--text-2); }
+.act.submit { border-radius: 0 8px 8px 0; color: var(--ok); }
+.tb-prog { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+.tb-prog b { color: var(--text); font-weight: 600; }
+.ide-main { flex: 1; min-height: 0; display: flex; }
+.panel { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.left { flex: 0 0 var(--left, 45%); }
+.right { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.code { flex: 0 0 var(--top, 60%); }
+.tests { flex: 1; }
+.splitter { flex: 0 0 8px; position: relative; touch-action: none; }
+.splitter::after { content: ""; position: absolute; border-radius: 2px; background: transparent; transition: background .15s; }
+.splitter.v { cursor: col-resize; } .splitter.v::after { top: 30%; bottom: 30%; left: 3px; width: 2px; }
+.splitter.h { cursor: row-resize; } .splitter.h::after { left: 30%; right: 30%; top: 3px; height: 2px; }
+.splitter:hover::after, .splitter.dragging::after, .splitter:focus-visible::after { background: var(--link); top: 0; bottom: 0; left: 3px; }
+.splitter.h:hover::after, .splitter.h.dragging::after, .splitter.h:focus-visible::after { left: 0; right: 0; top: 3px; bottom: auto; }
+.splitter:focus-visible { outline: none; }
+
+.panel-head { flex: none; height: 38px; display: flex; align-items: center; gap: 2px; padding: 0 6px; background: var(--layer-head);
+  border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.ptab { height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-radius: 6px; background: none;
+  color: var(--text-2); cursor: pointer; font-weight: 500; white-space: nowrap; font-size: 13px; }
+.ptab:hover { background: var(--fill); color: var(--text); }
+.ptab[aria-selected="true"] { color: var(--text); font-weight: 600; }
+.ptab.static { cursor: default; color: var(--text); font-weight: 600; } .ptab.static:hover { background: none; }
+.sep { width: 1px; height: 14px; background: var(--line-strong); margin: 0 2px; flex: none; }
+.ico-desc { color: var(--icon-desc); } .ico-ed { color: var(--icon-ed); } .ico-code { color: var(--icon-code); }
+.panel-body { flex: 1; min-height: 0; overflow: auto; padding: 18px 20px 28px; }
+
+/* statement */
+.d-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.d-head h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.35; text-wrap: balance; }
+.solved-mark { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-size: 13px; white-space: nowrap; padding-top: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.callout { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; background: var(--fill); border-radius: 8px; padding: 10px 14px;
+  color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
+.callout svg { margin-top: 3px; color: var(--brand-ink); }
+.callout p { margin: 0; }
+.callout b { color: var(--text); font-weight: 600; }
+.flow > * { margin: 0; }
+.flow > * + * { margin-top: 12px; }
+.flow > h2:not(:first-child) { margin-top: 26px; }
+.flow > h3:not(:first-child) { margin-top: 20px; }
+.flow > h4:not(:first-child) { margin-top: 16px; }
+.flow > .d-sec:not(:first-child), .flow > .examples { margin-top: 26px; }
+.flow h2 { font-size: 15px; font-weight: 600; }
+.flow h3 { font-size: 14px; font-weight: 600; }
+.flow h4 { font-size: 14px; font-weight: 500; }
+.flow ul, .flow ol { padding-left: 22px; }
+.flow li + li { margin-top: 4px; }
+.flow :not(pre) > code { font-size: 12.5px; background: var(--fill); border: 1px solid var(--line); border-radius: 5px; padding: 0 4px; color: var(--text); }
+.flow pre { background: var(--code-bg); border-radius: 8px; padding: 10px 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; }
+.flow pre code { font-size: inherit; }
+.flow strong { font-weight: 600; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.flow table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.flow th, .flow td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.flow tr:last-child td { border-bottom: 0; }
+.flow th { font-weight: 600; background: var(--layer-head); color: var(--text-2); }
+.reqs { list-style: none; padding: 0 !important; display: grid; gap: 8px; }
+.reqs li + li { margin-top: 0; }
+.reqs li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.rid { font: 600 12px/1.6 var(--font-mono); color: var(--brand-ink); }
+.ex + .ex { margin-top: 22px; }
+.ex-title { margin: 0 0 8px; }
+.ex-title strong { font-weight: 600; }
+.ex-title span { color: var(--text-2); }
+.ex-block { border-left: 2px solid var(--line-strong); padding-left: 14px; display: grid; gap: 8px; min-width: 0; }
+.ex-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; }
+.ex-k { font-weight: 600; font-size: 13px; }
+.ex-row > pre { margin: 0; padding: 0; background: none; color: var(--text-2); font-size: 12.5px; line-height: 1.6; overflow-x: auto; }
+.ex-row .flow { color: var(--text-2); }
+img.shot, figure.pic img { max-width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 6px; background: #000; display: block; }
+figure.pic { display: grid; gap: 4px; justify-items: start; }
+figure.pic figcaption { font: 11px/1.3 var(--font-mono); color: var(--text-3); }
+figure.glyph-figure { display: grid; gap: 14px; align-items: center; }
+@media (min-width: 720px) { figure.glyph-figure { grid-template-columns: 200px minmax(0, 1fr); } }
+figure.glyph-figure svg { width: 100%; max-width: 200px; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-2); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 6px; }
+.dot.on { background: var(--node); } .dot.off { border: 2px solid var(--handle); }
+.md-details summary { cursor: pointer; font-weight: 500; }
+
+.accs { margin-top: 30px; border-top: 1px solid var(--line); }
+.acc { border-bottom: 1px solid var(--line); }
+.acc-btn { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 2px; background: none; border: 0; cursor: pointer; color: var(--text); text-align: left; font-weight: 500; }
+.acc-btn:disabled { cursor: not-allowed; color: var(--text-3); }
+.acc-btn > svg:first-child { color: var(--text-2); }
+.acc-sub { color: var(--text-3); font-weight: 400; margin-left: 8px; }
+.acc-lock { color: var(--text-3); display: inline-grid; }
+.chev { margin-left: auto; display: inline-grid; color: var(--text-3); transition: transform .15s; }
+.acc-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.acc-body { padding: 0 2px 16px 28px; color: var(--text-2); }
+.tg + .tg { margin-top: 10px; }
+.tg-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+.tg-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.tg-items .chip { height: auto; min-height: 24px; white-space: normal; padding: 2px 10px; }
+.tg-items code { font-size: 11.5px; }
+.d-foot { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; color: var(--text-3); font-size: 12px; }
+.ed-title { margin: 0 0 14px; font-size: 20px; font-weight: 600; }
+.locked { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 48px 16px; color: var(--text-2); }
+.locked svg { width: 28px; height: 28px; color: var(--brand); }
+.locked h2 { margin: 0; color: var(--text); font-size: 16px; font-weight: 600; }
+.locked p { margin: 0; max-width: 46ch; }
+
+/* editor */
+.code-tools { flex: none; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border-bottom: 1px solid var(--line); min-width: 0; }
+.lang { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; color: var(--text-2); font-size: 13px; white-space: nowrap; cursor: help; }
+.file { font: 12px var(--font-mono); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.tools-right { margin-left: auto; display: flex; align-items: center; gap: 2px; flex: none; }
+.confirm { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-right: 4px; }
+.confirm .btn { height: 26px; padding: 0 10px; font-size: 12px; }
+.editor { flex: 1; min-height: 0; position: relative; }
+.editor > .CodeMirror, .editor > .fallback-editor { position: absolute; inset: 0; height: auto; }
+.code-status { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line); }
+.fallback-editor { width: 100%; height: 100%; border: 0; resize: none; padding: 8px 12px; background: var(--layer); color: var(--text);
+  font: 14px/1.6 var(--font-mono); white-space: pre; outline: none; tab-size: 2; }
+
+/* test cases and results */
+.case-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.pill-btn { height: 30px; padding: 0 14px; border-radius: 8px; border: 0; background: none; color: var(--text-2); cursor: pointer; font-weight: 500; font-size: 13px; }
+.pill-btn:hover { background: var(--fill); color: var(--text); }
+.pill-btn[aria-selected="true"] { background: var(--fill); color: var(--text); }
+.case-name { margin: -4px 0 12px; color: var(--text-2); font-size: 13px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-bottom: 14px; min-width: 0; }
+.field-k { font-size: 12px; color: var(--text-3); }
+.field-v { margin: 0; background: var(--fill); border-radius: 8px; padding: 10px 12px; font: 13px/1.6 var(--font-mono); color: var(--text); overflow-x: auto; white-space: pre; }
+.field img { max-width: 100%; height: auto; image-rendering: pixelated; border-radius: 6px; background: #000; display: block; }
+.verdict { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 14px; }
+.verdict h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.verdict.ok h2 { color: var(--ok); } .verdict.bad h2 { color: var(--bad); } .verdict.warn h2 { color: var(--medium); } .verdict.unknown h2 { color: var(--text-2); }
+.verdict .sub { color: var(--text-3); font-size: 13px; }
+.verdict .btn { margin-left: auto; height: 26px; font-size: 12px; }
+.note { margin: 0 0 12px; font-size: 13px; color: var(--text-2); }
+.note.warn { color: var(--medium); }
+.req-rows { display: grid; gap: 8px; margin-bottom: 16px; }
+.req-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 3px 8px; align-items: center; font-size: 12.5px; }
+.req-row .rq { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.req-row .cnt { font-variant-numeric: tabular-nums; color: var(--text-2); }
+.req-row .bar { grid-column: 2 / -1; height: 4px; color: var(--ok); }
+.req-row.fail .bar, .req-row.fail .cnt { color: var(--bad); }
+.fail-card { background: var(--fill); border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-bottom: 8px; min-width: 0; }
+.fail-card .id { font: 600 12.5px var(--font-mono); color: var(--bad); }
+.fail-card .t { color: var(--text); font-size: 13px; }
+.fail-card pre, pre.raw { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.55 var(--font-mono); color: var(--text-2); }
+pre.raw { background: var(--fill); border-radius: 8px; padding: 10px 12px; max-height: 260px; overflow: auto; margin-bottom: 14px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.step { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+.step > span { width: 22px; height: 22px; border-radius: 50%; background: var(--fill); color: var(--text-2); display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+.step.done > span { background: var(--ok); color: var(--on-color); }
+.step > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.step p { margin: 0; color: var(--text-2); font-size: 13px; }
+.step p b { color: var(--text); font-weight: 600; }
+.step p code { font-size: 12px; background: var(--fill); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+textarea.paste { width: 100%; min-height: 84px; resize: vertical; background: var(--fill); border: 1px solid transparent; border-radius: 8px;
+  padding: 10px 12px; font: 12px/1.5 var(--font-mono); color: var(--text); }
+textarea.paste:focus { border-color: var(--link); outline: none; }
+details.more { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 12px; }
+details.more summary { cursor: pointer; color: var(--text-2); font-size: 13px; }
+details.more > div { margin-top: 12px; }
+details.more .cmd + .cmd { margin-top: 6px; }
+
+@media (max-width: 899px) {
+  .ide { height: auto; padding-bottom: 24px; }
+  body.in-ide { overflow: auto; }
+  .topbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: env(safe-area-inset-top, 0px); height: auto; min-height: 50px; }
+  .ide-main { flex-direction: column; gap: 10px; }
+  .left, .code { flex: none; }
+  .left .panel-body { overflow: visible; }
+  .right { gap: 10px; }
+  .code { height: 72vh; }
+  .tests { flex: none; }
+  .tests .panel-body { overflow: visible; }
+  .splitter { display: none; }
+  .tb-link span, .tb-prog, .tb-left .logo, #shuffle { display: none; }
+}
+@media (max-width: 560px) {
+  .ptable .te { display: none; }
+  .ptable .ti { min-width: 0; }
+  .pick { margin-left: 0; }
+}
+@media (max-width: 420px) {
+  .act { padding: 0 12px; }
+  .panel-body { padding: 16px 14px 24px; }
+}
+
+/* CodeMirror 5.65.16 core layout (MIT, codemirror.net), with colours from the tokens above. */
+.CodeMirror { font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6; height: 100%; color: var(--syn-text); direction: ltr; position: relative; overflow: hidden; background: var(--layer); }
+.CodeMirror-lines { padding: 6px 0; cursor: text; min-height: 1px; }
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 4px 0 10px; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: var(--layer); }
+.CodeMirror-gutters { border-right: 0; background-color: var(--layer); white-space: nowrap; position: absolute; left: 0; top: 0; min-height: 100%; z-index: 3; }
+.CodeMirror-linenumber { padding: 0 4px 0 12px; min-width: 24px; text-align: right; color: var(--text-3); white-space: nowrap; }
+.CodeMirror-activeline-gutter .CodeMirror-linenumber { color: var(--text); }
+.CodeMirror-cursor { border-left: 2px solid var(--text); border-right: none; width: 0; position: absolute; pointer-events: none; }
+.CodeMirror div.CodeMirror-secondarycursor { border-left: 1px solid var(--text-3); }
+.cm-tab { display: inline-block; text-decoration: inherit; }
+.CodeMirror-scroll { overflow: scroll !important; margin-bottom: -50px; margin-right: -50px; padding-bottom: 50px; height: 100%; outline: 0; position: relative; z-index: 0; }
+.CodeMirror-sizer { position: relative; border-right: 50px solid transparent; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; outline: 0; }
+.CodeMirror-vscrollbar { right: 0; top: 0; overflow-x: hidden; overflow-y: scroll; }
+.CodeMirror-hscrollbar { bottom: 0; left: 0; overflow-y: hidden; overflow-x: scroll; }
+.CodeMirror-scrollbar-filler { right: 0; bottom: 0; }
+.CodeMirror-gutter-filler { left: 0; bottom: 0; }
+.CodeMirror-gutter { white-space: normal; height: 100%; display: inline-block; vertical-align: top; margin-bottom: -50px; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: none !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0; bottom: 0; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-gutter-wrapper ::selection { background-color: transparent; }
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { border-radius: 0; border-width: 0; background: transparent; font-family: inherit; font-size: inherit; margin: 0; white-space: pre; word-wrap: normal; line-height: inherit; color: inherit; z-index: 2; position: relative; overflow: visible; -webkit-tap-highlight-color: transparent; font-variant-ligatures: contextual; }
+.CodeMirror-wrap pre.CodeMirror-line, .CodeMirror-wrap pre.CodeMirror-line-like { word-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-linebackground { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; padding: .1px; }
+.CodeMirror-code { outline: 0; }
+.CodeMirror-gutter, .CodeMirror-gutters, .CodeMirror-linenumber, .CodeMirror-scroll, .CodeMirror-sizer { box-sizing: content-box; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+div.CodeMirror-cursors { visibility: hidden; position: relative; z-index: 3; }
+div.CodeMirror-dragcursors { visibility: visible; }
+.CodeMirror-focused div.CodeMirror-cursors { visibility: visible; }
+.CodeMirror-selected { background: var(--sel-blur); }
+.CodeMirror-focused .CodeMirror-selected { background: var(--sel); }
+.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: var(--sel); }
+.CodeMirror-activeline-background { background: var(--active-line); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: inherit; outline: 1px solid var(--line-strong); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: var(--bad); }
+.cm-force-border { padding-right: .1px; }
+.cm-tab-wrap-hack::after { content: ""; }
+span.CodeMirror-selectedtext { background: none; }
+.cm-keyword, .cm-atom { color: var(--syn-kw); }
+.cm-number { color: var(--syn-num); }
+.cm-def { color: var(--syn-fn); }
+.cm-variable, .cm-property, .cm-operator, .cm-bracket, .cm-punctuation { color: var(--syn-text); }
+.cm-variable-2 { color: var(--syn-var); }
+.cm-type, .cm-variable-3, .cm-builtin, .cm-qualifier { color: var(--syn-type); }
+.cm-comment { color: var(--syn-com); }
+.cm-string, .cm-string-2 { color: var(--syn-str); }
+.cm-meta { color: var(--syn-meta); }
+.cm-error, .cm-invalidchar { color: var(--bad); }
+.cm-strong { font-weight: 700; } .cm-em { font-style: italic; } .cm-link { text-decoration: underline; }
+</style>
+
+<div id="list-view">
+  <header class="nav"><div class="nav-in gutter">
+    <a class="brand" href="#home"><span class="logo" data-logo></span><span id="book-name"></span></a>
+    <span class="nav-src" id="nav-src"></span>
+  </div></header>
+  <div class="list-wrap gutter">
+    <section class="hero" id="hero"></section>
+    <aside class="side" id="side" aria-label="Progress"></aside>
+    <section class="plist" aria-label="Checkpoints">
+      <div class="topics collapsed" id="topics" role="group" aria-label="Filter by topic"></div>
+      <div class="filters">
+        <label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search checkpoints" aria-label="Search checkpoints"></label>
+        <div class="seg" id="diff" role="group" aria-label="Difficulty"></div>
+        <button class="pick" id="pick" type="button"><span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></span>Pick one</button>
+      </div>
+      <div class="table-scroll"><table class="ptable">
+        <thead><tr><th class="st">Status</th><th>Title</th><th class="te">Tests</th><th class="di">Difficulty</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p class="credits" id="credits"></p>
+    </section>
+  </div>
+</div>
+
+<div id="ide-view" class="ide gutter" hidden>
+  <header class="topbar">
+    <div class="tb-left">
+      <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
+      <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem List</span></a>
+      <button class="icon-btn" id="prev" type="button" aria-label="Previous checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button class="icon-btn" id="next" type="button" aria-label="Next checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="icon-btn" id="shuffle" type="button" aria-label="Pick an unsolved checkpoint" title="Pick an unsolved checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></button>
+    </div>
+    <div class="tb-mid">
+      <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
+      <button class="act submit" id="submit" type="button" title="Copy your code and the command that runs every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
+    </div>
+    <div class="tb-right"><span class="tb-prog" id="tb-prog"></span></div>
+  </header>
+
+  <div class="ide-main" id="ide-main">
+    <section class="panel left" aria-label="Problem">
+      <div class="panel-head" role="tablist">
+        <button class="ptab" role="tab" data-left="desc" aria-selected="true"><svg class="ico-desc" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Description</button>
+        <span class="sep" id="ed-sep"></span>
+        <button class="ptab" role="tab" data-left="editorial" aria-selected="false" id="ed-tab"><svg class="ico-ed" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7"/></svg>Editorial</button>
+      </div>
+      <div class="panel-body" id="desc" role="tabpanel"></div>
+      <div class="panel-body" id="editorial" role="tabpanel" hidden></div>
+    </section>
+
+    <div class="splitter v" id="split-v" role="separator" aria-orientation="vertical" aria-label="Resize the problem and code panels" tabindex="0"></div>
+
+    <div class="right" id="right">
+      <section class="panel code" aria-label="Code">
+        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span></div>
+        <div class="code-tools">
+          <span class="lang" id="lang" title="Only your program's output is checked, so any language works. To use another one, change build and run in workbook.json."></span>
+          <div class="seg small" id="kind" role="group" aria-label="Starter code">
+            <button type="button" data-kind="blank" aria-pressed="true" title="A comment and an empty main: the includes, input and output are yours">Blank</button>
+            <button type="button" data-kind="boilerplate" aria-pressed="false" title="Input/output code done; you fill in the functions marked TODO">Boilerplate</button>
+          </div>
+          <span class="file" id="file"></span>
+          <div class="tools-right">
+            <span class="confirm" id="confirm" hidden><span id="confirm-text"></span> <button class="btn" type="button" id="confirm-yes">Replace</button><button class="btn" type="button" id="confirm-no">Cancel</button></span>
+            <button class="icon-btn" type="button" id="reset" aria-label="Reset to the starter code" title="Reset to the starter code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+            <button class="icon-btn" type="button" id="copy-code" aria-label="Copy the code" title="Copy the code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+          </div>
+        </div>
+        <div class="editor" id="editor"></div>
+        <div class="code-status"><span id="saved"></span><span id="pos"></span></div>
+      </section>
+
+      <div class="splitter h" id="split-h" role="separator" aria-orientation="horizontal" aria-label="Resize the code and test panels" tabindex="0"></div>
+
+      <section class="panel tests" aria-label="Tests">
+        <div class="panel-head" role="tablist">
+          <button class="ptab" role="tab" data-bottom="cases" aria-selected="true"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg>Testcase</button>
+          <span class="sep"></span>
+          <button class="ptab" role="tab" data-bottom="result" aria-selected="false"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7 5 5-5 5M12 18h7"/></svg>Test Result</button>
+        </div>
+        <div class="panel-body" id="cases" role="tabpanel"></div>
+        <div class="panel-body" id="result" role="tabpanel" hidden></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+{{MODES}}
+<script type="application/json" id="book-data">{{DATA}}</script>
+<script>
+(function () {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('book-data').textContent);
+  const CPS = DATA.checkpoints;
+  const BY = Object.fromEntries(CPS.map((c) => [c.id, c]));
+  const DIFFS = ['Easy', 'Medium', 'Hard'].filter((d) => CPS.some((c) => c.difficulty === d))
+    .concat([...new Set(CPS.map((c) => c.difficulty))].filter((d) => !['Easy', 'Medium', 'Hard'].includes(d)));
+
+  // Progress, drafts and layout live in this browser only.
+  const store = {
+    get(k) { try { return localStorage.getItem(DATA.key + ':' + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(DATA.key + ':' + k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(DATA.key + ':' + k); } catch (e) {} },
+  };
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const command = (id, extra) => DATA.check.replace('{id}', id) + (extra ? ' ' + extra : '');
+  const solved = (id) => store.get(id + ':solved') === '1';
+  const drafted = (id) => store.get(id + ':draft') !== null;
+  const diffClass = (d) => d.toLowerCase();
+  const icon = (paths, size, extra) => `<svg viewBox="0 0 24 24" width="${size || 16}" height="${size || 16}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra || ''}>${paths}</svg>`;
+  const I = {
+    check: icon('<path d="m5 12 5 5 9-10"/>'),
+    tryIcon: icon('<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>'),
+    tag: icon('<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>', 14),
+    bulb: icon('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>', 15),
+    lock: icon('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', 14),
+    down: icon('<path d="m6 9 6 6 6-6"/>', 15),
+    link: icon('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', 15),
+    map: icon('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', 15),
+    book: icon('<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>', 15),
+  };
+
+  let current = null;          // checkpoint id on screen, or null for the list
+  let caseIndex = 0;           // selected test case in the bottom panel
+  const peeked = new Set();    // editorials opened before solving, this visit only
+  const lastAction = {};       // id -> { kind: 'run' | 'submit', test, copied }
+
+  // ---------------------------------------------------------------- problem list
+  const filter = { topic: null, diff: null, q: '' };
+
+  function topicsOf(c) {
+    const concepts = c.tags.find((g) => g.label.toLowerCase() === 'concepts');
+    return concepts ? concepts.text : c.tags.flatMap((g) => g.text);
+  }
+
+  function renderListShell() {
+    $$('[data-logo]').forEach((el) => { el.textContent = DATA.title.trim().charAt(0).toUpperCase(); });
+    $('#book-name').textContent = DATA.title;
+    $('#nav-src').innerHTML = `Built on <a href="${esc(DATA.sourceUrl)}" target="_blank" rel="noopener">“${esc(DATA.sourceTitle)}”</a> by ${esc(DATA.author)}`;
+    $('#hero').innerHTML = `<span class="over">${CPS.length} checkpoints · any language</span><h1>${esc(DATA.headline)}</h1><p>${esc(DATA.lede)}</p>`;
+    $('#credits').textContent = DATA.credits;
+    $('#diff').innerHTML = ['All'].concat(DIFFS).map((d) =>
+      `<button type="button" data-diff="${d === 'All' ? '' : esc(d)}" aria-pressed="${d === 'All'}">${esc(d)}</button>`).join('');
+
+    const counts = {};
+    CPS.forEach((c) => topicsOf(c).forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    const topics = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
+    $('#topics').innerHTML = `<button class="tchip" type="button" data-topic="" aria-pressed="true">All topics</button>`
+      + topics.map((t) => `<button class="tchip" type="button" data-topic="${esc(t)}" aria-pressed="false">${esc(t)}<sup>${counts[t]}</sup></button>`).join('')
+      + (topics.length > 11 ? '<button class="more" type="button" id="more-topics">Expand</button>' : '');
+  }
+
+  function renderSide() {
+    const done = CPS.filter((c) => solved(c.id));
+    const r = 50, C = 2 * Math.PI * r;
+    let offset = 0;
+    const arcs = DIFFS.map((d) => {
+      const n = done.filter((c) => c.difficulty === d).length;
+      const len = (n / CPS.length) * C;
+      const arc = n ? `<circle cx="56" cy="56" r="${r}" fill="none" stroke="currentColor" class="${diffClass(d)}" stroke-width="7" stroke-linecap="butt" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-offset}"/>` : '';
+      offset += len;
+      return arc;
+    }).join('');
+    const bars = DIFFS.map((d) => {
+      const all = CPS.filter((c) => c.difficulty === d).length;
+      const n = done.filter((c) => c.difficulty === d).length;
+      return `<button class="bar-row ${diffClass(d)}" type="button" data-diff="${esc(d)}" aria-pressed="${filter.diff === d}">
+        <span class="lbl">${esc(d)}</span><span class="n"><b>${n}</b>/${all}</span><span class="bar"><i style="width:${all ? (n / all) * 100 : 0}%"></i></span></button>`;
+    }).join('');
+    const first = CPS[0] ? CPS[0].id : '01';
+    $('#side').innerHTML = `
+      <div class="card prog">
+        <div class="ring"><svg viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="${r}" fill="none" style="stroke: var(--fill)" stroke-width="7"/>${arcs}</svg>
+          <div class="ring-c"><div><b>${done.length}</b><span>/${CPS.length}</span></div><small>Solved</small></div></div>
+        <div class="bars">${bars}</div>
+      </div>
+      <div class="card how"><h2>How checking works</h2><ol>
+        <li><span><b>Write it</b> in the editor here, or straight in <code>solutions/</code> in your own editor. Each starter is an empty <code>main</code>; switch to Boilerplate if you want the input and output code done for you.</span></li>
+        <li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
+        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved.</span></li>
+        <li><span><b>Any order.</b> Each input carries what the earlier checkpoints would produce, so every checkpoint stands alone.</span></li>
+        <li><span><b>Build on your own work.</b> Code in <code>solutions/common/</code> is compiled into every checkpoint, so later ones (and the last one most of all) can call what you wrote earlier.</span></li>
+        <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
+      </ol></div>`;
+  }
+
+  function renderRows() {
+    const q = filter.q.trim().toLowerCase();
+    const shown = CPS.filter((c) => (!filter.diff || c.difficulty === filter.diff)
+      && (!filter.topic || topicsOf(c).includes(filter.topic))
+      && (!q || (c.num + '. ' + c.title + ' ' + c.tags.flatMap((g) => g.text).join(' ')).toLowerCase().includes(q)));
+    $('#rows').innerHTML = shown.map((c) => {
+      const st = solved(c.id) ? `<span class="st-ok" title="Solved">${I.check}</span>`
+        : drafted(c.id) ? `<span class="st-try" title="Attempted: a draft is saved">${I.tryIcon}</span>` : '';
+      return `<tr data-id="${c.id}"><td class="st">${st}</td><td class="ti"><a href="#p${c.id}">${esc(c.num)}. ${esc(c.title)}</a></td>`
+        + `<td class="te">${c.tests}</td><td class="di ${diffClass(c.difficulty)}">${esc(c.difficulty)}</td></tr>`;
+    }).join('') || '<tr><td></td><td class="muted" colspan="3">No checkpoints match.</td></tr>';
+    return shown;
+  }
+
+  function showList() {
+    current = null;
+    $('#ide-view').hidden = true;
+    $('#list-view').hidden = false;
+    document.body.classList.remove('in-ide');
+    renderSide();
+    renderRows();
+    window.scrollTo(0, 0);
+  }
+
+  $('#topics').addEventListener('click', (e) => {
+    if (e.target.id === 'more-topics') {
+      const box = $('#topics');
+      e.target.textContent = box.classList.toggle('collapsed') ? 'Expand' : 'Collapse';
+      return;
+    }
+    const chip = e.target.closest('[data-topic]');
+    if (!chip) return;
+    filter.topic = chip.dataset.topic || null;
+    $$('#topics [data-topic]').forEach((b) => b.setAttribute('aria-pressed', String(b === chip)));
+    renderRows();
+  });
+  function setDiff(d) {
+    filter.diff = d || null;
+    $$('#diff [data-diff]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.diff || null) === filter.diff)));
+    renderSide();
+    renderRows();
+  }
+  $('#diff').addEventListener('click', (e) => { const b = e.target.closest('[data-diff]'); if (b) setDiff(b.dataset.diff); });
+  $('#side').addEventListener('click', (e) => { const b = e.target.closest('.bar-row'); if (b) setDiff(filter.diff === b.dataset.diff ? '' : b.dataset.diff); });
+  $('#q').addEventListener('input', (e) => { filter.q = e.target.value; renderRows(); });
+  $('#rows').addEventListener('click', (e) => {
+    const row = e.target.closest('tr[data-id]');
+    if (row && !e.target.closest('a')) go('p' + row.dataset.id);
+  });
+  function pickOne(pool) {
+    const open = pool.filter((c) => !solved(c.id) && c.id !== current);
+    const from = open.length ? open : pool.filter((c) => c.id !== current);
+    if (from.length) go('p' + from[Math.floor(Math.random() * from.length)].id);
+  }
+  $('#pick').addEventListener('click', () => pickOne(renderRows()));
+
+  // ---------------------------------------------------------------- problem view
+  function renderDesc(c) {
+    const opened = Number(store.get(c.id + ':hints') || 0);
+    const acc = (id, iconHtml, title, body) => `<div class="acc" ${id ? `id="${id}"` : ''}><button class="acc-btn" type="button" aria-expanded="false">${iconHtml}<span>${title}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${body}</div></div>`;
+    const hintHtml = c.hints.map((h, k) => {
+      const n = k + 1, locked = n > opened + 1;
+      return `<div class="acc hint" data-n="${n}"><button class="acc-btn" type="button" aria-expanded="false"${locked ? ' disabled' : ''}>${I.bulb}<span>${esc(h.title)}<span class="acc-sub">${h.sub}</span></span>`
+        + `<span class="acc-lock" ${locked ? '' : 'hidden'} title="Open hint ${n - 1} first">${I.lock}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${h.html}</div></div>`;
+    }).join('');
+    const tags = c.tags.map((g) => `<div class="tg"><span class="tg-label">${esc(g.label)}</span><div class="tg-items">${g.items.map((t) => `<span class="chip">${t}</span>`).join('')}</div></div>`).join('');
+
+    $('#desc').innerHTML = `
+      <div class="d-head"><h1>${esc(c.num)}. ${esc(c.title)}</h1><span class="solved-mark" id="solved-mark" ${solved(c.id) ? '' : 'hidden'}>Solved ${I.check}</span></div>
+      <div class="chips">
+        <span class="chip ${diffClass(c.difficulty)}">${esc(c.difficulty)}</span>
+        ${c.tags.length ? `<button class="chip" type="button" data-jump="acc-topics">${I.tag}Topics</button>` : ''}
+        ${c.hints.length ? `<button class="chip" type="button" data-jump="hints">${I.bulb}Hint</button>` : ''}
+        <span class="chip">${c.tests} tests</span>
+        <span class="chip" title="Only your program's output is checked, so any structure, language or library works.">Any language</span>
+      </div>
+      ${c.read ? `<div class="callout">${I.book}<div><b>Read in the blog first.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
+      <div class="flow">${c.body}</div>
+      <div class="accs">
+        ${c.tags.length ? acc('acc-topics', I.tag, 'Topics', tags) : ''}
+        ${hintHtml}
+        ${c.context ? acc('', I.map, 'Where this fits', c.context) : ''}
+        ${c.sources ? acc('', I.link, 'Source material', c.sources) : ''}
+      </div>
+      <div class="d-foot"><button class="btn" type="button" id="solve-btn"></button><span>Checkpoint ${CPS.indexOf(c) + 1} of ${CPS.length} · problem page <code>${esc(c.problem)}</code></span></div>`;
+
+    const host = $('[data-examples]', $('#desc'));
+    if (host) host.innerHTML = c.examples.map(exampleHtml).join('');
+    paintSolved();
+  }
+
+  function exampleHtml(ex) {
+    const title = `<p class="ex-title"><strong>${esc(ex.label)}:</strong> <span>${ex.name}</span></p>`;
+    if (ex.raw) return `<div class="ex">${title}<div class="flow">${ex.raw}</div></div>`;
+    const out = ex.output != null ? `<pre>${esc(ex.output)}</pre>`
+      : ex.image ? `<img class="shot" src="${ex.image.src}" alt="${esc(ex.image.alt)}">` : '';
+    return `<div class="ex">${title}<div class="ex-block">
+      <div class="ex-row"><span class="ex-k">Input:</span><pre>${esc(ex.input)}</pre></div>
+      ${out ? `<div class="ex-row"><span class="ex-k">Output:</span>${out}</div>` : ''}
+      ${ex.explain ? `<div class="ex-row"><span class="ex-k">Explanation:</span><div class="flow">${ex.explain}</div></div>` : ''}
+    </div></div>`;
+  }
+
+  function toggleAcc(box, open) {
+    const btn = $('.acc-btn', box), body = $('.acc-body', box);
+    const show = open === undefined ? body.hidden : open;
+    body.hidden = !show;
+    btn.setAttribute('aria-expanded', String(show));
+  }
+
+  // Hints open in order; the furthest one opened is remembered.
+  function openHint(box) {
+    const n = Number(box.dataset.n), key = current + ':hints';
+    const opened = Number(store.get(key) || 0);
+    if (n > opened) {
+      store.set(key, String(n));
+      $$('.acc.hint', $('#desc')).forEach((h) => {
+        const locked = Number(h.dataset.n) > n + 1;
+        $('.acc-btn', h).disabled = locked;
+        $('.acc-lock', h).hidden = !locked;
+      });
+      toggleAcc(box, true);
+    } else toggleAcc(box);
+  }
+
+  $('#desc').addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-jump]');
+    if (jump) {
+      const target = jump.dataset.jump === 'hints' ? $('.acc.hint', $('#desc')) : $('#' + jump.dataset.jump);
+      if (target) {
+        if (jump.dataset.jump !== 'hints') toggleAcc(target, true);
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      return;
+    }
+    const btn = e.target.closest('.acc-btn');
+    if (btn) {
+      const box = btn.parentElement;
+      if (box.classList.contains('hint')) openHint(box); else toggleAcc(box);
+      return;
+    }
+    if (e.target.closest('#solve-btn')) setSolved(current, !solved(current));
+  });
+
+  function renderEditorial(c) {
+    const has = !!c.editorial;
+    $('#ed-tab').hidden = !has;
+    $('#ed-sep').hidden = !has;
+    if (!has) return;
+    $('#editorial').innerHTML = solved(c.id) || peeked.has(c.id)
+      ? `<h1 class="ed-title">${esc(c.editorial.title)}</h1><div class="flow">${c.editorial.html}</div>`
+      : `<div class="locked">${I.lock}<h2>Solve it first</h2><p>The editorial compares your solution with the author's code from the blog, so it gives the approach away. It opens when the checker says Accepted, or when you mark the checkpoint solved.</p><button class="btn" type="button" id="peek">Open it anyway</button></div>`;
+  }
+  $('#editorial').addEventListener('click', (e) => {
+    if (e.target.closest('#peek')) { peeked.add(current); renderEditorial(BY[current]); }
+  });
+
+  function setLeft(tab) {
+    $$('[data-left]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.left === tab)));
+    $('#desc').hidden = tab !== 'desc';
+    $('#editorial').hidden = tab !== 'editorial';
+  }
+  function setBottom(tab) {
+    $$('[data-bottom]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.bottom === tab)));
+    $('#cases').hidden = tab !== 'cases';
+    $('#result').hidden = tab !== 'result';
+  }
+  $$('[data-left]').forEach((b) => b.addEventListener('click', () => setLeft(b.dataset.left)));
+  $$('[data-bottom]').forEach((b) => b.addEventListener('click', () => setBottom(b.dataset.bottom)));
+
+  // ---- test cases
+  const casesOf = (c) => c.examples.filter((ex) => !ex.raw && ex.input != null);
+  function renderCases(c) {
+    const list = casesOf(c);
+    if (!list.length) {
+      $('#cases').innerHTML = `<p class="note">This checkpoint has no worked examples. <code>${esc(command(c.id))}</code> runs all ${c.tests} tests.</p>`;
+      return;
+    }
+    caseIndex = Math.min(caseIndex, list.length - 1);
+    const ex = list[caseIndex];
+    const expected = ex.output != null ? `<pre class="field-v">${esc(ex.output)}</pre>`
+      : ex.image ? `<img src="${ex.image.src}" alt="${esc(ex.image.alt)}">` : '<p class="note">See the problem page.</p>';
+    $('#cases').innerHTML = `
+      <div class="case-pills" role="tablist">${list.map((x, i) => `<button class="pill-btn" type="button" role="tab" data-case="${i}" aria-selected="${i === caseIndex}">Case ${i + 1}</button>`).join('')}</div>
+      ${ex.name ? `<p class="case-name">${ex.name}</p>` : ''}
+      <div class="field"><div class="field-k">input</div><pre class="field-v">${esc(ex.input)}</pre></div>
+      <div class="field"><div class="field-k">expected output</div>${expected}</div>
+      ${ex.test ? `<div class="field"><div class="field-k">run just this case (test ${esc(ex.test)})</div>${cmdRow(command(c.id, '-Case ' + ex.test))}</div>` : ''}`;
+  }
+  $('#cases').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-case]');
+    if (b) { caseIndex = Number(b.dataset.case); renderCases(BY[current]); }
+  });
+  const cmdRow = (text) => `<div class="cmd"><code>${esc(text)}</code><button class="btn" type="button" data-copy="${esc(text)}">Copy</button></div>`;
+
+  // ---- results: the learner pastes the checker's output; we read the verdict from it
+  function parseOutput(text, c) {
+    const t = text.replace(/\r/g, '');
+    const head = t.match(/^Checkpoint (\S+) - /m);
+    let v = null, m;
+    if ((m = t.match(/Accepted: (\d+) \/ (\d+) tests passed(?: \((\d+) disputed\))?/))) v = { kind: 'ok', label: 'Accepted', passed: +m[1], total: +m[2], disputed: +(m[3] || 0) };
+    else if ((m = t.match(/Wrong Answer: (\d+) \/ (\d+) tests passed/))) v = { kind: 'bad', label: 'Wrong Answer', passed: +m[1], total: +m[2] };
+    else if (/Compile Error/.test(t)) v = { kind: 'bad', label: 'Compile Error' };
+    else if ((m = t.match(/Not implemented yet:? ?(.*)/))) v = { kind: 'warn', label: 'Not implemented yet', note: m[1] };
+    else if ((m = t.match(/Not started yet:? ?(.*)/))) v = { kind: 'warn', label: 'Not started yet', note: m[1] };
+    else if (/^Passed\s*$/m.test(t)) v = { kind: 'ok', label: 'Passed', single: true };
+    else if ((m = t.match(/^Failed: (.*)$/m))) v = { kind: 'bad', label: 'Failed', single: true, note: m[1] };
+    else v = { kind: 'unknown', label: "Couldn't find a verdict", note: 'Paste everything the checker printed, including the last line.' };
+    v.raw = t;
+    v.other = head && head[1] !== c.id ? head[1] : null;
+    v.reqs = [...t.matchAll(/^ {2}(\S+)\s+(.+?) \.{2,}\s+(\d+) \/ (\d+)/gm)].map((r) => ({ id: r[1], text: r[2], ok: +r[3], n: +r[4] }));
+    v.fails = [];
+    const lines = t.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const f = lines[i].match(/^\s+x (\S+)\s+(.*)$/);
+      if (!f) continue;
+      const detail = [];
+      while (i + 1 < lines.length && /^ {9,}\S/.test(lines[i + 1])) detail.push(lines[++i].trim());
+      v.fails.push({ id: f[1], title: f[2], detail: detail.join('\n') });
+    }
+    return v;
+  }
+
+  function verdictHtml(v, c) {
+    let h = `<div class="verdict ${v.kind}"><h2>${esc(v.label)}</h2>`
+      + (v.total ? `<span class="sub">${v.passed} / ${v.total} testcases passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
+      + `<button class="btn" type="button" id="clear-result">Clear</button></div>`;
+    if (v.other) h += `<p class="note warn">This output is from checkpoint ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here.</p>`;
+    else if (v.kind === 'ok' && !v.single) h += `<p class="note">Saved as solved. The Editorial tab is open now.</p>`;
+    if (v.note) h += `<p class="note">${esc(v.note)}</p>`;
+    if (v.reqs.length) {
+      h += '<div class="req-rows">' + v.reqs.map((r) => `<div class="req-row${r.ok === r.n ? '' : ' fail'}"><span class="rid">${esc(r.id)}</span><span class="rq" title="${esc(r.text)}">${esc(r.text)}</span><span class="cnt">${r.ok} / ${r.n}</span><span class="bar"><i style="width:${r.n ? (r.ok / r.n) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
+    }
+    h += v.fails.map((f) => `<div class="fail-card"><span class="id">${esc(f.id)}</span><span class="t">${esc(f.title)}</span><pre>${esc(f.detail)}</pre></div>`).join('');
+    if (v.kind !== 'ok' && !v.fails.length && !v.reqs.length) h += `<pre class="raw">${esc(v.raw.trim().split('\n').slice(-40).join('\n'))}</pre>`;
+    return h;
+  }
+
+  function renderResult(c) {
+    const saved = store.get(c.id + ':result');
+    const v = saved ? parseOutput(saved, c) : null;
+    const act = lastAction[c.id];
+    const runCmd = act && act.kind === 'run' && act.test ? command(c.id, '-Case ' + act.test) : command(c.id);
+    const copied = act ? (act.copied ? '<b>Code copied.</b> Paste it over' : '<b>Copy didn\'t work here:</b> the code is selected in the editor, so press Ctrl+C, then paste it over') : '<b>Copy your code</b> and paste it over';
+    $('#result').innerHTML = (v ? verdictHtml(v, c) : '') + `
+      <ol class="steps">
+        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(c.solution)}</code>. Skip this if you edit that file directly.</p>
+          <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
+        <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
+        <li class="step${v ? ' done' : ''}"><span>3</span><div><p><b>Paste its output here</b> to see the verdict.</p>
+          <textarea class="paste" id="paste" spellcheck="false" placeholder="Paste the checker's output here (Ctrl+V)"></textarea></div></li>
+      </ol>
+      <details class="more"><summary>More commands, and what a failure looks like</summary><div>
+        ${cmdRow(command(c.id))}${cmdRow(command(c.id, '-Fresh'))}${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
+        <div class="flow" style="margin-top:14px">${c.checking}</div></div></details>`;
+  }
+
+  function takeOutput(text) {
+    if (!text.trim() || !current) return;
+    const c = BY[current];
+    store.set(c.id + ':result', text);
+    const v = parseOutput(text, c);
+    if (v.kind === 'ok' && !v.single && !v.other) setSolved(c.id, true);
+    renderResult(c);
+    $('#result').scrollTop = 0;
+  }
+  $('#result').addEventListener('paste', (e) => {
+    if (e.target.id !== 'paste') return;
+    e.preventDefault();
+    takeOutput((e.clipboardData || window.clipboardData).getData('text'));
+  });
+  $('#result').addEventListener('change', (e) => { if (e.target.id === 'paste') takeOutput(e.target.value); });
+  $('#result').addEventListener('click', (e) => {
+    if (e.target.closest('#clear-result')) { store.del(current + ':result'); renderResult(BY[current]); }
+    if (e.target.closest('#copy-again')) act(lastAction[current] ? lastAction[current].kind : 'submit');
+  });
+
+  // ---- solved state
+  function setSolved(id, value) {
+    if (value) store.set(id + ':solved', '1'); else store.del(id + ':solved');
+    if (id === current) { paintSolved(); renderEditorial(BY[id]); }
+  }
+  function paintSolved() {
+    if (!current) return;
+    const done = solved(current);
+    const mark = $('#solved-mark'), btn = $('#solve-btn');
+    if (mark) mark.hidden = !done;
+    if (btn) { btn.innerHTML = done ? `${I.check} Solved` : 'Mark as solved'; btn.classList.toggle('done', done); }
+    $('#tb-prog').innerHTML = `<b>${CPS.filter((c) => solved(c.id)).length}</b> / ${CPS.length} solved`;
+  }
+
+  // ---- editor
+  let cm = null, plainEditor = null, saveTimer = 0;
+  const docs = {};
+  function initEditor() {
+    const host = $('#editor');
+    if (window.CodeMirror) {
+      cm = window.CodeMirror(host, {
+        lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true, indentWithTabs: false,
+        extraKeys: {
+          Tab: (ed) => (ed.somethingSelected() ? ed.indentSelection('add') : ed.replaceSelection(' '.repeat(ed.getOption('indentUnit')), 'end')),
+          'Shift-Tab': 'indentLess',
+        },
+      });
+      cm.on('changes', saveSoon);
+      cm.on('cursorActivity', showPos);
+      if (window.ResizeObserver) {
+        let frame = 0;
+        new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => cm.refresh()); }).observe(host);
+      }
+    } else {
+      plainEditor = document.createElement('textarea');
+      plainEditor.className = 'fallback-editor';
+      plainEditor.spellcheck = false;
+      plainEditor.setAttribute('aria-label', 'Code');
+      host.appendChild(plainEditor);
+      plainEditor.addEventListener('input', saveSoon);
+    }
+  }
+  const code = () => (cm ? cm.getValue() : plainEditor.value);
+  // Each checkpoint starts blank; the boilerplate (input/output done) is one click away.
+  const kindOf = (c) => (c.boilerplate && store.get(c.id + ':kind') === 'boilerplate' ? 'boilerplate' : 'blank');
+  const starterOf = (c, kind) => (kind === 'boilerplate' && c.boilerplate ? c.boilerplate : c.starter);
+  const kindName = (kind) => (kind === 'boilerplate' ? 'Boilerplate' : 'Blank');
+  function setCode(text) {
+    if (cm) cm.setValue(text); else plainEditor.value = text;
+  }
+  function useStarter(c, kind) {
+    if (kind === 'boilerplate') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
+    setCode(starterOf(c, kind));
+    store.del(c.id + ':draft');
+    paintKind(c);
+    showSaved();
+  }
+  function paintKind(c) {
+    $('#kind').hidden = !c.boilerplate;
+    $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
+  }
+  let pendingKind = null;
+  function ask(text, kind) {
+    pendingKind = kind;
+    $('#confirm-text').textContent = text;
+    $('#confirm').hidden = false;
+    $('#confirm-yes').focus();
+  }
+  $('#kind').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-kind]');
+    const c = BY[current];
+    if (!b || !c || b.dataset.kind === kindOf(c)) return;
+    const text = code();
+    if (text === c.starter || text === c.boilerplate) useStarter(c, b.dataset.kind);
+    else ask(`Replace your code with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, b.dataset.kind);
+  });
+  $('#reset').addEventListener('click', () => {
+    const c = BY[current];
+    ask(`Replace your code with the ${kindName(kindOf(c)).toLowerCase()} starter?`, kindOf(c));
+  });
+  $('#confirm-no').addEventListener('click', () => { $('#confirm').hidden = true; });
+  $('#confirm-yes').addEventListener('click', () => {
+    $('#confirm').hidden = true;
+    if (current && pendingKind) useStarter(BY[current], pendingKind);
+  });
+
+  function loadEditor(c) {
+    const draft = store.get(c.id + ':draft');
+    const start = starterOf(c, kindOf(c));
+    if (cm) {
+      if (!docs[c.id]) docs[c.id] = window.CodeMirror.Doc(draft !== null ? draft : start, c.lang.mime);
+      cm.swapDoc(docs[c.id]);
+      cm.setOption('indentUnit', c.indent);
+      cm.setOption('tabSize', c.indent);
+    } else {
+      plainEditor.value = draft !== null ? draft : start;
+      plainEditor.style.tabSize = c.indent;
+    }
+    paintKind(c);
+    $('#lang').innerHTML = `${esc(c.lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
+    $('#file').textContent = c.solution;
+    $('#confirm').hidden = true;
+    showSaved();
+    showPos();
+  }
+  function saveSoon() {
+    clearTimeout(saveTimer);
+    $('#saved').textContent = 'Saving…';
+    const id = current;
+    saveTimer = setTimeout(() => {
+      if (id !== current) return;
+      const text = code();
+      const c = BY[id];
+      if (text === starterOf(c, kindOf(c))) store.del(id + ':draft'); else store.set(id + ':draft', text);
+      showSaved();
+    }, 400);
+  }
+  function showSaved() {
+    if (!current) return;
+    $('#saved').textContent = drafted(current) ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
+  }
+  function showPos() {
+    if (!cm) { $('#pos').textContent = ''; return; }
+    const p = cm.getCursor();
+    $('#pos').textContent = `Ln ${p.line + 1}, Col ${p.ch + 1}`;
+  }
+
+  // ---- clipboard
+  function copyText(text) {
+    try { return navigator.clipboard.writeText(text).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+  }
+  function selectAllCode() {
+    if (cm) { cm.focus(); cm.execCommand('selectAll'); } else { plainEditor.focus(); plainEditor.select(); }
+  }
+  function flash(btn, ok) {
+    const old = btn.innerHTML;
+    btn.innerHTML = ok ? 'Copied' : 'Press Ctrl+C';
+    btn.classList.toggle('done', ok);
+    setTimeout(() => { btn.innerHTML = old; btn.classList.remove('done'); }, 1400);
+  }
+  $('#copy-code').addEventListener('click', () => {
+    const btn = $('#copy-code');
+    copyText(code()).then((ok) => {
+      if (!ok) selectAllCode();
+      btn.style.color = ok ? 'var(--ok)' : '';
+      setTimeout(() => { btn.style.color = ''; }, 1200);
+    });
+  });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-copy]');
+    if (!b) return;
+    copyText(b.dataset.copy).then((ok) => {
+      if (!ok) {
+        const range = document.createRange();
+        range.selectNodeContents(b.previousElementSibling);
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      }
+      flash(b, ok);
+    });
+  });
+
+  // ---- Run / Submit: copy the code, then show what to run in the terminal
+  function act(kind) {
+    if (!current) return;
+    const c = BY[current];
+    const list = casesOf(c);
+    const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
+    const entry = { kind, test, copied: false };
+    lastAction[c.id] = entry;
+    copyText(code()).then((ok) => {
+      entry.copied = ok;
+      if (!ok) selectAllCode();
+      renderResult(c);
+      setBottom('result');
+      $('#result').scrollTop = 0;
+    });
+  }
+  $('#run').addEventListener('click', () => act('run'));
+  $('#submit').addEventListener('click', () => act('submit'));
+  document.addEventListener('keydown', (e) => {
+    if (!current || !(e.ctrlKey || e.metaKey) || e.target.id === 'paste') return;
+    if (e.key === 'Enter') { e.preventDefault(); act('submit'); }
+    else if (e.key === "'") { e.preventDefault(); act('run'); }
+  }, true);
+
+  // ---- navigation between checkpoints
+  function openCheckpoint(id) {
+    const c = BY[id];
+    const changed = current !== id;
+    current = id;
+    $('#list-view').hidden = true;
+    $('#ide-view').hidden = false;
+    document.body.classList.add('in-ide');
+    if (changed) caseIndex = 0;
+    renderDesc(c);
+    renderEditorial(c);
+    renderCases(c);
+    renderResult(c);
+    loadEditor(c);
+    setLeft('desc');
+    setBottom(store.get(c.id + ':result') ? 'result' : 'cases');
+    $('#desc').scrollTop = 0;
+    const k = CPS.indexOf(c);
+    $('#prev').disabled = k === 0;
+    $('#next').disabled = k === CPS.length - 1;
+    $('#prev').title = k > 0 ? `${CPS[k - 1].num}. ${CPS[k - 1].title}` : '';
+    $('#next').title = k < CPS.length - 1 ? `${CPS[k + 1].num}. ${CPS[k + 1].title}` : '';
+    if (cm) requestAnimationFrame(() => cm.refresh());
+    window.scrollTo(0, 0);
+  }
+  $('#prev').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k > 0) go('p' + CPS[k - 1].id); });
+  $('#next').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k < CPS.length - 1) go('p' + CPS[k + 1].id); });
+  $('#shuffle').addEventListener('click', () => pickOne(CPS));
+
+  let routed = null;
+  function route(hash) {
+    if (hash === routed && (current || !$('#list-view').hidden)) return;
+    routed = hash;
+    const m = /^p(.+)$/.exec(hash || '');
+    if (m && BY[m[1]]) openCheckpoint(m[1]); else showList();
+  }
+  function go(hash) {
+    try { history.pushState(null, '', '#' + hash); } catch (e) {}
+    route(hash);
+  }
+  // In-page links switch views directly, so they work even where hash changes don't.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented) return;
+    e.preventDefault();
+    go(a.getAttribute('href').slice(1));
+  });
+  window.addEventListener('popstate', () => route(location.hash.slice(1)));
+  window.addEventListener('hashchange', () => route(location.hash.slice(1)));
+
+  // ---- resizable panels
+  function splitter(el, axis, box, prop, min, max) {
+    const key = 'layout:' + prop;
+    const apply = (f) => { box.style.setProperty(prop, (Math.min(max, Math.max(min, f)) * 100).toFixed(2) + '%'); };
+    const saved = Number(store.get(key));
+    if (saved) apply(saved);
+    const fraction = () => parseFloat(box.style.getPropertyValue(prop)) / 100 || (axis === 'x' ? 0.45 : 0.6);
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      const rect = box.getBoundingClientRect();
+      const move = (ev) => apply(axis === 'x' ? (ev.clientX - rect.left) / rect.width : (ev.clientY - rect.top) / rect.height);
+      const up = () => {
+        el.classList.remove('dragging');
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerup', up);
+        el.removeEventListener('pointercancel', up);
+        store.set(key, String(fraction()));
+      };
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+    });
+    el.addEventListener('keydown', (e) => {
+      const step = { ArrowLeft: -0.02, ArrowUp: -0.02, ArrowRight: 0.02, ArrowDown: 0.02 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      apply(fraction() + step);
+      store.set(key, String(fraction()));
+    });
+  }
+  splitter($('#split-v'), 'x', $('#ide-main'), '--left', 0.25, 0.7);
+  splitter($('#split-h'), 'y', $('#right'), '--top', 0.2, 0.85);
+
+  renderListShell();
+  initEditor();
+  route(location.hash.slice(1));
+})();
+</script>

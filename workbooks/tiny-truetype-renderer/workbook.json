@@ -1,0 +1,157 @@
+{
+  "setup": {
+    "command": "cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++",
+    "creates": "build/build.ninja"
+  },
+  "build": "cmake --build build --target p{id}",
+  "run": "build/p{id}.exe {input} {output}",
+  "reference": {
+    "build": "cmake --build build --target ref_p{id}",
+    "run": "build/ref_p{id}.exe {input} {output}"
+  },
+  "timeoutSeconds": 10,
+  "book": {
+    "title": "Tiny TrueType Workbook",
+    "sourceUrl": "https://yayo1.com/en/blog/tiny-truetype-renderer/",
+    "sourceTitle": "Writing a tiny TrueType parser and renderer from scratch",
+    "author": "Yohei Yamasaki",
+    "headline": "Build a TrueType renderer yourself",
+    "lede": "Each checkpoint asks you to write the program that one part of the blog post builds, from reading big-endian bytes to drawing a line of text. A checker feeds your program inputs and compares what it writes with answers worked out independently, mostly by fontTools. How you structure the code, and which language or library you use, is up to you.",
+    "credits": "Fonts: JetBrains Mono (Nerd Font build) and Noto Sans JP, both under the SIL Open Font License. Expected outputs come from fontTools. Progress is saved in this browser only."
+  },
+  "checkpoints": {
+    "01": {
+      "title": "Read big-endian numbers",
+      "solution": "solutions/p01_byte_readers.cpp",
+      "problem": "problems/01-byte-readers.md",
+      "cases": "tests/01/cases.txt",
+      "generator": "py -P tools/gen_p01.py --seed {seed} --out {out}"
+    },
+    "02": {
+      "title": "Read the table directory",
+      "solution": "solutions/p02_table_directory.cpp",
+      "problem": "problems/02-table-directory.md",
+      "cases": "tests/02/cases.txt",
+      "generator": "py -P tools/gen_p02.py --seed {seed} --out {out}"
+    },
+    "03": {
+      "title": "Map characters to glyphs (cmap format 12)",
+      "solution": "solutions/p03_cmap.cpp",
+      "problem": "problems/03-cmap.md",
+      "cases": "tests/03/cases.txt",
+      "generator": "py -P tools/gen_p03.py --seed {seed} --out {out}"
+    },
+    "04": {
+      "title": "Locate glyph records (loca)",
+      "solution": "solutions/p04_loca.cpp",
+      "problem": "problems/04-loca.md",
+      "cases": "tests/04/cases.txt",
+      "generator": "py -P tools/gen_p04.py --seed {seed} --out {out}"
+    },
+    "05": {
+      "title": "Read the horizontal metrics",
+      "solution": "solutions/p05_metrics.cpp",
+      "problem": "problems/05-metrics.md",
+      "cases": "tests/05/cases.txt",
+      "generator": "py -P tools/gen_p05.py --seed {seed} --out {out}"
+    },
+    "06": {
+      "title": "Draw on a framebuffer",
+      "solution": "solutions/p06_canvas.cpp",
+      "problem": "problems/06-canvas.md",
+      "cases": "tests/06/cases.txt",
+      "generator": "py -P tools/gen_p06.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "07": {
+      "title": "Decode simple glyphs",
+      "solution": "solutions/p07_simple_glyph.cpp",
+      "problem": "problems/07-simple-glyph.md",
+      "cases": "tests/07/cases.txt",
+      "generator": "py -P tools/gen_p07.py --seed {seed} --out {out}"
+    },
+    "08": {
+      "title": "Draw an outline with straight lines",
+      "solution": "solutions/p08_outline_lines.cpp",
+      "problem": "problems/08-outline-lines.md",
+      "cases": "tests/08/cases.txt",
+      "generator": "py -P tools/gen_p08.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "09": {
+      "title": "Resolve compound glyphs",
+      "solution": "solutions/p09_compound_glyph.cpp",
+      "problem": "problems/09-compound-glyph.md",
+      "cases": "tests/09/cases.txt",
+      "generator": "py -P tools/gen_p09.py --seed {seed} --out {out}"
+    },
+    "10": {
+      "title": "Lerp and quadratic Bezier curves",
+      "solution": "solutions/p10_bezier.cpp",
+      "problem": "problems/10-bezier.md",
+      "cases": "tests/10/cases.txt",
+      "generator": "py -P tools/gen_p10.py --seed {seed} --out {out}"
+    },
+    "11": {
+      "title": "Draw an outline with curves",
+      "solution": "solutions/p11_outline_curves.cpp",
+      "problem": "problems/11-outline-curves.md",
+      "cases": "tests/11/cases.txt",
+      "generator": "py -P tools/gen_p11.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "12": {
+      "title": "Intersect two segments",
+      "solution": "solutions/p12_segment_intersection.cpp",
+      "problem": "problems/12-segment-intersection.md",
+      "cases": "tests/12/cases.txt",
+      "generator": "py -P tools/gen_p12.py --seed {seed} --out {out}"
+    },
+    "13": {
+      "title": "Intersect a line and a quadratic curve",
+      "solution": "solutions/p13_line_curve_intersection.cpp",
+      "problem": "problems/13-line-curve-intersection.md",
+      "cases": "tests/13/cases.txt",
+      "generator": "py -P tools/gen_p13.py --seed {seed} --out {out}"
+    },
+    "14": {
+      "title": "Fill a glyph: even-odd rule",
+      "solution": "solutions/p14_even_odd_fill.cpp",
+      "problem": "problems/14-even-odd-fill.md",
+      "cases": "tests/14/cases.txt",
+      "generator": "py -P tools/gen_p14.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "15": {
+      "title": "Lowest point of a quadratic curve",
+      "solution": "solutions/p15_bezier_min_y.cpp",
+      "problem": "problems/15-bezier-min-y.md",
+      "cases": "tests/15/cases.txt",
+      "generator": "py -P tools/gen_p15.py --seed {seed} --out {out}"
+    },
+    "16": {
+      "title": "Fill a polygon: non-zero rule",
+      "solution": "solutions/p16_nonzero_lines.cpp",
+      "problem": "problems/16-nonzero-lines.md",
+      "cases": "tests/16/cases.txt",
+      "generator": "py -P tools/gen_p16.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "17": {
+      "title": "Fill a glyph: non-zero rule",
+      "solution": "solutions/p17_nonzero_curves.cpp",
+      "problem": "problems/17-nonzero-curves.md",
+      "cases": "tests/17/cases.txt",
+      "generator": "py -P tools/gen_p17.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    },
+    "18": {
+      "title": "Render a line of text",
+      "solution": "solutions/p18_render_text.cpp",
+      "problem": "problems/18-render-text.md",
+      "cases": "tests/18/cases.txt",
+      "generator": "py -P tools/gen_p18.py --seed {seed} --out {out}",
+      "generatorNeedsReference": true
+    }
+  }
+}
