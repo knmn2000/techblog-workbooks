@@ -40,18 +40,20 @@ git clone https://github.com/knmn2000/techblog-workbooks
 cd techblog-workbooks/workbooks/tiny-truetype-renderer
 ```
 
-1. Open `book/problem-book.html` in a browser. It's the problem book: a problem list with your
-   progress, and for each checkpoint the statement, hints that open in order, an editor and the
-   example test cases.
-2. Write your program in `solutions/pNN_*.cpp`. Each one starts as a comment and an empty `main`:
-   the includes, reading the input and writing the output are yours. If you'd rather start with
-   the input/output done, pick **Boilerplate** in the book's editor (or copy the file from
-   `starters/boilerplate/`).
-3. Check it from the workbook folder: `.\check 01` in PowerShell. Paste the checker's output into
-   the book's **Test Result** tab to record the verdict.
+Then double-click `study.cmd` in that folder (or run `.\study`). That's the whole setup: it
+prepares the build the first time and opens the problem book in your browser, with **Run** and
+**Submit** running your code right there. Or, with the plugin installed, ask Claude Code to "open
+my workbook": it checks the tools, offers to install anything missing, and opens the book for you.
+
+In the book you get a problem list with your progress and, for each checkpoint, the statement,
+hints that open in order, an Editorial with a solution proven to pass, an editor and the example
+test cases. Your program lives in `solutions/pNN_*.cpp`. Each one starts as a comment and an
+empty `main`: the includes, reading the input and writing the output are yours. If you'd rather
+start with the input/output done, pick **Boilerplate** in the editor. You can also write in your
+own editor and check from a terminal with `.\check 01`; the book picks up your saved changes.
 
 Each workbook's own README lists what it needs (for the TrueType workbook: g++ with CMake and
-Ninja, and Python 3).
+Ninja, and Python 3.11 or newer).
 
 ## How checking works
 

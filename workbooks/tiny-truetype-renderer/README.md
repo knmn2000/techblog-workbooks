@@ -28,6 +28,17 @@ Checkpoints don't depend on each other: each input carries what earlier checkpoi
 produce. Checkpoint 18 is where your own pieces come together; keep the parts you'll reuse in
 `solutions/common/` and it can call them directly.
 
+## Start here
+
+Double-click `study.cmd` (or run `.\study` in PowerShell). It opens the problem book in your
+browser with Run and Submit working: what you type is saved to `solutions/`, and the verdict
+appears right in the page, with the failing tests and pictures. Leave its window open while you
+work; close it to stop. The first start sets up the build, which takes a few seconds. If a tool is
+missing, it tells you which; or ask Claude to set the workbook up.
+
+You can also work in your own editor and check from a terminal, as below. The book picks up
+changes you save to the solution files.
+
 ## Doing a checkpoint
 
 1. Read the problem (book or `problems/NN-*.md`).
@@ -88,6 +99,8 @@ or `"build": "cargo build --release --bin p{id}"` with `"run": "target/release/p
 | `starters/boilerplate/` | Starters with the input/output code done, if you want them |
 | `tools/blank_starters.py` | Writes the blank starters and puts them in `solutions/` (never over your own code) |
 | `tests/NN/` | Test inputs and expected outputs (`cases.txt`, plus data files and expected pictures) |
+| `study.cmd`, `study.ps1` | Open the book with Run and Submit working (they start `tools/serve.py`) |
+| `tools/serve.py` | The study server: only reachable from this computer; loads and saves solution files and runs the checker |
 | `tools/check.py` | The checker (`check.ps1` and `check.cmd` call it) |
 | `tools/gen_pNN.py` | Each checkpoint's test generator (used by `-Fresh`) |
 | `tools/build_book.py` | Builds `book/problem-book.html` from `problems/` and `starters/` (the page design is `tools/book_template.html`) |
