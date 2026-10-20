@@ -111,6 +111,12 @@ earlier work.
 Same input/output code as the starter, function(s) filled in. Written from the spec, not the
 blog. Header comment: `// Reference solution - checkpoint NN (...). SPOILERS: try it yourself first.`
 
+Learners read it: the book's Editorial shows it in full, with the files it includes from
+`_spoilers/`, as "a solution that passes". An Accepted `.\check NN -Ref` on the committed tests
+records its fingerprint in `_spoilers/verified.json`; the book only says "Passes all N tests" while
+the files still match, and `tools/build_book.py` warns about any reference that isn't proven. After
+changing a reference, run `.\check NN -Ref` again.
+
 ## The generator (`tools/gen_pNN.py`)
 
 Use `tools/wb.py`: `wb.parse_args("NN")`, `wb.Cases(...)`, `cases.add(...)`, `cases.save()`.

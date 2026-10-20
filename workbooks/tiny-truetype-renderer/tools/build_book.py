@@ -20,9 +20,14 @@ import base64
 import html
 import json
 import re
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from check import VERIFIED, fingerprint, reference_sources  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
+WARNINGS = []  # printed after a build; a book with warnings isn't ready to publish
 CODEMIRROR = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/"
 
 # Starter file extension -> (label, CodeMirror MIME type, mode).
@@ -297,6 +302,30 @@ def starters(meta: dict):
     return blank, read(ROOT / "starters" / "boilerplate" / name)
 
 
+def solution_code(cid: str, meta: dict) -> dict:
+    """The reference solution for the Editorial, with proof that exactly this code passes every
+    test (recorded by `check NN -Ref` in _spoilers/verified.json), or no proof and a warning."""
+    sources = reference_sources(meta)
+    if not sources:
+        WARNINGS.append(f"{cid}: no reference solution found, so the Editorial has no solution")
+        return None
+    base = sources[0].parent
+    record = json.loads(VERIFIED.read_text(encoding="utf-8")).get(cid) if VERIFIED.exists() else None
+    proof = None
+    if record and record.get("files") == fingerprint(sources):
+        proof = {key: record[key] for key in ("passed", "total", "date")}
+    elif record:
+        WARNINGS.append(f"{cid}: the reference changed after it was checked; run the check with -Ref again")
+    else:
+        WARNINGS.append(f"{cid}: the reference hasn't been checked; run the check with -Ref")
+    texts = [p.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n") for p in sources]
+    uses = sorted({f"include/{name}" for text in texts for name in re.findall(r'^\s*#\s*include\s+"([^"]+)"', text, re.M)
+                   if (ROOT / "include" / name).is_file()})
+    return {"files": [{"path": (p.relative_to(base) if base in p.parents else p.relative_to(ROOT)).as_posix(), "text": t}
+                      for p, t in zip(sources, texts)],
+            "proof": proof, "uses": uses}
+
+
 def checkpoint(cid: str, meta: dict) -> dict:
     md = (ROOT / meta["problem"]).read_text(encoding="utf-8").splitlines()
     title = re.sub(r"^#\s+\d+\s*·\s*", "", md[0]).strip()
@@ -347,13 +376,14 @@ def checkpoint(cid: str, meta: dict) -> dict:
             "difficulty": difficulty, "tests": cases, "solution": meta["solution"], "problem": meta["problem"],
             "lang": {"label": label, "mime": mime, "mode": mode}, "starter": blank, "boilerplate": boilerplate,
             "indent": indent_unit(boilerplate or blank, 4 if mode == "python" else 2),
-            "tags": tags, "body": "".join(body), **data}
+            "tags": tags, "body": "".join(body), "solutionCode": solution_code(cid, meta), **data}
 
 
 # ---- Page -------------------------------------------------------------------------
 
 def build_page() -> str:
     """The whole book as one HTML string (tools/serve.py serves this directly)."""
+    WARNINGS.clear()
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
     cps = [checkpoint(cid, meta) for cid, meta in sorted(config["checkpoints"].items())
            if (ROOT / meta["problem"]).exists() and (ROOT / meta["cases"]).exists()]
@@ -383,7 +413,13 @@ def main():
     out.write_text(page, encoding="utf-8")
     count = page.count('"difficulty":')
     print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} checkpoints, {len(page) // 1024} KB")
+    for warning in WARNINGS:
+        print(f"WARNING {warning}")
+    if WARNINGS:
+        print("Fix these before publishing: the Editorial must only show solutions proven to pass.")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
