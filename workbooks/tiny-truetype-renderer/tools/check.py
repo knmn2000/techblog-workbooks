@@ -8,6 +8,7 @@ compares what it writes with the expected output.
     .\\check 07 -Ref                   check the reference solution (spoiler-free)
     .\\check 07 -Run "<command>"       check some other program; {input} and {output}
                                        are replaced with file paths
+    .\\check 07 -Json                  print the result as JSON (used by .\\study)
 
 Your program is started from the workbook folder as `<run> <input-file> <output-file>`.
 How it is built and run is set in workbook.json, so any language or library works.
@@ -15,6 +16,8 @@ For checkpoints whose answer is a picture, the output file name ends in .png and
 program writes a PNG (or binary PPM) there.
 """
 
+import contextlib
+import io
 import json
 import re
 import os
@@ -33,7 +36,16 @@ from imageio import ImageError, compare_images  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 NOT_IMPLEMENTED_EXIT = 99
 SHOWN_FAILURES = 3
+DETAILED_FAILURES = 40  # failing cases described in full in -Json output
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+# What -Json prints: filled in as main() runs, next to the text it prints.
+REPORT: dict = {}
+
+
+def finish(code: int, **fields) -> int:
+    REPORT.update(fields)
+    return code
 
 
 # ---- Test cases -----------------------------------------------------------------
@@ -180,7 +192,7 @@ def compare(expected: list, actual: list, fields: dict, tolerance: float):
     first difference, plus where it is (e.g. ["points:curve"]) for `explain`."""
     exp = [" ".join(tokens(l)) for l in expected if l.strip()]
     act = [" ".join(tokens(l)) for l in actual if l.strip()]
-    # Output that starts with a keyword ("glyph 17 ...") is a list of records, and a difference
+    # Output that starts with a keyword ("record 17 ...") is a list of records, and a difference
     # is reported with the record it's in. Purely numeric output has no records.
     record_key = exp[0].split()[0] if exp else None
     if record_key is not None and not record_key[:1].isalpha():
@@ -245,6 +257,7 @@ def to_args(command: str) -> list:
 def run_step(title: str, command: str) -> bool:
     proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True)
     output = (proc.stdout + proc.stderr).strip()
+    run_step.output = output  # read by the caller to explain common build failures
     if proc.returncode != 0:
         print(f"{title} failed:\n{output}\n")
         return False
@@ -265,11 +278,12 @@ def describe_exit(code: int) -> str:
 @dataclass
 class Result:
     case: Case
-    status: str  # pass, fail, error, timeout, not-implemented
+    status: str  # pass, fail, error, timeout, not-implemented, no-output
     message: str = ""
     actual: list = field(default_factory=list)
     reproduce: str = ""
     causes: list = field(default_factory=list)  # requirement ids the difference points to
+    images: dict = field(default_factory=dict)  # picture cases: paths of the learner's image and the diff
 
 
 def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain, timeout) -> Result:
@@ -297,6 +311,9 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
         detail = stderr[-1] if stderr else ""
         return Result(case, "error", f"Runtime Error - {describe_exit(proc.returncode)}"
                       + (f": {clip(detail)}" if detail else ""), actual, command)
+    if not out_path.exists():
+        return Result(case, "no-output", f"no output file: your program finished without writing {rel_out} "
+                      "(the second argument it was given)", reproduce=command)
     if how.mode == "image":
         diff_path = work / f"{case.id}.diff.png"
         diff_path.unlink(missing_ok=True)
@@ -306,6 +323,11 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
         except ImageError as e:
             problem, where = f"couldn't compare images: {e}", ["image:format"]
         actual = [f"(image written to {rel_out})"]
+        images = {"actual": rel_out, "diff": diff_path.relative_to(ROOT).as_posix() if diff_path.exists() else None}
+        if problem is None:
+            return Result(case, "pass", actual=actual, reproduce=command, images=images)
+        causes = likely_causes(where, explain) or ([case.requirement] if case.requirement != "E2E" else [])
+        return Result(case, "fail", problem, actual, command, causes, images)
     elif how.mode == "unordered":
         problem, where = compare_unordered(case.expected, actual, how.fields, how.tolerance)
     else:
@@ -356,13 +378,14 @@ def main(argv: list) -> int:
     args = [a.lower() if a.startswith("-") else a for a in argv]
     if not args or args[0].startswith("-"):
         print(__doc__)
-        return 2
+        return finish(2, verdict="error", message="no checkpoint number given")
     checkpoint = f"{int(args[0]):02d}"
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
     meta = config["checkpoints"].get(checkpoint)
+    REPORT.update(checkpoint=checkpoint, title=meta["title"] if meta else "")
     if meta is None:
         print(f"Checkpoint {checkpoint} isn't in workbook.json yet.")
-        return 2
+        return finish(2, verdict="error", message=f"checkpoint {checkpoint} isn't in workbook.json")
 
     def option(name, count=1):
         if name not in args:
@@ -392,18 +415,19 @@ def main(argv: list) -> int:
         out = ROOT / "build" / "fresh" / checkpoint
         # Picture checkpoints draw their expected images with the reference program.
         if meta.get("generatorNeedsReference") and not build(config["reference"]):
-            return 3
+            return finish(3, verdict="error", message="couldn't build the reference program to draw fresh pictures")
         command = meta["generator"].format(seed=seed, out=out.relative_to(ROOT).as_posix())
         if not run_step("Generating fresh cases", command):
-            return 3
+            return finish(3, verdict="error", message="couldn't generate fresh cases")
         cases_path = out / "cases.txt"
+        REPORT["fresh"] = seed
     case_file = load_cases(cases_path)
 
     if (d := option("-dispute", 2)) is not None:
         if len(d) < 2:
             print('Usage: .\\check 07 -Dispute <test-id> "why you think it is wrong"')
-            return 2
-        return dispute(checkpoint, case_file, d[0], d[1])
+            return finish(2, verdict="error", message="-Dispute needs a test id and a reason")
+        return finish(dispute(checkpoint, case_file, d[0], d[1]), verdict="dispute")
 
     use_ref = "-ref" in args
     custom = option("-run")
@@ -411,17 +435,28 @@ def main(argv: list) -> int:
     run_template = custom[0] if custom else steps["run"]
     run_template = run_template.replace("{id}", checkpoint)
 
+    solution = ROOT / meta["solution"]
+    if not use_ref and not custom and solution.exists() and not solution.read_text(encoding="utf-8", errors="replace").strip():
+        print(f"Not started yet: {meta['solution']} is empty.\n"
+              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.\n"
+              f"To start again from the blank starter, copy starters/blank/{solution.name} over it.")
+        return finish(2, verdict="not-started", empty=True)
+
     if not use_ref and not custom and still_blank(meta["solution"]):
         boilerplate = f"starters/boilerplate/{Path(meta['solution']).name}"
         print(f"Not started yet: {meta['solution']} is still the blank starter.\n"
               f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.")
         if (ROOT / boilerplate).exists():
             print(f"To start from ready-made input/output code instead, copy {boilerplate} over it.")
-        return 2
+        return finish(2, verdict="not-started", empty=False)
 
     if not custom and not build(steps):
+        output = getattr(run_step, "output", "")
+        no_main = bool(re.search(r"undefined reference to `(WinMain|main)'|entry point must be defined|_main.*referenced from", output))
+        if no_main:
+            print("Your program has no main() function. The checker runs it as a program, so it needs one.")
         print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
-        return 3
+        return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=compiler_errors(output))
 
     only = option("-case")
     cases = case_file.cases
@@ -429,7 +464,7 @@ def main(argv: list) -> int:
         cases = [c for c in cases if c.id == only[0]]
         if not cases:
             print(f"There is no test {only[0]} in checkpoint {checkpoint}.")
-            return 2
+            return finish(2, verdict="error", message=f"there is no test {only[0]} in checkpoint {checkpoint}")
     disputed = {d["test"] for d in load_disputes() if d["checkpoint"] == checkpoint and d["status"] == "open"}
     set_aside = [c.id for c in cases if c.id in disputed and only is None]
     cases = [c for c in cases if c.id not in set_aside]
@@ -451,10 +486,15 @@ def main(argv: list) -> int:
     if missing:
         print(f"Not implemented yet: {missing.message}\nWrite it in {meta['solution']}, "
               f"then run .\\check {checkpoint} again.")
-        return 2
+        return finish(2, verdict="not-implemented", function=missing.message)
+
+    order = [rid for rid, _ in case_file.requirements]
+    texts = dict(case_file.requirements)
 
     if only is not None:
         r = results[0]
+        REPORT.update(verdict="passed" if r.status == "pass" else "failed", passed=int(r.status == "pass"),
+                      total=1, cases=[case_json(r, texts, full=True)])
         print(f"{r.case.id}  {r.case.title}\n\ninput:\n  " + "\n  ".join(r.case.input))
         if r.case.expected_file:
             print(f"\nexpected image:\n  {r.case.expected_file}")
@@ -467,8 +507,6 @@ def main(argv: list) -> int:
         print(f"expected values from: {r.case.source}\nreproduce: {r.reproduce}")
         return 0 if r.status == "pass" else 1
 
-    order = [rid for rid, _ in case_file.requirements]
-    texts = dict(case_file.requirements)
     for r in results:
         if r.case.requirement not in texts:
             order.append(r.case.requirement)
@@ -492,22 +530,80 @@ def main(argv: list) -> int:
     if set_aside:
         print(f"\n  Set aside (disputed): {', '.join(set_aside)}")
 
+    failing = [r for r in results if r.status != "pass"]
+    REPORT.update(passed=passed, total=len(results), disputed=set_aside,
+                  requirements=[{"id": rid, "text": texts[rid],
+                                 "passed": sum(r.status == "pass" for r in results if r.case.requirement == rid),
+                                 "total": sum(r.case.requirement == rid for r in results)}
+                                for rid in dict.fromkeys(order) if any(r.case.requirement == rid for r in results)],
+                  cases=[case_json(r, texts, full=r in failing[:DETAILED_FAILURES]) for r in results])
     if passed == len(results):
         note = f" ({len(set_aside)} disputed)" if set_aside else ""
         print(f"\nAccepted: {passed} / {len(results)} tests passed{note}.")
-        return 0
+        return finish(0, verdict="accepted")
     tally = {}
     for r in results:
         for c in r.causes[:1]:
             tally[c] = tally.get(c, 0) + 1
-    if tally:
+    silent = all(r.status == "no-output" or (r.status == "fail" and not r.actual) for r in failing)
+    if silent:
+        # Nothing was written anywhere: that's the problem to fix, not any one requirement.
+        example = run_template.replace("{input}", "<input-file>").replace("{output}", "<output-file>")
+        print(f"\n  Your program wrote nothing in any failing test. It is run as\n      {example}\n"
+              f"  and must write its answer to <output-file>, the second argument.")
+    elif tally:
         top, count = max(tally.items(), key=lambda kv: kv[1])
         print(f"\n  Most failures ({count}) point to {top} - {texts.get(top, '')}")
+        REPORT["mostLikely"] = {"id": top, "text": texts.get(top, ""), "count": count}
     print(f"\nWrong Answer: {passed} / {len(results)} tests passed.\n"
           f"  See one case in full:     .\\check {checkpoint} -Case <test-id>\n"
           f"  Think a test is wrong?    .\\check {checkpoint} -Dispute <test-id> \"why\"")
-    return 1
+    return finish(1, verdict="wrong-answer", wroteNothing=silent)
+
+
+# ---- JSON output (for .\study) ---------------------------------------------------
+
+def trimmed(lines: list, count: int = 80, width: int = 400) -> list:
+    out = [clip(line, width) for line in lines[:count]]
+    return out + [f"... ({len(lines) - count} more lines)"] if len(lines) > count else out
+
+
+def case_json(r: Result, texts: dict, full: bool) -> dict:
+    d = {"id": r.case.id, "title": r.case.title, "requirement": r.case.requirement, "status": r.status}
+    if full:
+        d.update(message=r.message, source=r.case.source, reproduce=r.reproduce,
+                 causes=[{"id": c, "text": texts.get(c, "")} for c in r.causes],
+                 input=trimmed(r.case.input), expected=trimmed(r.case.expected), actual=trimmed(r.actual))
+        if r.case.expected_file:
+            d["images"] = {"expected": r.case.expected_file, **r.images}
+    return d
+
+
+def compiler_errors(output: str) -> list:
+    """file:line:col: error: message lines from the build output, for marking the editor."""
+    found = []
+    for m in re.finditer(r"^(.*?\.(?:c|cc|cpp|cxx|h|hpp)):(\d+):(\d+): (fatal error|error|warning): (.*)$",
+                         output, re.M):
+        found.append({"file": m.group(1).replace("\\", "/"), "line": int(m.group(2)), "column": int(m.group(3)),
+                      "kind": "warning" if m.group(4) == "warning" else "error", "message": m.group(5)})
+    return found[:50]
+
+
+def main_json(argv: list) -> int:
+    """Runs main() with its text captured, then prints REPORT (plus that text) as one JSON object."""
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        try:
+            code = main(argv)
+        except Exception as e:  # the page can't read a traceback; report it instead
+            code = finish(4, verdict="error", message=f"the checker itself failed: {e!r}")
+    REPORT.update(exit=code, text=buffer.getvalue())
+    sys.stdout.write(json.dumps(REPORT, ensure_ascii=False) + "\n")
+    return code
 
 
 if __name__ == "__main__":
+    flags = [a.lower() for a in sys.argv[1:]]
+    if "-json" in flags:
+        sys.exit(main_json([a for a in sys.argv[1:] if a.lower() != "-json"]))
     sys.exit(main(sys.argv[1:]))

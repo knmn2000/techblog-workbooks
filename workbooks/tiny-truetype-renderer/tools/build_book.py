@@ -352,7 +352,8 @@ def checkpoint(cid: str, meta: dict) -> dict:
 
 # ---- Page -------------------------------------------------------------------------
 
-def main():
+def build_page() -> str:
+    """The whole book as one HTML string (tools/serve.py serves this directly)."""
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
     cps = [checkpoint(cid, meta) for cid, meta in sorted(config["checkpoints"].items())
            if (ROOT / meta["problem"]).exists() and (ROOT / meta["cases"]).exists()]
@@ -372,11 +373,16 @@ def main():
 
     page = (ROOT / "tools" / "book_template.html").read_text(encoding="utf-8")
     page = page.replace("{{TITLE}}", html.escape(book["title"])).replace("{{MODES}}", scripts)
-    page = page.replace("{{DATA}}", blob)
+    return page.replace("{{DATA}}", blob)
+
+
+def main():
+    page = build_page()
     out = ROOT / "book" / "problem-book.html"
     out.parent.mkdir(exist_ok=True)
     out.write_text(page, encoding="utf-8")
-    print(f"wrote {out.relative_to(ROOT).as_posix()}: {len(cps)} checkpoints, {len(page) // 1024} KB")
+    count = page.count('"difficulty":')
+    print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} checkpoints, {len(page) // 1024} KB")
 
 
 if __name__ == "__main__":
