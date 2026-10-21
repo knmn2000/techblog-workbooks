@@ -1,0 +1,134 @@
+{
+  "build": "",
+  "run": "python3 -P tools/run_py.py solutions {id} {input} {output}",
+  "reference": {
+    "build": "",
+    "run": "python3 -P tools/run_py.py reference {id} {input} {output}"
+  },
+  "timeoutSeconds": 10,
+  "book": {
+    "title": "CA Key Incident Workbook",
+    "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
+    "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
+    "author": "eMudhra",
+    "headline": "Understand certificate security by breaking a weak CA key yourself",
+    "lede": "Each checkpoint asks you to write the program that one part of the post builds. A checker feeds your program inputs and compares what it writes with answers worked out independently. How you structure the code is up to you.",
+    "credits": "Expected outputs come from independent sources. Progress is saved in this browser only.",
+    "checkCommand": "./check.sh {id}",
+    "shell": "a terminal"
+  },
+  "checkpoints": {
+    "01": {
+      "title": "Modular arithmetic",
+      "solution": "solutions/p01_modular_arithmetic.py",
+      "problem": "problems/01-modular-arithmetic.md",
+      "cases": "tests/01/cases.txt",
+      "generator": "python3 -P tools/gen_p01.py --seed {seed} --out {out}"
+    },
+    "02": {
+      "title": "Add points on a toy curve",
+      "solution": "solutions/p02_toy_curve.py",
+      "problem": "problems/02-toy-curve.md",
+      "cases": "tests/02/cases.txt",
+      "generator": "python3 -P tools/gen_p02.py --seed {seed} --out {out}"
+    },
+    "03": {
+      "title": "Multiply a point by a number",
+      "solution": "solutions/p03_scalar_multiplication.py",
+      "problem": "problems/03-scalar-multiplication.md",
+      "cases": "tests/03/cases.txt",
+      "generator": "python3 -P tools/gen_p03.py --seed {seed} --out {out}"
+    },
+    "04": {
+      "title": "Verify an ECDSA signature",
+      "solution": "solutions/p04_ecdsa_verify.py",
+      "problem": "problems/04-ecdsa-verify.md",
+      "cases": "tests/04/cases.txt",
+      "generator": "python3 -P tools/gen_p04.py --seed {seed} --out {out}"
+    },
+    "05": {
+      "title": "Read DER",
+      "solution": "solutions/p05_der_reader.py",
+      "problem": "problems/05-der-reader.md",
+      "cases": "tests/05/cases.txt",
+      "generator": "python3 -P tools/gen_p05.py --seed {seed} --out {out}"
+    },
+    "06": {
+      "title": "Read a certificate",
+      "solution": "solutions/p06_read_certificate.py",
+      "problem": "problems/06-read-certificate.md",
+      "cases": "tests/06/cases.txt",
+      "generator": "python3 -P tools/gen_p06.py --seed {seed} --out {out}"
+    },
+    "07": {
+      "title": "Hash the public key (SPKI)",
+      "solution": "solutions/p07_spki_hash.py",
+      "problem": "problems/07-spki-hash.md",
+      "cases": "tests/07/cases.txt",
+      "generator": "python3 -P tools/gen_p07.py --seed {seed} --out {out}"
+    },
+    "08": {
+      "title": "Check a certificate's signature",
+      "solution": "solutions/p08_certificate_signature.py",
+      "problem": "problems/08-certificate-signature.md",
+      "cases": "tests/08/cases.txt",
+      "generator": "python3 -P tools/gen_p08.py --seed {seed} --out {out}"
+    },
+    "09": {
+      "title": "Validate a certificate chain",
+      "solution": "solutions/p09_validate_chain.py",
+      "problem": "problems/09-validate-chain.md",
+      "cases": "tests/09/cases.txt",
+      "generator": "python3 -P tools/gen_p09.py --seed {seed} --out {out}"
+    },
+    "10": {
+      "title": "Find a weak private key",
+      "solution": "solutions/p10_find_weak_key.py",
+      "problem": "problems/10-find-weak-key.md",
+      "cases": "tests/10/cases.txt",
+      "generator": "python3 -P tools/gen_p10.py --seed {seed} --out {out}"
+    },
+    "11": {
+      "title": "Sign a certificate with a recovered key",
+      "solution": "solutions/p11_sign_with_weak_key.py",
+      "problem": "problems/11-sign-with-weak-key.md",
+      "cases": "tests/11/cases.txt",
+      "generator": "python3 -P tools/gen_p11.py --seed {seed} --out {out}"
+    },
+    "12": {
+      "title": "Generate a key correctly",
+      "solution": "solutions/p12_generate_key.py",
+      "problem": "problems/12-generate-key.md",
+      "cases": "tests/12/cases.txt",
+      "generator": "python3 -P tools/gen_p12.py --seed {seed} --out {out}"
+    },
+    "13": {
+      "title": "Lint a public key",
+      "solution": "solutions/p13_key_linter.py",
+      "problem": "problems/13-key-linter.md",
+      "cases": "tests/13/cases.txt",
+      "generator": "python3 -P tools/gen_p13.py --seed {seed} --out {out}"
+    },
+    "14": {
+      "title": "Check a key ceremony",
+      "solution": "solutions/p14_ceremony_checker.py",
+      "problem": "problems/14-ceremony-checker.md",
+      "cases": "tests/14/cases.txt",
+      "generator": "python3 -P tools/gen_p14.py --seed {seed} --out {out}"
+    },
+    "15": {
+      "title": "Block and distrust",
+      "solution": "solutions/p15_blocklist_distrust.py",
+      "problem": "problems/15-blocklist-distrust.md",
+      "cases": "tests/15/cases.txt",
+      "generator": "python3 -P tools/gen_p15.py --seed {seed} --out {out}"
+    },
+    "16": {
+      "title": "Audit a PKI",
+      "solution": "solutions/p16_audit_pki.py",
+      "problem": "problems/16-audit-pki.md",
+      "cases": "tests/16/cases.txt",
+      "generator": "python3 -P tools/gen_p16.py --seed {seed} --out {out}"
+    }
+  }
+}

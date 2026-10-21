@@ -1,0 +1,1991 @@
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* A problem book in the style of a coding-practice site: a problem list, then a split view with
+   the statement on the left and an editor + test cases on the right. Everything is rendered from
+   the JSON in #book-data (written by tools/build_book.py), so the template fits any workbook. */
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+
+  --bg: #f0f0f0;            /* page, behind the panels */
+  --layer: #ffffff;         /* panels and cards */
+  --layer-head: #fafafa;    /* panel tab bars */
+  --fill: #f2f3f5;          /* chips, input boxes, buttons */
+  --fill-hover: #e7e8eb;
+  --row-alt: #f7f8fa;       /* striped list rows */
+  --line: #e7e7e7;
+  --line-strong: #d4d4d8;
+  --text: #262626;
+  --text-2: #595959;
+  --text-3: #8c8c8c;
+  --brand: #ffa116;         /* orange accent */
+  --brand-ink: #b46a00;     /* orange that reads as text on light */
+  --link: #0a6fd8;
+  --easy: #00a38f;
+  --medium: #c98300;
+  --hard: #f02a50;
+  --ok: #2db55d;
+  --bad: #e5383b;
+  --on-color: #ffffff;      /* text on --ok / --brand */
+  --code-bg: #f5f6f7;
+  --sel: #cde2ff;
+  --sel-blur: #e3e6ea;
+  --active-line: #f6f8fb;
+  --icon-desc: #007aff;
+  --icon-ed: #f08c00;
+  --icon-code: #02a12f;
+  --syn-text: #262626; --syn-kw: #0000ff; --syn-type: #267f99; --syn-str: #a31515; --syn-num: #098658;
+  --syn-com: #008000; --syn-fn: #795e26; --syn-meta: #af00db; --syn-var: #001080;
+  /* For figures on problem pages (inline SVG): these follow the theme. */
+  --ink: var(--text); --muted: var(--text-2); --rule: var(--line); --surface: var(--layer);
+  --fig-a: #2f55e4; --fig-b: #d9591f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a1a; --layer: #262626; --layer-head: #2d2d2d; --fill: #353535; --fill-hover: #404040; --row-alt: #2b2b2b;
+    --line: #383838; --line-strong: #4a4a4a; --text: #e8e8ea; --text-2: #a9aaae; --text-3: #75767a;
+    --brand: #ffa116; --brand-ink: #ffa116; --link: #4ea1ff; --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+    --ok: #2cbb5d; --bad: #ef4743; --on-color: #ffffff; --code-bg: #2f2f2f; --sel: #264f78; --sel-blur: #3a3d41;
+    --active-line: #2c2c2c; --icon-desc: #4ea1ff; --icon-ed: #ffa116; --icon-code: #2cbb5d;
+    --syn-text: #d4d4d4; --syn-kw: #569cd6; --syn-type: #4ec9b0; --syn-str: #ce9178; --syn-num: #b5cea8;
+    --syn-com: #6a9955; --syn-fn: #dcdcaa; --syn-meta: #c586c0; --syn-var: #9cdcfe;
+    --fig-a: #7f9cff; --fig-b: #ff8d5c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a1a; --layer: #262626; --layer-head: #2d2d2d; --fill: #353535; --fill-hover: #404040; --row-alt: #2b2b2b;
+  --line: #383838; --line-strong: #4a4a4a; --text: #e8e8ea; --text-2: #a9aaae; --text-3: #75767a;
+  --brand: #ffa116; --brand-ink: #ffa116; --link: #4ea1ff; --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+  --ok: #2cbb5d; --bad: #ef4743; --on-color: #ffffff; --code-bg: #2f2f2f; --sel: #264f78; --sel-blur: #3a3d41;
+  --active-line: #2c2c2c; --icon-desc: #4ea1ff; --icon-ed: #ffa116; --icon-code: #2cbb5d;
+  --syn-text: #d4d4d4; --syn-kw: #569cd6; --syn-type: #4ec9b0; --syn-str: #ce9178; --syn-num: #b5cea8;
+  --syn-com: #6a9955; --syn-fn: #dcdcaa; --syn-meta: #c586c0; --syn-var: #9cdcfe;
+  --fig-a: #7f9cff; --fig-b: #ff8d5c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 14px/1.6 var(--font-ui); }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; border-radius: 4px; }
+code, pre, kbd, samp { font-family: var(--font-mono); }
+svg { flex: none; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.muted { color: var(--text-3); }
+
+/* ---------- shared bits ---------- */
+.chip { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 999px; border: 0;
+  background: var(--fill); color: var(--text-2); font-size: 12px; font-weight: 500; white-space: nowrap; }
+button.chip { cursor: pointer; }
+button.chip:hover { color: var(--text); background: var(--fill-hover); }
+.easy { color: var(--easy) !important; } .medium { color: var(--medium) !important; } .hard { color: var(--hard) !important; }
+.btn { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 0;
+  background: var(--fill); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.btn:hover { background: var(--fill-hover); }
+.btn.green { background: var(--ok); color: var(--on-color); }
+.btn.green:hover { filter: brightness(1.08); }
+.btn.done { color: var(--ok); }
+.icon-btn { width: 30px; height: 30px; border: 0; background: none; border-radius: 6px; display: inline-grid; place-items: center;
+  color: var(--text-2); cursor: pointer; }
+.icon-btn:hover { background: var(--fill); color: var(--text); }
+.icon-btn:disabled { opacity: .35; cursor: default; background: none; }
+.cmd { display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 8px; padding: 5px 5px 5px 12px; min-width: 0; }
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 12.5px; scrollbar-width: thin; }
+.cmd .btn { height: 26px; padding: 0 10px; font-size: 12px; background: var(--layer); }
+.cmd .btn:hover { background: var(--fill-hover); }
+
+/* ---------- problem list ---------- */
+.nav { background: var(--layer); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5;
+  padding-top: env(safe-area-inset-top, 0px); }
+.nav-in { max-width: 1200px; margin: 0 auto; min-height: 52px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; padding-block: 8px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600; font-size: 15px; }
+.brand:hover { text-decoration: none; }
+.logo { width: 26px; height: 26px; border-radius: 7px; background: var(--brand); color: #1a1a1a; display: grid; place-items: center;
+  font: 700 14px/1 var(--font-mono); }
+.nav-src { color: var(--text-3); font-size: 13px; margin-left: auto; }
+.list-wrap { max-width: 1200px; margin: 0 auto; padding-block: 28px 56px; display: grid; gap: 20px 28px;
+  grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "prog" "plist" "how"; }
+.side { display: contents; }
+.side .prog { grid-area: prog; } .side .how { grid-area: how; }
+@media (min-width: 1000px) {
+  .list-wrap { grid-template-columns: minmax(0, 1fr) 300px; grid-template-areas: "hero side" "plist side"; align-items: start; }
+  .side { display: grid; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 72px); }
+  .side .prog, .side .how { grid-area: auto; }
+}
+.hero { grid-area: hero; display: grid; gap: 8px; }
+.hero .over { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--brand-ink); }
+.hero h1 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 600; text-wrap: balance; }
+.hero p { margin: 0; color: var(--text-2); max-width: 70ch; }
+.side { grid-area: side; gap: 16px; }
+.plist { grid-area: plist; display: grid; gap: 14px; min-width: 0; }
+.card { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card h2 { margin: 0; font-size: 14px; font-weight: 600; }
+
+.prog { grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 18px; }
+.ring { position: relative; width: 112px; height: 112px; }
+.ring svg { width: 112px; height: 112px; transform: rotate(-90deg); }
+.ring-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.15; }
+.ring-c b { font-size: 24px; font-weight: 600; }
+.ring-c span { color: var(--text-3); font-size: 13px; }
+.ring-c small { color: var(--text-2); font-size: 12px; }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 12px; background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.bar-row .n { color: var(--text-2); }
+.bar-row .n b { color: var(--text); font-weight: 600; }
+.bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--fill); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 3px; background: currentColor; }
+.bar-row[aria-pressed="true"] .lbl { text-decoration: underline; text-underline-offset: 3px; }
+.how ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: how; }
+.how li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 13px; color: var(--text-2); counter-increment: how; }
+.how li::before { content: counter(how); width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2);
+  display: grid; place-items: center; font-size: 11px; font-weight: 600; margin-top: 1px; }
+.how b { color: var(--text); font-weight: 600; }
+.how code, .credits code { font-size: 12px; background: var(--fill); padding: 1px 5px; border-radius: 4px; }
+.path { font: 12px/1.5 var(--font-mono); color: var(--text-3); word-break: break-all; }
+
+.topics { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.topics.collapsed .tchip:nth-child(n + 13) { display: none; }
+.tchip { height: 28px; display: inline-flex; align-items: center; gap: 5px; padding: 0 10px; border: 0; border-radius: 999px;
+  background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.tchip:hover { color: var(--text); background: var(--fill); }
+.tchip sup { color: var(--text-3); font-size: 10px; }
+.tchip[aria-pressed="true"] { background: var(--text); color: var(--layer); }
+.tchip[aria-pressed="true"] sup { color: var(--layer); opacity: .7; }
+.topics .more { color: var(--link); background: none; border: 0; cursor: pointer; font-size: 13px; padding: 0 8px; height: 28px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 220px; max-width: 340px; height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 10px;
+  background: var(--fill); border-radius: 8px; color: var(--text-3); }
+.search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; color: var(--text); font-size: 13px; }
+.seg { display: inline-flex; background: var(--fill); border-radius: 8px; padding: 2px; }
+.seg button { height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--layer); color: var(--text); font-weight: 500; }
+.seg.small { flex: none; }
+.seg.small button { height: 24px; padding: 0 9px; font-size: 12px; }
+.pick { margin-left: auto; height: 32px; display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
+.pick span { width: 24px; height: 24px; border-radius: 50%; background: var(--ok); color: var(--on-color); display: grid; place-items: center; }
+.pick:hover { color: var(--text); }
+.table-scroll { overflow-x: auto; }
+.ptable { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.ptable th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 13px; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ptable td { padding: 11px 12px; white-space: nowrap; }
+.ptable tbody tr { cursor: pointer; }
+.ptable tbody tr:nth-child(odd) td { background: var(--row-alt); }
+.ptable tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+.ptable tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+.ptable tbody tr:hover td { background: var(--fill); }
+.ptable .st { width: 44px; }
+.ptable .ti { white-space: normal; min-width: 220px; }
+.ptable .ti a { color: var(--text); font-weight: 500; }
+.ptable .ti a:hover { color: var(--link); text-decoration: none; }
+.ptable .te { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2); width: 80px; }
+.ptable .di { width: 96px; font-weight: 500; }
+.ptable th.te { text-align: right; }
+.st-ok { color: var(--ok); display: inline-grid; }
+.st-try { color: var(--medium); display: inline-grid; }
+.credits { margin: 6px 0 0; color: var(--text-3); font-size: 12px; max-width: 80ch; }
+
+/* ---------- problem view ---------- */
+.ide { height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; padding-bottom: 10px; }
+body.in-ide { overflow: hidden; }
+.topbar { flex: none; height: 50px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.tb-left, .tb-right { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.tb-right { justify-self: end; gap: 10px; }
+.tb-left .logo { margin-right: 8px; }
+.tb-link { height: 32px; display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 6px; color: var(--text); font-weight: 500; white-space: nowrap; }
+.tb-link:hover { background: var(--fill); text-decoration: none; }
+.tb-mid { display: flex; gap: 1px; }
+.act { height: 34px; display: inline-flex; align-items: center; gap: 7px; padding: 0 16px; border: 0; background: var(--fill); cursor: pointer; font-weight: 600; }
+.act:hover { background: var(--fill-hover); }
+.act.run { border-radius: 8px 0 0 8px; color: var(--text-2); }
+.act.submit { border-radius: 0 8px 8px 0; color: var(--ok); }
+.tb-prog { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+.tb-prog b { color: var(--text); font-weight: 600; }
+.live { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 500; white-space: nowrap; cursor: help; }
+.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.live.on { color: var(--ok); } .live.warn { color: var(--medium); } .live.off { color: var(--bad); }
+.act:disabled { opacity: .55; cursor: progress; }
+.running { display: flex; align-items: center; gap: 10px; color: var(--text-2); padding: 6px 0 14px; }
+.spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--ok); animation: spin .8s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err-list { display: grid; gap: 4px; margin-bottom: 12px; font: 12.5px/1.5 var(--font-mono); }
+.err-list .loc { color: var(--bad); font-weight: 600; }
+.cm-error-line { background: color-mix(in srgb, var(--bad) 16%, transparent); }
+.bad-text { color: var(--bad) !important; }
+.note.muted { color: var(--text-3); font-size: 12px; }
+.case-card { background: var(--fill); border-radius: 8px; margin-bottom: 8px; min-width: 0; }
+.case-card > summary { cursor: pointer; padding: 9px 12px; display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.case-card > summary .id { font: 600 12.5px var(--font-mono); color: var(--bad); white-space: nowrap; }
+.case-card > summary .t { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.case-body { padding: 0 12px 12px; display: grid; gap: 8px; min-width: 0; }
+.case-body .field { margin-bottom: 0; }
+.case-body .field-v { background: var(--layer); max-height: 220px; }
+.field-v.diff { padding: 6px 0; }
+.diff .dl { display: block; width: max-content; min-width: 100%; padding: 0 12px; min-height: 1.6em; }
+.diff .dl.del.changed { background: color-mix(in srgb, var(--bad) 9%, transparent); }
+.diff .dl.del.extra { background: color-mix(in srgb, var(--bad) 20%, transparent); }
+.diff .dl.add.changed { background: color-mix(in srgb, var(--ok) 9%, transparent); }
+.diff .dl.add.missing { background: color-mix(in srgb, var(--ok) 20%, transparent); }
+.diff .dl.clip { color: var(--text-3); }
+.tk-del { background: color-mix(in srgb, var(--bad) 40%, transparent); border-radius: 3px; padding: 0 2px; }
+.tk-add { background: color-mix(in srgb, var(--ok) 40%, transparent); border-radius: 3px; padding: 0 2px; }
+.img-cmp { display: flex; flex-wrap: wrap; gap: 10px; }
+.img-cmp figure { margin: 0; display: grid; gap: 4px; justify-items: start; }
+.img-cmp img { width: 180px; max-width: 100%; height: auto; image-rendering: pixelated; border-radius: 6px; background: #000; display: block; }
+.img-cmp figcaption { font-size: 12px; color: var(--text-3); }
+.live-actions { margin: 14px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.ide-main { flex: 1; min-height: 0; display: flex; }
+.panel { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.left { flex: 0 0 var(--left, 45%); }
+.right { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.code { flex: 0 0 var(--top, 60%); }
+.tests { flex: 1; }
+.splitter { flex: 0 0 8px; position: relative; touch-action: none; }
+.splitter::after { content: ""; position: absolute; border-radius: 2px; background: transparent; transition: background .15s; }
+.splitter.v { cursor: col-resize; } .splitter.v::after { top: 30%; bottom: 30%; left: 3px; width: 2px; }
+.splitter.h { cursor: row-resize; } .splitter.h::after { left: 30%; right: 30%; top: 3px; height: 2px; }
+.splitter:hover::after, .splitter.dragging::after, .splitter:focus-visible::after { background: var(--link); top: 0; bottom: 0; left: 3px; }
+.splitter.h:hover::after, .splitter.h.dragging::after, .splitter.h:focus-visible::after { left: 0; right: 0; top: 3px; bottom: auto; }
+.splitter:focus-visible { outline: none; }
+
+.panel-head { flex: none; height: 38px; display: flex; align-items: center; gap: 2px; padding: 0 6px; background: var(--layer-head);
+  border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.ptab { height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 0; border-radius: 6px; background: none;
+  color: var(--text-2); cursor: pointer; font-weight: 500; white-space: nowrap; font-size: 13px; }
+.ptab:hover { background: var(--fill); color: var(--text); }
+.ptab[aria-selected="true"] { color: var(--text); font-weight: 600; }
+.ptab.static { cursor: default; color: var(--text); font-weight: 600; } .ptab.static:hover { background: none; }
+.sep { width: 1px; height: 14px; background: var(--line-strong); margin: 0 2px; flex: none; }
+.ico-desc { color: var(--icon-desc); } .ico-ed { color: var(--icon-ed); } .ico-code { color: var(--icon-code); }
+.panel-body { flex: 1; min-height: 0; overflow: auto; padding: 18px 20px 28px; }
+
+/* statement */
+.d-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.d-head h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.35; text-wrap: balance; }
+.solved-mark { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-size: 13px; white-space: nowrap; padding-top: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.callout { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; background: var(--fill); border-radius: 8px; padding: 10px 14px;
+  color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
+.callout svg { margin-top: 3px; color: var(--brand-ink); }
+.callout p { margin: 0; }
+.callout b { color: var(--text); font-weight: 600; }
+.flow > * { margin: 0; }
+.flow > * + * { margin-top: 12px; }
+.flow > h2:not(:first-child) { margin-top: 26px; }
+.flow > h3:not(:first-child) { margin-top: 20px; }
+.flow > h4:not(:first-child) { margin-top: 16px; }
+.flow > .d-sec:not(:first-child), .flow > .examples { margin-top: 26px; }
+.flow h2 { font-size: 15px; font-weight: 600; }
+.flow h3 { font-size: 14px; font-weight: 600; }
+.flow h4 { font-size: 14px; font-weight: 500; }
+.flow ul, .flow ol { padding-left: 22px; }
+.flow li + li { margin-top: 4px; }
+.flow :not(pre) > code { font-size: 12.5px; background: var(--fill); border: 1px solid var(--line); border-radius: 5px; padding: 0 4px; color: var(--text); }
+.flow pre { background: var(--code-bg); border-radius: 8px; padding: 10px 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; }
+.flow pre code { font-size: inherit; }
+.flow strong { font-weight: 600; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.flow table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.flow th, .flow td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.flow tr:last-child td { border-bottom: 0; }
+.flow th { font-weight: 600; background: var(--layer-head); color: var(--text-2); }
+.reqs { list-style: none; padding: 0 !important; display: grid; gap: 8px; }
+.reqs li + li { margin-top: 0; }
+.reqs li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.rid { font: 600 12px/1.6 var(--font-mono); color: var(--brand-ink); }
+.ex + .ex { margin-top: 22px; }
+.ex-title { margin: 0 0 8px; }
+.ex-title strong { font-weight: 600; }
+.ex-title span { color: var(--text-2); }
+.ex-block { border-left: 2px solid var(--line-strong); padding-left: 14px; display: grid; gap: 8px; min-width: 0; }
+.ex-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; min-width: 0; }
+.ex-k { font-weight: 600; font-size: 13px; }
+.ex-row > pre { margin: 0; padding: 0; background: none; color: var(--text-2); font-size: 12.5px; line-height: 1.6; overflow-x: auto; }
+.ex-row .flow { color: var(--text-2); }
+img.shot, figure.pic img { max-width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 6px; background: #000; display: block; }
+figure.pic { display: grid; gap: 4px; justify-items: start; }
+figure.pic figcaption { font: 11px/1.3 var(--font-mono); color: var(--text-3); }
+figure.split-figure { display: grid; gap: 14px; align-items: center; }
+@media (min-width: 720px) { figure.split-figure { grid-template-columns: 200px minmax(0, 1fr); } }
+figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-2); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 6px; }
+.dot.a { background: var(--fig-a); } .dot.b { border: 2px solid var(--fig-b); }
+.md-details summary { cursor: pointer; font-weight: 500; }
+
+.accs { margin-top: 30px; border-top: 1px solid var(--line); }
+.acc { border-bottom: 1px solid var(--line); }
+.acc-btn { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 2px; background: none; border: 0; cursor: pointer; color: var(--text); text-align: left; font-weight: 500; }
+.acc-btn:disabled { cursor: not-allowed; color: var(--text-3); }
+.acc-btn > svg:first-child { color: var(--text-2); }
+.acc-sub { color: var(--text-3); font-weight: 400; margin-left: 8px; }
+.acc-lock { color: var(--text-3); display: inline-grid; }
+.chev { margin-left: auto; display: inline-grid; color: var(--text-3); transition: transform .15s; }
+.acc-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.acc-body { padding: 0 2px 16px 28px; color: var(--text-2); }
+.tg + .tg { margin-top: 10px; }
+.tg-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+.tg-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.tg-items .chip { height: auto; min-height: 24px; white-space: normal; padding: 2px 10px; }
+.tg-items code { font-size: 11.5px; }
+.d-foot { margin-top: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; color: var(--text-3); font-size: 12px; }
+.ed-title { margin: 0 0 14px; font-size: 20px; font-weight: 600; }
+.ed-sec { display: grid; gap: 10px; margin-bottom: 28px; min-width: 0; }
+.ed-sec > h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.ed-sec .note { margin: 0; }
+.badge { justify-self: start; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: var(--fill); }
+.badge.ok { color: var(--ok); } .badge.warn { color: var(--medium); }
+.badge svg { width: 14px; height: 14px; }
+.sol-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.sol-head code { font-size: 12px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sol-head .btn { height: 26px; font-size: 12px; }
+.sol-code { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.6 var(--font-mono); color: var(--syn-text); tab-size: 2; }
+#editorial .case-pills { margin-bottom: 0; }
+.locked { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 48px 16px; color: var(--text-2); }
+.locked svg { width: 28px; height: 28px; color: var(--brand); }
+.locked h2 { margin: 0; color: var(--text); font-size: 16px; font-weight: 600; }
+.locked p { margin: 0; max-width: 46ch; }
+
+/* editor */
+.code-tools { flex: none; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; border-bottom: 1px solid var(--line); min-width: 0; }
+.lang { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; color: var(--text-2); font-size: 13px; white-space: nowrap; cursor: help; }
+.file { font: 12px var(--font-mono); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.tools-right { margin-left: auto; display: flex; align-items: center; gap: 2px; flex: none; }
+.confirm { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-right: 4px; }
+.confirm .btn { height: 26px; padding: 0 10px; font-size: 12px; }
+.editor-row { flex: 1; min-height: 0; display: flex; }
+.editor { flex: 1; min-width: 0; min-height: 0; position: relative; }
+/* Files panel and open-file tabs (live mode) */
+.tree { flex: 0 0 210px; overflow: auto; border-right: 1px solid var(--line); background: var(--layer-head); padding: 6px 0 10px; font-size: 13px; }
+.tree-dir { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 4px 12px; color: var(--text-3); font: 600 11px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+.tree-add { width: 22px; height: 22px; border: 0; border-radius: 5px; background: none; color: var(--text-2); cursor: pointer; font-size: 16px; line-height: 1; }
+.tree-add:hover { background: var(--fill); color: var(--text); }
+.tree-item { width: 100%; display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 14px; border: 0; background: none; color: var(--text-2); cursor: pointer; text-align: left; font: 12.5px var(--font-mono); }
+.tree-item:hover { background: var(--fill); color: var(--text); }
+.tree-item.on { background: var(--fill-hover); color: var(--text); }
+.tree-item .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-item .tm { width: 12px; flex: none; font-weight: 700; }
+.tree-item .tm.ok { color: var(--ok); } .tree-item .tm.broke { color: var(--bad); }
+.tag-n { flex: none; min-width: 18px; height: 16px; padding: 0 5px; border-radius: 8px; background: var(--fill); color: var(--text-3); font: 600 10px/16px var(--font-ui); text-align: center; }
+.tree-empty { margin: 2px 12px 6px 14px; color: var(--text-3); font-size: 12px; line-height: 1.45; }
+.new-file { padding: 2px 10px 6px 14px; }
+.new-file input { width: 100%; height: 26px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--layer); padding: 0 8px; font: 12.5px var(--font-mono); color: var(--text); }
+.new-file input:focus { outline: none; border-color: var(--link); }
+.tree-foot { padding: 12px 10px 0 14px; }
+.tree-foot .btn { width: 100%; justify-content: center; height: 28px; font-size: 12px; }
+.ftabs { flex: none; display: flex; gap: 2px; padding: 4px 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; background: var(--layer); }
+.ftab { display: inline-flex; align-items: center; border-radius: 6px 6px 0 0; color: var(--text-3); white-space: nowrap; }
+.ftab button { border: 0; background: none; color: inherit; cursor: pointer; font: 12px var(--font-mono); height: 28px; padding: 0 10px; }
+.ftab .x { padding: 0 8px 0 0; font-size: 14px; }
+.ftab.on { background: var(--fill); color: var(--text); }
+.ftab.warn button:first-child { color: var(--medium); }
+.err-list .err { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 1px 0; font: inherit; color: inherit; cursor: pointer; }
+.err-list .err:hover .loc { text-decoration: underline; }
+.nudge { background: var(--fill); border-radius: 8px; padding: 12px 14px; margin: 4px 0 14px; display: grid; gap: 8px; font-size: 13px; color: var(--text-2); }
+.nudge b { color: var(--text); }
+.nudge code { font-size: 12px; background: var(--layer); padding: 1px 5px; border-radius: 4px; }
+.recheck { display: grid; gap: 2px; margin-top: 8px; }
+.rc-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; padding: 6px 8px; border-radius: 6px; color: var(--text); font-size: 13px; }
+.rc-row:hover { background: var(--fill); text-decoration: none; }
+.rc-n { color: var(--text-3); } .rc-t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-v { font-weight: 600; font-size: 12px; } .rc-v.ok { color: var(--ok); } .rc-v.bad { color: var(--bad); } .rc-v.warn { color: var(--medium); }
+.st-broke { color: var(--bad); font-weight: 700; display: inline-grid; place-items: center; width: 16px; }
+.finish h2 { color: var(--ok); }
+.finish table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.finish td { padding: 3px 0; vertical-align: top; color: var(--text-2); }
+.finish td:first-child { font-family: var(--font-mono); color: var(--text); padding-right: 8px; word-break: break-all; }
+.vim-btn { width: auto; padding: 0 8px; font: 600 12px var(--font-mono); }
+.vim-btn[aria-pressed="true"] { color: var(--ok); background: var(--fill); }
+/* Vim mode: block cursor in Normal mode, and the : / command line (CodeMirror's dialog addon). */
+.cm-fat-cursor .CodeMirror-cursor { width: auto; border: 0 !important; background: color-mix(in srgb, var(--ok) 55%, transparent); }
+.cm-fat-cursor div.CodeMirror-cursors { z-index: 1; }
+.cm-fat-cursor .CodeMirror-line::selection, .cm-fat-cursor .CodeMirror-line > span::selection, .cm-fat-cursor .CodeMirror-line > span > span::selection { background: transparent; }
+.cm-fat-cursor { caret-color: transparent; }
+.cm-animate-fat-cursor { width: auto; border: 0; animation: blink 1.06s steps(1) infinite; background: color-mix(in srgb, var(--ok) 55%, transparent); }
+@keyframes blink { 50% { background-color: transparent; } }
+.CodeMirror-dialog { position: absolute; left: 0; right: 0; background: var(--layer-head); z-index: 15; padding: 2px 10px; overflow: hidden; color: var(--text); font: 13px var(--font-mono); }
+.CodeMirror-dialog-top { border-bottom: 1px solid var(--line); top: 0; }
+.CodeMirror-dialog-bottom { border-top: 1px solid var(--line); bottom: 0; }
+.CodeMirror-dialog input { border: none; outline: none; background: transparent; width: 20em; color: inherit; font: inherit; }
+.CodeMirror-dialog button { font-size: 70%; }
+.cm-searching { background: color-mix(in srgb, var(--medium) 35%, transparent); }
+.editor > .CodeMirror, .editor > .fallback-editor { position: absolute; inset: 0; height: auto; }
+.code-status { flex: none; height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line); }
+.fallback-editor { width: 100%; height: 100%; border: 0; resize: none; padding: 8px 12px; background: var(--layer); color: var(--text);
+  font: 14px/1.6 var(--font-mono); white-space: pre; outline: none; tab-size: 2; }
+
+/* test cases and results */
+.case-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.pill-btn { height: 30px; padding: 0 14px; border-radius: 8px; border: 0; background: none; color: var(--text-2); cursor: pointer; font-weight: 500; font-size: 13px; }
+.pill-btn:hover { background: var(--fill); color: var(--text); }
+.pill-btn[aria-selected="true"] { background: var(--fill); color: var(--text); }
+.case-name { margin: -4px 0 12px; color: var(--text-2); font-size: 13px; }
+.field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-bottom: 14px; min-width: 0; }
+.field-k { font-size: 12px; color: var(--text-3); }
+.field-v { margin: 0; background: var(--fill); border-radius: 8px; padding: 10px 12px; font: 13px/1.6 var(--font-mono); color: var(--text); overflow-x: auto; white-space: pre; }
+.field img { max-width: 100%; height: auto; image-rendering: pixelated; border-radius: 6px; background: #000; display: block; }
+.verdict { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 14px; }
+.verdict h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.verdict.ok h2 { color: var(--ok); } .verdict.bad h2 { color: var(--bad); } .verdict.warn h2 { color: var(--medium); } .verdict.unknown h2 { color: var(--text-2); }
+.verdict .sub { color: var(--text-3); font-size: 13px; }
+.verdict .btn { margin-left: auto; height: 26px; font-size: 12px; }
+.note { margin: 0 0 12px; font-size: 13px; color: var(--text-2); }
+.note.warn { color: var(--medium); }
+.req-rows { display: grid; gap: 8px; margin-bottom: 16px; }
+.req-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 3px 8px; align-items: center; font-size: 12.5px; }
+.req-row .rq { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.req-row .cnt { font-variant-numeric: tabular-nums; color: var(--text-2); }
+.req-row .bar { grid-column: 2 / -1; height: 4px; color: var(--ok); }
+.req-row.fail .bar, .req-row.fail .cnt { color: var(--bad); }
+.fail-card { background: var(--fill); border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-bottom: 8px; min-width: 0; }
+.fail-card .id { font: 600 12.5px var(--font-mono); color: var(--bad); }
+.fail-card .t { color: var(--text); font-size: 13px; }
+.fail-card pre, pre.raw { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.55 var(--font-mono); color: var(--text-2); }
+pre.raw { background: var(--fill); border-radius: 8px; padding: 10px 12px; max-height: 260px; overflow: auto; margin-bottom: 14px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.step { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+.step > span { width: 22px; height: 22px; border-radius: 50%; background: var(--fill); color: var(--text-2); display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+.step.done > span { background: var(--ok); color: var(--on-color); }
+.step > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
+.step p { margin: 0; color: var(--text-2); font-size: 13px; }
+.step p b { color: var(--text); font-weight: 600; }
+.step p code { font-size: 12px; background: var(--fill); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+textarea.paste { width: 100%; min-height: 84px; resize: vertical; background: var(--fill); border: 1px solid transparent; border-radius: 8px;
+  padding: 10px 12px; font: 12px/1.5 var(--font-mono); color: var(--text); }
+textarea.paste:focus { border-color: var(--link); outline: none; }
+details.more { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 12px; }
+details.more summary { cursor: pointer; color: var(--text-2); font-size: 13px; }
+details.more > div { margin-top: 12px; }
+details.more .cmd + .cmd { margin-top: 6px; }
+
+@media (max-width: 899px) {
+  .ide { height: auto; padding-bottom: 24px; }
+  body.in-ide { overflow: auto; }
+  .topbar { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: env(safe-area-inset-top, 0px); height: auto; min-height: 50px; }
+  .ide-main { flex-direction: column; gap: 10px; }
+  .left, .code { flex: none; }
+  .left .panel-body { overflow: visible; }
+  .right { gap: 10px; }
+  .code { height: 72vh; }
+  .tests { flex: none; }
+  .tests .panel-body { overflow: visible; }
+  .splitter { display: none; }
+  .tb-link span, .tb-prog, .tb-left .logo, #shuffle { display: none; }
+}
+@media (max-width: 560px) {
+  .ptable .te { display: none; }
+  .ptable .ti { min-width: 0; }
+  .pick { margin-left: 0; }
+}
+@media (max-width: 420px) {
+  .act { padding: 0 12px; }
+  .panel-body { padding: 16px 14px 24px; }
+}
+
+/* CodeMirror 5.65.16 core layout (MIT, codemirror.net), with colours from the tokens above. */
+.CodeMirror { font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6; height: 100%; color: var(--syn-text); direction: ltr; position: relative; overflow: hidden; background: var(--layer); }
+.CodeMirror-lines { padding: 6px 0; cursor: text; min-height: 1px; }
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 4px 0 10px; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: var(--layer); }
+.CodeMirror-gutters { border-right: 0; background-color: var(--layer); white-space: nowrap; position: absolute; left: 0; top: 0; min-height: 100%; z-index: 3; }
+.CodeMirror-linenumber { padding: 0 4px 0 12px; min-width: 24px; text-align: right; color: var(--text-3); white-space: nowrap; }
+.CodeMirror-activeline-gutter .CodeMirror-linenumber { color: var(--text); }
+.CodeMirror-cursor { border-left: 2px solid var(--text); border-right: none; width: 0; position: absolute; pointer-events: none; }
+.CodeMirror div.CodeMirror-secondarycursor { border-left: 1px solid var(--text-3); }
+.cm-tab { display: inline-block; text-decoration: inherit; }
+.CodeMirror-scroll { overflow: scroll !important; margin-bottom: -50px; margin-right: -50px; padding-bottom: 50px; height: 100%; outline: 0; position: relative; z-index: 0; }
+.CodeMirror-sizer { position: relative; border-right: 50px solid transparent; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; outline: 0; }
+.CodeMirror-vscrollbar { right: 0; top: 0; overflow-x: hidden; overflow-y: scroll; }
+.CodeMirror-hscrollbar { bottom: 0; left: 0; overflow-y: hidden; overflow-x: scroll; }
+.CodeMirror-scrollbar-filler { right: 0; bottom: 0; }
+.CodeMirror-gutter-filler { left: 0; bottom: 0; }
+.CodeMirror-gutter { white-space: normal; height: 100%; display: inline-block; vertical-align: top; margin-bottom: -50px; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: none !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0; bottom: 0; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-gutter-wrapper ::selection { background-color: transparent; }
+.CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { border-radius: 0; border-width: 0; background: transparent; font-family: inherit; font-size: inherit; margin: 0; white-space: pre; word-wrap: normal; line-height: inherit; color: inherit; z-index: 2; position: relative; overflow: visible; -webkit-tap-highlight-color: transparent; font-variant-ligatures: contextual; }
+.CodeMirror-wrap pre.CodeMirror-line, .CodeMirror-wrap pre.CodeMirror-line-like { word-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-linebackground { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; padding: .1px; }
+.CodeMirror-code { outline: 0; }
+.CodeMirror-gutter, .CodeMirror-gutters, .CodeMirror-linenumber, .CodeMirror-scroll, .CodeMirror-sizer { box-sizing: content-box; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+div.CodeMirror-cursors { visibility: hidden; position: relative; z-index: 3; }
+div.CodeMirror-dragcursors { visibility: visible; }
+.CodeMirror-focused div.CodeMirror-cursors { visibility: visible; }
+.CodeMirror-selected { background: var(--sel-blur); }
+.CodeMirror-focused .CodeMirror-selected { background: var(--sel); }
+.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: var(--sel); }
+.CodeMirror-activeline-background { background: var(--active-line); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: inherit; outline: 1px solid var(--line-strong); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: var(--bad); }
+.cm-force-border { padding-right: .1px; }
+.cm-tab-wrap-hack::after { content: ""; }
+span.CodeMirror-selectedtext { background: none; }
+.cm-keyword, .cm-atom { color: var(--syn-kw); }
+.cm-number { color: var(--syn-num); }
+.cm-def { color: var(--syn-fn); }
+.cm-variable, .cm-property, .cm-operator, .cm-bracket, .cm-punctuation { color: var(--syn-text); }
+.cm-variable-2 { color: var(--syn-var); }
+.cm-type, .cm-variable-3, .cm-builtin, .cm-qualifier { color: var(--syn-type); }
+.cm-comment { color: var(--syn-com); }
+.cm-string, .cm-string-2 { color: var(--syn-str); }
+.cm-meta { color: var(--syn-meta); }
+.cm-error, .cm-invalidchar { color: var(--bad); }
+.cm-strong { font-weight: 700; } .cm-em { font-style: italic; } .cm-link { text-decoration: underline; }
+</style>
+
+<div id="list-view">
+  <header class="nav"><div class="nav-in gutter">
+    <a class="brand" href="#home"><span class="logo" data-logo></span><span id="book-name"></span></a>
+    <span class="nav-src" id="nav-src"></span>
+  </div></header>
+  <div class="list-wrap gutter">
+    <section class="hero" id="hero"></section>
+    <aside class="side" id="side" aria-label="Progress"></aside>
+    <section class="plist" aria-label="Checkpoints">
+      <div class="topics collapsed" id="topics" role="group" aria-label="Filter by topic"></div>
+      <div class="filters">
+        <label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search checkpoints" aria-label="Search checkpoints"></label>
+        <div class="seg" id="diff" role="group" aria-label="Difficulty"></div>
+        <button class="pick" id="pick" type="button"><span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></span>Pick one</button>
+      </div>
+      <div class="table-scroll"><table class="ptable">
+        <thead><tr><th class="st">Status</th><th>Title</th><th class="te">Tests</th><th class="di">Difficulty</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <p class="credits" id="credits"></p>
+    </section>
+  </div>
+</div>
+
+<div id="ide-view" class="ide gutter" hidden>
+  <header class="topbar">
+    <div class="tb-left">
+      <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
+      <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem List</span></a>
+      <button class="icon-btn" id="prev" type="button" aria-label="Previous checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button class="icon-btn" id="next" type="button" aria-label="Next checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="icon-btn" id="shuffle" type="button" aria-label="Pick an unsolved checkpoint" title="Pick an unsolved checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></button>
+    </div>
+    <div class="tb-mid">
+      <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
+      <button class="act submit" id="submit" type="button" title="Copy your code and the command that runs every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
+    </div>
+    <div class="tb-right"><span class="live" id="live" hidden></span><span class="tb-prog" id="tb-prog"></span></div>
+  </header>
+
+  <div class="ide-main" id="ide-main">
+    <section class="panel left" aria-label="Problem">
+      <div class="panel-head" role="tablist">
+        <button class="ptab" role="tab" data-left="desc" aria-selected="true"><svg class="ico-desc" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Description</button>
+        <span class="sep" id="ed-sep"></span>
+        <button class="ptab" role="tab" data-left="editorial" aria-selected="false" id="ed-tab"><svg class="ico-ed" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7"/></svg>Editorial</button>
+      </div>
+      <div class="panel-body" id="desc" role="tabpanel"></div>
+      <div class="panel-body" id="editorial" role="tabpanel" hidden></div>
+    </section>
+
+    <div class="splitter v" id="split-v" role="separator" aria-orientation="vertical" aria-label="Resize the problem and code panels" tabindex="0"></div>
+
+    <div class="right" id="right">
+      <section class="panel code" aria-label="Code">
+        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: shared code in common/ and every checkpoint's file"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
+        <div class="code-tools">
+          <span class="lang" id="lang" title="Only your program's output is checked, so any language works. To use another one, change build and run in workbook.json."></span>
+          <div class="seg small" id="kind" role="group" aria-label="Starter code">
+            <button type="button" data-kind="blank" aria-pressed="true" title="A comment and an empty main: the includes, input and output are yours">Blank</button>
+            <button type="button" data-kind="boilerplate" aria-pressed="false" title="Input/output code done; you fill in the functions marked TODO">Boilerplate</button>
+          </div>
+          <span class="file" id="file"></span>
+          <div class="tools-right">
+            <span class="confirm" id="confirm" hidden><span id="confirm-text"></span> <button class="btn" type="button" id="confirm-yes">Replace</button><button class="btn" type="button" id="confirm-no">Cancel</button></span>
+            <button class="icon-btn vim-btn" type="button" id="vim" aria-pressed="false" title="Vim keys: Normal, Insert and Visual modes, / to search, :w to save">Vim</button>
+            <button class="icon-btn" type="button" id="reset" aria-label="Reset to the starter code" title="Reset to the starter code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+            <button class="icon-btn" type="button" id="copy-code" aria-label="Copy the code" title="Copy the code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+          </div>
+        </div>
+        <div class="ftabs" id="ftabs" role="tablist" aria-label="Open files" hidden></div>
+        <div class="editor-row"><nav class="tree" id="tree" aria-label="Files" hidden></nav><div class="editor" id="editor"></div></div>
+        <div class="code-status"><span id="saved"></span><span id="pos"></span></div>
+      </section>
+
+      <div class="splitter h" id="split-h" role="separator" aria-orientation="horizontal" aria-label="Resize the code and test panels" tabindex="0"></div>
+
+      <section class="panel tests" aria-label="Tests">
+        <div class="panel-head" role="tablist">
+          <button class="ptab" role="tab" data-bottom="cases" aria-selected="true"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg>Testcase</button>
+          <span class="sep"></span>
+          <button class="ptab" role="tab" data-bottom="result" aria-selected="false"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7 5 5-5 5M12 18h7"/></svg>Test Result</button>
+        </div>
+        <div class="panel-body" id="cases" role="tabpanel"></div>
+        <div class="panel-body" id="result" role="tabpanel" hidden></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/runmode/runmode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/keymap/vim.min.js"></script>
+{{MODES}}
+<script type="application/json" id="book-data">{{DATA}}</script>
+<script>
+(function () {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('book-data').textContent);
+  const CPS = DATA.checkpoints;
+  const BY = Object.fromEntries(CPS.map((c) => [c.id, c]));
+  const DIFFS = ['Easy', 'Medium', 'Hard'].filter((d) => CPS.some((c) => c.difficulty === d))
+    .concat([...new Set(CPS.map((c) => c.difficulty))].filter((d) => !['Easy', 'Medium', 'Hard'].includes(d)));
+
+  // Progress, drafts and layout live in this browser only.
+  const store = {
+    get(k) { try { return localStorage.getItem(DATA.key + ':' + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(DATA.key + ':' + k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(DATA.key + ':' + k); } catch (e) {} },
+  };
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const command = (id, extra) => DATA.check.replace('{id}', id) + (extra ? ' ' + extra : '');
+  const solved = (id) => store.get(id + ':solved') === '1';
+  const drafted = (id) => store.get(id + ':draft') !== null;
+  const diffClass = (d) => d.toLowerCase();
+  const icon = (paths, size, extra) => `<svg viewBox="0 0 24 24" width="${size || 16}" height="${size || 16}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra || ''}>${paths}</svg>`;
+  const I = {
+    check: icon('<path d="m5 12 5 5 9-10"/>'),
+    tryIcon: icon('<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>'),
+    tag: icon('<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>', 14),
+    bulb: icon('<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>', 15),
+    lock: icon('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', 14),
+    down: icon('<path d="m6 9 6 6 6-6"/>', 15),
+    link: icon('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', 15),
+    map: icon('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', 15),
+    book: icon('<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>', 15),
+  };
+
+  let current = null;          // checkpoint id on screen, or null for the list
+  let caseIndex = 0;           // selected test case in the bottom panel
+  const peeked = new Set();    // editorials opened before solving, this visit only
+  const lastAction = {};       // id -> { kind: 'run' | 'submit', test, copied }
+
+  // ---------------------------------------------------------------- problem list
+  const filter = { topic: null, diff: null, q: '' };
+
+  function topicsOf(c) {
+    const concepts = c.tags.find((g) => g.label.toLowerCase() === 'concepts');
+    return concepts ? concepts.text : c.tags.flatMap((g) => g.text);
+  }
+
+  function renderListShell() {
+    $$('[data-logo]').forEach((el) => { el.textContent = DATA.title.trim().charAt(0).toUpperCase(); });
+    $('#book-name').textContent = DATA.title;
+    $('#nav-src').innerHTML = `Built on <a href="${esc(DATA.sourceUrl)}" target="_blank" rel="noopener">“${esc(DATA.sourceTitle)}”</a> by ${esc(DATA.author)}`;
+    $('#hero').innerHTML = `<span class="over">${CPS.length} checkpoints · any language</span><h1>${esc(DATA.headline)}</h1><p>${esc(DATA.lede)}</p>`;
+    $('#credits').textContent = DATA.credits;
+    $('#diff').innerHTML = ['All'].concat(DIFFS).map((d) =>
+      `<button type="button" data-diff="${d === 'All' ? '' : esc(d)}" aria-pressed="${d === 'All'}">${esc(d)}</button>`).join('');
+
+    const counts = {};
+    CPS.forEach((c) => topicsOf(c).forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    const topics = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
+    $('#topics').innerHTML = `<button class="tchip" type="button" data-topic="" aria-pressed="true">All topics</button>`
+      + topics.map((t) => `<button class="tchip" type="button" data-topic="${esc(t)}" aria-pressed="false">${esc(t)}<sup>${counts[t]}</sup></button>`).join('')
+      + (topics.length > 11 ? '<button class="more" type="button" id="more-topics">Expand</button>' : '');
+  }
+
+  function renderSide() {
+    const done = CPS.filter((c) => solved(c.id));
+    const r = 50, C = 2 * Math.PI * r;
+    let offset = 0;
+    const arcs = DIFFS.map((d) => {
+      const n = done.filter((c) => c.difficulty === d).length;
+      const len = (n / CPS.length) * C;
+      const arc = n ? `<circle cx="56" cy="56" r="${r}" fill="none" stroke="currentColor" class="${diffClass(d)}" stroke-width="7" stroke-linecap="butt" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-offset}"/>` : '';
+      offset += len;
+      return arc;
+    }).join('');
+    const bars = DIFFS.map((d) => {
+      const all = CPS.filter((c) => c.difficulty === d).length;
+      const n = done.filter((c) => c.difficulty === d).length;
+      return `<button class="bar-row ${diffClass(d)}" type="button" data-diff="${esc(d)}" aria-pressed="${filter.diff === d}">
+        <span class="lbl">${esc(d)}</span><span class="n"><b>${n}</b>/${all}</span><span class="bar"><i style="width:${all ? (n / all) * 100 : 0}%"></i></span></button>`;
+    }).join('');
+    const first = CPS[0] ? CPS[0].id : '01';
+    $('#side').innerHTML = `
+      <div class="card prog">
+        <div class="ring"><svg viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="${r}" fill="none" style="stroke: var(--fill)" stroke-width="7"/>${arcs}</svg>
+          <div class="ring-c"><div><b>${done.length}</b><span>/${CPS.length}</span></div><small>Solved</small></div></div>
+        <div class="bars">${bars}</div>
+      </div>
+      <div class="card how"><h2>How checking works</h2><ol>
+        <li><span><b>Write it</b> in the editor here, or straight in <code>solutions/</code> in your own editor. Each starter is an empty <code>main</code>; switch to Boilerplate if you want the input and output code done for you.</span></li>
+        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the checkpoint solved. Your code is saved to <code>solutions/</code> as you type.</span></li>`
+          : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
+        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
+        <li><span><b>Any order.</b> Each input carries what the earlier checkpoints would produce, so every checkpoint stands alone.</span></li>
+        <li><span><b>Build on your own work.</b> Code in <code>solutions/common/</code> is compiled into every checkpoint, so later ones (and the last one most of all) can call what you wrote earlier.</span></li>
+        <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
+      </ol></div>`;
+    if (CPS.length && done.length === CPS.length) renderFinish();
+  }
+
+  // Every checkpoint passes: show what the learner built, and how the pieces fit together.
+  function renderFinish() {
+    const card = document.createElement('div');
+    card.className = 'card finish';
+    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} checkpoints pass${LOCAL ? '. Here is your project:' : '. Open the workbook with study to see your project laid out.'}</p><div id="finish-files"></div>`;
+    $('#side').prepend(card);
+    if (!LOCAL) return;
+    api('/api/files').then(({ files }) => {
+      const cps = files.filter((f) => f.checkpoint), common = files.filter((f) => !f.checkpoint && !/\.(md|txt)$/i.test(f.path));
+      const lines = (list) => list.reduce((n, f) => n + f.lines, 0);
+      const users = (p) => cps.filter((f) => (f.uses || []).includes(p)).map((f) => (BY[f.checkpoint] || {}).num || f.checkpoint);
+      $('#finish-files').innerHTML = (common.length
+        ? `<table>${common.map((f) => `<tr><td>${esc(f.path.replace(/^solutions\//, ''))}</td><td>${f.lines} lines${users(f.path).length ? ` · used by ${users(f.path).join(', ')}` : ''}</td></tr>`).join('')}</table>`
+        : '<p class="note">Nothing in <code>solutions/common/</code> yet, so each checkpoint is still its own program.</p>')
+        + `<p class="note">${cps.length} checkpoint files (${lines(cps)} lines)${common.length ? ` and ${common.length} shared files (${lines(common)} lines)` : ''}.</p>`;
+    }).catch(() => {});
+  }
+
+  function renderRows() {
+    const q = filter.q.trim().toLowerCase();
+    const shown = CPS.filter((c) => (!filter.diff || c.difficulty === filter.diff)
+      && (!filter.topic || topicsOf(c).includes(filter.topic))
+      && (!q || (c.num + '. ' + c.title + ' ' + c.tags.flatMap((g) => g.text).join(' ')).toLowerCase().includes(q)));
+    $('#rows').innerHTML = shown.map((c) => {
+      const st = store.get(c.id + ':broke') ? '<span class="st-broke" title="Solved before, failing since a re-check">!</span>'
+        : solved(c.id) ? `<span class="st-ok" title="Solved">${I.check}</span>`
+        : drafted(c.id) ? `<span class="st-try" title="Attempted: a draft is saved">${I.tryIcon}</span>` : '';
+      return `<tr data-id="${c.id}"><td class="st">${st}</td><td class="ti"><a href="#p${c.id}">${esc(c.num)}. ${esc(c.title)}</a></td>`
+        + `<td class="te">${c.tests}</td><td class="di ${diffClass(c.difficulty)}">${esc(c.difficulty)}</td></tr>`;
+    }).join('') || '<tr><td></td><td class="muted" colspan="3">No checkpoints match.</td></tr>';
+    return shown;
+  }
+
+  function showList() {
+    current = null;
+    $('#ide-view').hidden = true;
+    $('#list-view').hidden = false;
+    document.body.classList.remove('in-ide');
+    renderSide();
+    renderRows();
+    window.scrollTo(0, 0);
+  }
+
+  $('#topics').addEventListener('click', (e) => {
+    if (e.target.id === 'more-topics') {
+      const box = $('#topics');
+      e.target.textContent = box.classList.toggle('collapsed') ? 'Expand' : 'Collapse';
+      return;
+    }
+    const chip = e.target.closest('[data-topic]');
+    if (!chip) return;
+    filter.topic = chip.dataset.topic || null;
+    $$('#topics [data-topic]').forEach((b) => b.setAttribute('aria-pressed', String(b === chip)));
+    renderRows();
+  });
+  function setDiff(d) {
+    filter.diff = d || null;
+    $$('#diff [data-diff]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.diff || null) === filter.diff)));
+    renderSide();
+    renderRows();
+  }
+  $('#diff').addEventListener('click', (e) => { const b = e.target.closest('[data-diff]'); if (b) setDiff(b.dataset.diff); });
+  $('#side').addEventListener('click', (e) => { const b = e.target.closest('.bar-row'); if (b) setDiff(filter.diff === b.dataset.diff ? '' : b.dataset.diff); });
+  $('#q').addEventListener('input', (e) => { filter.q = e.target.value; renderRows(); });
+  $('#rows').addEventListener('click', (e) => {
+    const row = e.target.closest('tr[data-id]');
+    if (row && !e.target.closest('a')) go('p' + row.dataset.id);
+  });
+  function pickOne(pool) {
+    const open = pool.filter((c) => !solved(c.id) && c.id !== current);
+    const from = open.length ? open : pool.filter((c) => c.id !== current);
+    if (from.length) go('p' + from[Math.floor(Math.random() * from.length)].id);
+  }
+  $('#pick').addEventListener('click', () => pickOne(renderRows()));
+
+  // ---------------------------------------------------------------- problem view
+  function renderDesc(c) {
+    const opened = Number(store.get(c.id + ':hints') || 0);
+    const acc = (id, iconHtml, title, body) => `<div class="acc" ${id ? `id="${id}"` : ''}><button class="acc-btn" type="button" aria-expanded="false">${iconHtml}<span>${title}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${body}</div></div>`;
+    const hintHtml = c.hints.map((h, k) => {
+      const n = k + 1, locked = n > opened + 1;
+      return `<div class="acc hint" data-n="${n}"><button class="acc-btn" type="button" aria-expanded="false"${locked ? ' disabled' : ''}>${I.bulb}<span>${esc(h.title)}<span class="acc-sub">${h.sub}</span></span>`
+        + `<span class="acc-lock" ${locked ? '' : 'hidden'} title="Open hint ${n - 1} first">${I.lock}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${h.html}</div></div>`;
+    }).join('');
+    const tags = c.tags.map((g) => `<div class="tg"><span class="tg-label">${esc(g.label)}</span><div class="tg-items">${g.items.map((t) => `<span class="chip">${t}</span>`).join('')}</div></div>`).join('');
+
+    $('#desc').innerHTML = `
+      <div class="d-head"><h1>${esc(c.num)}. ${esc(c.title)}</h1><span class="solved-mark" id="solved-mark" ${solved(c.id) ? '' : 'hidden'}>Solved ${I.check}</span></div>
+      <div class="chips">
+        <span class="chip ${diffClass(c.difficulty)}">${esc(c.difficulty)}</span>
+        ${c.tags.length ? `<button class="chip" type="button" data-jump="acc-topics">${I.tag}Topics</button>` : ''}
+        ${c.hints.length ? `<button class="chip" type="button" data-jump="hints">${I.bulb}Hint</button>` : ''}
+        <span class="chip">${c.tests} tests</span>
+        <span class="chip" title="Only your program's output is checked, so any structure, language or library works.">Any language</span>
+      </div>
+      ${c.read ? `<div class="callout">${I.book}<div><b>Read in the blog first.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
+      <div class="flow">${c.body}</div>
+      <div class="accs">
+        ${c.tags.length ? acc('acc-topics', I.tag, 'Topics', tags) : ''}
+        ${hintHtml}
+        ${c.context ? acc('', I.map, 'Where this fits', c.context) : ''}
+        ${c.sources ? acc('', I.link, 'Source material', c.sources) : ''}
+      </div>
+      <div class="d-foot"><button class="btn" type="button" id="solve-btn"></button><span>Checkpoint ${CPS.indexOf(c) + 1} of ${CPS.length} · problem page <code>${esc(c.problem)}</code></span></div>`;
+
+    const host = $('[data-examples]', $('#desc'));
+    if (host) host.innerHTML = c.examples.map(exampleHtml).join('');
+    paintSolved();
+  }
+
+  function exampleHtml(ex) {
+    const title = `<p class="ex-title"><strong>${esc(ex.label)}:</strong> <span>${ex.name}</span></p>`;
+    if (ex.raw) return `<div class="ex">${title}<div class="flow">${ex.raw}</div></div>`;
+    const out = ex.output != null ? `<pre>${esc(ex.output)}</pre>`
+      : ex.image ? `<img class="shot" src="${ex.image.src}" alt="${esc(ex.image.alt)}">` : '';
+    return `<div class="ex">${title}<div class="ex-block">
+      <div class="ex-row"><span class="ex-k">Input:</span><pre>${esc(ex.input)}</pre></div>
+      ${out ? `<div class="ex-row"><span class="ex-k">Output:</span>${out}</div>` : ''}
+      ${ex.explain ? `<div class="ex-row"><span class="ex-k">Explanation:</span><div class="flow">${ex.explain}</div></div>` : ''}
+    </div></div>`;
+  }
+
+  function toggleAcc(box, open) {
+    const btn = $('.acc-btn', box), body = $('.acc-body', box);
+    const show = open === undefined ? body.hidden : open;
+    body.hidden = !show;
+    btn.setAttribute('aria-expanded', String(show));
+  }
+
+  // Hints open in order; the furthest one opened is remembered.
+  function openHint(box) {
+    const n = Number(box.dataset.n), key = current + ':hints';
+    const opened = Number(store.get(key) || 0);
+    if (n > opened) {
+      store.set(key, String(n));
+      $$('.acc.hint', $('#desc')).forEach((h) => {
+        const locked = Number(h.dataset.n) > n + 1;
+        $('.acc-btn', h).disabled = locked;
+        $('.acc-lock', h).hidden = !locked;
+      });
+      toggleAcc(box, true);
+    } else toggleAcc(box);
+  }
+
+  $('#desc').addEventListener('click', (e) => {
+    const jump = e.target.closest('[data-jump]');
+    if (jump) {
+      const target = jump.dataset.jump === 'hints' ? $('.acc.hint', $('#desc')) : $('#' + jump.dataset.jump);
+      if (target) {
+        if (jump.dataset.jump !== 'hints') toggleAcc(target, true);
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+      return;
+    }
+    const btn = e.target.closest('.acc-btn');
+    if (btn) {
+      const box = btn.parentElement;
+      if (box.classList.contains('hint')) openHint(box); else toggleAcc(box);
+      return;
+    }
+    if (e.target.closest('#solve-btn')) setSolved(current, !solved(current));
+  });
+
+  // The Editorial: a solution proven to pass every test (the reference, fingerprinted when it
+  // passed), then how the blog author did it. Locked until Accepted, but always one click away.
+  let solFile = 0;
+  function renderEditorial(c) {
+    const sol = c.solutionCode;
+    const has = !!c.editorial || !!sol;
+    $('#ed-tab').hidden = !has;
+    $('#ed-sep').hidden = !has;
+    if (!has) return;
+    if (!(solved(c.id) || peeked.has(c.id))) {
+      $('#editorial').innerHTML = `<div class="locked">${I.lock}<h2>Solve it first, or peek</h2><p>The editorial has a complete solution that passes every test${c.editorial ? ', and compares it with the author\'s code from the blog' : ''}. It opens by itself when the checker says Accepted.</p><button class="btn" type="button" id="peek">Show the solution anyway</button></div>`;
+      return;
+    }
+    solFile = Math.min(solFile, sol ? sol.files.length - 1 : 0);
+    const proof = sol && sol.proof
+      ? `<span class="badge ok">${I.check} Passes all ${sol.proof.total} tests · checked ${esc(sol.proof.date)}</span>`
+      : `<span class="badge warn">Not yet checked against the tests</span>`;
+    const files = sol && sol.files.length > 1
+      ? `<div class="case-pills" role="tablist">${sol.files.map((f, i) => `<button class="pill-btn" type="button" role="tab" data-sol="${i}" aria-selected="${i === solFile}">${esc(f.path)}</button>`).join('')}</div>` : '';
+    $('#editorial').innerHTML = `<h1 class="ed-title">Editorial</h1>`
+      + (sol ? `<section class="ed-sec"><h2>A solution that passes</h2>${proof}
+          <p class="note">Written from the problem page, not copied from the blog. Yours can look completely different and still be right: only the output is checked.</p>
+          ${files}<div class="sol-head"><code>${esc(sol.files[solFile].path)}</code><button class="btn" type="button" id="sol-copy">Copy</button></div>
+          <pre class="sol-code" id="sol-code"></pre>
+          ${sol.uses.length ? `<p class="note">It also uses ${sol.uses.map((u) => `<code>${esc(u)}</code>`).join(', ')}, ${sol.uses.length === 1 ? 'which is' : 'which are'} in the workbook.</p>` : ''}</section>` : '')
+      + (c.editorial ? `<section class="ed-sec"><h2>${esc(c.editorial.title)}</h2><div class="flow">${c.editorial.html}</div></section>` : '');
+    if (sol) {
+      const box = $('#sol-code'), text = sol.files[solFile].text;
+      if (window.CodeMirror && window.CodeMirror.runMode) window.CodeMirror.runMode(text, c.lang.mime, box);
+      else box.textContent = text;
+    }
+  }
+  $('#editorial').addEventListener('click', (e) => {
+    const c = BY[current];
+    if (e.target.closest('#peek')) { peeked.add(current); renderEditorial(c); return; }
+    const tab = e.target.closest('[data-sol]');
+    if (tab) { solFile = Number(tab.dataset.sol); renderEditorial(c); return; }
+    const copy = e.target.closest('#sol-copy');
+    if (copy) copyText(c.solutionCode.files[solFile].text).then((ok) => flash(copy, ok));
+  });
+
+  function setLeft(tab) {
+    $$('[data-left]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.left === tab)));
+    $('#desc').hidden = tab !== 'desc';
+    $('#editorial').hidden = tab !== 'editorial';
+  }
+  function setBottom(tab) {
+    $$('[data-bottom]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.bottom === tab)));
+    $('#cases').hidden = tab !== 'cases';
+    $('#result').hidden = tab !== 'result';
+  }
+  $$('[data-left]').forEach((b) => b.addEventListener('click', () => setLeft(b.dataset.left)));
+  $$('[data-bottom]').forEach((b) => b.addEventListener('click', () => setBottom(b.dataset.bottom)));
+
+  // ---- test cases
+  const casesOf = (c) => c.examples.filter((ex) => !ex.raw && ex.input != null);
+  function renderCases(c) {
+    const list = casesOf(c);
+    if (!list.length) {
+      $('#cases').innerHTML = `<p class="note">This checkpoint has no worked examples. <code>${esc(command(c.id))}</code> runs all ${c.tests} tests.</p>`;
+      return;
+    }
+    caseIndex = Math.min(caseIndex, list.length - 1);
+    const ex = list[caseIndex];
+    const expected = ex.output != null ? `<pre class="field-v">${esc(ex.output)}</pre>`
+      : ex.image ? `<img src="${ex.image.src}" alt="${esc(ex.image.alt)}">` : '<p class="note">See the problem page.</p>';
+    $('#cases').innerHTML = `
+      <div class="case-pills" role="tablist">${list.map((x, i) => `<button class="pill-btn" type="button" role="tab" data-case="${i}" aria-selected="${i === caseIndex}">Case ${i + 1}</button>`).join('')}</div>
+      ${ex.name ? `<p class="case-name">${ex.name}</p>` : ''}
+      <div class="field"><div class="field-k">input</div><pre class="field-v">${esc(ex.input)}</pre></div>
+      <div class="field"><div class="field-k">expected output</div>${expected}</div>
+      ${ex.test ? `<div class="field"><div class="field-k">run just this case (test ${esc(ex.test)})</div>${cmdRow(command(c.id, '-Case ' + ex.test))}</div>` : ''}`;
+  }
+  $('#cases').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-case]');
+    if (b) { caseIndex = Number(b.dataset.case); renderCases(BY[current]); }
+  });
+  const cmdRow = (text) => `<div class="cmd"><code>${esc(text)}</code><button class="btn" type="button" data-copy="${esc(text)}">Copy</button></div>`;
+
+  // ---- results: the learner pastes the checker's output; we read the verdict from it.
+  // Every outcome gets a plain sentence saying what happened and what to do next.
+  function looksLikeCode(t, c) {
+    const s = t.trim();
+    if ([code(), c.starter, c.boilerplate].some((x) => x && x.trim() === s)) return true;
+    return !/^Checkpoint \S+ - /m.test(s)
+      && /^\s*(#include\b|#!|import \S|from \S+ import|def \w+\(|(int|void|auto) main\s*\(|fn main\(|func main\(|function \w+\(|\/\/ Checkpoint \d)/m.test(s);
+  }
+  function parseOutput(text, c) {
+    const t = text.replace(/\r/g, '');
+    const head = t.match(/^Checkpoint (\S+) - /m);
+    const run = `<code>${esc(command(c.id))}</code>`;
+    let v = null, m;
+    if ((m = t.match(/Accepted: (\d+) \/ (\d+) tests passed(?: \((\d+) disputed\))?/))) {
+      v = { kind: 'ok', label: 'Accepted', passed: +m[1], total: +m[2], disputed: +(m[3] || 0) };
+    } else if ((m = t.match(/Wrong Answer: (\d+) \/ (\d+) tests passed/))) {
+      v = { kind: 'bad', label: 'Wrong Answer', passed: +m[1], total: +m[2] };
+      v.help = /wrote nothing in any failing test/.test(t)
+        ? `Your program ran but didn't write anything. It's started with two file names: the input to read and the output to write. Write your answer to the second one.`
+        : `Some tests failed. Each one below shows what was expected and what your program wrote, and the requirement it most likely breaks.`;
+    } else if (/Compile Error/.test(t)) {
+      v = { kind: 'bad', label: 'Compile Error' };
+      v.help = /has no main\(\) function/.test(t)
+        ? `Your code has no <code>main</code> function, so it can't be built into a program the checker can run. Add a <code>main</code> that reads the input file and writes the output file.`
+        : `Your code didn't build, so no tests ran. The compiler's messages are below; fix the first error first, since later ones often follow from it.`;
+    } else if ((m = t.match(/Not implemented yet:? ?(\S*)/))) {
+      v = { kind: 'warn', label: 'Not implemented yet' };
+      v.help = `The boilerplate function <code>${esc(m[1] || 'a function')}</code> still says it isn't written. Fill it in, save, and run ${run} again.`;
+    } else if (/Not started yet/.test(t)) {
+      v = { kind: 'warn', label: 'Not started yet' };
+      v.help = /is empty\./.test(t)
+        ? `Your solution file <code>${esc(c.solution)}</code> is empty, so there was nothing to check. Put your program in it, save, and run ${run} again.`
+        : `Your solution file <code>${esc(c.solution)}</code> is still the blank starter, so there was nothing to check. Write your program in it, save, and run ${run} again.`;
+    } else if (/^Passed\s*$/m.test(t)) {
+      v = { kind: 'ok', label: 'Passed', single: true, help: 'This one test passes. Run all of them to get a verdict for the checkpoint.' };
+    } else if ((m = t.match(/^Failed: (.*)$/m))) {
+      v = { kind: 'bad', label: 'Failed', single: true, help: `This one test fails: ${esc(m[1])}` };
+    } else if (!t.trim()) {
+      v = { kind: 'unknown', label: 'Nothing was pasted', help: 'The box was empty. Copy what the checker printed in the terminal, then paste it here.' };
+    } else if (looksLikeCode(t, c)) {
+      v = { kind: 'unknown', label: "That's your code, not the result", code: true,
+        help: `Submit copied your code so you can put it in <code>${esc(c.solution)}</code>. Paste it into that file and save, run ${run} in ${esc(DATA.shell)}, then copy what the checker prints and paste that here.` };
+    } else if (head) {
+      v = { kind: 'unknown', label: 'The output is cut off',
+        help: `This starts like the checker's output but has no verdict at the end. Copy everything it printed, down to the last line (it starts with Accepted, Wrong Answer, Compile Error, Not started yet or Not implemented yet).` };
+    } else {
+      v = { kind: 'unknown', label: "That isn't the checker's output",
+        help: `Paste what ${run} prints in the terminal. It starts with “Checkpoint ${esc(c.id)} - …” and ends with a verdict such as “Accepted: ${c.tests} / ${c.tests} tests passed.”` };
+    }
+    v.raw = t;
+    v.other = head && head[1] !== c.id ? head[1] : null;
+    v.reqs = [...t.matchAll(/^ {2}(\S+)\s+(.+?) \.{2,}\s+(\d+) \/ (\d+)/gm)].map((r) => ({ id: r[1], text: r[2], ok: +r[3], n: +r[4] }));
+    v.fails = [];
+    const lines = t.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const f = lines[i].match(/^\s+x (\S+)\s+(.*)$/);
+      if (!f) continue;
+      const detail = [];
+      while (i + 1 < lines.length && /^ {9,}\S/.test(lines[i + 1])) detail.push(lines[++i].trim());
+      v.fails.push({ id: f[1], title: f[2], detail: detail.join('\n') });
+    }
+    return v;
+  }
+
+  function verdictHtml(v, c) {
+    let h = `<div class="verdict ${v.kind}"><h2>${esc(v.label)}</h2>`
+      + (v.total ? `<span class="sub">${v.passed} / ${v.total} testcases passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
+      + `<button class="btn" type="button" id="clear-result">Clear</button></div>`;
+    if (v.other) h += `<p class="note warn">This output is from checkpoint ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here. Open checkpoint ${esc(v.other)} and paste it there.</p>`;
+    else if (v.kind === 'ok' && !v.single) h += `<p class="note">Saved as solved. The Editorial tab is open now.</p>`;
+    if (v.help) h += `<p class="note">${v.help}</p>`;
+    if (v.reqs.length) {
+      h += '<div class="req-rows">' + v.reqs.map((r) => `<div class="req-row${r.ok === r.n ? '' : ' fail'}"><span class="rid">${esc(r.id)}</span><span class="rq" title="${esc(r.text)}">${esc(r.text)}</span><span class="cnt">${r.ok} / ${r.n}</span><span class="bar"><i style="width:${r.n ? (r.ok / r.n) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
+    }
+    h += v.fails.map((f) => `<div class="fail-card"><span class="id">${esc(f.id)}</span><span class="t">${esc(f.title)}</span><pre>${esc(f.detail)}</pre></div>`).join('');
+    if (v.kind !== 'ok' && !v.fails.length && !v.reqs.length && v.raw.trim()) {
+      const lines = v.raw.trim().split('\n');
+      const shown = v.kind === 'unknown' ? lines.slice(0, 12) : lines.slice(-40);
+      h += `<div class="field-k">${v.kind === 'unknown' ? 'What you pasted' : 'What the checker printed'}</div>`
+        + `<pre class="raw">${esc(shown.join('\n'))}${v.kind === 'unknown' && lines.length > 12 ? '\n…' : ''}</pre>`;
+    }
+    return h;
+  }
+
+  function renderResult(c, notice) {
+    const saved = store.get(c.id + ':result');
+    const v = saved ? parseOutput(saved, c) : null;
+    const act = lastAction[c.id];
+    const runCmd = act && act.kind === 'run' && act.test ? command(c.id, '-Case ' + act.test) : command(c.id);
+    const copied = !act ? '<b>Copy your code</b> and paste it over'
+      : act.empty ? '<b>Nothing to copy yet:</b> the editor is empty. Write your program, then paste it over'
+      : act.copied ? '<b>Code copied.</b> Paste it over'
+      : '<b>Copy didn\'t work here:</b> the code is selected in the editor, so press Ctrl+C, then paste it over';
+    $('#result').innerHTML = (notice ? `<p class="note warn">${notice}</p>` : '')
+      + (act && act.warn ? `<p class="note warn">${act.warn}</p>` : '') + (v ? verdictHtml(v, c) : '') + `
+      <ol class="steps">
+        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(c.solution)}</code>. Skip this if you edit that file directly.</p>
+          <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
+        <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
+        <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p><b>Copy what the checker prints</b> in the terminal and paste it here (the result, not your code).</p>
+          <textarea class="paste" id="paste" spellcheck="false" placeholder="Paste the checker's output here (Ctrl+V). It starts with “Checkpoint ${esc(c.id)} - …”"></textarea></div></li>
+      </ol>
+      <details class="more"><summary>More commands, and what a failure looks like</summary><div>
+        ${cmdRow(command(c.id))}${cmdRow(command(c.id, '-Fresh'))}${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
+        <div class="flow" style="margin-top:14px">${c.checking}</div></div></details>`;
+  }
+
+  function takeOutput(text) {
+    if (!current) return;
+    const c = BY[current];
+    if (!text.trim()) {
+      renderResult(c, 'The box was empty, so there was nothing to read. Copy what the checker printed in the terminal (everything from “Checkpoint ' + esc(c.id) + ' - …” to the last line), then paste it here.');
+      return;
+    }
+    store.set(c.id + ':result', text);
+    if (lastAction[c.id]) lastAction[c.id].warn = null;  // the pasted result says more than the Submit-time warning
+    const v = parseOutput(text, c);
+    if (v.kind === 'ok' && !v.single && !v.other) setSolved(c.id, true);
+    renderResult(c);
+    $('#result').scrollTop = 0;
+  }
+  $('#result').addEventListener('paste', (e) => {
+    if (e.target.id !== 'paste') return;
+    e.preventDefault();
+    takeOutput((e.clipboardData || window.clipboardData).getData('text'));
+  });
+  $('#result').addEventListener('change', (e) => { if (e.target.id === 'paste') takeOutput(e.target.value); });
+  $('#result').addEventListener('click', (e) => {
+    if (e.target.closest('#clear-result')) { store.del(current + ':result'); renderResult(BY[current]); }
+    if (e.target.closest('#copy-again')) act(lastAction[current] ? lastAction[current].kind : 'submit');
+  });
+
+  // ---- solved state
+  function setSolved(id, value) {
+    if (value) store.set(id + ':solved', '1'); else store.del(id + ':solved');
+    if (id === current) { paintSolved(); renderEditorial(BY[id]); }
+  }
+  function paintSolved() {
+    if (!current) return;
+    const done = solved(current);
+    const mark = $('#solved-mark'), btn = $('#solve-btn');
+    if (mark) mark.hidden = !done;
+    if (btn) { btn.innerHTML = done ? `${I.check} Solved` : 'Mark as solved'; btn.classList.toggle('done', done); }
+    $('#tb-prog').innerHTML = `<b>${CPS.filter((c) => solved(c.id)).length}</b> / ${CPS.length} solved`;
+  }
+
+  // ---- editor
+  let cm = null, plainEditor = null, saveTimer = 0;
+  const docs = {};
+  function initEditor() {
+    const host = $('#editor');
+    if (window.CodeMirror) {
+      cm = window.CodeMirror(host, {
+        lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true, indentWithTabs: false,
+        extraKeys: {
+          // In Vim's Normal and Visual modes, Tab belongs to Vim.
+          Tab: (ed) => (vimNormal(ed) ? window.CodeMirror.Pass
+            : ed.somethingSelected() ? ed.indentSelection('add') : ed.replaceSelection(' '.repeat(ed.getOption('indentUnit')), 'end')),
+          'Shift-Tab': (ed) => (vimNormal(ed) ? window.CodeMirror.Pass : ed.execCommand('indentLess')),
+        },
+      });
+      if (window.CodeMirror.Vim) {
+        window.CodeMirror.Vim.defineEx('write', 'w', () => saveNow());
+        cm.on('vim-mode-change', (e) => { vimMode = e.mode + (e.subMode ? ' ' + e.subMode : ''); showPos(); });
+        setVim(store.get('editor:vim') === '1');
+      } else {
+        $('#vim').hidden = true;  // the keymap didn't load
+      }
+      cm.on('changes', saveSoon);
+      cm.on('cursorActivity', showPos);
+      if (window.ResizeObserver) {
+        let frame = 0;
+        new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => cm.refresh()); }).observe(host);
+      }
+    } else {
+      plainEditor = document.createElement('textarea');
+      plainEditor.className = 'fallback-editor';
+      plainEditor.spellcheck = false;
+      plainEditor.setAttribute('aria-label', 'Code');
+      host.appendChild(plainEditor);
+      plainEditor.addEventListener('input', saveSoon);
+    }
+  }
+  const code = () => (cm ? cm.getValue() : plainEditor.value);
+  // Each checkpoint starts blank; the boilerplate (input/output done) is one click away.
+  const kindOf = (c) => (c.boilerplate && store.get(c.id + ':kind') === 'boilerplate' ? 'boilerplate' : 'blank');
+  const starterOf = (c, kind) => (kind === 'boilerplate' && c.boilerplate ? c.boilerplate : c.starter);
+  const kindName = (kind) => (kind === 'boilerplate' ? 'Boilerplate' : 'Blank');
+  function setCode(text) {
+    if (cm) cm.setValue(text); else plainEditor.value = text;
+  }
+  function useStarter(c, kind) {
+    if (kind === 'boilerplate') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
+    setCode(starterOf(c, kind));
+    store.del(c.id + ':draft');
+    paintKind(c);
+    showSaved();
+  }
+  function paintKind(c) {
+    $('#kind').hidden = !c.boilerplate;
+    $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
+  }
+  // A one-line question in the code toolbar (the page can't use confirm()).
+  let onYes = null, onNo = null;
+  function ask(text, yes, labels, no) {
+    onYes = yes;
+    onNo = no || null;
+    $('#confirm-text').textContent = text;
+    $('#confirm-yes').textContent = (labels && labels[0]) || 'Replace';
+    $('#confirm-no').textContent = (labels && labels[1]) || 'Cancel';
+    $('#confirm').hidden = false;
+    $('#confirm-yes').focus();
+  }
+  $('#kind').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-kind]');
+    const c = BY[current];
+    if (!b || !c || b.dataset.kind === kindOf(c)) return;
+    const text = code();
+    if (text === c.starter || text === c.boilerplate) useStarter(c, b.dataset.kind);
+    else ask(`Replace your code with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
+  });
+  $('#reset').addEventListener('click', () => {
+    const c = BY[current];
+    ask(`Replace your code with the ${kindName(kindOf(c)).toLowerCase()} starter?`, () => useStarter(c, kindOf(c)));
+  });
+  $('#confirm-no').addEventListener('click', () => {
+    $('#confirm').hidden = true;
+    if (onNo) onNo();
+  });
+  $('#confirm-yes').addEventListener('click', () => {
+    $('#confirm').hidden = true;
+    if (current && onYes) onYes();
+  });
+
+  function loadEditor(c) {
+    // Live mode: the solution file on disk is the source of truth, not browser drafts.
+    const draft = LOCAL ? (live.disk[c.solution] ? live.disk[c.solution].text : null) : store.get(c.id + ':draft');
+    const start = starterOf(c, kindOf(c));
+    if (cm) {
+      if (!docs[c.id]) docs[c.id] = window.CodeMirror.Doc(draft !== null ? draft : start, c.lang.mime);
+      cm.swapDoc(docs[c.id]);
+      cm.setOption('indentUnit', c.indent);
+      cm.setOption('tabSize', c.indent);
+    } else {
+      plainEditor.value = draft !== null ? draft : start;
+      plainEditor.style.tabSize = c.indent;
+    }
+    paintKind(c);
+    $('#lang').innerHTML = `${esc(c.lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
+    $('#file').textContent = c.solution;
+    $('#confirm').hidden = true;
+    showSaved();
+    showPos();
+    if (LOCAL) openCheckpointFiles(c);
+  }
+  function saveSoon() {
+    if (live.quiet) return;
+    if (LOCAL) { saveSoonLive(); return; }
+    clearTimeout(saveTimer);
+    $('#saved').textContent = 'Saving…';
+    const id = current;
+    saveTimer = setTimeout(() => {
+      if (id !== current) return;
+      const text = code();
+      const c = BY[id];
+      if (text === starterOf(c, kindOf(c))) store.del(id + ':draft'); else store.set(id + ':draft', text);
+      showSaved();
+    }, 400);
+  }
+  function showSaved() {
+    if (!current) return;
+    if (LOCAL) {
+      const path = live.active || BY[current].solution, known = live.disk[path];
+      $('#saved').textContent = !live.online ? 'Not saved: the study server has stopped'
+        : live.conflict[path] ? 'The file changed on disk'
+        : known && known.text === code() ? `Saved to ${path}` : 'Saving…';
+      return;
+    }
+    $('#saved').textContent = drafted(current) ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
+  }
+  function showPos() {
+    if (!cm) { $('#pos').textContent = ''; return; }
+    const p = cm.getCursor();
+    $('#pos').textContent = (vimOn ? `${vimMode.toUpperCase()} · ` : '') + `Ln ${p.line + 1}, Col ${p.ch + 1}`;
+  }
+
+  // ---- Vim keys (CodeMirror's Vim keymap), remembered in this browser
+  let vimOn = false, vimMode = 'normal';
+  function vimNormal(ed) { return !!(ed.state.vim && !ed.state.vim.insertMode); }
+  function setVim(on) {
+    vimOn = !!(on && cm && window.CodeMirror.Vim);
+    if (cm) cm.setOption('keyMap', vimOn ? 'vim' : 'default');
+    vimMode = 'normal';
+    $('#vim').setAttribute('aria-pressed', String(vimOn));
+    if (vimOn) store.set('editor:vim', '1'); else store.del('editor:vim');
+    showPos();
+  }
+  $('#vim').addEventListener('click', () => { setVim(!vimOn); if (cm) cm.focus(); });
+
+  // Save now: :w in Vim, or Ctrl+S anywhere in the problem view.
+  function saveNow() {
+    if (!current) return;
+    if (LOCAL) { saveAll(); return; }
+    clearTimeout(saveTimer);
+    const c = BY[current], text = code();
+    if (text === starterOf(c, kindOf(c))) store.del(c.id + ':draft'); else store.set(c.id + ':draft', text);
+    showSaved();
+  }
+
+  // ---- clipboard
+  function copyText(text) {
+    try { return navigator.clipboard.writeText(text).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+  }
+  function selectAllCode() {
+    if (cm) { cm.focus(); cm.execCommand('selectAll'); } else { plainEditor.focus(); plainEditor.select(); }
+  }
+  function flash(btn, ok) {
+    const old = btn.innerHTML;
+    btn.innerHTML = ok ? 'Copied' : 'Press Ctrl+C';
+    btn.classList.toggle('done', ok);
+    setTimeout(() => { btn.innerHTML = old; btn.classList.remove('done'); }, 1400);
+  }
+  $('#copy-code').addEventListener('click', () => {
+    const btn = $('#copy-code');
+    copyText(code()).then((ok) => {
+      if (!ok) selectAllCode();
+      btn.style.color = ok ? 'var(--ok)' : '';
+      setTimeout(() => { btn.style.color = ''; }, 1200);
+    });
+  });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-copy]');
+    if (!b) return;
+    copyText(b.dataset.copy).then((ok) => {
+      if (!ok) {
+        const range = document.createRange();
+        range.selectNodeContents(b.previousElementSibling);
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      }
+      flash(b, ok);
+    });
+  });
+
+  // ---- Run / Submit: copy the code, then show what to run in the terminal
+  function act(kind) {
+    if (!current) return;
+    if (LOCAL) { runLive(kind, {}); return; }
+    const c = BY[current];
+    const list = casesOf(c);
+    const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
+    const text = code();
+    const entry = { kind, test, copied: false, empty: !text.trim() };
+    // Say up front what the checker will answer, instead of letting it look like a failure later.
+    if (entry.empty) entry.warn = `Your code is empty. The checker will answer “Not started yet” until <code>${esc(c.solution)}</code> has a program in it.`;
+    else if (text.trim() === c.starter.trim()) entry.warn = 'This is still the blank starter (an empty <code>main</code>), so the checker will answer “Not started yet”. Write your program first, or pick Boilerplate above the editor for ready-made input/output code.';
+    lastAction[c.id] = entry;
+    if (entry.empty) {
+      renderResult(c);
+      setBottom('result');
+      $('#result').scrollTop = 0;
+      return;
+    }
+    copyText(text).then((ok) => {
+      entry.copied = ok;
+      if (!ok) selectAllCode();
+      renderResult(c);
+      setBottom('result');
+      $('#result').scrollTop = 0;
+    });
+  }
+  $('#run').addEventListener('click', () => act('run'));
+  $('#submit').addEventListener('click', () => act('submit'));
+  document.addEventListener('keydown', (e) => {
+    if (!current || !(e.ctrlKey || e.metaKey) || e.target.id === 'paste') return;
+    if (e.key === 's' || e.key === 'S') { e.preventDefault(); saveNow(); return; }
+    if (e.key === 'Enter') { e.preventDefault(); act('submit'); }
+    else if (e.key === "'") { e.preventDefault(); act('run'); }
+  }, true);
+
+  // ---------------------------------------------------------------- live mode (.\study)
+  // Served by tools/serve.py, the page saves your files and runs the checker itself, so Run and
+  // Submit show the verdict directly. The published copy of the book keeps the copy-and-paste steps.
+  // Everything here is keyed by file path: the checkpoint's file and the shared files in
+  // solutions/common/ are loaded, autosaved and watched the same way.
+  const LOCAL = window.WORKBOOK_LOCAL || null;
+  const live = { online: !!LOCAL, disk: {}, conflict: {}, conflictData: {}, report: {}, marks: {}, busy: false,
+    quiet: false, tabs: [], active: null, project: [], showTree: false, tick: 0 };
+  const shared = {};                                    // path -> CodeMirror.Doc for files in solutions/common/
+  const BY_PATH = Object.fromEntries(CPS.map((c) => [c.solution, c]));
+  const pending = new Set();                            // files with unsaved edits
+  let diskTimer = 0;
+
+  async function api(path, options) {
+    const res = await fetch(path, Object.assign({ headers: { 'X-Workbook-Token': LOCAL.token, 'Content-Type': 'application/json' } }, options || {}));
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw Object.assign(new Error(body.error || res.statusText), { status: res.status, body });
+    }
+    return res.json();
+  }
+  function setOnline(ok) {
+    if (live.online !== ok) { live.online = ok; paintLive(); showSaved(); }
+  }
+  function paintLive() {
+    const el = $('#live');
+    if (!LOCAL) return;
+    el.hidden = false;
+    el.className = 'live ' + (!live.online ? 'off' : LOCAL.problem ? 'warn' : 'on');
+    el.textContent = !live.online ? 'Disconnected' : LOCAL.problem ? "Can't build yet" : 'Live';
+    el.title = !live.online ? 'The study server has stopped. Start it again (double-click study.cmd, or run .\\study), then reload this page.'
+      : LOCAL.problem || `Run and Submit build and check your code in ${LOCAL.folder}`;
+  }
+
+  // ---- files
+  const isShared = (path) => !BY_PATH[path];
+  const shortName = (path) => path.replace(/^solutions\//, '');
+  const docOf = (path) => (BY_PATH[path] ? docs[BY_PATH[path].id] : shared[path]);
+  const textOf = (path) => (cm ? (docOf(path) ? docOf(path).getValue() : null) : path === live.active ? plainEditor.value : null);
+  const EXT_MODES = { cpp: 'text/x-c++src', cc: 'text/x-c++src', cxx: 'text/x-c++src', h: 'text/x-c++src', hpp: 'text/x-c++src',
+    c: 'text/x-csrc', java: 'text/x-java', cs: 'text/x-csharp', kt: 'text/x-kotlin', py: 'text/x-python', js: 'text/javascript',
+    mjs: 'text/javascript', ts: 'text/typescript', rs: 'text/x-rustsrc', go: 'text/x-go' };
+  const modeFor = (path) => EXT_MODES[(path.split('.').pop() || '').toLowerCase()] || 'text/plain';
+  const fromDisk = (f) => ({ mtime: f.mtime, text: (f.text === null ? '' : f.text).replace(/\r\n/g, '\n'), missing: f.text === null });
+
+  function setDocQuietly(path, text) {
+    // Swap in text from disk without saving it straight back, keeping the cursor where it was.
+    live.quiet = true;
+    const doc = docOf(path);
+    if (doc) { const at = doc.getCursor(); doc.setValue(text); doc.setCursor(at); }
+    else if (!cm && path === live.active) plainEditor.value = text;
+    live.quiet = false;
+  }
+  async function loadFile(path) {
+    try {
+      const f = fromDisk(await api('/api/file?path=' + encodeURIComponent(path)));
+      setOnline(true);
+      live.disk[path] = f;
+      if (!docOf(path) && isShared(path) && cm) shared[path] = window.CodeMirror.Doc(f.text, modeFor(path));
+      else if (!f.missing && textOf(path) !== f.text) setDocQuietly(path, f.text);
+    } catch (e) { if (!e.status) setOnline(false); }
+    if (path === live.active) showSaved();
+  }
+  function saveSoonLive() {
+    if (!live.active) return;
+    pending.add(live.active);
+    clearTimeout(diskTimer);
+    $('#saved').textContent = 'Saving…';
+    diskTimer = setTimeout(saveAll, 600);
+  }
+  async function saveAll() {
+    clearTimeout(diskTimer);
+    const paths = [...new Set([...pending, ...live.tabs])];
+    pending.clear();
+    for (const path of paths) await saveFile(path);
+  }
+  async function saveFile(path) {
+    const text = textOf(path);
+    if (text === null || live.conflict[path]) return;
+    const known = live.disk[path];
+    if (!known || known.text === text) { if (path === live.active) showSaved(); return; }  // not loaded yet, or nothing new
+    try {
+      const r = await api('/api/file', { method: 'PUT', body: JSON.stringify({ path, text, base: known.mtime }) });
+      live.disk[path] = { mtime: r.mtime, text };
+      setOnline(true);
+    } catch (e) {
+      if (e.status === 409) conflict(path, fromDisk(e.body)); else if (!e.status) setOnline(false);
+    }
+    if (path === live.active) showSaved();
+  }
+  // Both this page and another editor changed a file: let the learner pick, never overwrite silently.
+  function conflict(path, f) {
+    pending.delete(path);
+    live.conflict[path] = true;
+    live.conflictData[path] = f;
+    if (path === live.active) { showSaved(); askConflict(path); }
+    paintTabs();
+  }
+  function askConflict(path) {
+    const f = live.conflictData[path];
+    ask(`${shortName(path)} changed on disk while you were typing here.`, () => {
+      live.conflict[path] = false; live.disk[path] = f; setDocQuietly(path, f.text); showSaved(); paintTabs();
+    }, ['Load the file', 'Keep mine'], () => {
+      live.conflict[path] = false; live.disk[path] = f; saveFile(path); paintTabs();
+    });
+  }
+  // Edits made in another editor (VS Code, Notepad) show up here, for every open file.
+  async function watchDisk() {
+    if (!LOCAL || !live.active || document.hidden || live.busy || !$('#confirm').hidden) return;
+    for (const path of live.tabs) {
+      try {
+        const f = fromDisk(await api('/api/file?path=' + encodeURIComponent(path)));
+        setOnline(true);
+        const known = live.disk[path], mine = textOf(path);
+        if (!known || f.mtime === known.mtime || mine === null || live.conflict[path]) continue;
+        if (f.text === mine) { live.disk[path] = f; continue; }
+        if (known.text === mine) {  // nothing unsaved here: just take the new version
+          live.disk[path] = f;
+          setDocQuietly(path, f.text);
+          if (path === live.active) $('#saved').textContent = 'Updated from the file on disk';
+          continue;
+        }
+        conflict(path, f);
+      } catch (e) { if (!e.status) setOnline(false); }
+    }
+    if (live.showTree && ++live.tick % 3 === 0) refreshProject();
+  }
+  if (LOCAL) {
+    setInterval(watchDisk, 2000);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) saveAll(); });
+  }
+
+  // ---- tabs: the checkpoint's own file, plus any shared files you opened (remembered)
+  function openCheckpointFiles(c) {
+    const kept = (() => { try { return JSON.parse(store.get('tabs') || '[]'); } catch (e) { return []; } })();
+    live.tabs = [c.solution, ...kept.filter((p) => isShared(p))];
+    live.active = c.solution;
+    loadFile(c.solution);
+    live.tabs.slice(1).forEach((p) => { if (!live.disk[p]) loadFile(p); });
+    paintFiles();
+  }
+  function openTab(path, line) {
+    if (BY_PATH[path] && BY_PATH[path].id !== current) { go('p' + BY_PATH[path].id); return; }
+    if (!live.tabs.includes(path)) live.tabs.push(path);
+    store.set('tabs', JSON.stringify(live.tabs.filter(isShared)));
+    activate(path, line);
+  }
+  function activate(path, line) {
+    live.active = path;
+    if (cm) {
+      if (!docOf(path)) { shared[path] = window.CodeMirror.Doc('', modeFor(path)); loadFile(path); }
+      cm.swapDoc(docOf(path));
+      if (line) { cm.setCursor({ line: line - 1, ch: 0 }); cm.scrollIntoView(null, 80); }
+      cm.focus();
+      requestAnimationFrame(() => cm.refresh());
+    }
+    paintFiles();
+    showSaved();
+    showPos();
+    if (live.conflict[path]) askConflict(path);
+  }
+  function closeTab(path) {
+    if (!isShared(path)) return;
+    saveFile(path);
+    live.tabs = live.tabs.filter((p) => p !== path);
+    store.set('tabs', JSON.stringify(live.tabs.filter(isShared)));
+    if (live.active === path) activate(live.tabs[0]); else paintFiles();
+  }
+  function paintTabs() {
+    const bar = $('#ftabs');
+    if (!LOCAL || !cm || live.tabs.length < 2) { bar.hidden = true; return; }
+    bar.hidden = false;
+    bar.innerHTML = live.tabs.map((p) => `<span class="ftab${p === live.active ? ' on' : ''}${live.conflict[p] ? ' warn' : ''}" role="tab" aria-selected="${p === live.active}">`
+      + `<button type="button" data-tab="${esc(p)}">${esc(shortName(p))}</button>`
+      + (isShared(p) ? `<button type="button" class="x" data-close="${esc(p)}" aria-label="Close ${esc(shortName(p))}">×</button>` : '') + '</span>').join('');
+  }
+  function paintFiles() {
+    const path = live.active, onCheckpoint = !isShared(path);
+    paintTabs();
+    $('#file').textContent = path || '';
+    const ext = (path || '').split('.').pop();
+    const names = { h: 'C/C++ header', hpp: 'C++ header', cpp: 'C++', cc: 'C++', cxx: 'C++', c: 'C', py: 'Python', js: 'JavaScript',
+      mjs: 'JavaScript', ts: 'TypeScript', rs: 'Rust', go: 'Go', java: 'Java', kt: 'Kotlin', cs: 'C#', md: 'Markdown', txt: 'Text', json: 'JSON' };
+    if (!onCheckpoint) $('#lang').textContent = names[ext.toLowerCase()] || ext.toUpperCase();
+    else if (current) $('#lang').innerHTML = `${esc(BY[current].lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
+    // The starter switch and Reset only make sense for the checkpoint's own file.
+    $('#kind').hidden = !onCheckpoint || !(current && BY[current].boilerplate);
+    $('#reset').hidden = !onCheckpoint;
+    renderTree();
+  }
+  $('#ftabs').addEventListener('click', (e) => {
+    const close = e.target.closest('[data-close]');
+    if (close) { closeTab(close.dataset.close); return; }
+    const tab = e.target.closest('[data-tab]');
+    if (tab) activate(tab.dataset.tab);
+  });
+
+  // ---- the Files panel: your project as it grows
+  async function refreshProject() {
+    try { live.project = (await api('/api/files')).files; setOnline(true); } catch (e) { if (!e.status) setOnline(false); }
+    renderTree();
+  }
+  function renderTree() {
+    const tree = $('#tree');
+    if (!LOCAL || !cm) return;
+    tree.hidden = !live.showTree;
+    $('#tree-btn').setAttribute('aria-pressed', String(live.showTree));
+    if (!live.showTree) return;
+    const files = live.project;
+    const common = files.filter((f) => !f.checkpoint);
+    const cps = files.filter((f) => f.checkpoint);
+    const usedBy = (p) => cps.filter((f) => (f.uses || []).includes(p)).map((f) => BY[f.checkpoint] ? BY[f.checkpoint].num : f.checkpoint);
+    const solvedCount = CPS.filter((c) => solved(c.id)).length;
+    tree.innerHTML = `<div class="tree-dir"><span>common/</span><button type="button" class="tree-add" id="new-file" title="New shared file" aria-label="New shared file">+</button></div>
+      <form class="new-file" id="new-file-form" hidden><input id="new-file-name" spellcheck="false" placeholder="name.h" aria-label="New file name"></form>
+      ${common.length ? common.map((f) => {
+        const users = usedBy(f.path);
+        return `<button type="button" class="tree-item${f.path === live.active ? ' on' : ''}" data-open="${esc(f.path)}" title="${esc(shortName(f.path))} · ${f.lines} lines${users.length ? ' · used by ' + users.join(', ') : ''}"><span class="nm">${esc(f.path.replace(/^solutions\/common\//, ''))}</span>${users.length ? `<span class="tag-n">${users.length}</span>` : ''}</button>`;
+      }).join('') : '<p class="tree-empty">Nothing shared yet. Code that later checkpoints can reuse goes here.</p>'}
+      <div class="tree-dir"><span>checkpoints</span></div>
+      ${cps.map((f) => {
+        const c = BY[f.checkpoint]; if (!c) return '';
+        const mark = store.get(c.id + ':broke') ? '<span class="tm broke" title="Passed before, failing now">!</span>'
+          : solved(c.id) ? '<span class="tm ok" title="Solved">✓</span>' : '<span class="tm"></span>';
+        return `<button type="button" class="tree-item${c.id === current ? ' on' : ''}" data-open="${esc(f.path)}" title="${esc(c.num)}. ${esc(c.title)}${(f.uses || []).length ? ' · uses ' + f.uses.map(shortName).join(', ') : ''}">${mark}<span class="nm">${esc(f.path.split('/').pop())}</span>${(f.uses || []).length ? `<span class="tag-n" title="uses ${f.uses.length} shared file(s)">${f.uses.length}</span>` : ''}</button>`;
+      }).join('')}
+      <div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>`;
+  }
+  $('#tree-btn').addEventListener('click', () => {
+    live.showTree = !live.showTree;
+    store.set('tree', live.showTree ? '1' : '0');
+    if (live.showTree) refreshProject(); else renderTree();
+    if (cm) requestAnimationFrame(() => cm.refresh());
+  });
+  $('#tree').addEventListener('click', (e) => {
+    const open = e.target.closest('[data-open]');
+    if (open) { openTab(open.dataset.open); return; }
+    if (e.target.closest('#new-file')) { const form = $('#new-file-form'); form.hidden = !form.hidden; if (!form.hidden) $('#new-file-name').focus(); return; }
+    if (e.target.closest('#recheck')) recheckSolved();
+  });
+  $('#tree').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#new-file-name').value.trim();
+    if (!/^[A-Za-z_][\w.-]*\.(h|hpp|c|cc|cpp|cxx|py|js|mjs|ts|rs|go|java|kt|cs|md|txt)$/.test(name)) {
+      $('#new-file-name').setCustomValidity('Use a name like bytes.h or bytes.cpp'); $('#new-file-name').reportValidity(); return;
+    }
+    const path = 'solutions/common/' + name;
+    const start = /\.(h|hpp)$/.test(name) ? '#pragma once\n\n' : '';
+    try {
+      await api('/api/file', { method: 'PUT', body: JSON.stringify({ path, text: start, base: '0' }) });  // '0': only if it doesn't exist yet
+    } catch (err) { if (err.status !== 409) { setOnline(!!err.status); return; } }
+    await refreshProject();
+    openTab(path);
+  });
+  $('#tree').addEventListener('input', (e) => { if (e.target.id === 'new-file-name') e.target.setCustomValidity(''); });
+
+  // ---- Re-check solved: catches a change to shared code that broke something you'd already passed
+  async function recheckSolved() {
+    const ids = CPS.filter((c) => solved(c.id)).map((c) => c.id);
+    if (!ids.length || live.busy) return;
+    await saveAll();
+    live.busy = true;
+    $('#run').disabled = $('#submit').disabled = true;
+    setBottom('result');
+    const rows = [];
+    for (const [k, id] of ids.entries()) {
+      $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>Re-checking your solved checkpoints: ${k + 1} of ${ids.length} (${esc(BY[id].num)}. ${esc(BY[id].title)})…</div>` + recheckTable(rows);
+      let r;
+      try { r = await api('/api/check/' + id, { method: 'POST', body: '{}' }); setOnline(true); } catch (e) { setOnline(false); r = { verdict: 'offline' }; }
+      live.report[id] = r;
+      if (r.verdict === 'accepted') store.del(id + ':broke'); else store.set(id + ':broke', '1');
+      rows.push({ id, r });
+    }
+    live.busy = false;
+    $('#run').disabled = $('#submit').disabled = false;
+    const broke = rows.filter((x) => x.r.verdict !== 'accepted');
+    $('#result').innerHTML = `<div class="verdict ${broke.length ? 'bad' : 'ok'}"><h2>${broke.length ? `${broke.length} broke` : 'All still pass'}</h2><span class="sub">${rows.length - broke.length} / ${rows.length} solved checkpoints pass</span></div>`
+      + `<p class="note">${broke.length ? 'These passed before and fail now, most likely because of a change to shared code. Open one to see its failing tests.' : 'Every checkpoint you solved still passes with your current code.'}</p>`
+      + recheckTable(rows);
+    renderTree();
+  }
+  function recheckTable(rows) {
+    const looks = { accepted: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'], 'compile-error': ['bad', 'Compile Error'],
+      'not-started': ['warn', 'Not started yet'], 'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'] };
+    return rows.length ? `<div class="recheck">${rows.map(({ id, r }) => {
+      const [kind, label] = looks[r.verdict] || ['unknown', 'Error'];
+      return `<a class="rc-row" href="#p${id}"><span class="rc-n">${esc(BY[id].num)}.</span><span class="rc-t">${esc(BY[id].title)}</span><span class="rc-v ${kind}">${label}${r.total ? ` ${r.passed}/${r.total}` : ''}</span></a>`;
+    }).join('')}</div>` : '';
+  }
+
+  // ---- Run / Submit, for real
+  async function runLive(kind, options) {
+    const c = BY[current];
+    if (!c || live.busy) return;
+    const list = casesOf(c);
+    const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
+    const stuck = live.tabs.find((p) => live.conflict[p]);
+    if (stuck) { activate(stuck); return; }
+    await saveAll();
+    live.busy = true;
+    $('#run').disabled = $('#submit').disabled = true;
+    setBottom('result');
+    const what = test ? `Running test ${esc(test)}…` : options.fresh ? 'Making a fresh set of tests and running them…' : `Building and running all ${c.tests} tests…`;
+    $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>${what}</div>`;
+    let report;
+    try {
+      report = await api('/api/check/' + c.id, { method: 'POST', body: JSON.stringify({ case: test, fresh: !!options.fresh }) });
+      setOnline(true);
+    } catch (e) {
+      setOnline(false);
+      report = { verdict: 'offline' };
+    }
+    live.busy = false;
+    $('#run').disabled = $('#submit').disabled = false;
+    report.test = test;
+    report.fresh = !!options.fresh;
+    live.report[c.id] = report;
+    if (report.verdict === 'accepted') { setSolved(c.id, true); store.del(c.id + ':broke'); }
+    await markErrors(c, report);
+    if (current === c.id) { renderLiveResult(c); $('#result').scrollTop = 0; }
+    if (live.showTree) refreshProject();
+  }
+
+  // Compile errors are marked in whichever file they're in: the checkpoint's or a shared one.
+  function errorPath(c, file) {
+    const f = String(file || '').replace(/\\/g, '/');
+    const known = [c.solution, ...live.project.filter((x) => !x.checkpoint).map((x) => x.path), ...live.tabs];
+    return known.find((p) => f === p || f.endsWith('/' + p)) || null;
+  }
+  async function markErrors(c, report) {
+    Object.entries(live.marks).forEach(([path, handles]) => {
+      const doc = docOf(path);
+      if (doc) handles.forEach((h) => doc.removeLineClass(h, 'background', 'cm-error-line'));
+    });
+    live.marks = {};
+    if (!cm) return;
+    if ((report.errors || []).some((e) => !errorPath(c, e.file))) await refreshProject();
+    for (const e of (report.errors || []).filter((x) => x.kind === 'error')) {
+      const path = errorPath(c, e.file);
+      if (!path) continue;
+      if (!docOf(path)) { shared[path] = window.CodeMirror.Doc('', modeFor(path)); await loadFile(path); }
+      const doc = docOf(path);
+      const line = Math.min(Math.max(e.line - 1, 0), doc.lineCount() - 1);
+      (live.marks[path] = live.marks[path] || []).push(doc.addLineClass(line, 'background', 'cm-error-line'));
+    }
+  }
+
+  const tail = (text, n) => String(text || '').trim().split('\n').slice(-n).join('\n');
+  const fileUrl = (path) => '/files/' + path.split('/').map(encodeURIComponent).join('/')
+    + '?t=' + encodeURIComponent(LOCAL.token) + '&v=' + Date.now();
+
+  function liveHelp(r, c) {
+    switch (r.verdict) {
+      case 'accepted': return 'Every test passes. Saved as solved; the Editorial tab is open now.';
+      case 'wrong-answer': return r.wroteNothing
+        ? "Your program ran but didn't write anything. It's started with two file names: the input to read and the output to write. Write your answer to the second one."
+        : 'Some tests failed. Each one below shows what was expected and what your program wrote.'
+          + (r.mostLikely ? ` Most of them point to <b>${esc(r.mostLikely.id)}</b>: ${esc(r.mostLikely.text)}.` : '');
+      case 'compile-error': return r.noMain
+        ? 'Your code has no <code>main</code> function, so it can\'t be built into a program. Add a <code>main</code> that reads the input file and writes the output file.'
+        : "Your code didn't build, so no tests ran. Lines with errors are marked in the editor; fix the first error first, since later ones often follow from it.";
+      case 'not-started': return r.empty
+        ? 'Your solution file is empty, so there was nothing to check. Write your program in the editor.'
+        : 'The editor still holds the blank starter, so there was nothing to check. Write your program, or pick Boilerplate above the editor for ready-made input/output code.';
+      case 'not-implemented': return `The boilerplate function <code>${esc(r.function || 'a function')}</code> still says it isn't written. Fill it in and Submit again.`;
+      case 'passed': return `This test passes. Submit runs all ${c.tests}.`;
+      case 'failed': return 'This test fails. Its input, your output and the expected output are below.';
+      case 'offline': return "The study server has stopped, so nothing ran. Start it again (double-click <code>study.cmd</code>, or run <code>.\\study</code> in the workbook folder), then reload this page.";
+      default: return esc(r.message || 'The checker ran into a problem.');
+    }
+  }
+
+  // ---- Your output vs expected: lines are lined up, then the differing words are marked. Words and
+  // numbers are compared the way the checker compares them (quoted strings are one word; numbers
+  // within the checkpoint's tolerance are equal), so only real differences light up.
+  const words = (line) => line.match(/"[^"]*"|\S+/g) || [];
+  const sameWord = (a, b, tol) => {
+    if (a === b) return true;
+    const x = Number(a), y = Number(b);
+    return tol > 0 && a.trim() !== '' && b.trim() !== '' && isFinite(x) && isFinite(y) && Math.abs(x - y) <= tol + 1e-12;
+  };
+  const sameLine = (a, b, tol) => a.length === b.length && a.every((w, k) => sameWord(w, b[k], tol));
+  function matchPairs(a, b, eq) {
+    // Longest common subsequence: which items of a and b line up. Falls back to position for huge inputs.
+    const n = a.length, m = b.length;
+    if (n * m > 400000) return Array.from({ length: Math.min(n, m) }, (_, i) => i).filter((i) => eq(a[i], b[i])).map((i) => [i, i]);
+    const dp = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = eq(a[i], b[j]) ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const pairs = [];
+    for (let i = 0, j = 0; i < n && j < m;) {
+      if (eq(a[i], b[j])) { pairs.push([i, j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+    }
+    return pairs;
+  }
+  function diffOutputs(actual, expected, compare) {
+    const tol = (compare && compare.tolerance) || 0;
+    const clipped = (l) => /^\.\.\. \(\d+ more lines\)$/.test(l);
+    const A = actual.map((t) => ({ text: t, w: words(t), kind: clipped(t) ? 'clip' : 'same', marks: new Set() }));
+    const E = expected.map((t) => ({ text: t, w: words(t), kind: clipped(t) ? 'clip' : 'same', marks: new Set() }));
+    const eq = (a, b) => a.kind !== 'clip' && b.kind !== 'clip' && sameLine(a.w, b.w, tol);
+    if (compare && compare.mode === 'unordered') {  // any order: a line is fine if some expected line matches it
+      const used = new Set();
+      A.forEach((a) => { const j = E.findIndex((e, k) => !used.has(k) && eq(a, e)); if (j >= 0) used.add(j); else if (a.kind !== 'clip') a.kind = 'extra'; });
+      E.forEach((e, k) => { if (!used.has(k) && e.kind !== 'clip') e.kind = 'missing'; });
+      return { yours: A, expected: E };
+    }
+    const pairs = matchPairs(A, E, eq).concat([[A.length, E.length]]);
+    let i = 0, j = 0;
+    for (const [pi, pj] of pairs) {
+      // Lines between two matches: pair them up as changed lines, the rest are extra or missing.
+      while (i < pi && j < pj) {
+        const a = A[i++], e = E[j++];
+        if (a.kind === 'clip' || e.kind === 'clip') continue;
+        a.kind = e.kind = 'changed';
+        // Same number of words: the checker compares them position by position, so do that too.
+        const hit = a.w.length === e.w.length
+          ? a.w.map((w, k) => [k, k]).filter(([k]) => sameWord(a.w[k], e.w[k], tol))
+          : matchPairs(a.w, e.w, (x, y) => sameWord(x, y, tol));
+        const ha = new Set(hit.map((p) => p[0])), he = new Set(hit.map((p) => p[1]));
+        a.w.forEach((_, k) => { if (!ha.has(k)) a.marks.add(k); });
+        e.w.forEach((_, k) => { if (!he.has(k)) e.marks.add(k); });
+      }
+      while (i < pi) { if (A[i].kind !== 'clip') A[i].kind = 'extra'; i++; }
+      while (j < pj) { if (E[j].kind !== 'clip') E[j].kind = 'missing'; j++; }
+      i = pi + 1; j = pj + 1;
+    }
+    return { yours: A, expected: E };
+  }
+  function diffBlock(title, lines, tone) {
+    if (!lines.length) return `<div class="field"><div class="field-k">${title}</div><pre class="field-v diff"><span class="dl clip">(nothing)</span></pre></div>`;
+    const body = lines.map((l) => {
+      const inner = l.kind === 'clip' || !l.w.length ? esc(l.text)
+        : l.w.map((w, k) => (l.marks.has(k) ? `<span class="tk-${tone}">${esc(w)}</span>` : esc(w))).join(' ');
+      return `<span class="dl ${l.kind} ${tone}">${inner || ' '}</span>`;
+    }).join('');
+    return `<div class="field"><div class="field-k">${title}</div><pre class="field-v diff">${body}</pre></div>`;
+  }
+
+  function caseBody(x, report) {
+    let h = x.message ? `<p class="note bad-text">${esc(x.message)}</p>` : '';
+    if (x.causes && x.causes.length) h += `<p class="note">Likely cause: ${x.causes.map((k) => `<b>${esc(k.id)}</b> ${esc(k.text)}`).join('; ')}</p>`;
+    if (x.images) {
+      const pics = [['Expected', x.images.expected], ['Yours', x.images.actual], ['Difference', x.images.diff]].filter((p) => p[1]);
+      h += `<div class="img-cmp">${pics.map(([t, p]) => `<figure><img src="${fileUrl(p)}" alt="${esc(t)}"><figcaption>${t}</figcaption></figure>`).join('')}</div>`;
+      if (x.images.diff) h += '<p class="note">In the difference: red is ink you added, blue is ink you missed, magenta is the wrong colour, and yellow is forgiven (edges may move one pixel).</p>';
+    } else {
+      const d = diffOutputs(x.actual || [], x.expected || [], report && report.compare);
+      h += `<div class="field"><div class="field-k">Input</div><pre class="field-v">${esc((x.input || []).join('\n'))}</pre></div>`
+        + diffBlock('Your output', d.yours, 'del') + diffBlock('Expected', d.expected, 'add')
+        + `<p class="note muted">Highlighted: what differs${report && report.compare && report.compare.tolerance ? ` (numbers within ${report.compare.tolerance} count as equal)` : ''}${report && report.compare && report.compare.mode === 'unordered' ? '; line order doesn\'t matter here' : ''}.</p>`;
+    }
+    if (x.source) h += `<p class="note muted">Expected values from: ${esc(x.source)}</p>`;
+    return h;
+  }
+
+  function reportHtml(r, c) {
+    const looks = { accepted: ['ok', 'Accepted'], passed: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'],
+      failed: ['bad', 'Wrong Answer'], 'compile-error': ['bad', 'Compile Error'], 'not-started': ['warn', 'Not started yet'],
+      'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'], dispute: ['ok', 'Dispute recorded'] };
+    const [kind, label] = looks[r.verdict] || ['unknown', 'Something went wrong'];
+    const single = r.verdict === 'passed' || r.verdict === 'failed';
+    const sub = [single ? `test ${esc(r.test || '')}` : r.total ? `${r.passed} / ${r.total} testcases passed` : '',
+      r.disputed && r.disputed.length ? `${r.disputed.length} disputed` : '', r.fresh ? 'fresh tests' : '',
+      r.seconds != null ? `${r.seconds} s` : ''].filter(Boolean).join(' · ');
+    let h = `<div class="verdict ${kind}"><h2>${esc(label)}</h2>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+    h += `<p class="note">${liveHelp(r, c)}</p>`;
+    if (r.verdict === 'compile-error') {
+      const errs = (r.errors || []).filter((e) => e.kind === 'error').slice(0, 8);
+      if (errs.length) h += `<div class="err-list">${errs.map((e) => {
+        const path = errorPath(c, e.file);
+        const body = `<span class="loc">${esc(e.file.split('/').pop())}:${e.line}:${e.column}</span> ${esc(e.message)}`;
+        return path ? `<button type="button" class="err" data-goto="${esc(path)}" data-line="${e.line}" title="Open ${esc(shortName(path))} at line ${e.line}">${body}</button>` : `<div>${body}</div>`;
+      }).join('')}</div>`;
+      h += `<div class="field-k">Compiler output</div><pre class="raw">${esc(tail(r.build || r.text, 60))}</pre>`;
+    }
+    if (single && r.cases && r.cases[0]) h += caseBody(r.cases[0], r);
+    if (!single && r.requirements && r.requirements.length) {
+      h += '<div class="req-rows">' + r.requirements.map((q) => `<div class="req-row${q.passed === q.total ? '' : ' fail'}"><span class="rid">${esc(q.id)}</span><span class="rq" title="${esc(q.text)}">${esc(q.text)}</span><span class="cnt">${q.passed} / ${q.total}</span><span class="bar"><i style="width:${q.total ? (q.passed / q.total) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
+    }
+    if (!single) {
+      const failing = (r.cases || []).filter((x) => x.status !== 'pass');
+      const shown = failing.filter((x) => x.message !== undefined);
+      h += shown.map((x, i) => `<details class="case-card"${i < 2 ? ' open' : ''}><summary><span class="id">${esc(x.id)}</span> <span class="t">${esc(x.title)}</span></summary><div class="case-body">${caseBody(x, r)}</div></details>`).join('');
+      if (failing.length > shown.length) h += `<p class="note">…and ${failing.length - shown.length} more failing tests.</p>`;
+    }
+    if (r.verdict === 'error' && r.text) h += `<pre class="raw">${esc(tail(r.text, 40))}</pre>`;
+    return h;
+  }
+
+  function renderLiveResult(c) {
+    const r = live.report[c.id];
+    const intro = LOCAL.problem
+      ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
+      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). What you type is saved to <code>${esc(c.solution)}</code>, and changes you make to that file in another editor show up here.</p>`;
+    // After an Accepted Submit (not the last checkpoint): suggest keeping the reusable parts in common/.
+    const last = CPS.indexOf(c) === CPS.length - 1;
+    const nudge = r && r.verdict === 'accepted' && !r.fresh && !last && cm ? (() => {
+      const slug = c.solution.split('/').pop().replace(/\.[^.]+$/, '').replace(/^p\d+_/, '');
+      const how = /C\+\+|^C$/.test(c.lang.label) ? `<code>common/${esc(slug)}.h</code> with a <code>.cpp</code> beside it, then <code>#include "common/${esc(slug)}.h"</code> here`
+        : c.lang.label === 'Python' ? `<code>common/${esc(slug)}.py</code>, then <code>from common.${esc(slug)} import ...</code> here`
+        : /JavaScript|TypeScript/.test(c.lang.label) ? `<code>common/${esc(slug)}.js</code>, then <code>require('./common/${esc(slug)}')</code> here`
+        : `a file in <code>common/</code>`;
+      return `<div class="nudge"><span><b>Keep it for later.</b> Later checkpoints build on what you just wrote, and the last one needs it all. Move the reusable parts into ${how}, then Submit again to check nothing broke. (Where this fits, under the statement, says which checkpoints come next.)</span>`
+        + `<span><button class="btn" type="button" id="open-files">Open the Files panel</button></span></div>`;
+    })() : '';
+    const solvedCount = CPS.filter((x) => solved(x.id)).length;
+    $('#result').innerHTML = (r ? reportHtml(r, c) : intro) + nudge
+      + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`
+      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Run every checkpoint you've solved again, to catch anything a change to shared code broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
+      + `<details class="more"><summary>Think a test is wrong?</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
+        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside, so it no longer counts. Then ask Claude to review your disputes.</p></div></details>`;
+  }
+  if (LOCAL) {
+    $('#result').addEventListener('click', (e) => {
+      if (e.target.closest('#live-fresh')) { runLive('submit', { fresh: true }); return; }
+      if (e.target.closest('#recheck-all')) { recheckSolved(); return; }
+      if (e.target.closest('#open-files')) { if (!live.showTree) $('#tree-btn').click(); return; }
+      const goto = e.target.closest('[data-goto]');
+      if (goto) openTab(goto.dataset.goto, Number(goto.dataset.line));
+    });
+  }
+
+  // ---- navigation between checkpoints
+  function openCheckpoint(id) {
+    const c = BY[id];
+    const changed = current !== id;
+    if (LOCAL && current && changed) saveAll();  // don't lose the last keystrokes
+    current = id;
+    $('#list-view').hidden = true;
+    $('#ide-view').hidden = false;
+    document.body.classList.add('in-ide');
+    if (changed) { caseIndex = 0; solFile = 0; }
+    renderDesc(c);
+    renderEditorial(c);
+    renderCases(c);
+    if (LOCAL) renderLiveResult(c); else renderResult(c);
+    loadEditor(c);
+    setLeft('desc');
+    setBottom((LOCAL ? live.report[c.id] : store.get(c.id + ':result')) ? 'result' : 'cases');
+    $('#desc').scrollTop = 0;
+    const k = CPS.indexOf(c);
+    $('#prev').disabled = k === 0;
+    $('#next').disabled = k === CPS.length - 1;
+    $('#prev').title = k > 0 ? `${CPS[k - 1].num}. ${CPS[k - 1].title}` : '';
+    $('#next').title = k < CPS.length - 1 ? `${CPS[k + 1].num}. ${CPS[k + 1].title}` : '';
+    if (cm) requestAnimationFrame(() => cm.refresh());
+    window.scrollTo(0, 0);
+  }
+  $('#prev').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k > 0) go('p' + CPS[k - 1].id); });
+  $('#next').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k < CPS.length - 1) go('p' + CPS[k + 1].id); });
+  $('#shuffle').addEventListener('click', () => pickOne(CPS));
+
+  let routed = null;
+  function route(hash) {
+    if (hash === routed && (current || !$('#list-view').hidden)) return;
+    routed = hash;
+    const m = /^p(.+)$/.exec(hash || '');
+    if (m && BY[m[1]]) openCheckpoint(m[1]); else showList();
+  }
+  function go(hash) {
+    try { history.pushState(null, '', '#' + hash); } catch (e) {}
+    route(hash);
+  }
+  // In-page links switch views directly, so they work even where hash changes don't.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented) return;
+    e.preventDefault();
+    go(a.getAttribute('href').slice(1));
+  });
+  window.addEventListener('popstate', () => route(location.hash.slice(1)));
+  window.addEventListener('hashchange', () => route(location.hash.slice(1)));
+
+  // ---- resizable panels
+  function splitter(el, axis, box, prop, min, max) {
+    const key = 'layout:' + prop;
+    const apply = (f) => { box.style.setProperty(prop, (Math.min(max, Math.max(min, f)) * 100).toFixed(2) + '%'); };
+    const saved = Number(store.get(key));
+    if (saved) apply(saved);
+    const fraction = () => parseFloat(box.style.getPropertyValue(prop)) / 100 || (axis === 'x' ? 0.45 : 0.6);
+    el.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      const rect = box.getBoundingClientRect();
+      const move = (ev) => apply(axis === 'x' ? (ev.clientX - rect.left) / rect.width : (ev.clientY - rect.top) / rect.height);
+      const up = () => {
+        el.classList.remove('dragging');
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerup', up);
+        el.removeEventListener('pointercancel', up);
+        store.set(key, String(fraction()));
+      };
+      el.addEventListener('pointermove', move);
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+    });
+    el.addEventListener('keydown', (e) => {
+      const step = { ArrowLeft: -0.02, ArrowUp: -0.02, ArrowRight: 0.02, ArrowDown: 0.02 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      apply(fraction() + step);
+      store.set(key, String(fraction()));
+    });
+  }
+  splitter($('#split-v'), 'x', $('#ide-main'), '--left', 0.25, 0.7);
+  splitter($('#split-h'), 'y', $('#right'), '--top', 0.2, 0.85);
+
+  renderListShell();
+  initEditor();
+  if (LOCAL) {
+    paintLive();
+    if (cm) {  // the Files panel needs the full editor
+      $('#tree-btn').hidden = $('#tree-sep').hidden = false;
+      live.showTree = store.get('tree') === '1';
+      if (live.showTree) refreshProject();
+    }
+  }
+  route(location.hash.slice(1));
+})();
+</script>
