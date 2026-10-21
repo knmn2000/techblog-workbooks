@@ -1,13 +1,88 @@
 {
-  "setup": {
-    "command": "cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++",
-    "creates": "build/build.ninja"
+  "project": {
+    "dir": "solutions",
+    "language": "cpp",
+    "languageLabel": "C++",
+    "aliases": [
+      "c++",
+      "cxx"
+    ],
+    "name": "tiny_ttf",
+    "reference": "_spoilers/project",
+    "copy": {
+      "third_party/stb_image_write.h": "third_party/stb/stb_image_write.h"
+    },
+    "build": "cmake --build build/solutions --target tiny_ttf",
+    "run": "build/solutions/tiny_ttf.exe fonts/JetBrainsMonoNerdFont-Bold.ttf \"Hello, TrueType!\" hello.png",
+    "author": {
+      "label": "Yohei Yamasaki's tiny-truetype-renderer",
+      "url": "https://github.com/YohYamasaki/tiny-truetype-renderer",
+      "files": [
+        "CMakeLists.txt",
+        "main.cpp",
+        "FontParser.h",
+        "FontParser.cpp",
+        "FrameBufferCanvas.h",
+        "FrameBufferCanvas.cpp",
+        "Glyph.h",
+        "Glyph.cpp",
+        "GlyphComponent.h",
+        "GlyphComponent.cpp",
+        "utils/Bit.h",
+        "utils/Debug.h",
+        "utils/Geometry.h",
+        "utils/Unicode.h"
+      ]
+    },
+    "purposes": {
+      "src/font/ByteReader.h": "Reading big-endian numbers from a font file: unsigned and signed integers of 8, 16 and 32 bits, and F2Dot14 fixed point, from any position. Later checkpoints read every table through it.",
+      "src/font/ByteReader.cpp": "Reading big-endian numbers from a font file: unsigned and signed integers of 8, 16 and 32 bits, and F2Dot14 fixed point, from any position. Later checkpoints read every table through it.",
+      "src/font/FontParser.h": "Opening a font and reading its table directory: where each table (cmap, glyf, loca, ...) is in the file.",
+      "src/font/FontParser.cpp": "Opening a font and reading its table directory: where each table (cmap, glyf, loca, ...) is in the file.",
+      "src/font/Cmap.h": "The cmap table: which glyph draws each character (format 12).",
+      "src/font/Cmap.cpp": "The cmap table: which glyph draws each character (format 12).",
+      "src/font/Loca.h": "The loca table: where each glyph's record is in the glyf table, and how long it is.",
+      "src/font/Loca.cpp": "The loca table: where each glyph's record is in the glyf table, and how long it is.",
+      "src/font/Metrics.h": "The hhea and hmtx tables: the font's ascent and descent, and how far each glyph moves the pen.",
+      "src/font/Metrics.cpp": "The hhea and hmtx tables: the font's ascent and descent, and how far each glyph moves the pen.",
+      "src/FrameBufferCanvas.h": "A picture in memory: pixels, rectangles, thick lines, and saving it as a PNG (third_party/stb_image_write.h can do the PNG part).",
+      "src/FrameBufferCanvas.cpp": "A picture in memory: pixels, rectangles, thick lines, and saving it as a PNG (third_party/stb_image_write.h can do the PNG part).",
+      "src/GlyphComponent.h": "The types for a glyph's outline: its points (x, y, on or off the curve) and where each contour ends.",
+      "src/Glyph.h": "The type for a glyph: what kind it is, its bounding box, and its outline.",
+      "src/font/GlyphParser.h": "Decoding a glyph's record from the glyf table into the types in Glyph.h.",
+      "src/font/GlyphParser.cpp": "Decoding a glyph's record from the glyf table into the types in Glyph.h.",
+      "src/render/Placement.h": "Where a glyph goes on the canvas: from font units (y grows upwards) to pixels (y grows downwards).",
+      "src/render/Outline.h": "Drawing a glyph's outline: straight lines and a marker on every point. Checkpoint 11 adds the curves.",
+      "src/render/Outline.cpp": "Drawing a glyph's outline: straight lines and a marker on every point. Checkpoint 11 adds the curves.",
+      "src/font/CompoundGlyph.h": "Compound glyphs: a glyph made of other glyphs, each moved, scaled or rotated, resolved into simple outlines.",
+      "src/font/CompoundGlyph.cpp": "Compound glyphs: a glyph made of other glyphs, each moved, scaled or rotated, resolved into simple outlines.",
+      "src/utils/Geometry.h": "Points and curves: lerp and quadratic Bezier curves. Checkpoints 12, 13 and 15 add where segments and curves meet, and a curve's lowest point.",
+      "src/render/Scanline.h": "Scanning an outline row by row: which rows it covers, and where each row crosses its edges. Both fill rules can share it.",
+      "src/render/Scanline.cpp": "Scanning an outline row by row: which rows it covers, and where each row crosses its edges. Both fill rules can share it.",
+      "src/render/EvenOdd.h": "Filling a glyph by the even-odd rule.",
+      "src/render/EvenOdd.cpp": "Filling a glyph by the even-odd rule.",
+      "src/render/NonZero.h": "Filling by the non-zero rule, for straight edges. Checkpoint 17 adds curves.",
+      "src/render/NonZero.cpp": "Filling by the non-zero rule, for straight edges. Checkpoint 17 adds curves.",
+      "src/utils/Unicode.h": "Decoding UTF-8 text into code points.",
+      "src/TextRenderer.h": "Drawing a line of text: the font loaded once, then each character's glyph filled and the pen moved along by its advance.",
+      "src/TextRenderer.cpp": "Drawing a line of text: the font loaded once, then each character's glyph filled and the pen moved along by its advance.",
+      "src/main.cpp": "The program itself: tiny_ttf <font.ttf> \"<text>\" <out.png> [pixel-height] draws a line of text into a PNG."
+    }
   },
-  "build": "cmake --build build --target p{id}",
-  "run": "build/p{id}.exe {input} {output}",
+  "setup": {
+    "command": "cmake -S solutions -B build/solutions -G Ninja -DCMAKE_CXX_COMPILER=g++",
+    "creates": "build/solutions/build.ninja"
+  },
+  "build": "cmake --build build/solutions --target p{id}",
+  "run": "build/solutions/p{id}.exe {input} {output}",
   "reference": {
-    "build": "cmake --build build --target ref_p{id}",
-    "run": "build/ref_p{id}.exe {input} {output}"
+    "snapshot": "build/ref-src",
+    "setup": {
+      "command": "cmake -S build/ref-src -B build/ref -G Ninja -DCMAKE_CXX_COMPILER=g++",
+      "creates": "build/ref/build.ninja"
+    },
+    "build": "cmake --build build/ref --target p{id}",
+    "run": "build/ref/p{id}.exe {input} {output}"
   },
   "timeoutSeconds": 10,
   "book": {
@@ -22,42 +97,81 @@
   "checkpoints": {
     "01": {
       "title": "Read big-endian numbers",
-      "solution": "solutions/p01_byte_readers.cpp",
+      "solution": "solutions/checkpoints/p01_byte_readers.cpp",
+      "files": [
+        "src/font/ByteReader.h",
+        "src/font/ByteReader.cpp"
+      ],
       "problem": "problems/01-byte-readers.md",
       "cases": "tests/01/cases.txt",
       "generator": "py -P tools/gen_p01.py --seed {seed} --out {out}"
     },
     "02": {
       "title": "Read the table directory",
-      "solution": "solutions/p02_table_directory.cpp",
+      "solution": "solutions/checkpoints/p02_table_directory.cpp",
+      "files": [
+        "src/font/FontParser.h",
+        "src/font/FontParser.cpp"
+      ],
+      "buildsOn": [
+        "src/font/ByteReader.h"
+      ],
       "problem": "problems/02-table-directory.md",
       "cases": "tests/02/cases.txt",
       "generator": "py -P tools/gen_p02.py --seed {seed} --out {out}"
     },
     "03": {
       "title": "Map characters to glyphs (cmap format 12)",
-      "solution": "solutions/p03_cmap.cpp",
+      "solution": "solutions/checkpoints/p03_cmap.cpp",
+      "files": [
+        "src/font/Cmap.h",
+        "src/font/Cmap.cpp"
+      ],
+      "buildsOn": [
+        "src/font/ByteReader.h",
+        "src/font/FontParser.h"
+      ],
       "problem": "problems/03-cmap.md",
       "cases": "tests/03/cases.txt",
       "generator": "py -P tools/gen_p03.py --seed {seed} --out {out}"
     },
     "04": {
       "title": "Locate glyph records (loca)",
-      "solution": "solutions/p04_loca.cpp",
+      "solution": "solutions/checkpoints/p04_loca.cpp",
+      "files": [
+        "src/font/Loca.h",
+        "src/font/Loca.cpp"
+      ],
+      "buildsOn": [
+        "src/font/ByteReader.h",
+        "src/font/FontParser.h"
+      ],
       "problem": "problems/04-loca.md",
       "cases": "tests/04/cases.txt",
       "generator": "py -P tools/gen_p04.py --seed {seed} --out {out}"
     },
     "05": {
       "title": "Read the horizontal metrics",
-      "solution": "solutions/p05_metrics.cpp",
+      "solution": "solutions/checkpoints/p05_metrics.cpp",
+      "files": [
+        "src/font/Metrics.h",
+        "src/font/Metrics.cpp"
+      ],
+      "buildsOn": [
+        "src/font/ByteReader.h",
+        "src/font/FontParser.h"
+      ],
       "problem": "problems/05-metrics.md",
       "cases": "tests/05/cases.txt",
       "generator": "py -P tools/gen_p05.py --seed {seed} --out {out}"
     },
     "06": {
       "title": "Draw on a framebuffer",
-      "solution": "solutions/p06_canvas.cpp",
+      "solution": "solutions/checkpoints/p06_canvas.cpp",
+      "files": [
+        "src/FrameBufferCanvas.h",
+        "src/FrameBufferCanvas.cpp"
+      ],
       "problem": "problems/06-canvas.md",
       "cases": "tests/06/cases.txt",
       "generator": "py -P tools/gen_p06.py --seed {seed} --out {out}",
@@ -65,14 +179,32 @@
     },
     "07": {
       "title": "Decode simple glyphs",
-      "solution": "solutions/p07_simple_glyph.cpp",
+      "solution": "solutions/checkpoints/p07_simple_glyph.cpp",
+      "files": [
+        "src/GlyphComponent.h",
+        "src/Glyph.h",
+        "src/font/GlyphParser.h",
+        "src/font/GlyphParser.cpp"
+      ],
+      "buildsOn": [
+        "src/font/ByteReader.h"
+      ],
       "problem": "problems/07-simple-glyph.md",
       "cases": "tests/07/cases.txt",
       "generator": "py -P tools/gen_p07.py --seed {seed} --out {out}"
     },
     "08": {
       "title": "Draw an outline with straight lines",
-      "solution": "solutions/p08_outline_lines.cpp",
+      "solution": "solutions/checkpoints/p08_outline_lines.cpp",
+      "files": [
+        "src/render/Placement.h",
+        "src/render/Outline.h",
+        "src/render/Outline.cpp"
+      ],
+      "buildsOn": [
+        "src/FrameBufferCanvas.h",
+        "src/GlyphComponent.h"
+      ],
       "problem": "problems/08-outline-lines.md",
       "cases": "tests/08/cases.txt",
       "generator": "py -P tools/gen_p08.py --seed {seed} --out {out}",
@@ -80,21 +212,39 @@
     },
     "09": {
       "title": "Resolve compound glyphs",
-      "solution": "solutions/p09_compound_glyph.cpp",
+      "solution": "solutions/checkpoints/p09_compound_glyph.cpp",
+      "files": [
+        "src/font/CompoundGlyph.h",
+        "src/font/CompoundGlyph.cpp"
+      ],
+      "buildsOn": [
+        "src/font/GlyphParser.h",
+        "src/font/Loca.h"
+      ],
       "problem": "problems/09-compound-glyph.md",
       "cases": "tests/09/cases.txt",
       "generator": "py -P tools/gen_p09.py --seed {seed} --out {out}"
     },
     "10": {
       "title": "Lerp and quadratic Bezier curves",
-      "solution": "solutions/p10_bezier.cpp",
+      "solution": "solutions/checkpoints/p10_bezier.cpp",
+      "files": [
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/10-bezier.md",
       "cases": "tests/10/cases.txt",
       "generator": "py -P tools/gen_p10.py --seed {seed} --out {out}"
     },
     "11": {
       "title": "Draw an outline with curves",
-      "solution": "solutions/p11_outline_curves.cpp",
+      "solution": "solutions/checkpoints/p11_outline_curves.cpp",
+      "extends": [
+        "src/render/Outline.h",
+        "src/render/Outline.cpp"
+      ],
+      "buildsOn": [
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/11-outline-curves.md",
       "cases": "tests/11/cases.txt",
       "generator": "py -P tools/gen_p11.py --seed {seed} --out {out}",
@@ -102,21 +252,39 @@
     },
     "12": {
       "title": "Intersect two segments",
-      "solution": "solutions/p12_segment_intersection.cpp",
+      "solution": "solutions/checkpoints/p12_segment_intersection.cpp",
+      "extends": [
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/12-segment-intersection.md",
       "cases": "tests/12/cases.txt",
       "generator": "py -P tools/gen_p12.py --seed {seed} --out {out}"
     },
     "13": {
       "title": "Intersect a line and a quadratic curve",
-      "solution": "solutions/p13_line_curve_intersection.cpp",
+      "solution": "solutions/checkpoints/p13_line_curve_intersection.cpp",
+      "extends": [
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/13-line-curve-intersection.md",
       "cases": "tests/13/cases.txt",
       "generator": "py -P tools/gen_p13.py --seed {seed} --out {out}"
     },
     "14": {
       "title": "Fill a glyph: even-odd rule",
-      "solution": "solutions/p14_even_odd_fill.cpp",
+      "solution": "solutions/checkpoints/p14_even_odd_fill.cpp",
+      "files": [
+        "src/render/Scanline.h",
+        "src/render/Scanline.cpp",
+        "src/render/EvenOdd.h",
+        "src/render/EvenOdd.cpp"
+      ],
+      "buildsOn": [
+        "src/FrameBufferCanvas.h",
+        "src/GlyphComponent.h",
+        "src/render/Placement.h",
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/14-even-odd-fill.md",
       "cases": "tests/14/cases.txt",
       "generator": "py -P tools/gen_p14.py --seed {seed} --out {out}",
@@ -124,14 +292,24 @@
     },
     "15": {
       "title": "Lowest point of a quadratic curve",
-      "solution": "solutions/p15_bezier_min_y.cpp",
+      "solution": "solutions/checkpoints/p15_bezier_min_y.cpp",
+      "extends": [
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/15-bezier-min-y.md",
       "cases": "tests/15/cases.txt",
       "generator": "py -P tools/gen_p15.py --seed {seed} --out {out}"
     },
     "16": {
       "title": "Fill a polygon: non-zero rule",
-      "solution": "solutions/p16_nonzero_lines.cpp",
+      "solution": "solutions/checkpoints/p16_nonzero_lines.cpp",
+      "files": [
+        "src/render/NonZero.h",
+        "src/render/NonZero.cpp"
+      ],
+      "buildsOn": [
+        "src/render/Scanline.h"
+      ],
       "problem": "problems/16-nonzero-lines.md",
       "cases": "tests/16/cases.txt",
       "generator": "py -P tools/gen_p16.py --seed {seed} --out {out}",
@@ -139,7 +317,15 @@
     },
     "17": {
       "title": "Fill a glyph: non-zero rule",
-      "solution": "solutions/p17_nonzero_curves.cpp",
+      "solution": "solutions/checkpoints/p17_nonzero_curves.cpp",
+      "extends": [
+        "src/render/NonZero.h",
+        "src/render/NonZero.cpp"
+      ],
+      "buildsOn": [
+        "src/render/Scanline.h",
+        "src/utils/Geometry.h"
+      ],
       "problem": "problems/17-nonzero-curves.md",
       "cases": "tests/17/cases.txt",
       "generator": "py -P tools/gen_p17.py --seed {seed} --out {out}",
@@ -147,7 +333,21 @@
     },
     "18": {
       "title": "Render a line of text",
-      "solution": "solutions/p18_render_text.cpp",
+      "solution": "solutions/checkpoints/p18_render_text.cpp",
+      "files": [
+        "src/utils/Unicode.h",
+        "src/TextRenderer.h",
+        "src/TextRenderer.cpp",
+        "src/main.cpp"
+      ],
+      "buildsOn": [
+        "src/font/FontParser.h",
+        "src/font/Cmap.h",
+        "src/font/Loca.h",
+        "src/font/Metrics.h",
+        "src/font/CompoundGlyph.h",
+        "src/render/NonZero.h"
+      ],
       "problem": "problems/18-render-text.md",
       "cases": "tests/18/cases.txt",
       "generator": "py -P tools/gen_p18.py --seed {seed} --out {out}",

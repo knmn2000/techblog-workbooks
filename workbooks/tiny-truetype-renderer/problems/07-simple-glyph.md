@@ -26,12 +26,18 @@ compound glyphs, which are glyphs built out of other glyphs.
 Write a program that reads a list of glyph records from font files and prints each glyph's
 decoded outline.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p07_simple_glyph.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p07_simple_glyph.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `decodeGlyph()`.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `GlyphComponent.h`, `Glyph.h`, `font/GlyphParser.h`
+and `font/GlyphParser.cpp` under `src/`. It can build on `font/ByteReader.h`.
+`checkpoints/p07_simple_glyph.cpp` is the program the checker runs: it reads the test input,
+calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `readGlyph`. `Glyph.h` and `GlyphComponent.h`
+hold the types later checkpoints draw.
 
 ### Input
 
@@ -314,7 +320,7 @@ A failing test looks like this:
           points[26]: expected (x=199, y=626, curve=on), got (x=199, y=626, curve=off) - differs in curve
           likely cause: R7 - REPEAT expanded; on/off for every point, repeats included
           expected values from: fontTools 4.67.0
-          reproduce: build/p07.exe build/cases/07/07-R4-B.in build/cases/07/07-R4-B.out
+          reproduce: build/solutions/p07.exe build/cases/07/07-R4-B.in build/cases/07/07-R4-B.out
 ```
 
 ## After you pass: compare with the author's code

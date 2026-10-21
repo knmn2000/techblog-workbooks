@@ -4,9 +4,9 @@
     py -P tools/serve.py [--port 8787] [--no-browser]
 
 Starts a small web server that only this computer can reach (127.0.0.1), does the first-time
-build setup if it's needed, and opens the problem book. The page can load and save your
-solution files and run the checker on them, and nothing else. Leave the window open while you
-work; close it or press Ctrl+C to stop.
+build setup if it's needed, and opens the problem book. The page can load and save the files of
+your project (solutions/ by default), start a checkpoint, and run the checker, and nothing else.
+Leave the window open while you work; close it or press Ctrl+C to stop.
 """
 
 import argparse
@@ -27,7 +27,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_book  # noqa: E402
-import langs  # noqa: E402
+import project  # noqa: E402
 from check import to_args  # noqa: E402
 from imageio import ImageError, png_bytes, read_image  # noqa: E402
 
@@ -36,17 +36,10 @@ CHECK = ROOT / "tools" / "check.py"
 IMAGE_ROOTS = ("build/cases/", "build/fresh/", "tests/")  # the only folders /files/ will read from
 MAX_BODY = 4 * 1024 * 1024
 CASE_ID = re.compile(r"^[\w.+-]+$")
-# Files the learner may create and edit in solutions/common/ from the page.
+# Files of the project the page may create and edit.
 SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go", ".lua",
-               ".java", ".kt", ".cs", ".md", ".txt", ".json"}
-# How a checkpoint file pulls in shared code, per language. (Go builds every common/*.go with the
-# checkpoint, so there's nothing to find there.)
-USES = [re.compile(r'^\s*#\s*include\s+"(common/[^"]+)"', re.M),                     # C, C++
-        re.compile(r"^\s*from\s+(common(?:\.\w+)+)\s+import", re.M),                  # Python
-        re.compile(r"^\s*import\s+(common(?:\.\w+)+)", re.M),
-        re.compile(r"""(?:require\(|from\s+)['"]\./(common/[^'"]+)['"]""", re.M),     # JS, TS
-        re.compile(r'#\[path\s*=\s*"(common/[^"]+)"\]', re.M),                        # Rust
-        re.compile(r"""require\s*\(?\s*['"](common\.[\w.]+)['"]""", re.M)]            # Lua
+               ".java", ".kt", ".cs", ".md", ".txt", ".json", ".toml", ".cmake"}
+SKIP_DIRS = {"build", ".git", "node_modules", "target", "__pycache__", ".cache"}  # never listed or served
 
 
 class Workbook:
@@ -56,61 +49,35 @@ class Workbook:
         self.token = secrets.token_urlsafe(24)
         self.lock = threading.Lock()  # one checker run at a time: they share the build folder
         self.setup_error = None
-        self.native = langs.native(self.config)
-        # Every checkpoint's file in every language (whether it exists yet or not) -> (checkpoint, language).
-        self.solutions = {langs.solution_path(meta, lang, self.config).resolve(): (cid, lang)
-                          for cid, meta in self.config["checkpoints"].items() for lang in langs.LANGUAGES}
-        self._langs, self._langs_at = None, 0.0
-
-    def solution(self, cid: str):
-        meta = self.config["checkpoints"].get(cid)
-        return ROOT / meta["solution"] if meta else None
-
-    def languages(self) -> dict:
-        """Which languages this computer can build and run, with install help (cached briefly)."""
-        if self._langs is None or time.time() - self._langs_at > 15:
-            self._langs = {"native": self.native, "platform": langs.platform(),
-                           "languages": [langs.availability(key) for key in langs.LANGUAGES]}
-            self._langs_at = time.time()
-        return self._langs
+        self.home = project.home(self.config).resolve()
 
     def learner_file(self, rel: str):
-        """A path the page may read or write: a checkpoint's file (in any language), or a source
-        file anywhere under solutions/common/. Everything else is refused."""
+        """A path the page may read or write: a source or text file inside the project, outside its
+        build folders. Everything else is refused."""
         target = (ROOT / rel.replace("\\", "/").lstrip("/")).resolve()
-        common = (ROOT / "solutions" / "common").resolve()
-        if target in self.solutions:
-            return target
-        if common in target.parents and target.suffix.lower() in SOURCE_EXTS:
+        if self.home not in target.parents:
+            return None
+        inside = target.relative_to(self.home).parts
+        if any(part in SKIP_DIRS or part.startswith(".") for part in inside[:-1]):
+            return None
+        if target.suffix.lower() in SOURCE_EXTS or target.name in ("CMakeLists.txt", ".gitignore"):
             return target
         return None
 
     def files(self) -> list:
-        """The learner's project: every checkpoint file (the workbook's language, plus any other
-        language started), with the shared files each uses, then everything in solutions/common/."""
-        def lines(p):
-            return p.read_text(encoding="utf-8", errors="replace").count("\n") + 1 if p.exists() else 0
-
+        """Every file of the project, with the checkpoint it belongs to and whether it's still blank."""
         out = []
-        for path, (cid, lang) in sorted(self.solutions.items(), key=lambda kv: (kv[1][0], kv[1][1] != self.native, kv[1][1])):
-            if lang != self.native and not path.exists():
+        if not self.home.is_dir():
+            return out
+        for p in sorted(self.home.rglob("*")):
+            parts = p.relative_to(self.home).parts
+            if not p.is_file() or any(part in SKIP_DIRS for part in parts[:-1]):
                 continue
-            text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
-            uses = []
-            for pattern in USES:
-                for name in pattern.findall(text):
-                    if "/" in name:
-                        rel = name
-                    else:  # a dotted module name: common.x -> common/x.py or .lua
-                        rel = name.replace(".", "/") + (".lua" if lang == "lua" else ".py")
-                    uses.append("solutions/" + rel)
-            out.append({"path": path.relative_to(ROOT.resolve()).as_posix(), "checkpoint": cid, "lang": lang,
-                        "lines": lines(path), "uses": sorted(set(uses))})
-        common = ROOT / "solutions" / "common"
-        if common.is_dir():
-            for p in sorted(common.rglob("*")):
-                if p.is_file() and p.suffix.lower() in SOURCE_EXTS:
-                    out.append({"path": p.relative_to(ROOT).as_posix(), "checkpoint": None, "lines": lines(p)})
+            path = "/".join(parts)
+            text = p.read_text(encoding="utf-8", errors="replace") if p.stat().st_size < 1_000_000 else ""
+            out.append({"path": p.relative_to(ROOT.resolve()).as_posix(), "checkpoint": project.owner(self.config, path),
+                        "state": "blank" if project.still_blank(self.config, path) else "written",
+                        "lines": text.count("\n") + 1 if text else 0})
         return out
 
 
@@ -128,13 +95,14 @@ def missing_tools(config: dict) -> list:
 
 
 def first_time_setup(wb: Workbook):
-    """Runs the workbook's setup step once (e.g. CMake configure). Returns a problem, or None."""
+    """Runs the workbook's setup step once (e.g. CMake configure). Returns a problem, or None.
+    Before the project exists there's nothing to set up yet: the book offers to make it."""
     missing = missing_tools(wb.config)
     if missing:
         return (f"Your code can't be built yet: {', '.join(missing)} isn't installed (or isn't on PATH). "
                 "Ask Claude to set this workbook up, or see the README's Needs line.")
     setup = wb.config.get("setup")
-    if not setup or (ROOT / setup["creates"]).exists():
+    if not setup or not project.exists(wb.config) or (ROOT / setup["creates"]).exists():
         return None
     print("First run: preparing the build. This takes a few seconds...")
     proc = subprocess.run(to_args(setup["command"]), cwd=ROOT, capture_output=True, text=True)
@@ -211,15 +179,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(403, {"error": "forbidden"})
         if path == "/api/status":
             return self.reply(200, {"ready": self.server.wb.setup_error is None, "problem": self.server.wb.setup_error})
-        if m := re.match(r"^/api/solution/(\w+)$", path):
-            target = self.server.wb.solution(m.group(1))
-            if target is None:
-                return self.reply(404, {"error": "no such checkpoint"})
-            return self.reply(200, file_state(target))
         if path == "/api/files":
-            return self.reply(200, {"files": self.server.wb.files()})
-        if path == "/api/langs":
-            return self.reply(200, self.server.wb.languages())
+            wb = self.server.wb
+            return self.reply(200, {"exists": project.exists(wb.config), "files": wb.files()})
         if path == "/api/file":
             target = self.server.wb.learner_file(query.get("path", [""])[0])
             if target is None:
@@ -235,11 +197,7 @@ class Handler(BaseHTTPRequestHandler):
             body = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
-        if path == "/api/file":
-            target = self.server.wb.learner_file(str(body.get("path", "")))
-        else:
-            m = re.match(r"^/api/solution/(\w+)$", path)
-            target = self.server.wb.solution(m.group(1)) if m else None
+        target = self.server.wb.learner_file(str(body.get("path", ""))) if path == "/api/file" else None
         if target is None:
             return self.reply(404, {"error": "not a file you can save here"})
         text, base = body.get("text"), body.get("base")
@@ -267,25 +225,27 @@ class Handler(BaseHTTPRequestHandler):
             options = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
-        lang = str(options.get("lang") or wb.native)
-        if lang not in langs.LANGUAGES:
-            return self.reply(400, {"error": "unknown language"})
-        if path == "/api/start":
-            # A checkpoint in another language: create its blank starter the first time.
+        if path == "/api/setup":  # the book's "Set up the project" button
+            created = project.setup(wb.config)
+            wb.setup_error = first_time_setup(wb)
+            return self.reply(200, {"created": created, "problem": wb.setup_error})
+        if path in ("/api/start", "/api/starter"):
             cid = str(options.get("checkpoint", ""))
-            meta = wb.config["checkpoints"].get(cid)
-            if meta is None:
+            if cid not in wb.config["checkpoints"]:
                 return self.reply(404, {"error": "no such checkpoint"})
-            target = langs.solution_path(meta, lang, wb.config)
-            if lang != wb.native and not target.exists():
-                target.write_text(langs.blank_starter(lang, cid, meta, wb.config), encoding="utf-8", newline="\n")
-            return self.reply(200, file_state(target))
+            if not project.exists(wb.config):
+                return self.reply(409, {"error": "no-project"})
+            if path == "/api/start":  # opening a checkpoint creates its files (never over existing ones)
+                return self.reply(200, {"created": project.start(wb.config, cid)})
+            kind = str(options.get("kind", ""))
+            if kind not in ("blank", "boilerplate"):
+                return self.reply(400, {"error": "kind must be blank or boilerplate"})
+            written = project.use_starter(wb.config, cid, kind)
+            return self.reply(200, {"files": [file_state(project.home(wb.config) / p) for p in written]})
         m = re.match(r"^/api/check/(\w+)$", path)
         if not m or m.group(1) not in wb.config["checkpoints"]:
             return self.reply(404, {"error": "no such checkpoint"})
         args = [sys.executable, "-P", str(CHECK), m.group(1), "-Json"]
-        if lang != wb.native:
-            args += ["-Lang", lang]
         if options.get("case"):
             if not CASE_ID.match(str(options["case"])):
                 return self.reply(400, {"error": "bad test id"})

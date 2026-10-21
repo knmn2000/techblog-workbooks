@@ -26,12 +26,16 @@ decodes the outline found there.
 Write a program that reads a font's `maxp`, `head` and `loca` tables and prints, for each
 requested glyph id, where that glyph's record is in the file and how long it is.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p04_loca.cpp` is a comment and an empty `main`: the
-includes, reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p04_loca.cpp` over it, or pick Boilerplate in the
-book's editor. The boilerplate reads the input and writes the output; you fill in
-`readGlyphLocations()`, which works out the location of every glyph.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/Loca.h` and `font/Loca.cpp` under `src/`. It
+can build on `font/ByteReader.h` and `font/FontParser.h`. `checkpoints/p04_loca.cpp` is the
+program the checker runs: it reads the test input, calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `loadGlyphLocations`.
 
 ### Input
 
@@ -296,7 +300,7 @@ A failing test looks like this:
           glyph[0]: expected (id=0, offset=484, length=26), got (id=0, offset=484, length=13) - differs in length  (in `glyphs 8 loca short`)
           likely cause: R5 - Length = next entry - this one (x2 if short); numGlyphs + 1 entries
           expected values from: fontTools 4.67.0 maxp, head, loca and the glyf offset, cross-checked against a struct parse of loca
-          reproduce: build/p04.exe build/cases/04/04-R3-short-x2.in build/cases/04/04-R3-short-x2.out
+          reproduce: build/solutions/p04.exe build/cases/04/04-R3-short-x2.in build/cases/04/04-R3-short-x2.out
 ```
 
 ## After you pass: compare with the author's code

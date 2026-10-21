@@ -3,14 +3,15 @@
 LeetCode-style checkpoints for the blog post
 [Writing a tiny TrueType parser and renderer from scratch](https://yayo1.com/en/blog/tiny-truetype-renderer/)
 by Yohei Yamasaki. Each checkpoint asks you to build what one part of the post builds, from
-reading big-endian bytes (01) to rendering a line of text (18). Your program is checked by its
-output only, so you can structure it your own way, in any language, with any library.
+reading big-endian bytes (01) to rendering a line of text (18), and each one adds properly named
+files to a project of your own. When you finish, `solutions/` is a working TrueType renderer in
+C++, laid out much like the author's, that you can put on GitHub as it is.
 
 The problems are in `problems/` and, nicer to read, in the web problem book
-(`book/problem-book.html`: open it in a browser). The book has a problem list
-with your progress, and for each checkpoint the statement, hints that open in order, an Editorial with a solution proven to pass every test, an editor
-preloaded with the starter, and the example test cases. Its Submit button copies your code and
-shows the command to run; paste the checker's output back into Test Result to record the verdict.
+(`book/problem-book.html`: open it in a browser). The book has a problem list with your
+progress, and for each checkpoint the statement, what it adds to your project, hints that open in
+order, an Editorial with a solution proven to pass every test, an editor with the checkpoint's
+files, and the example test cases.
 
 | # | Checkpoint | # | Checkpoint |
 |---|---|---|---|
@@ -24,33 +25,61 @@ shows the command to run; paste the checker's output back into Test Result to re
 | 08 | Draw an outline with straight lines | 17 | Fill a glyph: non-zero rule |
 | 09 | Resolve compound glyphs | 18 | Render a line of text |
 
-Checkpoints don't depend on each other: each input carries what earlier checkpoints would
-produce. Checkpoint 18 is where your own pieces come together; keep the parts you'll reuse in
-`solutions/common/` and it can call them directly.
-
 ## Start here
 
-Double-click `study.cmd` (or run `.\study` in PowerShell). It opens the problem book in your
-browser with Run and Submit working: what you type is saved to `solutions/`, and the verdict
-appears right in the page, with the failing tests and pictures. Leave its window open while you
-work; close it to stop. The first start sets up the build, which takes a few seconds. If a tool is
-missing, it tells you which; or ask Claude to set the workbook up.
+Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
+workbook's project is C++), creates the project and opens the book. Or double-click `study.cmd`
+(or run `.\study` in PowerShell): the book opens with Run and Submit working, and offers to create
+the C++ project if there isn't one yet. Leave its window open while you work, or use the book's
+**Exit** button when you're done. If a tool is missing, it tells you which.
 
-The **Files** panel in the editor shows the project growing: `solutions/common/` (code shared by checkpoints) and every checkpoint's file. Shared files open in tabs and can be created there. After an Accepted Submit, the book suggests moving the reusable parts into `common/` so later checkpoints, and the last one most of all, can call them. **Re-check solved** runs every solved checkpoint again, so a change to shared code that breaks an earlier checkpoint shows up at once (it's marked with a red `!`). Inputs still carry what earlier checkpoints would produce, so a bug in one checkpoint never blocks another unless you share the code. When everything passes, the problem list shows what you built: each shared file and the checkpoints that use it.
+## Your project
 
-You can also work in your own editor and check from a terminal, as below. The book picks up
-changes you save to the solution files.
+```
+solutions/
+  CMakeLists.txt, README.md, .gitignore
+  src/font/         reading the font: ByteReader (01), FontParser (02), Cmap (03), Loca (04),
+                    Metrics (05), GlyphParser (07), CompoundGlyph (09)
+  src/              FrameBufferCanvas (06), Glyph and GlyphComponent (07), TextRenderer and main (18)
+  src/render/       Placement and Outline (08, 11), Scanline and EvenOdd (14), NonZero (16, 17)
+  src/utils/        Geometry (10, 12, 13, 15), Unicode (18)
+  checkpoints/      p01_byte_readers.cpp ... p18_render_text.cpp: the programs the checker runs
+  third_party/      stb_image_write.h, for writing PNG files
+```
+
+Do the checkpoints in order. Opening a checkpoint (in the book, or `.\check NN`) creates its
+files, each with a comment saying what belongs in it; nothing you've written is ever replaced.
+A checkpoint's real work goes in `src/`, and later checkpoints include it: the outline renderer
+draws on your canvas, the text renderer uses nearly everything. Its program in `checkpoints/`
+reads a test input, calls your code and writes the answer.
+
+Test inputs still carry what earlier checkpoints would produce (a table's offset, a glyph's
+location), so a checkpoint's tests only depend on the earlier files it uses. The whole project is
+built together, though: if a file of another checkpoint doesn't compile, the checker says which
+one. **Re-check solved** in the book runs every solved checkpoint again, so a change that breaks
+an earlier one shows up at once (marked with a red `!`).
+
+The **Files** panel in the book's editor shows the project as it grows, with each file's
+checkpoint. When everything passes, the problem list shows your project next to the author's.
+Build and run the finished program:
+
+```
+cmake --build build/solutions --target tiny_ttf
+build/solutions/tiny_ttf.exe fonts/JetBrainsMonoNerdFont-Bold.ttf "Hello, TrueType!" hello.png
+```
+
+On its own (for example after you've pushed it to GitHub), `solutions/` builds with
+`cmake -S . -B build` and `cmake --build build`.
 
 ## Doing a checkpoint
 
-1. Read the problem (book or `problems/NN-*.md`).
-2. Write your solution in `solutions/pNN_*.cpp`. It starts as a comment and an empty `main`:
-   the includes, reading the input and writing the output are yours. If you'd rather start
-   from ready-made input/output code, copy `starters/boilerplate/pNN_*.cpp` over it (or pick
-   Boilerplate in the book's editor) and fill in the functions marked `TODO`.
-   Code you want to reuse in later checkpoints can go in `solutions/common/`: every `.cpp`
-   there is compiled into every checkpoint, so checkpoint 18 can call what you wrote earlier.
-3. Check it from this folder in PowerShell:
+1. Read the problem (book or `problems/NN-*.md`). Its "In your project" box lists the files the
+   checkpoint creates or adds to, and the earlier files it can build on.
+2. Write them. They start blank: the includes, reading the input and writing the output are
+   yours. If you'd rather start from ready-made input/output code, pick Boilerplate in the book's
+   editor (or copy the checkpoint's files from `starters/boilerplate/`) and fill in what's marked
+   `TODO`. The boilerplate uses the author's names where the post has them.
+3. Check it from this folder in PowerShell, or with Run and Submit in the book:
 
 ```
 .\check 07                         run every test
@@ -61,9 +90,9 @@ changes you save to the solution files.
 
 The verdict is `Accepted`, `Wrong Answer`, `Compile Error`, `Runtime Error` or
 `Time Limit Exceeded`. Text output is compared word by word, so line endings (`\n` or `\r\n`)
-and extra spaces don't matter, except inside quoted strings. Every failure shows the requirement it most likely comes from, where the
-expected value came from, and the command to reproduce it. Picture checkpoints also write a
-diff image (red: extra pixels, blue: missing, yellow: forgiven).
+and extra spaces don't matter, except inside quoted strings. Every failure shows the requirement
+it most likely comes from, where the expected value came from, and the command to reproduce it.
+Picture checkpoints also write a diff image (red: extra pixels, blue: missing, yellow: forgiven).
 
 **Pictures are compared with a 1-pixel tolerance** along edges, so a different but correct
 line or fill algorithm passes. Missing shapes, stray lines and holes in the wrong place don't.
@@ -75,34 +104,16 @@ the verdict reads `Accepted (1 disputed)`. Then ask Claude to "review my dispute
 rechecks the expected value against its independent source and either fixes the test or shows
 you why it's right. Disputes are kept in `disputes.json`.
 
-## Using another language or library
+## Another language
 
-The checker runs your program as `<program> <input-file> <output-file>` and compares the output
-file, so any language works. Eight are built in: C, C++, Go, Rust, Python, JavaScript, TypeScript
-and Lua. Pick one in the book's editor, or add `-Lang` on the command line:
+Only the output is checked, so the project can be in any language. This workbook's project, its
+starters and its reference are C++. To work in another language, ask Claude: it shows which
+languages are installed (`py -P tools/langs.py` lists them) and how to install the others, keeps
+your C++ project in a folder of its own, and sets up a project in the new language, with its own
+build file and the same layout in that language's style. Nothing is created for languages you
+don't choose.
 
-```
-.\check 07 -Lang python      checks solutions/p07_simple_glyph.py
-.\check 07 -Lang go          checks solutions/p07_simple_glyph.go
-```
-
-The file sits next to the C++ one, with its own extension, and the first run creates a blank
-starter for it. If the language's tools aren't installed, the checker says how to install them.
-Shared code works the same way in every language: it goes in `solutions/common/`, and each blank
-starter says how its language picks it up. The boilerplate starters and the reference solutions
-are C++ only.
-
-For any other language or setup, the checker runs `<run> <input-file> <output-file>` from
-this folder and compares the output file (for pictures: a PNG, or a binary PPM, at the output
-path). Change `build` and `run` in `workbook.json`, for example:
-
-```json
-"build": "",
-"run": "py solutions/p{id}.py {input} {output}"
-```
-
-or `"build": "cargo build --release --bin p{id}"` with `"run": "target/release/p{id}.exe {input} {output}"`.
-`{id}` becomes the checkpoint number. To check a one-off program without changing the config:
+To check a one-off program without changing anything:
 `.\check 07 -Run "path/to/program.exe {input} {output}"`.
 
 ## What's in here
@@ -110,27 +121,26 @@ or `"build": "cargo build --release --bin p{id}"` with `"run": "target/release/p
 | Path | What it is |
 |---|---|
 | `problems/` | Problem statements (the book is built from these) |
-| `solutions/` | Your code: one file per checkpoint, blank to begin with |
-| `solutions/common/` | Code shared by your checkpoints (compiled into all of them) |
-| `starters/blank/` | The blank starters. Copy one over `solutions/` to start again. |
-| `starters/boilerplate/` | Starters with the input/output code done, if you want them |
-| `tools/blank_starters.py` | Writes the blank starters and puts them in `solutions/` (never over your own code) |
+| `solutions/` | Your project, created when you set the workbook up (see above) |
+| `starters/project/` | What your project starts with: the build file, README and `.gitignore` |
+| `starters/blank/`, `starters/boilerplate/` | Each checkpoint's files, blank and with the input/output done |
 | `tests/NN/` | Test inputs and expected outputs (`cases.txt`, plus data files and expected pictures) |
 | `study.cmd`, `study.ps1` | Open the book with Run and Submit working (they start `tools/serve.py`) |
-| `tools/serve.py` | The study server: only reachable from this computer; loads and saves solution files and runs the checker |
+| `tools/serve.py` | The study server: only reachable from this computer; loads and saves your project's files and runs the checker |
 | `tools/check.py` | The checker (`check.ps1` and `check.cmd` call it) |
+| `tools/project.py` | Sets up your project and starts checkpoints (`setup`, `start NN`, `status`) |
+| `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
 | `tools/gen_pNN.py` | Each checkpoint's test generator (used by `-Fresh`) |
-| `tools/build_book.py` | Builds `book/problem-book.html` from `problems/` and `starters/` (the page design is `tools/book_template.html`) |
-| `include/provided/` | Optional helpers: big-endian reads (01), a framebuffer with PNG output (06), a simple-glyph decoder (07) |
+| `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
 | `fonts/` | JetBrains Mono Bold (Nerd Font build) and Noto Sans JP, both SIL Open Font License (see `fonts/README.md`) |
-| `third_party/` | GLM and stb_image_write, under their own licences (see `third_party/README.md`) |
+| `third_party/` | stb_image_write, under its own licence (see `third_party/README.md`) |
 | `docs/authoring-guide.md` | How the checkpoints and their tests are made |
-| `_spoilers/` | Reference solutions. Don't open these until you've passed. |
+| `_spoilers/` | The reference project. Don't open it until you've passed. |
 
-Needs: g++ (MinGW) with CMake and Ninja for the C++ starters, and Python 3 with `fontTools`
-for `-Fresh`. The commands in `workbook.json` are set up for Windows (PowerShell, the `py`
-launcher, `.exe` programs); on macOS or Linux, change `build`, `run` and the generator commands
-there and run `python3 tools/check.py 07` instead of `.\check 07`.
+Needs: g++ (MinGW) with CMake and Ninja, and Python 3.11+ with `fontTools` for `-Fresh`. The
+commands in `workbook.json` are set up for Windows (PowerShell, the `py` launcher, `.exe`
+programs); on macOS or Linux, change the `.exe` paths there and run `python3 tools/check.py 07`
+instead of `.\check 07`.
 
 This workbook is licensed under Apache-2.0, except the fonts and `third_party/`. It contains no
 text or code from the blog post; the problem pages link to it.

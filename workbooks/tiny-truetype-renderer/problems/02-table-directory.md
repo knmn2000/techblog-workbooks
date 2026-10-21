@@ -26,12 +26,17 @@ contain your output lines for the tables they need, so you can also do them with
 Write a program that reads a font file's table directory and prints the header's table count
 and every table record.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p02_table_directory.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p02_table_directory.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `readTableDirectory()`.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/FontParser.h` and `font/FontParser.cpp` under
+`src/`. It can build on `font/ByteReader.h`. `checkpoints/p02_table_directory.cpp` is the
+program the checker runs: it reads the test input, calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `readTableDirectory`. Read the bytes with your
+`ByteReader` from checkpoint 01.
 
 ### Input
 
@@ -204,8 +209,8 @@ the order they are stored, then loop `numTables` times, reading one record per p
 
 Seek to byte 0. Read and ignore a uint32 (the scaler type). Read the uint16 `numTables`.
 Skip 6 bytes. Then, for each record, read 4 single bytes and append each one to a string as a
-character, and read three uint32 values. Checkpoint 1's readers (or `provided/BigEndian.h`)
-do the byte order for you.
+character, and read three uint32 values. Your `ByteReader` from checkpoint 01
+does the byte order for you.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -255,7 +260,7 @@ A failing test looks like this:
           expected `table "cvt " 4292346576 544 8`, closest line written: `table "cvt" 4292346576 544 8` - differs in tag (15 lines written, 15 expected)
           likely cause: R3 - Tags exactly as stored: 4 characters, trailing spaces kept
           expected values from: Python struct, cross-checked against fontTools 4.67.0 SFNTReader
-          reproduce: build/p02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
+          reproduce: build/solutions/p02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
 ```
 
 The lines may be in any order, so the checker looks for each expected line in your output and,

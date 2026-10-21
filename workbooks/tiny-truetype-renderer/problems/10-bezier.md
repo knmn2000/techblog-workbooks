@@ -4,7 +4,7 @@
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · small structs with `+`, `-` and `*` operators
-- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`) · optional: `glm::dvec2` from `third_party/glm-1.0.1`
+- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`)
 - *Concepts:* linear interpolation (lerp) · quadratic Bezier curves · control points · de Casteljau's algorithm · curve parameter t
 
 ## Read in the blog first
@@ -29,12 +29,17 @@ many of these points with short straight lines.
 Write a program that reads a list of requests, one per line, and prints the point that each
 one asks for.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p10_bezier.cpp` is a comment and an empty `main`:
-the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p10_bezier.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `lerp()` and `bezier()`.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `utils/Geometry.h` under `src/`.
+`checkpoints/p10_bezier.cpp` is the program the checker runs: it reads the test input, calls
+your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `lerp` and `bezierLerp`. Checkpoints 12, 13 and
+15 add more geometry to the same file.
 
 ### Input
 
@@ -233,7 +238,7 @@ A failing test looks like this:
       x 10-R2-midpoint  an arch from (0,0) to (100,0) pulled toward (50,100): t = 0.5
           line 1: expected `50 50`, got `37.5 25`
           expected values from: exact arithmetic with Python fractions.Fraction
-          reproduce: build/p10.exe build/cases/10/10-R2-midpoint.in build/cases/10/10-R2-midpoint.out
+          reproduce: build/solutions/p10.exe build/cases/10/10-R2-midpoint.in build/cases/10/10-R2-midpoint.out
 ```
 
 ## After you pass: compare with the author's code

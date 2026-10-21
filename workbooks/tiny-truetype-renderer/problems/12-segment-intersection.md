@@ -4,7 +4,7 @@
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · `std::optional` for "no answer" · small structs
-- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`) · optional: `glm::dvec2` from `third_party/glm-1.0.1`
+- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`)
 - *Concepts:* 2D cross product · which side of a line a point is on · parametric form of a segment · parallel and collinear lines · closed segments (endpoints included)
 
 ## Read in the blog first
@@ -28,12 +28,17 @@ Checkpoint 13 does the same for a curved edge.
 Write a program that reads pairs of line segments and prints, for each pair, the point where
 the two segments meet, or `none`.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p12_segment_intersection.cpp` is a comment and an
-empty `main`: the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, copy `starters/boilerplate/p12_segment_intersection.cpp` over
-it, or pick Boilerplate in the book's editor. The boilerplate reads the input and writes the
-output; you fill in `intersect()`.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint adds to `utils/Geometry.h` (under `src/`), which you started in checkpoint 10.
+`checkpoints/p12_segment_intersection.cpp` is the program the checker runs: it reads the test
+input, calls your code and writes the answer.
+
+The program starts blank, with a comment and an empty `main`, so the includes, reading the input
+and writing the output are yours. To start from working input/output code instead, pick
+Boilerplate in the book's editor (or copy this checkpoint's files from `starters/boilerplate/`):
+the declarations use the author's names where the post has them, and what's left to write is
+`segmentsIntersect`. Checkpoint 10's boilerplate already declares it in `Geometry.h`; if you
+wrote that file your own way, add the function there.
 
 ### Input
 
@@ -265,7 +270,7 @@ A failing test looks like this:
           line 1: expected `none`, got `5 5`
           likely cause: R3 - Lines that cross outside either segment -> none
           expected values from: exact arithmetic with Python fractions.Fraction (parametric solve, cross-checked)
-          reproduce: build/p12.exe build/cases/12/12-R3-beyond-end.in build/cases/12/12-R3-beyond-end.out
+          reproduce: build/solutions/p12.exe build/cases/12/12-R3-beyond-end.in build/cases/12/12-R3-beyond-end.out
 ```
 
 ## After you pass: compare with the author's code

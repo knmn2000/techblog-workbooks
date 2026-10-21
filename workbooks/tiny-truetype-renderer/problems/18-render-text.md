@@ -17,23 +17,28 @@ pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer
 ## Where this fits
 
 Every earlier checkpoint built one piece. This one puts them together: from the bytes of a font file
-and a string of text to a picture of that text. Reusing your own solutions to checkpoints 02-17 is
-the intended route: if you moved them into `solutions/common/` as you went, this checkpoint
-can call them directly.
+and a string of text to a picture of that text. It's the last piece of your project: `TextRenderer`
+includes the files of checkpoints 02 to 17, and `main.cpp` turns the project into a program you
+can run.
 
 ## The problem
 
 Write a program that draws lines of text with a TrueType font and writes the picture as a PNG.
 
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p18_render_text.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p18_render_text.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, creates the canvas and writes
-the PNG; you fill in `drawText()`. The boilerplate includes the optional helpers
-`provided/BigEndian.h` (checkpoint 01) and `provided/SimpleGlyph.h` (checkpoint 07), and the
-canvas from `provided/Canvas.h`. With the blank starter, include what you need yourself, or call
-your own code from `solutions/common/`.
+Only the picture is checked, so you can structure the code however you like. This checkpoint's
+code goes in your project, in `utils/Unicode.h`, `TextRenderer.h`, `TextRenderer.cpp` and
+`main.cpp` under `src/`. It can build on `font/FontParser.h`, `font/Cmap.h`, `font/Loca.h`,
+`font/Metrics.h`, `font/CompoundGlyph.h` and `render/NonZero.h`.
+`checkpoints/p18_render_text.cpp` is the program the checker runs: it reads the test input,
+calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `utf8ToCodepoints` and the `TextRenderer`
+functions. `main.cpp` is the program you'll run when you're done: `tiny_ttf <font.ttf> "<text>"
+<out.png>`. The boilerplate has it written; it uses your `TextRenderer`.
 
 ### Input
 
@@ -80,10 +85,10 @@ easiest to write by hand: the header `P6`, the width, the height and `255`, sepa
 or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
 (red, green, blue), row by row from the top-left. Open the file in binary mode
 (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
+`third_party/stb_image_write.h` in your project is on the include path: `#define
 STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
+`writePng`; the boilerplate calls it.
 
 ### Where each piece is explained
 

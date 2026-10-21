@@ -26,12 +26,16 @@ Write a program that reads a font's Unicode character map (the platform 0 / enco
 subtable, in format 12) and answers questions about it: how many characters it maps, and
 which glyph a given character maps to.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p03_cmap.cpp` is a comment and an empty `main`: the
-includes, reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p03_cmap.cpp` over it, or pick Boilerplate in the
-book's editor. The boilerplate reads the input and writes the output; you fill in
-`readCharacterMap()`, which returns every (code point → glyph id) pair.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/Cmap.h` and `font/Cmap.cpp` under `src/`. It
+can build on `font/ByteReader.h` and `font/FontParser.h`. `checkpoints/p03_cmap.cpp` is the
+program the checker runs: it reads the test input, calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `loadUnicodeToGlyphCodeMap`.
 
 ### Input
 
@@ -309,7 +313,7 @@ A failing test looks like this:
           line 5: expected `lookup U+04FF 1024`, got `lookup U+04FF none`
           likely cause: R2 - Every group maps startCharCode..endCharCode (both included)
           expected values from: fontTools 4.67.0 cmap.getcmap(0, 4) and getGlyphID, cross-checked against a struct parse
-          reproduce: build/p03.exe build/cases/03/03-R2-long-runs.in build/cases/03/03-R2-long-runs.out
+          reproduce: build/solutions/p03.exe build/cases/03/03-R2-long-runs.in build/cases/03/03-R2-long-runs.out
 ```
 
 ## After you pass: compare with the author's code

@@ -1,152 +1,221 @@
 # Authoring a checkpoint
 
-How to turn one part of a blog post into a LeetCode-style checkpoint for this workbook.
-Checkpoint 07 is the worked example: copy its shape exactly.
+How to turn one row of the checkpoint map into a finished checkpoint. Build the first one
+completely and use it as the model for the rest: copy its shape exactly.
 
-| File | Example |
+## Contents
+1. Files
+2. The problem page
+3. The reference project
+4. The starters
+5. The generator and the case file
+6. Picture checkpoints
+7. Checking the checks (summary; details in test-trust.md)
+8. Writing style
+
+## 1. Files
+
+A checkpoint is part of a project the learner builds (`references/mapping.md`, section 6). It has
+an entry program the checker runs and the project files it creates or adds to. Paths of project
+files are relative to the project folder (`solutions/` for the learner, `_spoilers/project/` for the
+reference).
+
+| File | Path |
 |---|---|
-| Problem page | `problems/07-simple-glyph.md` |
-| Starter | `solutions/p07_simple_glyph.cpp` |
-| Reference solution | `_spoilers/reference/p07_simple_glyph.cpp` |
-| Test generator | `tools/gen_p07.py` (newer generators use `tools/wb.py`) |
-| Generated tests | `tests/07/cases.txt` (+ `tests/07/data/`, `tests/07/expected/` for pictures) |
+| Problem page | `problems/NN-slug.md` |
+| Entry program | `checkpoints/pNN_slug.<ext>` in the project |
+| Project files | where the layout puts them, e.g. `src/font/Cmap.h` |
+| Reference | the same paths under `_spoilers/project/` |
+| Starters | the same paths under `starters/blank/` and `starters/boilerplate/` |
+| Generator | `tools/gen_pNN.py` (uses `tools/wbcore.py`) |
+| Generated tests | `tests/NN/cases.txt`, plus `tests/NN/data/` and, for pictures, `tests/NN/expected/` |
 
-`workbook.json` and `CMakeLists.txt` already list every checkpoint with its slug, paths and
-generator command. Don't edit them, or any shared tool (`tools/check.py`, `tools/imageio.py`,
-`tools/wb.py`, `include/provided/*`). If one needs a change, say what and why in your report.
+Every checkpoint is registered in `workbook.json` before work starts, with its place in the project:
 
-## Principles
+```json
+"03": {
+  "title": "Replay the log",
+  "solution": "solutions/checkpoints/p03_replay_log.cpp",
+  "files": ["src/log/Replay.h", "src/log/Replay.cpp"],
+  "extends": [],
+  "buildsOn": ["src/log/Record.h"],
+  "problem": "problems/03-replay-log.md",
+  "cases": "tests/03/cases.txt",
+  "generator": "py -P tools/gen_p03.py --seed {seed} --out {out}"
+}
+```
 
-1. **One kind of exercise: write a program whose output must match.** The program is run as
-   `<program> <input-file> <output-file>` from the workbook folder. Tests only see the output, so
-   the learner may structure the code any way, in any language or library.
-2. **Same task as the snippet.** The checkpoint asks for what the blog's snippet accomplishes,
-   with the same scope and simplifications. It does not prescribe the author's structure; the
-   author's structure appears only as a hint and in "After you pass".
-3. **Where the snippet is wrong, follow the spec** and say so in "After you pass" (neutrally:
-   "something to look for").
-4. **Each input carries what earlier checkpoints would produce** (offsets, outlines, ...), so a
-   checkpoint can be done without the earlier ones.
-5. **Expected outputs come from an independent source**: fontTools, Python's `struct`, exact
-   `fractions.Fraction` arithmetic, fontTools' `PointInsidePen`, ... never from the reference
-   solution alone. For pictures, the reference program draws the expected image and the
-   generator validates it against an independent source before writing it (e.g. sample pixels
-   and check them with `wb.inside()`, or check that every outline point is inked).
-6. **No copying the blog.** Never paste its prose or code. Summaries are in your own words and
-   much shorter. Link to sections with text fragments:
-   `https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Some%20heading`.
+`files` are created by this checkpoint, `extends` are earlier files it adds to, and `buildsOn` are
+earlier files it's likely to use (the book shows them; nothing enforces them). Each project file
+also gets a one-line purpose in `project.purposes`, which becomes its blank starter's comment and
+the book's "In your project" box. Add `"generatorNeedsReference": true` only when the generator
+runs the reference program, e.g. to draw expected pictures. `assets/example-checkpoint/` shows a
+registered checkpoint.
 
-## The problem page (Markdown)
+## 2. The problem page
 
-Use exactly these sections, in this order, with the same heading text as checkpoint 07:
+Markdown, with exactly these sections and headings, in this order (the book builder parses them):
 
-1. `# NN · Title`, then the line `**Difficulty:** Easy|Medium|Hard · **Checkpoint** N of 18 · **Check:** \`.\check NN\``
-2. `**Tags**`: three bullets, `*Language:*`, `*Library:*`, `*Concepts:*` (what the learner may need).
-3. `## Read in the blog first`: which blog section, where to stop before the author's code. Say
-   the page is complete on its own.
-4. `## Where this fits`: two or three sentences on the pipeline.
-5. `## The problem`: what to build; `### Input` (a table of line kinds); `### Output` (exact
-   format); then `###` subsections with every rule, table and formula needed. Exhaustive: a
-   learner must be able to pass using only this page. Describe binary layouts as tables of
-   field / type / meaning in your own words.
-6. `## Requirements`: `- **R1** ...` one testable behaviour each. Every test targets one.
-7. `## Examples`: two or three `### Example k: title (test \`id\`)` blocks with `input:` and
-   `output:` in fenced text blocks, taken from real test cases, with a short walkthrough of the
-   one non-obvious step.
-8. `## Constraints`: input limits, what is guaranteed well-formed, number of tests, time limit.
-9. `## Source material`: spec links (Apple TrueType manual, Microsoft OpenType spec, ...) and the
-   blog section.
-10. `## Hints`: four `<details><summary>Hint k: ...</summary>` blocks: 1 nudge, 2 approach,
-    3 traps, 4 pseudocode. Each gives away more than the last.
-11. `## Checking your solution`: the four commands (see 07) and one sample failure message.
-12. `## After you pass: compare with the author's code`: how the author structured it (by name),
-    and anything the snippet does differently from the spec.
+1. `# NN · Title`
+2. `**Difficulty:** Easy|Medium|Hard · **Checkpoint** N of M · **Check:** \`.\check NN\``
+3. `**Tags**` followed by three bullets: `- *Language:* a · b · c`, `- *Library:* ...`,
+   `- *Concepts:* ...`. What the learner may need to know or look up.
+4. `## Read in the blog first`: which section of the post, linked with a text fragment
+   (`url#:~:text=Heading%20words`), and where to stop before the author's code. Say the page is
+   complete on its own.
+5. `## Where this fits`: two or three sentences: what came before, what this unlocks, and which
+   files of the project it adds to.
+6. `## The problem`: one paragraph on what to build; one on where the code goes (the project files
+   it creates or adds to, the earlier files it can build on, and that `checkpoints/pNN_*` is what
+   the checker runs); one on the starters (blank, and what the boilerplate leaves to write). Then
+   `### Input` (a table of line kinds), `### Output` (exact format, with a fenced block showing it),
+   then `###` subsections with every rule, table, formula and edge case needed. Binary layouts as
+   tables of field / type / meaning, in your own words. A learner must be able to pass using only
+   this page; the independent solver proves it.
+7. `## Requirements`: `- **R1** ...`, one testable behaviour each. Every case targets one.
+8. `## Examples`: two or three `### Example k: title (test \`id\`)` blocks, each with `input:` and
+   `output:` in fenced blocks copied from real cases (say once in the README that line endings and
+   runs of spaces don't matter; the checker compares words), and a walkthrough of the one
+   non-obvious step (a byte-by-byte table is ideal). Picture checkpoints embed the expected image:
+   `![expected picture for <id>](tests/NN/expected/<id>.png)`.
+9. `## Constraints`: input limits, what is guaranteed well-formed, number of tests and what they
+   cover, the time limit.
+10. `## Source material`: specification links, references the post cites, the post's section.
+11. `## Hints`: four blocks, each
+    `<details><summary>Hint k: title</summary>` ... `</details>`:
+    1. a nudge (where to start, what to think about),
+    2. the approach in words,
+    3. the traps (a bullet list),
+    4. pseudocode.
+    Each gives away more than the last; none gives the full solution in the learner's language.
+12. `## Checking your solution`: the four commands (`.\check NN`, `-Case <id>`, `-Fresh`,
+    `-Dispute <id> "why"`) and one real failure message copied from a planted bug's run.
+13. `## After you pass: compare with the author's code`: how the author structured it (by
+    function name), linked to the snippet's caption with a text fragment, and "Something to look
+    for:" any place the snippet differs from the spec, worded neutrally.
 
-Write plainly: short sentences, active voice, no em-dash asides. Use ASCII in test titles.
+The web book (`tools/build_book.py`) finds these sections by their heading text, so keep it
+exact. "The problem", Requirements, Examples and Constraints form the statement; "Read in the blog
+first" becomes a note at the top; Hints open in order; "Where this fits" and "Source material" fold
+away under the statement; "Checking your solution" sits with the test results; "After you pass"
+becomes the Editorial tab, locked until the learner passes. Any other `##` section appears in the
+statement under its own heading. Each example's `input:` block, and its `output:` block or expected
+picture, also becomes a test case in the book's bottom panel.
 
-The web book (`tools/build_book.py`) recognises these sections by their heading text, so keep
-it exact: "The problem", Requirements, Examples and Constraints form the statement; "Read in the
-blog first" becomes a note at the top; Hints become hints that open in order; "Where this fits"
-and "Source material" fold away under the statement; "Checking your solution" goes with the test
-results; "After you pass" becomes the Editorial tab, locked until the learner passes. Any other
-`##` section appears in the statement under its own heading. Each example's `input:` block,
-and its `output:` block or expected picture, also become a test case in the bottom panel.
+## 3. The reference project
 
-## The starter (`solutions/pNN_slug.cpp`)
+Write the reference first, in `_spoilers/project/`: the checkpoint's project files and its entry
+program, from the specification and your own understanding, never copied from the blog. Later
+references include earlier ones exactly as the learner's will, so the reference reads as the
+finished project and doubles as the proof that the layout works.
 
-Each checkpoint has two starters. The learner gets the **blank** one: a header comment and an
-empty `main`, so the includes, the input parsing and the output are theirs to write. The
-**boilerplate** (what this section describes) does the input and output and leaves functions
-marked `TODO`; it's the optional easier start. Write the boilerplate as
-`solutions/pNN_slug.cpp`, since the stub checks run on it. When every checkpoint is done, run
-`py -P tools/blank_starters.py`: it keeps the boilerplate in `starters/boilerplate/`, writes
-`starters/blank/`, and puts the blank starter in `solutions/` (never over a file the learner
-changed). The checker says "Not started yet" while a solution is still the blank starter, and
-the book's editor offers both.
+- **The entry program** reads the input, calls the project, and writes the output in the exact
+  format. It holds no logic later checkpoints need.
+- **Project files** use the author's names where the post has them (types, functions, files),
+  and carry a short header comment saying which checkpoint they belong to.
+- **A file later checkpoints add to** is split into sections: everything a later checkpoint adds
+  goes under a marker line, `// ---- Checkpoint 12: two segments ----` (`#` or `--` in languages
+  with those comments). Everything before the first marker belongs to the checkpoint that creates
+  the file. Includes a later section needs go in that section, even mid-file, so the file builds
+  at every point in the series.
+- **Learners read it.** The Editorial shows the checkpoint's files as they stand after it (later
+  sections left out), with the names of earlier files it uses. Write a model answer: clear names,
+  a short comment wherever the reasoning isn't obvious, no dead code or debugging leftovers.
 
-The problem page's paragraph about the starter says the file starts as a comment and an empty
-`main`, then what the boilerplate does and what it leaves to fill in (see 07). Formatting the
-boilerplate does for the learner (rounding, printing bytes as numbers) must also be stated as a
-rule on the page, since the blank starter doesn't do it. Picture pages end their Output section
-with a "**Writing the picture.**" paragraph (binary PPM by hand, or PNG via stb), as in 14.
+`check NN -Ref` builds and checks the reference *as it stands after checkpoint NN*: the files of
+checkpoints 01 to NN, later sections left out (`tools/project.py`, `reference_as_of`). An Accepted
+run on the committed tests records the fingerprint of every file the program includes in
+`_spoilers/verified.json`, and the book only says "Passes all N tests" while they still match.
+After any change to a reference file, run `-Ref` again for every checkpoint that includes it.
+`build_book.py` warns (and exits non-zero) for any reference that isn't proven.
 
-Code the learner shares between checkpoints goes in `solutions/common/`: every `.cpp` there is
-compiled into every learner program (CMake `common` object library), so the capstone can call
-earlier work.
+## 4. The starters
 
-- One self-contained C++20 file. The header comment names the checkpoint, the problem page and
-  `.\check NN`, and says only the output is checked.
-- Provided input/output code at the bottom, marked `// ---- Input/output (provided) ----`. It
-  parses the input file and writes the output, so the learner fills in one function (or a
-  few), each with a `// TODO:` comment and `throw NotImplemented("name");`.
-- `main` catches `NotImplemented` and exits 99 (the checker then says "Not implemented yet"),
-  catches other exceptions and exits 1 with the message on stderr.
-- Optional helpers: `#include "provided/BigEndian.h"` (big-endian reads, checkpoint 01) and
-  `#define CANVAS_PNG_IMPLEMENTATION` + `#include "provided/Canvas.h"` (framebuffer + PNG,
-  checkpoint 06). Picture checkpoints write the PNG to the output path.
-- Compiles cleanly with `-Wall -Wextra -Wno-unused-parameter`.
+Each of a checkpoint's own files (its entry program and the files it creates) has two starters at
+the same path: `starters/blank/` and `starters/boilerplate/`. Opening a checkpoint copies its blank
+starters into the learner's project (`tools/project.py start`), never over an existing file; the
+book's Blank / Boilerplate switch replaces them after asking.
 
-## The reference (`_spoilers/reference/pNN_slug.cpp`)
+**Blank** starters are written by `py -P tools/blank_starters.py` from `workbook.json`: an entry
+program with a header comment (the checkpoint, the problem page, how it's run, which files the
+checkpoint creates, adds to and can build on) and an empty `main`, and project files that are only
+a comment (the checkpoint and the file's purpose; `#pragma once` for C++ headers). The learner
+writes the imports, the API, the input parsing and the output. Rerun it with `--force` after
+changing titles, files or purposes.
 
-Same input/output code as the starter, function(s) filled in. Written from the spec, not the
-blog. Header comment: `// Reference solution - checkpoint NN (...). SPOILERS: try it yourself first.`
+**Boilerplate** starters are written by you, from the reference:
+- The entry program is the reference's, with a header comment saying what's left to write, and
+  exit **99** when it catches a "not implemented" error (the checker then says "Not implemented
+  yet: <function>"); 1 plus a message on stderr for other errors.
+- Headers that only declare things are the reference's. Function bodies become a `TODO:` comment
+  pointing at the page's section, then a "not implemented" error naming the function.
+- A file later checkpoints add to has stubs for their functions too (marked with the checkpoint),
+  so the boilerplate path keeps compiling.
+- Everything compiles cleanly: build every blank and every boilerplate starter into a scratch
+  project and check that each boilerplate program reports its TODO.
 
-Learners read it: the book's Editorial shows it in full, with the files it includes from
-`_spoilers/`, as "a solution that passes". An Accepted `.\check NN -Ref` on the committed tests
-records its fingerprint in `_spoilers/verified.json`; the book only says "Passes all N tests" while
-the files still match, and `tools/build_book.py` warns about any reference that isn't proven. After
-changing a reference, run `.\check NN -Ref` again.
+| Language | Not implemented | Exit 99 |
+|---|---|---|
+| C++ | `throw std::logic_error("not implemented: name");` | `catch (const std::exception& e)`: if `what()` starts with `not implemented`, print it to stderr and `return 99` |
+| Python | `raise NotImplementedError("name")` | `except NotImplementedError as e: print(f"not implemented: {e}", file=sys.stderr); sys.exit(99)` |
+| JavaScript | `throw new Error("not implemented: name")` | catch, check the message prefix, `process.exit(99)` |
 
-## The generator (`tools/gen_pNN.py`)
+Because the blank starter does nothing for the learner, the problem page must state every
+formatting rule the boilerplate handles (how numbers are rounded, how bytes are printed).
 
-Use `tools/wb.py`: `wb.parse_args("NN")`, `wb.Cases(...)`, `cases.add(...)`, `cases.save()`.
+## 5. The generator and the case file
 
-- Header lines: `compare` (`records ...` line by line with named tuples, `unordered`, or
-  `image band=1 allow=...`), `explain` (where a difference is → likely requirement; see 07),
-  and the requirements.
-- Case ids: `NN-R<k>-<slug>` for cases aimed at a requirement, `NN-E2E-<slug>` for end to end.
-  Titles in ASCII.
-- Deterministic for a given `--seed`. The default (seed 1) output is committed in `tests/NN/`.
-  Cases built from randomness include the seed in their id, so `-Fresh` gives new ones.
-- Hand-made inputs are checked against the independent source before they're written (assert).
-- Cover: every requirement (at least 2 cases each where possible), the blog's traps, real data
-  from the fonts (`wb.JETBRAINS`, `wb.NOTO_JP`), edge cases, and a random section.
-- Pictures: canvases at most about 600 x 600 (the checker's PNG decoding is pure Python). Draw
-  the expected image with `wb.run_reference(args.ref, input_lines, cases.image_path(id))`, then
-  validate it independently before adding the case.
+Use `tools/wbcore.py`: `wbcore.parse_args("NN")`, `wbcore.Cases(out, seed, compare, requirements,
+explain, source=...)`, `cases.add(id, req, title, input_lines, expected=... | expected_file=...)`,
+`cases.save()`. Domain helpers (file formats, sample data) go in a workbook-specific module next to it.
 
-## Checking the checks (all must hold before you're done)
+The case file header:
+- `source` (default source of expected values; cases may override),
+- `compare` (`records name=field1,field2 tolerance=x`, `unordered name=...`, or
+  `image band=1 allow=0.0002`),
+- `explain` (where a difference is -> likely requirement: `key=R4`, `key:field=R7`,
+  `key~word=R3`, `_lines=R1`; for `unordered`, `key:missing`),
+- `requirement R1 text` lines.
 
-Don't run `cmake` or `.\check NN` without `-Run`: other people build in `build/` at the same
-time. Compile with g++ into your own folder, `build/agent-<name>/`, for example
-`g++ -std=c++20 -O1 -Wall -Wextra -Wno-unused-parameter -Iinclude -Ithird_party/stb -Ithird_party/glm-1.0.1 -static -o build/agent-x/ref_p10.exe _spoilers/reference/p10_bezier.cpp`.
+Case ids: `NN-R<k>-<slug>` for a case aimed at a requirement, `NN-E2E-<slug>` for end-to-end
+cases. Titles in ASCII, saying what the input is. Cases built from randomness include the seed in
+their id. Cover every requirement (two or more cases each), every trap the blog's text or code
+reveals, real data, edge cases, and a random section that changes with `--seed`.
 
-1. Generate: `py -P tools/gen_pNN.py` (pictures: add `--ref build/agent-x/ref_pNN.exe`).
-2. Reference passes: `.\check NN -Run "build/agent-x/ref_pNN.exe {input} {output}"` gives Accepted.
-3. Stub fails cleanly: the compiled starter gives "Not implemented yet".
-4. Planted bugs fail: write at least three copies of the reference, each with one realistic
-   mistake (the blog's own bug if it has one), and confirm each gets Wrong Answer with a useful
-   message and a sensible "likely cause".
-5. Fresh sets: run the generator with `--seed 2` and `--seed 77 --out build/fresh/NN`, and check
-   the reference passes with `-Cases build/fresh/NN/cases.txt`.
-6. Every requirement has cases (look at the summary table).
+Hand-made inputs are checked by the oracle before they're written (`assert`). Make generators
+deterministic for a seed (fix timestamps, e.g. `SOURCE_DATE_EPOCH`). Inputs carry what earlier
+checkpoints would produce (an offset, a parsed record), so a checkpoint's tests depend only on the
+earlier files it chooses to use.
+
+## 6. Picture checkpoints
+
+- The output path ends in `.png`; the program writes PNG or binary PPM of exactly the canvas size.
+- End the page's Output section with a "**Writing the picture.**" paragraph for learners without
+  the boilerplate: a binary PPM by hand (header, then 3 bytes per pixel; open the file in binary
+  mode), or a PNG through a library such as stb_image_write. The checker reads either, whatever
+  the file is called. A header the project needs goes in through `project.copy` (e.g.
+  `third_party/stb_image_write.h`), so the learner's project builds on its own.
+- Define the pixel rule precisely (e.g. "filled when the pixel's centre is inside", "a w x h
+  rectangle covers columns cx - floor(w/2) ..."), and say that edges may move one pixel.
+- The reference draws expected images; the generator validates each against an independent
+  source before writing it (sampled pixels against an inside test, every point marker present,
+  points along every segment inked).
+- Keep canvases under about 600 x 600 and thin features at least ~2 pixels wide.
+- Build at least one different-but-correct variant (other sampling, other rounding) and confirm it
+  passes.
+
+## 7. Checking the checks
+
+Compile into your own build folder and use `-Run` while others work in parallel. All must hold
+(details in `test-trust.md`): the reference as it stands after the checkpoint is Accepted
+(committed cases and two fresh seeds), which also proves the project builds at that point in the
+series; the boilerplate says "Not implemented yet"; the blank starter says "Not started yet";
+three or more planted bugs fail with useful messages and causes, including the blog's own bugs;
+correct variants pass where a tolerance exists; every requirement has cases; the independent
+solver passes.
+
+## 8. Writing style
+
+Plain and direct: short sentences, active voice, no em-dash asides, no "not X but Y", no stock
+phrases. Name things the way the learner knows them. Tables for layouts and rules, numbers for
+everything that has one. In test titles and anything the checker prints, ASCII only.

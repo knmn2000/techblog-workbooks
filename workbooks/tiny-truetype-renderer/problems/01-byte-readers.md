@@ -27,14 +27,18 @@ checkpoint 2 uses them to read the table directory, checkpoints 3 to 5 to read t
 Write a program that opens a binary file, runs a list of read and move operations on it, and
 prints every number it reads.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p01_byte_readers.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p01_byte_readers.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in the `ByteReader` functions marked TODO: `jumpTo`, `skipBytes`, `readBigEndian` and
-`readF2Dot14`. Don't use `provided/BigEndian.h` here: this checkpoint is where you write those
-readers yourself.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/ByteReader.h` and `font/ByteReader.cpp` under
+`src/`. `checkpoints/p01_byte_readers.cpp` is the program the checker runs: it reads the test
+input, calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `jumpTo`, `skipBytes`, `readBigEndian`,
+`readF2Dot14` and `nextByte`. Every later checkpoint that reads the font reads it through this
+reader.
 
 ### Input
 
@@ -295,7 +299,7 @@ A failing test looks like this:
           line 3: expected `i8 -128`, got `i8 0`
           likely cause: R2 - Signed reads (i8, i16, i32): two's complement
           expected values from: Python struct (>B >b >H >h >I >i; F2Dot14 = >h / 16384 exactly)
-          reproduce: build/p01.exe build/cases/01/01-R2-i8.in build/cases/01/01-R2-i8.out
+          reproduce: build/solutions/p01.exe build/cases/01/01-R2-i8.in build/cases/01/01-R2-i8.out
 ```
 
 ## After you pass: compare with the author's code

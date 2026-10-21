@@ -26,13 +26,18 @@ the outlines of the simple glyphs it is made of, each in its final position. The
 
 Write a program that resolves glyphs into the outlines of the simple glyphs they are made of.
 
-Only your program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p09_compound_glyph.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p09_compound_glyph.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `resolveGlyph()`. The boilerplate also includes `provided/SimpleGlyph.h`, a ready
-decoder for simple glyphs (checkpoint 07's job), which you can use or replace with your own.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/CompoundGlyph.h` and `font/CompoundGlyph.cpp`
+under `src/`. It can build on `font/GlyphParser.h` and `font/Loca.h`.
+`checkpoints/p09_compound_glyph.cpp` is the program the checker runs: it reads the test input,
+calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `resolveGlyph`. `readGlyph` from checkpoint 07
+decodes the simple glyphs a compound glyph ends in.
 
 ### Input
 
@@ -278,7 +283,7 @@ A failing test looks like this:
           points[0]: expected (x=-30, y=-5, curve=on), got (x=226, y=251, curve=on) - differs in x, y
           likely cause: R4 - x' = a*x + c*y + e and y' = b*x + d*y + f for every point
           expected values from: fontTools 4.67.0
-          reproduce: build/p09.exe build/cases/09/09-R2-neg-bytes.in build/cases/09/09-R2-neg-bytes.out
+          reproduce: build/solutions/p09.exe build/cases/09/09-R2-neg-bytes.in build/cases/09/09-R2-neg-bytes.out
 ```
 
 ## After you pass: compare with the author's code

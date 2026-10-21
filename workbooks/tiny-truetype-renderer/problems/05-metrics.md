@@ -26,13 +26,16 @@ starts relative to the pen. Checkpoint 18 uses all of these to lay out a line of
 Write a program that reads a font's ascent and descent and the horizontal metrics of
 requested glyphs.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p05_metrics.cpp` is a comment and an empty `main`:
-the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p05_metrics.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `readHorizontalMetrics()`, which returns the ascent, the descent and every glyph's
-metrics.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint's code goes in your project, in `font/Metrics.h` and `font/Metrics.cpp` under `src/`.
+It can build on `font/ByteReader.h` and `font/FontParser.h`. `checkpoints/p05_metrics.cpp` is
+the program the checker runs: it reads the test input, calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `loadHorizontalMetrics`.
 
 ### Input
 
@@ -279,7 +282,7 @@ A failing test looks like this:
           line 5: expected `glyph 4 advance 600 lsb 5`, got `glyph 4 missing`
           likely cause: R3 - Later glyphs: the last advance, lsb from the array after
           expected values from: fontTools 4.67.0 hhea and hmtx, cross-checked against a struct parse of hmtx
-          reproduce: build/p05.exe build/cases/05/05-R3-shared-advance.in build/cases/05/05-R3-shared-advance.out
+          reproduce: build/solutions/p05.exe build/cases/05/05-R3-shared-advance.in build/cases/05/05-R3-shared-advance.out
 ```
 
 ## After you pass: compare with the author's code

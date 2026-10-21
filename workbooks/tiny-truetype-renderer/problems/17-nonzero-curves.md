@@ -25,12 +25,17 @@ fills full glyph outlines, curves included, which is what the text renderer in c
 Write a program that fills glyph outlines on a black canvas with the non-zero rule and writes the
 picture as a PNG.
 
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p17_nonzero_curves.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p17_nonzero_curves.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, creates the canvas and writes
-the PNG; you fill in `fillOutline()`.
+Only the picture is checked, so you can structure the code however you like. This checkpoint
+adds to `render/NonZero.h` and `render/NonZero.cpp` (under `src/`), which you started in
+checkpoint 16. It can build on `render/Scanline.h` and `utils/Geometry.h`.
+`checkpoints/p17_nonzero_curves.cpp` is the program the checker runs: it reads the test input,
+calls your code and writes the answer.
+
+The program starts blank, with a comment and an empty `main`, so the includes, reading the input
+and writing the output are yours. To start from working input/output code instead, pick
+Boilerplate in the book's editor (or copy this checkpoint's files from `starters/boilerplate/`):
+the declarations use the author's names where the post has them, and what's left to write is
+`renderGlyphByNonZero`, now with curves.
 
 ### Input
 
@@ -60,10 +65,10 @@ easiest to write by hand: the header `P6`, the width, the height and `255`, sepa
 or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
 (red, green, blue), row by row from the top-left. Open the file in binary mode
 (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
+`third_party/stb_image_write.h` in your project is on the include path: `#define
 STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
+`writePng`; the boilerplate calls it.
 
 ### From points to edges
 

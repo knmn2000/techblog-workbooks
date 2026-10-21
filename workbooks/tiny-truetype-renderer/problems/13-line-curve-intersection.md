@@ -4,7 +4,7 @@
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · returning a list of results (`std::vector`) · sorting
-- *Library:* `std::sqrt`, `std::sort` · optional: `glm::dvec2` and `glm::dot` from `third_party/glm-1.0.1`
+- *Library:* `std::sqrt`, `std::sort`
 - *Concepts:* quadratic Bezier curve as a polynomial · normal vector and dot product · quadratic equations and the discriminant · the degenerate (linear) case · tangent lines · curve parameter t
 
 ## Read in the blog first
@@ -28,12 +28,17 @@ points.
 Write a program that reads pairs of a quadratic Bezier curve and a straight line, and prints
 the points where the line meets the curve.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p13_line_curve_intersection.cpp` is a comment and an
-empty `main`: the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, copy `starters/boilerplate/p13_line_curve_intersection.cpp`
-over it, or pick Boilerplate in the book's editor. The boilerplate reads the input and writes
-the output; you fill in `solveQuadratic()` and `intersect()`.
+Only the program's output is checked, so you can structure the code however you like. This
+checkpoint adds to `utils/Geometry.h` (under `src/`), which you started in checkpoint 10.
+`checkpoints/p13_line_curve_intersection.cpp` is the program the checker runs: it reads the test
+input, calls your code and writes the answer.
+
+The program starts blank, with a comment and an empty `main`, so the includes, reading the input
+and writing the output are yours. To start from working input/output code instead, pick
+Boilerplate in the book's editor (or copy this checkpoint's files from `starters/boilerplate/`):
+the declarations use the author's names where the post has them, and what's left to write is
+`segmentQuadBezierIntersect`. Checkpoint 10's boilerplate already declares it in `Geometry.h`;
+if you wrote that file your own way, add the function there.
 
 ### Input
 
@@ -262,7 +267,7 @@ A failing test looks like this:
       x 13-R4-arch-top  a horizontal line touching the top of an arch at t = 0.5
           line 1: expected `5 5`, got `5 5 5 5`
           expected values from: exact arithmetic (fractions.Fraction, 60-digit decimal square roots), root count cross-checked
-          reproduce: build/p13.exe build/cases/13/13-R4-arch-top.in build/cases/13/13-R4-arch-top.out
+          reproduce: build/solutions/p13.exe build/cases/13/13-R4-arch-top.in build/cases/13/13-R4-arch-top.out
 ```
 
 ## After you pass: compare with the author's code

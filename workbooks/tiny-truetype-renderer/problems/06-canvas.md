@@ -19,20 +19,25 @@ author's code comes right after it.
 Checkpoints 1 to 5 read numbers out of the font file. From here on, every few checkpoints
 draw a picture: outlines with straight lines (8), with curves (11), then filled glyphs (14,
 16, 17). They all draw on the framebuffer you build here: a grid of pixels with three
-operations (one pixel, a rectangle, a thick line) that is written out as a PNG. Later checkpoints can use `include/provided/Canvas.h`, a ready-made version (their boilerplate starters include it), so you can skip ahead.
+operations (one pixel, a rectangle, a thick line) that is written out as a PNG. It lives in `src/FrameBufferCanvas.h` and `.cpp`, and every later picture checkpoint includes it.
 
 ## The problem
 
 Write a program that reads a list of drawing commands and writes the picture they draw as a
 PNG file.
 
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p06_canvas.cpp` is a comment and an empty `main`:
-the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p06_canvas.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, keeps the pixels in a
-`FrameBuffer` and writes the PNG; you fill in `set()`, `drawRect()` and `drawLine()`. Don't
-include `provided/Canvas.h` here: writing it is the exercise.
+Only the picture is checked, so you can structure the code however you like. This checkpoint's
+code goes in your project, in `FrameBufferCanvas.h` and `FrameBufferCanvas.cpp` under `src/`.
+`checkpoints/p06_canvas.cpp` is the program the checker runs: it reads the test input, calls
+your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `set`, `drawRect` and `drawLine` (it keeps the
+pixels and writes the PNG for you). Every picture from checkpoint 08 on is drawn on this canvas,
+so it's worth getting right.
 
 ### Input
 
@@ -61,7 +66,7 @@ easiest to write by hand: the header `P6`, the width, the height and `255`, sepa
 or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
 (red, green, blue), row by row from the top-left. Open the file in binary mode
 (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
+`third_party/stb_image_write.h` in your project is on the include path: `#define
 STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
 width, height, 3, pixels, width * 3)`.
 
@@ -292,7 +297,7 @@ this:
           570 pixels missing, e.g. (20, 12) should be white (beyond the 1-pixel edge tolerance). Diff: build/cases/06/06-R4-steep.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R4 - line in every direction (shallow, steep, axis-aligned), both ends included
           expected values from: reference drawing, checked against the ideal shapes (exact pixels for point/rect, true segment for line)
-          reproduce: build/p06.exe build/cases/06/06-R4-steep.in build/cases/06/06-R4-steep.out.png
+          reproduce: build/solutions/p06.exe build/cases/06/06-R4-steep.in build/cases/06/06-R4-steep.out.png
 ```
 
 ## After you pass: compare with the author's code

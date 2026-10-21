@@ -4,7 +4,7 @@
 
 **Tags**
 - *Language:* nested loops over index ranges · wrapping an index back to the start · `std::lround`
-- *Library:* `Canvas` from `include/provided/Canvas.h` (`drawLine`, `drawRect`, `writePng`)
+- *Library:* your `FrameBufferCanvas` from checkpoint 06 (`drawLine`, `drawRect`, `writePng`)
 - *Concepts:* glyph outlines and contours · font units vs pixels · flipping the y axis · scale and offset (a simple transform)
 
 ## Read in the blog first
@@ -26,12 +26,17 @@ Checkpoint 11 draws the same outlines with proper curves.
 Write a program that reads one or more glyph outlines and draws each one as straight lines
 between its points, with a small square on every point, and writes the picture as a PNG.
 
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p08_outline_lines.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p08_outline_lines.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, gives you a `Canvas` and
-writes the PNG; you fill in `drawOutline()`.
+Only the picture is checked, so you can structure the code however you like. This checkpoint's
+code goes in your project, in `render/Placement.h`, `render/Outline.h` and `render/Outline.cpp`
+under `src/`. It can build on `FrameBufferCanvas.h` and `GlyphComponent.h`.
+`checkpoints/p08_outline_lines.cpp` is the program the checker runs: it reads the test input,
+calls your code and writes the answer.
+
+Each new file starts blank, with a comment saying what belongs in it, and the program with an
+empty `main`, so the includes, reading the input and writing the output are yours. To start from
+working input/output code instead, pick Boilerplate in the book's editor (or copy this
+checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
+the post has them, and what's left to write is `renderGlyphOutline`.
 
 ### Input
 
@@ -58,7 +63,7 @@ are whole numbers.
 ### Output
 
 A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner and pixel y
-grows downwards. The boilerplate writes it with `Canvas::writePng`.
+grows downwards. The boilerplate writes it with `FrameBufferCanvas::writePng`.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
 the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
@@ -66,10 +71,10 @@ easiest to write by hand: the header `P6`, the width, the height and `255`, sepa
 or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
 (red, green, blue), row by row from the top-left. Open the file in binary mode
 (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
+`third_party/stb_image_write.h` in your project is on the include path: `#define
 STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
+`writePng`; the boilerplate calls it.
 
 ### From font units to pixels
 
@@ -277,7 +282,7 @@ this:
           1127 pixels missing, e.g. (116, 21) should be white (beyond the 1-pixel edge tolerance). Diff: build/cases/08/08-R2-triangle.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R2 - Every contour is closed: its last point joins its first
           expected values from: hand-made outline; picture checked against the ideal segments and markers
-          reproduce: build/p08.exe build/cases/08/08-R2-triangle.in build/cases/08/08-R2-triangle.out.png
+          reproduce: build/solutions/p08.exe build/cases/08/08-R2-triangle.in build/cases/08/08-R2-triangle.out.png
 ```
 
 ## After you pass: compare with the author's code

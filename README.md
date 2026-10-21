@@ -40,15 +40,17 @@ git clone https://github.com/knmn2000/techblog-workbooks
 cd techblog-workbooks/workbooks/tiny-truetype-renderer
 ```
 
-Then double-click `study.cmd` in that folder (or run `.\study`). That's the whole setup: it
-prepares the build the first time and opens the problem book in your browser, with **Run** and
-**Submit** running your code right there. Or, with the plugin installed, ask Claude Code to "open
-my workbook": it checks the tools, offers to install anything missing, and opens the book for you.
+Then, with the plugin installed, ask Claude Code to "set up my workbook": it checks the tools,
+asks which language you want, offers to install anything missing, creates your project and opens
+the book. Or double-click `study.cmd` in that folder (or run `.\study`): it opens the problem
+book in your browser, with **Run** and **Submit** running your code right there, and offers to
+create the project if there isn't one yet.
 
 In the book you get a problem list with your progress and, for each checkpoint, the statement,
-hints that open in order, an Editorial with a solution proven to pass, an editor and the example
-test cases. Your program lives in `solutions/pNN_*.cpp`. Each one starts as a comment and an
-empty `main`: the includes, reading the input and writing the output are yours. If you'd rather
+what it adds to your project, hints that open in order, an Editorial with a solution proven to
+pass, an editor with the checkpoint's files and the example test cases. Your code lives in your
+project in `solutions/`: each checkpoint's files start as a comment saying what belongs there, so
+the includes, the design, reading the input and writing the output are yours. If you'd rather
 start with the input/output done, pick **Boilerplate** in the editor. You can also write in your
 own editor and check from a terminal with `.\check 01`; the book picks up your saved changes.
 
@@ -57,10 +59,10 @@ Ninja, and Python 3.11 or newer).
 
 ## How checking works
 
-- **Only your output is checked.** Your program runs as `<program> <input-file> <output-file>`,
-  so you choose the structure, the language and the libraries. Eight languages are built in: pick
-  one in the book's editor, or run `.\check 07 -Lang python` (C, C++, Go, Rust, Python,
-  JavaScript, TypeScript, Lua).
+- **Only your output is checked.** Each checkpoint's program runs as
+  `<program> <input-file> <output-file>`, so you choose the structure and the libraries. When you
+  set a workbook up, Claude asks which language you want (C, C++, Go, Rust, Python, JavaScript,
+  TypeScript or Lua) and sets up only that one.
 - **Expected answers come from somewhere independent**, never from the reference solution. In the
   TrueType workbook that's mostly [fontTools](https://github.com/fonttools/fonttools).
 - **The checks are checked.** Before a checkpoint ships, the reference solution passes, planted
@@ -68,9 +70,10 @@ Ninja, and Python 3.11 or newer).
   a separate solver passes using only the problem page.
 - **A wrong test never blocks you.** `.\check 07 -Dispute <test-id> "why"` sets a test aside, and
   `.\check 07 -Fresh` gives you a new set of tests you haven't seen.
-- **Checkpoints stand alone, and build on each other.** Every input carries what the earlier
-  checkpoints would produce, so you can start anywhere. Code you put in `solutions/common/` is
-  shared by all your checkpoints, so the last one can call what you wrote earlier.
+- **You build a real project.** Each checkpoint adds properly named files to your project in
+  `solutions/`, laid out like the author's, and later checkpoints use them. When you finish, it's a
+  program of its own you can put on GitHub. Every test input still carries what the earlier
+  checkpoints would produce, so a checkpoint's tests only depend on the earlier files it uses.
 
 | Problem list | Test result |
 |---|---|
@@ -90,8 +93,9 @@ your help.
   `workbooks/<short-name>/`, add a row to the table above, and open a pull request. Before you do:
   - every checkpoint passes the plugin's checks (reference Accepted, planted bugs fail, an
     independent solver passes from the page alone);
-  - `py -P tools/blank_starters.py` has run, so `solutions/` holds blank starters, and
-    `tools/build_book.py` has rebuilt the book;
+  - `py -P tools/blank_starters.py` has run, `solutions/` isn't committed (a learner's project
+    is made when they set the workbook up), and `tools/build_book.py` has rebuilt the book with no
+    warnings;
   - nothing from the post is copied: problem pages explain in their own words and link to it;
   - anything bundled from elsewhere (fonts, libraries, data) is allowed to be shared, with its
     licence next to it.

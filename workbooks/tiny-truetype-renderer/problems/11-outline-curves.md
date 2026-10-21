@@ -4,7 +4,7 @@
 
 **Tags**
 - *Language:* walking a circular list with an index modulo its length · a small 2D vector struct · floating-point arithmetic, rounding only at the end
-- *Library:* `Canvas` from `include/provided/Canvas.h` (`drawLine` with floating-point ends, `drawRect`, `writePng`)
+- *Library:* your `FrameBufferCanvas` from checkpoint 06 (`drawLine` with floating-point ends, `drawRect`, `writePng`)
 - *Concepts:* quadratic Bézier curves · on-curve and off-curve points · implied on-curve points · flattening a curve into short lines
 
 ## Read in the blog first
@@ -28,12 +28,18 @@ Write a program that reads one or more glyph outlines and draws each one with st
 lines and quadratic curves, marks every point with a coloured square, and writes the picture
 as a PNG.
 
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p11_outline_curves.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p11_outline_curves.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, gives you a `Canvas` and
-writes the PNG; you fill in `drawQuadratic()` and `drawOutline()`.
+Only the picture is checked, so you can structure the code however you like. This checkpoint
+adds to `render/Outline.h` and `render/Outline.cpp` (under `src/`), which you started in
+checkpoint 08. It can build on `utils/Geometry.h`. `checkpoints/p11_outline_curves.cpp` is the
+program the checker runs: it reads the test input, calls your code and writes the answer.
+
+The program starts blank, with a comment and an empty `main`, so the includes, reading the input
+and writing the output are yours. To start from working input/output code instead, pick
+Boilerplate in the book's editor (or copy this checkpoint's files from `starters/boilerplate/`):
+the declarations use the author's names where the post has them, and what's left to write is
+`renderGlyphCurves`. Checkpoint 08's boilerplate already declares `renderGlyphCurves`; if you
+wrote `Outline.h` your own way, add a function for the curves and call it from the entry
+program.
 
 ### Input
 
@@ -57,7 +63,7 @@ outlines; each outline uses the most recent ones. Coordinates may have a fractio
 ### Output
 
 A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB, with (0, 0) at the top-left and y growing
-downwards. The boilerplate writes it with `Canvas::writePng`.
+downwards. The boilerplate writes it with `FrameBufferCanvas::writePng`.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
 the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
@@ -65,10 +71,10 @@ easiest to write by hand: the header `P6`, the width, the height and `255`, sepa
 or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
 (red, green, blue), row by row from the top-left. Open the file in binary mode
 (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
+`third_party/stb_image_write.h` in your project is on the include path: `#define
 STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
+`writePng`; the boilerplate calls it.
 
 ### From font units to pixels
 
@@ -352,7 +358,7 @@ this:
           2263 pixels missing, e.g. (169, 9) should be blue; 2353 extra pixels, e.g. (306, 11) should be black (beyond the 1-pixel edge tolerance). Diff: build/cases/11/11-R3-two-offs.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R3 - Two off-curve points in a row: implied on-curve point halfway (blue)
           expected values from: hand-made outline; reference drawing, checked against fontTools' pieces and implied points
-          reproduce: build/p11.exe build/cases/11/11-R3-two-offs.in build/cases/11/11-R3-two-offs.out.png
+          reproduce: build/solutions/p11.exe build/cases/11/11-R3-two-offs.in build/cases/11/11-R3-two-offs.out.png
 ```
 
 ## After you pass: compare with the author's code
