@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+import CheckpointMap from '../components/CheckpointMap.astro';
+import { loadWorkbooks } from '../lib/workbooks.mjs';
+import { href } from '../lib/paths.mjs';
+
+const workbooks = loadWorkbooks();
+const languages = [...new Set(workbooks.map((w) => w.language))].sort();
+const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5', JavaScript: '#f1e05a', TypeScript: '#3178c6', Rust: '#dea584', Go: '#00add8' };
+---
+<Base title="Workbooks: Don't just read tech blogs. Learn by building.">
+  <section class="hero">
+    <h1>Don't just read tech blogs. Learn by building.</h1>
+    <p class="lede">We turn blog posts, papers, book chapters, or any concept you can think of, into <em>byte</em>-sized coding assignments. Solve them one at a time, and by the last one you've built the thing yourself and know how it works.</p>
+  </section>
+
+  <section class="card list" aria-label="Workbooks">
+    <div class="tools">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search workbooks, posts, authors, topics" aria-label="Search workbooks" />
+      </label>
+      <select id="lang" aria-label="Filter by language">
+        <option value="">All languages</option>
+        {languages.map((l) => <option value={l}>{l}</option>)}
+      </select>
+    </div>
+    <div class="scroll-x">
+      <table>
+        <thead>
+          <tr><th>Workbook</th><th class="hide-sm">Built on</th><th class="hide-sm">Language</th><th>Assignments</th></tr>
+        </thead>
+        <tbody id="rows">
+          {workbooks.map((w) => (
+            <tr data-lang={w.language} data-text={[w.title, w.headline, w.source.title, w.source.author, w.language, ...w.topConcepts].join(' ').toLowerCase()}>
+              <td class="main">
+                <a class="name" href={href(`/w/${w.slug}/`)}>{w.title}</a>
+                <div class="sub">{w.headline}</div>
+                <div class="tags">{w.topConcepts.map((t) => <span class="chip">{t}</span>)}</div>
+              </td>
+              <td class="hide-sm"><a href={w.source.url} rel="noopener">{w.source.title}</a><div class="sub">{w.source.author}</div></td>
+              <td class="hide-sm"><span class="lang"><i style={`background:${langColor[w.language] ?? 'var(--text-3)'}`}></i>{w.language}</span></td>
+              <td class="cps"><CheckpointMap checkpoints={w.checkpoints} counts={w.counts} unit={w.unit} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p id="none" class="none" hidden>No workbook matches. <a href="https://github.com/knmn2000/techblog-workbooks/issues">Suggest a post</a> you'd like to see.</p>
+  </section>
+
+  <p class="more">More workbooks are on their way. <a href="https://github.com/knmn2000/techblog-workbooks#contributing">Turn a post into one</a> or <a href="https://github.com/knmn2000/techblog-workbooks/issues">suggest a post</a>.</p>
+
+  <script is:inline>
+    (function () {
+      var q = document.getElementById('q'), lang = document.getElementById('lang');
+      var rows = [].slice.call(document.querySelectorAll('#rows tr')), none = document.getElementById('none');
+      function apply() {
+        var s = q.value.trim().toLowerCase(), l = lang.value, shown = 0;
+        rows.forEach(function (r) {
+          var ok = (!s || r.dataset.text.indexOf(s) >= 0) && (!l || r.dataset.lang === l);
+          r.hidden = !ok; if (ok) shown++;
+        });
+        none.hidden = shown > 0;
+      }
+      q.addEventListener('input', apply); lang.addEventListener('change', apply);
+    })();
+  </script>
+</Base>
+
+<style>
+  .hero { padding: 4px 0 28px; }
+  h1 { font-size: clamp(26px, 4.4vw, 38px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -0.025em; font-weight: 700; max-width: 18em; }
+  .lede { max-width: 640px; color: var(--text-2); margin: 0; font-size: 16px; line-height: 1.6; }
+  .lede em { color: var(--text); }
+  .list { overflow: hidden; }
+  .tools { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .search { flex: 1 1 220px; min-width: 0; position: relative; display: block; }
+  .search svg { position: absolute; left: 11px; top: 50%; width: 16px; height: 16px; margin-top: -8px; color: var(--text-3); pointer-events: none; }
+  input, select { font: inherit; color: var(--text); background: var(--fill); border: 1px solid transparent; border-radius: 8px; padding: 8px 11px; }
+  input { width: 100%; padding-left: 34px; }
+  input:hover, select:hover { border-color: var(--line-strong); }
+  input:focus-visible, select:focus-visible { outline: 2px solid var(--brand); outline-offset: -1px; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-weight: 500; font-size: 12px; color: var(--text-3); padding: 9px 16px; background: var(--layer-head); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 18px 16px; vertical-align: top; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background 0.12s ease; }
+  tbody tr:hover { background: var(--row-alt); }
+  tbody tr[hidden] { display: none; }
+  .main { min-width: 260px; }
+  .name { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; color: var(--text); }
+  .name:hover { color: var(--brand-ink); text-decoration: none; }
+  .sub { color: var(--text-2); font-size: 13px; margin-top: 3px; max-width: 46ch; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .lang { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .lang i { width: 10px; height: 10px; border-radius: 50%; }
+  .cps { min-width: 150px; }
+  .none { padding: 28px; text-align: center; color: var(--text-2); margin: 0; }
+  .more { color: var(--text-2); margin-top: 20px; }
+  @media (prefers-reduced-motion: reduce) { tbody tr { transition: none; } }
+</style>

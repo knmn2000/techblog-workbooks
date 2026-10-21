@@ -447,5 +447,20 @@
       "generator": "py -P tools/gen_p18.py --seed {seed} --out {out}",
       "generatorNeedsReference": true
     }
+  },
+  "site": {
+    "language": "C++",
+    "requires": [
+      "g++ (GCC or MinGW)",
+      "CMake and Ninja",
+      "Python 3.11 or newer",
+      "fontTools, for fresh test sets (pip install fonttools)"
+    ],
+    "launch": {
+      "windows": "study.cmd",
+      "other": "python3 -P tools/serve.py"
+    },
+    "caveat": "Built and tested on Windows. On Linux or macOS the build commands in workbook.json use .exe names, so they may need small changes.",
+    "promptNote": "This workbook was built on Windows, and its build and run commands in workbook.json use .exe names. On Linux or macOS, adapt them and tell me exactly what you changed."
   }
 }

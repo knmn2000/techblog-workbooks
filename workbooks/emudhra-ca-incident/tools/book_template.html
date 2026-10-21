@@ -207,6 +207,15 @@ body.in-ide { overflow: hidden; }
 .tb-prog b { color: var(--text); font-weight: 600; }
 .exit-btn { height: 28px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; }
 .exit-btn:hover, .exit-btn[data-armed] { color: var(--bad); border-color: var(--bad); }
+/* A published copy (WORKBOOK_HOST): a way back to the host, and a way to run it locally */
+.host-back { font-size: 12.5px; font-weight: 500; color: var(--text-2); white-space: nowrap; padding: 6px 8px; border-radius: 6px; }
+.host-back:hover { background: var(--fill); color: var(--text); text-decoration: none; }
+.run-local { height: 28px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--brand); color: #1a1a1a; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.run-local:hover { filter: brightness(1.06); }
+.hosted { display: grid; gap: 12px; justify-items: start; padding: 4px 2px; color: var(--text-2); max-width: 60ch; }
+.hosted p { margin: 0; line-height: 1.55; }
+.linkish { background: none; border: 0; padding: 0; color: var(--link); font: inherit; cursor: pointer; }
+.linkish:hover { text-decoration: underline; }
 .bye { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg); color: var(--text); text-align: center; padding: 24px; }
 .bye > div { display: grid; gap: 12px; justify-items: center; max-width: 46ch; }
 .bye h1 { margin: 0; font-size: 28px; font-weight: 600; }
@@ -449,6 +458,7 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .tree-item .tm.ok { color: var(--ok); } .tree-item .tm.broke { color: var(--bad); }
 .tag-n { flex: none; min-width: 18px; height: 16px; padding: 0 5px; border-radius: 8px; background: var(--fill); color: var(--text-3); font: 600 10px/16px var(--font-ui); text-align: center; }
 .tree-empty { margin: 2px 12px 6px 14px; color: var(--text-3); font-size: 12px; line-height: 1.45; }
+.tree-key.tree-plan { display: block; margin-bottom: 8px; line-height: 1.45; }
 .new-file { padding: 2px 10px 6px 14px; }
 .new-file input { width: 100%; height: 26px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--layer); padding: 0 8px; font: 12.5px var(--font-mono); color: var(--text); }
 .new-file input:focus { outline: none; border-color: var(--link); }
@@ -824,6 +834,7 @@ span.CodeMirror-selectedtext { background: none; }
         <li><span><b>You build one project.</b> Each assignment adds files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
         <li><span><b>Write the code</b> here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
         ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test. The verdict appears in Test Result, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
+          : HOST ? `<li><span><b>Run it on your computer.</b> This copy shows the problems and the starter code. Once the workbook is set up on your machine, Run and Submit check your code there. <button type="button" class="linkish" data-run-local>See how</button></span></li>`
           : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
         <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
         <li><span><b>Each assignment stands alone.</b> A test input carries what earlier assignments would produce, so an assignment's tests depend only on the earlier files it uses. <b>Re-check solved</b> reruns your solved assignments and shows any that a later change broke.</span></li>
@@ -1227,6 +1238,12 @@ span.CodeMirror-selectedtext { background: none; }
   }
 
   function renderResult(c, notice) {
+    if (HOST) {
+      $('#result').innerHTML = `<div class="hosted"><p>This copy of the book shows the problems, but it can't run code. Set the
+        workbook up on your computer: there, Run and Submit build your project and check it against all ${c.tests} tests.</p>
+        <button class="btn green" type="button" data-run-local>How to run it locally</button></div>`;
+      return;
+    }
     const saved = store.get(c.id + ':result');
     const v = saved ? parseOutput(saved, c) : null;
     const act = lastAction[c.id];
@@ -1315,6 +1332,7 @@ span.CodeMirror-selectedtext { background: none; }
       }
       cm.on('changes', saveSoon);
       cm.on('cursorActivity', showPos);
+      if (HOST) cm.setOption('readOnly', true);
       if (window.ResizeObserver) {
         let frame = 0;
         new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => cm.refresh()); }).observe(host);
@@ -1326,6 +1344,7 @@ span.CodeMirror-selectedtext { background: none; }
       plainEditor.setAttribute('aria-label', 'Code');
       host.appendChild(plainEditor);
       plainEditor.addEventListener('input', saveSoon);
+      if (HOST) plainEditor.readOnly = true;
     }
   }
   const code = () => (cm ? cm.getValue() : plainEditor.value);
@@ -1348,7 +1367,11 @@ span.CodeMirror-selectedtext { background: none; }
   // The published book: what a file shows before you've typed in it.
   function startText(c, path) {
     const draft = store.get(draftKey(path)), f = fileIn(c, path);
-    return draft !== null ? draft : f ? starterOf(f, f.role === 'adds' ? 'blank' : kindOf(c)) : '';
+    if (draft !== null) return draft;
+    if (f) return starterOf(f, f.role === 'adds' ? 'blank' : kindOf(c));
+    // A file of another assignment, opened from the Files panel without the study server: its starter.
+    const owner = CPS.find((x) => x.files.some((g) => g.path === path && g.role !== 'adds'));
+    return owner ? starterOf(fileIn(owner, path), kindOf(owner)) : '';
   }
   function useStarter(c, kind) {
     if (kind === 'blank') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
@@ -1449,6 +1472,7 @@ span.CodeMirror-selectedtext { background: none; }
         : known && known.text === textOf(path) ? `Saved to ${path}` : 'Saving…';
       return;
     }
+    if (HOST) { $('#saved').textContent = 'Read-only here: run the workbook on your computer to write code'; return; }
     $('#saved').textContent = path && store.get(draftKey(path)) !== null ? 'Saved in this browser' : kindOf(BY[current]) === 'boilerplate' ? 'The Boilerplate' : 'Empty, from scratch';
   }
   function showPos() {
@@ -1517,6 +1541,7 @@ span.CodeMirror-selectedtext { background: none; }
   function act(kind) {
     if (!current) return;
     if (LOCAL) { runLive(kind, {}); return; }
+    if (HOST) { runLocally(); return; }
     const c = BY[current];
     const list = casesOf(c);
     const test = kind === 'run' && list[caseIndex] ? list[caseIndex].test : null;
@@ -1551,6 +1576,11 @@ span.CodeMirror-selectedtext { background: none; }
 
   // ---- tabs: the assignment's files, plus any other file of the project you opened
   const LOCAL = window.WORKBOOK_LOCAL || null;
+  // A published copy (the workbooks site) sets WORKBOOK_HOST = { back: { href, label }, runLocally() }
+  // before this script runs. That copy can't run code, so the editor is read-only, and Run, Submit and
+  // the Run locally button call runLocally(), which the host may define after the book has loaded.
+  const HOST = !LOCAL && window.WORKBOOK_HOST ? window.WORKBOOK_HOST : null;
+  const runLocally = () => { if (HOST && typeof HOST.runLocally === 'function') HOST.runLocally(); };
   const live = { online: !!LOCAL, disk: {}, conflict: {}, conflictData: {}, report: {}, marks: {}, busy: false,
     quiet: false, tabs: [], active: null, project: [], showTree: false, tick: 0, noProject: false };
   const ENTRY_OF = Object.fromEntries(CPS.map((c) => [c.entry, c]));  // an entry program -> its assignment
@@ -1787,6 +1817,7 @@ span.CodeMirror-selectedtext { background: none; }
 
   // ---- the Files panel: your project as it grows, folder by folder
   async function refreshProject() {
+    if (!LOCAL) { renderTree(); return; }  // the planned project, from workbook.json
     try {
       const r = await api('/api/files');
       live.project = r.files;
@@ -1797,7 +1828,7 @@ span.CodeMirror-selectedtext { background: none; }
   }
   function renderTree() {
     const tree = $('#tree');
-    if (!LOCAL || !cm) return;
+    if (!cm) return;
     tree.hidden = !live.showTree;
     $('#tree-btn').setAttribute('aria-pressed', String(live.showTree));
     if (!live.showTree) return;
@@ -1816,16 +1847,18 @@ span.CodeMirror-selectedtext { background: none; }
       const role = isNow(f.path) ? ' now' : isUse(f.path) ? ' uses' : cur ? ' dim' : '';
       const mark = !c ? '<span class="tm"></span>' : store.get(c.id + ':broke') ? '<span class="tm broke" title="Passed before, failing now">!</span>'
         : solved(c.id) ? '<span class="tm ok" title="Solved">✓</span>' : '<span class="tm"></span>';
-      const tip = `${shortName(f.path)} · ${f.lines} lines${c ? ` · assignment ${c.num}: ${c.title}` : ''}${f.state === 'blank' ? ' · not written yet' : ''}`;
+      const tip = LOCAL ? `${shortName(f.path)} · ${f.lines} lines${c ? ` · assignment ${c.num}: ${c.title}` : ''}${f.state === 'blank' ? ' · not written yet' : ''}`
+        : `${shortName(f.path)}${c ? ` · assignment ${c.num}: ${c.title}` : ''}${f.purpose ? `\n${f.purpose}` : ''}`;
       return `<button type="button" class="tree-item${role}${f.path === live.active ? ' on' : ''}${f.state === 'blank' ? ' blank' : ''}" data-open="${esc(f.path)}" title="${esc(tip)}">${mark}<span class="nm">${esc(f.path.split('/').pop())}</span>${c ? `<span class="tag-n">${esc(c.num)}</span>` : ''}</button>`;
     };
     const solvedCount = CPS.filter((c) => solved(c.id)).length;
-    tree.innerHTML = `<div class="tree-dir"><span>${esc(PROJECT_DIR)}</span><button type="button" class="tree-add" id="new-file" title="New file" aria-label="New file">+</button></div>
+    tree.innerHTML = `<div class="tree-dir"><span>${esc(PROJECT_DIR)}</span>${LOCAL ? '<button type="button" class="tree-add" id="new-file" title="New file" aria-label="New file">+</button>' : ''}</div>
+      ${LOCAL ? '' : '<p class="tree-key tree-plan">The project you build, file by file. Open any file to read its starter.</p>'}
       <form class="new-file" id="new-file-form" hidden><input id="new-file-name" spellcheck="false" placeholder="src/utils/Bit.h" aria-label="New file, a path in your project"></form>
       ${cur ? `<p class="tree-key"><span><i class="k-now"></i>this assignment</span><span><i class="k-uses"></i>you can use</span></p>` : ''}
       ${live.project.length ? order.map((d) => (d ? `<div class="tree-dir${folders[d].some((f) => isNow(f.path)) ? ' now' : ''}"><span>${esc(d)}</span></div>` : '') + folders[d].map(item).join('')).join('')
         : '<p class="tree-empty">The project is empty. Opening an assignment adds its files.</p>'}
-      <div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>`;
+      ${LOCAL ? `<div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>` : ''}`;
   }
   $('#tree-btn').addEventListener('click', () => {
     live.showTree = !live.showTree;
@@ -2232,15 +2265,24 @@ span.CodeMirror-selectedtext { background: none; }
   splitter($('#split-v'), 'x', $('#ide-main'), '--left', 0.25, 0.7);
   splitter($('#split-h'), 'y', $('#right'), '--top', 0.2, 0.85);
 
+  if (HOST) {
+    if (HOST.back) {
+      const back = `<a class="host-back" href="${esc(HOST.back.href)}">&larr; ${esc(HOST.back.label)}</a>`;
+      $('#ide-view .tb-left').insertAdjacentHTML('beforeend', back);
+      $('#list-view .nav-in').insertAdjacentHTML('afterbegin', back);
+    }
+    $('#ide-view .tb-right').insertAdjacentHTML('afterbegin', '<button class="run-local" type="button" data-run-local>Run locally</button>');
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest('[data-run-local]')) { e.preventDefault(); runLocally(); } });
+
   renderListShell();
   initEditor();
-  if (LOCAL) {
-    paintLive();
-    if (cm) {  // the Files panel needs the full editor
-      $('#tree-btn').hidden = $('#tree-sep').hidden = false;
-      live.showTree = store.get('tree') === '1';
-      if (live.showTree) refreshProject();
-    }
+  if (LOCAL) paintLive();
+  else live.project = PROJECT.layout.map((f) => ({ path: f.path, checkpoint: f.owner, purpose: f.purpose }));
+  if (cm) {  // the Files panel needs the full editor; without the study server it shows the planned project
+    $('#tree-btn').hidden = $('#tree-sep').hidden = false;
+    live.showTree = store.get('tree') === '1';
+    if (live.showTree) refreshProject();
   }
   route(location.hash.slice(1));
 })();

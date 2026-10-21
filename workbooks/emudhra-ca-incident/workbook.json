@@ -338,5 +338,17 @@
         "src/pkiaudit/__main__.py": "Write the `pkiaudit audit <pki-file>` command: read the command line with `argparse`, audit the file with your `pki/audit.py` and print the report, one line at a time. The checker doesn't run it, and the Boilerplate already contains it. Try it on the sample PKI with `py -P tools/run_py.py solutions -m pkiaudit audit solutions/examples/sample.pki`."
       }
     }
+  },
+  "site": {
+    "language": "Python",
+    "requires": [
+      "Python 3.11 or newer",
+      "openssl and cryptography, only for fresh test sets (pip install cryptography)"
+    ],
+    "launch": {
+      "windows": "study.cmd",
+      "mac": "study.command",
+      "other": "./study.sh"
+    }
   }
 }

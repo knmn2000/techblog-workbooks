@@ -6,3 +6,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .cache/
+
+# The site (site/): its packages and build output
+site/node_modules/
+site/dist/
+site/.astro/

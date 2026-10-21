@@ -10,6 +10,10 @@ workbook, or there's a post you'd love to see here, [contributions are welcome](
 The workbooks come from [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook),
 a Claude Code plugin that reads a post and builds the assignments, tests and problem book.
 
+Browse them on the site, [knmn2000.github.io/techblog-workbooks](https://knmn2000.github.io/techblog-workbooks/):
+every workbook's assignments, the project you build, how to set it up, and a read-only copy of its
+problem book. The site's source is in [`site/`](site), and it republishes on every push.
+
 ![An assignment in the problem book: the statement on the left, the editor and test cases on the right](docs/screenshots/problem-view.png)
 
 ## Workbooks
@@ -93,8 +97,9 @@ This repository holds the workbooks people have made from tech blog posts, and y
 
 - **Add a workbook.** Install [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook)
   in Claude Code and ask it to turn a post into a workbook. Put the result in
-  `workbooks/<short-name>/`, add a row to the table above, and open a pull request. Before you do,
-  check that:
+  `workbooks/<short-name>/`, add a row to the table above, and open a pull request. The site
+  picks the workbook up by itself; its `workbook.json` `site` block says what to install and how to
+  start it. Before you open the pull request, check that:
   - every assignment passes the plugin's checks (reference Accepted, planted bugs fail, an
     independent solver passes from the page alone);
   - `py -P tools/blank_starters.py` has run, `solutions/` isn't committed (the workbook creates a
