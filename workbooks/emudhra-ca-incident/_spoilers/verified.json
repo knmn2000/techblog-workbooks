@@ -23,6 +23,14 @@
     "total": 9,
     "date": "2026-10-21"
   },
+  "04": {
+    "files": {
+      "_spoilers/reference/p04_ecdsa_verify.py": "c9c93fe0c3e67cdf62b91546c0b00e0d1f5c969070abfa84eef4edf3e6656487"
+    },
+    "passed": 12,
+    "total": 12,
+    "date": "2026-10-21"
+  },
   "05": {
     "files": {
       "_spoilers/reference/p05_der_reader.py": "0a42da9b4f5d0ead735698a7baa58083d650f7d5956acef8a73de8d5c10f4c1a",
@@ -39,6 +47,15 @@
     },
     "passed": 17,
     "total": 17,
+    "date": "2026-10-21"
+  },
+  "07": {
+    "files": {
+      "_spoilers/reference/p07_spki_hash.py": "5d79cb25469f48e1977e945be2cec5fd871df9b8191adc5ecf6f1b38f34da036",
+      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+    },
+    "passed": 6,
+    "total": 6,
     "date": "2026-10-21"
   },
   "10": {
