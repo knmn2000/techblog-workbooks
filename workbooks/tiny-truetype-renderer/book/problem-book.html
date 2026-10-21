@@ -279,20 +279,32 @@ body.in-ide { overflow: hidden; }
   color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
 .callout svg { margin-top: 3px; color: var(--brand-ink); }
 .callout p { margin: 0; }
-.start { border: 1px solid var(--line-strong); border-left: 3px solid var(--brand); border-radius: 8px; padding: 12px 16px 14px; display: grid; gap: 10px; background: var(--layer); }
-.start h2 { margin: 0; font-size: 15px; font-weight: 600; color: var(--text); }
+.start { border: 1px solid var(--line-strong); border-left: 3px solid var(--brand); border-radius: 8px; background: var(--layer); }
+.start > summary, .sf > summary { list-style: none; cursor: pointer; }
+.start > summary::-webkit-details-marker, .sf > summary::-webkit-details-marker { display: none; }
+.start > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; padding: 10px 14px; border-radius: 8px; }
+.start > summary:hover, .sf > summary:hover { background: var(--fill); }
+.st-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.st-meta { font-size: 12.5px; color: var(--text-3); }
+.st-chev { margin-left: auto; display: inline-flex; color: var(--text-3); transition: transform .15s; }
+details[open] > summary .st-chev { transform: rotate(180deg); }
+.start-body { padding: 0 14px 14px; display: grid; gap: 10px; }
 .start p { margin: 0; font-size: 13px; color: var(--text-2); }
 .start b { color: var(--text); font-weight: 600; }
 .start code { font-size: 12px; }
-.start-files { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: sf; }
-.sf { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 2px 8px; counter-increment: sf; }
-.sf::before { content: counter(sf); grid-row: span 3; width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2); font: 600 11px/20px var(--font-ui); text-align: center; }
-.sf-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.start-files { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.sf { border: 1px solid var(--line); border-radius: 8px; }
+.sf[open] { border-color: var(--line-strong); }
+.sf > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 7px 10px; border-radius: 8px; }
+.sf-n { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2); font: 600 11px/20px var(--font-ui); text-align: center; }
+.sf-path { font: 12px var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
+.sf-body { padding: 0 10px 10px 38px; display: grid; gap: 6px; justify-items: start; }
 .sf-tag { font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 1px 7px; border-radius: 999px; background: var(--fill); color: var(--text-2); white-space: nowrap; }
 .sf-tag.new { color: var(--brand-ink); }
 .sf-tag.adds { color: var(--link); }
 .sf-job { color: var(--text) !important; }
 .sf-why { font-size: 12.5px !important; color: var(--text-3) !important; }
+.sf-open { height: 26px; font-size: 12px; }
 .start-ways { display: grid; gap: 6px; }
 .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
 .way { text-align: left; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--text-2); padding: 8px 10px; font: 12.5px/1.45 var(--font-ui); cursor: pointer; }
@@ -930,27 +942,41 @@ span.CodeMirror-selectedtext { background: none; }
   // Start here: the files to write in this assignment, your job in each, and how to begin.
   const withCode = (t) => esc(t || '').replace(/`([^`]+)`/g, '<code>$1</code>');
   function startCard(c) {
-    const link = (f) => (LOCAL ? `<button type="button" class="fpath" data-open-file="${esc(f.path)}">${esc(shortName(f.path))}</button>`
-      : `<code class="fpath">${esc(shortName(f.path))}</code>`);
     const from = (f) => (f.owner && BY[f.owner] ? ` ${esc(BY[f.owner].num)}` : '');
     const tag = (f) => (f.role === 'entry' ? '<span class="sf-tag">The program the checker runs</span>'
       : f.role === 'adds' ? `<span class="sf-tag adds">Add to it (from assignment${from(f)})</span>` : '<span class="sf-tag new">New file</span>');
     const order = [...c.files.filter((f) => f.role !== 'entry'), ...c.files.filter((f) => f.role === 'entry')];
-    const files = order.map((f) => `<li class="sf"><div class="sf-head">${link(f)}${tag(f)}</div>`
+    // Each file is a toggle: its name and role at a glance, the job and the reason inside.
+    const files = order.map((f, k) => `<li><details class="sf"${k === 0 ? ' open' : ''}><summary><span class="sf-n">${k + 1}</span>`
+      + `<span class="sf-path">${esc(shortName(f.path))}</span>${tag(f)}<span class="st-chev">${I.down}</span></summary><div class="sf-body">`
       + `<p class="sf-job"><b>Your job:</b> ${withCode(f.job || '')}</p>`
       + (f.role === 'new' && f.purpose ? `<p class="sf-why">Why it's here: ${withCode(f.purpose)}</p>` : '')
       + (f.role === 'entry' ? '<p class="sf-why">It reads a test input, calls your code and writes the answer. Only that output is checked.</p>' : '')
-      + '</li>').join('');
+      + (LOCAL ? `<button type="button" class="btn sf-open" data-open-file="${esc(f.path)}">Open in editor</button>` : '')
+      + '</div></details></li>').join('');
+    const link = (f) => (LOCAL ? `<button type="button" class="fpath" data-open-file="${esc(f.path)}">${esc(shortName(f.path))}</button>`
+      : `<code class="fpath">${esc(shortName(f.path))}</code>`);
     const uses = c.buildsOn.length
       ? `<p><b>You can use</b> what you wrote earlier: ${c.buildsOn.map((f) => link(f) + `<span class="muted">${from(f)}</span>`).join(', ')}.</p>` : '';
     const ways = c.files.some((f) => f.boilerplate != null) ? `<div class="start-ways"><p><b>Two ways to start</b> (switch any time; it asks before replacing your code)</p><div class="ways">
         <button type="button" class="way" data-start-kind="blank"><b>From scratch</b>Each file starts with a comment saying why it exists and your job; the rest is yours.</button>
         <button type="button" class="way" data-start-kind="boilerplate"><b>Boilerplate</b>The input/output and the declarations are written; you fill in what's marked TODO.</button></div></div>` : '';
-    return `<section class="start" aria-label="Start here"><h2>Start here</h2>
-      <p>Write ${order.length === 1 ? 'this file' : `these ${order.length} files`}, in this order. Only the program's output is checked, so you can design the code your own way.</p>
+    // Open until the assignment is solved, unless the learner opened or closed it themselves.
+    const kept = store.get(c.id + ':start');
+    const open = kept ? kept === 'open' : !solved(c.id);
+    const meta = `${order.length} file${order.length === 1 ? '' : 's'} · ${solved(c.id) ? 'solved' : 'from scratch or Boilerplate'}`;
+    return `<details class="start" data-start${open ? ' open' : ''}><summary><span class="st-title">Start here</span>`
+      + `<span class="st-meta">${meta}</span><span class="st-chev">${I.down}</span></summary><div class="start-body">
+      <p>Write ${order.length === 1 ? 'this file' : `these ${order.length} files`}, in this order. Open each one to see your job in it. Only the program's output is checked, so you can design the code your own way.</p>
       <ol class="start-files">${files}</ol>${uses}${ways}
-      <p><b>Done</b> when Submit says Accepted: all ${c.tests} tests pass. The Editorial then shows a solution that passes and how the author did it.</p></section>`;
+      <p><b>Done</b> when Submit says Accepted: all ${c.tests} tests pass. The Editorial then shows a solution that passes and how the author did it.</p></div></details>`;
   }
+  // Remember the learner's own choice to open or close Start here. A click on the summary (Enter and
+  // Space count) is a choice; the toggle event also fires when the card is drawn already open.
+  $('#desc').addEventListener('click', (e) => {
+    const summary = e.target.closest('[data-start] > summary');
+    if (summary && current) store.set(current + ':start', summary.parentElement.open ? 'closed' : 'open');
+  });
 
   function exampleHtml(ex) {
     const title = `<p class="ex-title"><strong>${esc(ex.label)}:</strong> <span>${ex.name}</span></p>`;
