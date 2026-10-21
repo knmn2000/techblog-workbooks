@@ -4,8 +4,8 @@ The collection of tech blog posts turned into hands-on workbooks. Each workbook 
 rebuild what a post builds, one checkpoint at a time, until you understand what the post was
 teaching, because you wrote it yourself.
 
-There's one workbook so far, and more are on their way. If you've turned a post into a workbook,
-or there's a post you'd love to see here, [contributions are welcome](#contributing).
+There are two workbooks so far, and more are on their way. If you've turned a post into a
+workbook, or there's a post you'd love to see here, [contributions are welcome](#contributing).
 
 The workbooks are made with [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook),
 a Claude Code plugin that reads a post and builds the checkpoints, tests and problem book.
@@ -17,6 +17,7 @@ a Claude Code plugin that reads a post and builds the checkpoints, tests and pro
 | Workbook | Built on | Language | Checkpoints | What you build |
 |---|---|---|---|---|
 | [Tiny TrueType renderer](workbooks/tiny-truetype-renderer) | [Writing a tiny TrueType parser and renderer from scratch](https://yayo1.com/en/blog/tiny-truetype-renderer/) by Yohei Yamasaki | C++ starters (any language works) | 18, with 572 tests | A font renderer from raw bytes: the table directory, character maps, glyph outlines, Bézier curves, scanline filling, and finally a line of text |
+| [Elliptic-Curve Keys, Certificates and Chains of Trust](workbooks/emudhra-ca-incident) | [eMudhra Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident) | Python (any language works) | 16, with 312 tests | Certificate security from the ground up: modular arithmetic and elliptic-curve point arithmetic, parsing and validating real X.509 certificates by hand, recovering the incident's own weak private key (`d = 4`) and signing with it, then the defenses - correct key generation, a key linter, a ceremony checker, SPKI blocklisting - that would have caught it, ending in an audit that reports a compromised key's full blast radius |
 
 *More workbooks on the way.*
 
@@ -37,7 +38,7 @@ And at the end, checkpoint 18 puts your pieces together:
 
 ```bash
 git clone https://github.com/knmn2000/techblog-workbooks
-cd techblog-workbooks/workbooks/tiny-truetype-renderer
+cd techblog-workbooks/workbooks/tiny-truetype-renderer   # or workbooks/emudhra-ca-incident
 ```
 
 Then double-click `study.cmd` in that folder (or run `.\study`). That's the whole setup: it
@@ -53,14 +54,16 @@ start with the input/output done, pick **Boilerplate** in the editor. You can al
 own editor and check from a terminal with `.\check 01`; the book picks up your saved changes.
 
 Each workbook's own README lists what it needs (for the TrueType workbook: g++ with CMake and
-Ninja, and Python 3.11 or newer).
+Ninja, and Python 3.11 or newer; for the certificate workbook: Python 3.11 or newer, the
+`cryptography` package, and `openssl` on your PATH).
 
 ## How checking works
 
 - **Only your output is checked.** Your program runs as `<program> <input-file> <output-file>`,
   so you choose the structure, the language and the libraries.
 - **Expected answers come from somewhere independent**, never from the reference solution. In the
-  TrueType workbook that's mostly [fontTools](https://github.com/fonttools/fonttools).
+  TrueType workbook that's mostly [fontTools](https://github.com/fonttools/fonttools); in the
+  certificate workbook it's mostly `openssl` and the `cryptography` library.
 - **The checks are checked.** Before a checkpoint ships, the reference solution passes, planted
   bugs fail (including any bug in the post's own code), different-but-correct solutions pass, and
   a separate solver passes using only the problem page.

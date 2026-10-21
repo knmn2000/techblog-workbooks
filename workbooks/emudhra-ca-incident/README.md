@@ -30,7 +30,16 @@ You can also work in your own editor and check from a terminal, as below; the bo
 changes you save to the solution files. (A copy of the book opened without `study`, such as a
 published page, can't run your code: its Submit copies your code and shows the command to run.)
 
-<!-- The checkpoint list: one row per checkpoint, filled in when the workbook is built. -->
+| # | Checkpoint | # | Checkpoint |
+|---|---|---|---|
+| 01 | Modular arithmetic | 09 | Validate a certificate chain |
+| 02 | Add points on a toy curve | 10 | Find a weak private key |
+| 03 | Multiply a point by a number | 11 | Sign a certificate with a recovered key |
+| 04 | Verify an ECDSA signature | 12 | Generate a key correctly |
+| 05 | Read DER | 13 | Lint a public key |
+| 06 | Read a certificate | 14 | Check a key ceremony |
+| 07 | Hash the public key (SPKI) | 15 | Block and distrust |
+| 08 | Check a certificate's signature | 16 | Audit a PKI (capstone) |
 
 Checkpoints don't depend on each other: each input carries what earlier checkpoints would
 produce. The last checkpoint is where your own pieces come together; keep the parts you'll reuse
@@ -92,3 +101,7 @@ one-off program without changing the config: `.\check 01 -Run "path/to/program {
 | `tools/build_book.py` | Builds `book/problem-book.html` from `problems/` and `starters/` (the page design is `tools/book_template.html`) |
 | `docs/authoring-guide.md` | How the checkpoints and their tests are made |
 | `_spoilers/` | Reference solutions. Don't open these until you've passed. |
+
+Needs: Python 3.11 or newer, `openssl` on your PATH, and the `cryptography` package
+(`pip install cryptography`) - used by the test generators and the study server, not by your own
+solutions.
