@@ -1,0 +1,92 @@
+{
+  "01": {
+    "files": {
+      "_spoilers/reference/p01_modular_arithmetic.py": "e11a42dbd7b3ce9f7a87cbb3f0983689b8ca402735efebffabd3d1be03adb909"
+    },
+    "passed": 27,
+    "total": 27,
+    "date": "2026-10-21"
+  },
+  "02": {
+    "files": {
+      "_spoilers/reference/p02_toy_curve.py": "25f046e34c785280069173eef63fdecfdb9aaa7d13adfb3d8d3118ba03cef431"
+    },
+    "passed": 15,
+    "total": 15,
+    "date": "2026-10-21"
+  },
+  "03": {
+    "files": {
+      "_spoilers/reference/p03_scalar_multiplication.py": "c455959cc08d5155b5efc15438e76fa58460ac71fd32bfded36ce767aaa1c03b"
+    },
+    "passed": 9,
+    "total": 9,
+    "date": "2026-10-21"
+  },
+  "05": {
+    "files": {
+      "_spoilers/reference/p05_der_reader.py": "0a42da9b4f5d0ead735698a7baa58083d650f7d5956acef8a73de8d5c10f4c1a",
+      "_spoilers/reference/common/der.py": "320fdaefd34aff60e5ce6824892b6f92841f65c042a0ac3d55a2326c42357c68"
+    },
+    "passed": 47,
+    "total": 47,
+    "date": "2026-10-21"
+  },
+  "06": {
+    "files": {
+      "_spoilers/reference/p06_read_certificate.py": "a77bdab909a79a698f0da60a48e922e7023ac37d3f12746ba31e068f3c03e5de",
+      "_spoilers/reference/common/certlib.py": "e216729957c1216d12bb988c5a7823a30f62a7a94e1099d32680e0682597fdc9"
+    },
+    "passed": 17,
+    "total": 17,
+    "date": "2026-10-21"
+  },
+  "10": {
+    "files": {
+      "_spoilers/reference/p10_find_weak_key.py": "1940eab8c124007cff9091b13729e1d8a12774c083795f78463d6fe676b5e4f7"
+    },
+    "passed": 36,
+    "total": 36,
+    "date": "2026-10-21"
+  },
+  "11": {
+    "files": {
+      "_spoilers/reference/p11_sign_with_weak_key.py": "5995a3aea2edeb8a96b4c6a7da2982c379d8427b622a5cd9c1060880d284b60c"
+    },
+    "passed": 21,
+    "total": 21,
+    "date": "2026-10-21"
+  },
+  "12": {
+    "files": {
+      "_spoilers/reference/p12_generate_key.py": "a3094c4c123f54db47751c48fb2c17de0d32e5fd187354d337d5caacaef2ad94"
+    },
+    "passed": 14,
+    "total": 14,
+    "date": "2026-10-21"
+  },
+  "13": {
+    "files": {
+      "_spoilers/reference/p13_key_linter.py": "d3e9cf621a00141f63abf19c70ccfcb9ebbd9697ec2b1faa5076e167b6e3e137"
+    },
+    "passed": 24,
+    "total": 24,
+    "date": "2026-10-21"
+  },
+  "14": {
+    "files": {
+      "_spoilers/reference/p14_ceremony_checker.py": "7a15b07a8a65515ed0dabc1f6a3290cbd3f79ff4db68d2e63b40b2d5b403225b"
+    },
+    "passed": 10,
+    "total": 10,
+    "date": "2026-10-21"
+  },
+  "15": {
+    "files": {
+      "_spoilers/reference/p15_blocklist_distrust.py": "5965777ebb50e5052af8f78d70fcbd4c9e473bc519578d719bf5f100a0cdfbec"
+    },
+    "passed": 8,
+    "total": 8,
+    "date": "2026-10-21"
+  }
+}
