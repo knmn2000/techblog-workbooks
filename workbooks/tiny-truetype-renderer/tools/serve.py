@@ -258,6 +258,10 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         if not self.allowed():
             return self.reply(403, {"error": "forbidden"})
+        if path == "/api/exit":  # the book's Exit button: answer, then stop serving
+            self.reply(200, {"bye": True})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return None
         wb = self.server.wb
         try:
             options = self.body()
@@ -382,6 +386,7 @@ def main() -> int:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    print(f"{wb.title} has stopped. See you again!")
     return 0
 
 

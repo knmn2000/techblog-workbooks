@@ -169,9 +169,6 @@ button.chip:hover { color: var(--text); background: var(--fill-hover); }
 .seg button[aria-pressed="true"] { background: var(--layer); color: var(--text); font-weight: 500; }
 .seg.small { flex: none; }
 .seg.small button { height: 24px; padding: 0 9px; font-size: 12px; }
-.pick { margin-left: auto; height: 32px; display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; }
-.pick span { width: 24px; height: 24px; border-radius: 50%; background: var(--ok); color: var(--on-color); display: grid; place-items: center; }
-.pick:hover { color: var(--text); }
 .table-scroll { overflow-x: auto; }
 .ptable { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
 .ptable th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 13px; padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -208,6 +205,13 @@ body.in-ide { overflow: hidden; }
 .act.submit { border-radius: 0 8px 8px 0; color: var(--ok); }
 .tb-prog { font-size: 12px; color: var(--text-3); white-space: nowrap; }
 .tb-prog b { color: var(--text); font-weight: 600; }
+.exit-btn { height: 28px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.exit-btn:hover, .exit-btn[data-armed] { color: var(--bad); border-color: var(--bad); }
+.bye { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg); color: var(--text); text-align: center; padding: 24px; }
+.bye > div { display: grid; gap: 12px; justify-items: center; max-width: 46ch; }
+.bye h1 { margin: 0; font-size: 28px; font-weight: 600; }
+.bye p { margin: 0; color: var(--text-2); }
+.bye code { font-size: 13px; background: var(--fill); padding: 1px 6px; border-radius: 4px; }
 .live { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 500; white-space: nowrap; cursor: help; }
 .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .live.on { color: var(--ok); } .live.warn { color: var(--medium); } .live.off { color: var(--bad); }
@@ -483,12 +487,11 @@ details.more .cmd + .cmd { margin-top: 6px; }
   .tests { flex: none; }
   .tests .panel-body { overflow: visible; }
   .splitter { display: none; }
-  .tb-link span, .tb-prog, .tb-left .logo, #shuffle { display: none; }
+  .tb-link span, .tb-prog, .tb-left .logo { display: none; }
 }
 @media (max-width: 560px) {
   .ptable .te { display: none; }
   .ptable .ti { min-width: 0; }
-  .pick { margin-left: 0; }
 }
 @media (max-width: 420px) {
   .act { padding: 0 12px; }
@@ -555,6 +558,7 @@ span.CodeMirror-selectedtext { background: none; }
   <header class="nav"><div class="nav-in gutter">
     <a class="brand" href="#home"><span class="logo" data-logo></span><span id="book-name"></span></a>
     <span class="nav-src" id="nav-src"></span>
+    <button class="exit-btn" id="exit-list" type="button" hidden title="Save, stop the book and close it">Exit</button>
   </div></header>
   <div class="list-wrap gutter">
     <section class="hero" id="hero"></section>
@@ -565,7 +569,6 @@ span.CodeMirror-selectedtext { background: none; }
         <label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="q" type="search" placeholder="Search checkpoints" aria-label="Search checkpoints"></label>
         <div class="seg" id="diff" role="group" aria-label="Difficulty"></div>
-        <button class="pick" id="pick" type="button"><span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></span>Pick one</button>
       </div>
       <div class="table-scroll"><table class="ptable">
         <thead><tr><th class="st">Status</th><th>Title</th><th class="te">Tests</th><th class="di">Difficulty</th></tr></thead>
@@ -583,13 +586,12 @@ span.CodeMirror-selectedtext { background: none; }
       <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem List</span></a>
       <button class="icon-btn" id="prev" type="button" aria-label="Previous checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
       <button class="icon-btn" id="next" type="button" aria-label="Next checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
-      <button class="icon-btn" id="shuffle" type="button" aria-label="Pick an unsolved checkpoint" title="Pick an unsolved checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg></button>
     </div>
     <div class="tb-mid">
       <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
       <button class="act submit" id="submit" type="button" title="Copy your code and the command that runs every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
     </div>
-    <div class="tb-right"><span class="live" id="live" hidden></span><span class="tb-prog" id="tb-prog"></span></div>
+    <div class="tb-right"><span class="live" id="live" hidden></span><span class="tb-prog" id="tb-prog"></span><button class="exit-btn" id="exit" type="button" hidden title="Save, stop the book and close it">Exit</button></div>
   </header>
 
   <div class="ide-main" id="ide-main">
@@ -829,12 +831,6 @@ span.CodeMirror-selectedtext { background: none; }
     const row = e.target.closest('tr[data-id]');
     if (row && !e.target.closest('a')) go('p' + row.dataset.id);
   });
-  function pickOne(pool) {
-    const open = pool.filter((c) => !solved(c.id) && c.id !== current);
-    const from = open.length ? open : pool.filter((c) => c.id !== current);
-    if (from.length) go('p' + from[Math.floor(Math.random() * from.length)].id);
-  }
-  $('#pick').addEventListener('click', () => pickOne(renderRows()));
 
   // ---------------------------------------------------------------- problem view
   function renderDesc(c) {
@@ -1457,6 +1453,7 @@ span.CodeMirror-selectedtext { background: none; }
     return res.json();
   }
   function setOnline(ok) {
+    if (live.exited) return;
     if (live.online !== ok) { live.online = ok; paintLive(); showSaved(); }
   }
   function paintLive() {
@@ -1506,6 +1503,7 @@ span.CodeMirror-selectedtext { background: none; }
     diskTimer = setTimeout(saveAll, 600);
   }
   async function saveAll() {
+    if (live.exited) return;
     clearTimeout(diskTimer);
     const paths = [...new Set([...pending, ...live.tabs])];
     pending.clear();
@@ -1563,7 +1561,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (live.showTree && ++live.tick % 3 === 0) refreshProject();
   }
   if (LOCAL) {
-    setInterval(watchDisk, 2000);
+    live.timer = setInterval(watchDisk, 2000);
     document.addEventListener('visibilitychange', () => { if (document.hidden) saveAll(); });
   }
 
@@ -1734,6 +1732,36 @@ span.CodeMirror-selectedtext { background: none; }
       const [kind, label] = looks[r.verdict] || ['unknown', 'Error'];
       return `<a class="rc-row" href="#p${id}"><span class="rc-n">${esc(BY[id].num)}.</span><span class="rc-t">${esc(BY[id].title)}</span><span class="rc-v ${kind}">${label}${r.total ? ` ${r.passed}/${r.total}` : ''}</span></a>`;
     }).join('')}</div>` : '';
+  }
+
+  // ---- Exit: save everything, stop the study server, say goodbye
+  async function exitBook() {
+    try { await saveAll(); } catch (e) { /* the server may already be gone */ }
+    try { await api('/api/exit', { method: 'POST', body: '{}' }); } catch (e) { /* likewise */ }
+    live.exited = true;
+    clearInterval(live.timer);
+    document.body.classList.remove('in-ide');
+    // The page's <style> lives in <body>, so keep it and clear everything else.
+    [...document.body.children].forEach((el) => { if (el.tagName !== 'STYLE' && el.tagName !== 'LINK') el.remove(); });
+    document.body.insertAdjacentHTML('beforeend', `<div class="bye" role="status"><div>
+      <span class="logo">${esc(DATA.title.trim().charAt(0).toUpperCase())}</span>
+      <h1>See you again!</h1>
+      <p>${esc(DATA.title)} has stopped. Your code is saved in <code>solutions/</code>.</p>
+      <p>To come back, double-click <code>study.cmd</code> or ask Claude to open your workbook.</p>
+      <p class="bye-close" hidden>You can close this tab now.</p></div></div>`);
+    // Browsers only let a page close tabs it opened itself; otherwise the message stays.
+    setTimeout(() => { window.close(); setTimeout(() => { const note = document.querySelector('.bye-close'); if (note) note.hidden = false; }, 300); }, 1800);
+  }
+  function armExit(btn) {
+    // Two clicks, so a stray one doesn't stop the book.
+    if (btn.dataset.armed) { exitBook(); return; }
+    btn.dataset.armed = '1';
+    const label = btn.textContent;
+    btn.textContent = 'Click again to exit';
+    setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = label; } }, 3000);
+  }
+  if (LOCAL) {
+    ['#exit', '#exit-list'].forEach((id) => { $(id).hidden = false; $(id).addEventListener('click', (e) => armExit(e.currentTarget)); });
   }
 
   // ---- Run / Submit, for real
@@ -2010,7 +2038,6 @@ span.CodeMirror-selectedtext { background: none; }
   }
   $('#prev').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k > 0) go('p' + CPS[k - 1].id); });
   $('#next').addEventListener('click', () => { const k = CPS.indexOf(BY[current]); if (k < CPS.length - 1) go('p' + CPS[k + 1].id); });
-  $('#shuffle').addEventListener('click', () => pickOne(CPS));
 
   let routed = null;
   function route(hash) {
