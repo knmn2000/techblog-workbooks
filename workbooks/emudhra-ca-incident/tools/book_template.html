@@ -1311,6 +1311,9 @@ span.CodeMirror-selectedtext { background: none; }
   // panel. The published book keeps them in this browser; with study, they're your files on disk.
   let cm = null, plainEditor = null, saveTimer = 0;
   const docs = {};  // path -> CodeMirror.Doc
+  // A key that would change the code (not moving around, selecting or copying).
+  const wantsToType = (e) => !e.ctrlKey && !e.metaKey && !e.altKey
+    && (e.key.length === 1 || /^(Enter|Backspace|Delete|Tab)$/.test(e.key));
   function initEditor() {
     const host = $('#editor');
     if (window.CodeMirror) {
@@ -1326,13 +1329,22 @@ span.CodeMirror-selectedtext { background: none; }
       if (window.CodeMirror.Vim) {
         window.CodeMirror.Vim.defineEx('write', 'w', () => saveNow());
         cm.on('vim-mode-change', (e) => { vimMode = e.mode + (e.subMode ? ' ' + e.subMode : ''); showPos(); });
-        setVim(store.get('editor:vim') === '1');
+        setVim(!HOST && store.get('editor:vim') === '1');  // a published copy has no Vim: keys there mean "I want to type"
+        if (HOST) $('#vim').hidden = true;
       } else {
         $('#vim').hidden = true;  // the keymap didn't load
       }
       cm.on('changes', saveSoon);
       cm.on('cursorActivity', showPos);
-      if (HOST) cm.setOption('readOnly', true);
+      if (HOST) {
+        // The published copy is read-only: typing, pasting or dropping text into it opens the host's
+        // "run it on your computer" dialog instead, so it's clear where the code gets written.
+        cm.setOption('readOnly', true);
+        cm.on('keydown', (ed, e) => { if (wantsToType(e)) { e.preventDefault(); runLocally(); } });
+        ['paste', 'drop', 'cut'].forEach((type) => cm.getWrapperElement().addEventListener(type, (e) => { e.preventDefault(); runLocally(); }, true));
+        // Phone keyboards and input methods send text without a key event.
+        cm.getInputField().addEventListener('beforeinput', (e) => { e.preventDefault(); runLocally(); });
+      }
       if (window.ResizeObserver) {
         let frame = 0;
         new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => cm.refresh()); }).observe(host);
@@ -1344,7 +1356,11 @@ span.CodeMirror-selectedtext { background: none; }
       plainEditor.setAttribute('aria-label', 'Code');
       host.appendChild(plainEditor);
       plainEditor.addEventListener('input', saveSoon);
-      if (HOST) plainEditor.readOnly = true;
+      if (HOST) {
+        plainEditor.readOnly = true;
+        plainEditor.addEventListener('keydown', (e) => { if (wantsToType(e)) { e.preventDefault(); runLocally(); } });
+        ['paste', 'drop', 'cut', 'beforeinput'].forEach((type) => plainEditor.addEventListener(type, (e) => { e.preventDefault(); runLocally(); }));
+      }
     }
   }
   const code = () => (cm ? cm.getValue() : plainEditor.value);

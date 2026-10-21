@@ -1,6 +1,6 @@
 // The published copy of a problem book can't run code. The book has a hosted mode for this: it
-// reads window.WORKBOOK_HOST before its own script runs, makes the editor read-only, and sends Run,
-// Submit and its "Run locally" button to WORKBOOK_HOST.runLocally(). This file sets that up and adds
+// reads window.WORKBOOK_HOST before its own script runs, makes the editor read-only, and sends
+// typing in the editor, Run, Submit and its "Run locally" button to WORKBOOK_HOST.runLocally(). This file sets that up and adds
 // the dialog runLocally() opens: the same "git clone / ask your AI" panel as the workbook page.
 import { startPanelHtml, startPanelCss, startPanelJs } from './start-ui.mjs';
 import { href } from './paths.mjs';

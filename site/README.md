@@ -14,8 +14,8 @@ The `site` block of `workbook.json` holds what the site needs and the tools don'
 label, what to install, and how to start the study server on each system.
 
 The published book is the workbook's own `book/problem-book.html`. `src/lib/book-inject.mjs`
-turns on the book's hosted mode (`window.WORKBOOK_HOST`): the editor is read-only, and Run,
-Submit and the Run locally button open the setup dialog. The book template draws all of that
+turns on the book's hosted mode (`window.WORKBOOK_HOST`): the editor is read-only, and typing in
+it, Run, Submit and the Run locally button all open the setup dialog. The book template draws all of that
 itself, so a change to the template can't break the site.
 
 ## Local development
