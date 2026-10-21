@@ -9,23 +9,24 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 **"Renderer: Curve Rendering"** section through
-[TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves),
-and stop at the sentence "Let's put it into code." The author's code comes right after it.
+[TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
+and stop at the sentence that introduces the code. The author's code follows it.
 
 ## Where this fits
 
-Assignment 08 joined every point of an outline with a straight line. Real glyphs are made of
-quadratic curves: an off-curve point pulls the outline toward itself without lying on it.
+In assignment 08 you joined every point of an outline with a straight line. TrueType outlines
+also contain quadratic curves: an off-curve point pulls the outline toward itself without
+lying on it.
 
-This assignment draws outlines the way they are meant to look, using your curve function in
-`utils/Geometry.h` from assignment 10. Assignments 13, 14 and 17 work with the same pieces
-(lines and curves) to fill glyphs.
+Here you draw outlines with their curves, using your curve function in `utils/Geometry.h`
+from assignment 10. Assignments 13, 14 and 17 use the same pieces (lines and curves) to fill
+glyphs.
 
 ## The problem
 
-The program reads one or more glyph outlines and draws each one with straight lines and
+Your program reads one or more glyph outlines and draws each one with straight lines and
 quadratic curves. It marks every point with a coloured square and writes the picture as a
 PNG.
 
@@ -37,7 +38,7 @@ The output file name ends in `.png`. The input is the same as in assignment 08, 
 
 | Line | Meaning |
 |---|---|
-| `canvas <w> <h>` | Always the first line: the picture is `w` x `h` pixels, all black. |
+| `canvas <w> <h>` | The first line of the file: the picture is `w` x `h` pixels, all black. |
 | `place <x0> <baseline> <scale>` | Where the following outlines go (see below). |
 | `style <lineThickness>` | Thickness of lines and curves, in pixels, for the following outlines. |
 | `color <r> <g> <b>` | Colour of the lines and curves of the following outlines. |
@@ -50,14 +51,14 @@ outlines; each outline uses the most recent ones. Coordinates may have a fractio
 
 ### Output
 
-A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB, with (0, 0) at the top-left and y growing
-downwards.
+Your program writes a PNG (or binary PPM) file of exactly `w` x `h` pixels, RGB, with (0, 0)
+at the top-left and y growing downwards.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work.
+**Writing the picture.** Write it to the output path the checker gives you. The name ends in
+`.png`, but the checker looks at the contents, so a PNG and a binary PPM both work.
 
-- **The easy way:** your `FrameBufferCanvas` from assignment 06 already does this in
-  `writePng`. The boilerplate calls it.
+- **With your canvas:** `writePng` on your `FrameBufferCanvas` from assignment 06 writes a PNG.
+  The boilerplate calls it.
 - **A binary PPM by hand:** the header `P6`, the width, the height and `255`, separated by
   spaces or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes
   per pixel (red, green, blue), row by row from the top-left. Open the file in binary mode
@@ -78,43 +79,43 @@ py = baseline - scale * y
 Keep these as floating-point numbers. Work out curves and implied points from them, and round
 to whole pixels only when you draw. Your `FrameBufferCanvas::drawLine` from assignment 06
 takes whole pixels, so round each end to the nearest pixel (`std::lround`) as you call it; a
-plain conversion to `int` cuts off the fraction instead of rounding.
+cast to `int` cuts off the fraction instead of rounding.
 
 Rounding every point first, as in assignment 08, moves a curve by less than a pixel and also
 passes.
 
 ### Walking a contour
 
-`ends` splits the points into contours exactly as in assignment 08: contour 0 is points 0 to
-`e0`, contour 1 is points `e0 + 1` to `e1`, and so on. Each contour is closed, so after its
-last point comes its first point again.
+`ends` splits the points into contours as in assignment 08: contour 0 is points 0 to `e0`,
+contour 1 is points `e0 + 1` to `e1`, and so on. Each contour closes on itself: after its last
+point comes its first point again.
 
-Go round a contour keeping a **current position**: the point where the next piece starts. It
-is always an on-curve point, real or implied. Each point you reach adds one piece that starts
-at the current position:
+Go round a contour keeping a **current position**: the point where the next piece starts. The
+current position is an on-curve point, real or implied. Each point you reach adds one piece
+that starts at the current position:
 
 | Point reached | The point after it | Piece | Current position becomes |
 |---|---|---|---|
 | on-curve | (doesn't matter) | a **straight line** to it | this point |
-| off-curve | on-curve | a **curve** with this point as control point, ending at the point after it (which is then used up) | the point after it |
+| off-curve | on-curve | a **curve** with this point as control point, ending at the point after it, which the walk then skips | the point after it |
 | off-curve | off-curve | a **curve** with this point as control point, ending at the **implied on-curve point** halfway between the two | the implied point |
 
-An **implied on-curve point** is not in the file. Whenever two off-curve points follow each
-other (the last and the first point of a contour count as neighbours), the outline passes
-through the point exactly halfway between them. That point is where one curve ends and the
-next begins.
+If two off-curve points follow each other, the outline passes through the point halfway
+between them. The font doesn't store that point; it is an **implied on-curve point**, where
+one curve ends and the next begins. The last and the first point of a contour count as
+neighbours.
 
-**Where to start.** A piece always starts at an on-curve point, real or implied. So start the
-walk at the first on-curve point of the contour and go all the way round back to it. The walk
+**Where to start.** Every piece starts at an on-curve point, real or implied, so start the
+walk at the first on-curve point of the contour and go round the contour back to it. The walk
 ends when it reaches the starting point again:
 
 - if the contour's last point is on-curve, the final piece is a line back to the start;
 - if it is off-curve, the final piece is a curve that ends at the start.
 
-A contour with k off-curve control points draws exactly k curves. If the contour has **no**
-on-curve point at all, start at the implied point halfway between its last and first points.
+A contour with k off-curve control points gives k curves. If the contour has **no** on-curve
+point, start at the implied point halfway between its last and first points.
 
-Two kinds of contour need this care:
+The start rule matters for two kinds of contour:
 
 - a contour whose first point is off-curve: its first curve starts at the last on-curve
   point of the contour (or at the implied point between its last and first points), not
@@ -136,15 +137,15 @@ Draw it as `n` short straight lines from B((i - 1) / n) to B(i / n) for i = 1 to
 n = max(1, ceil(|P1 - P0| + |P2 - P1|))       lengths in pixels
 ```
 
-The **control polygon** (P0 to P1 to P2) is never shorter than the curve, so every short line
-is at most about a pixel long. More pieces are fine; much fewer (say a fixed 8) leave visible
+The curve is no longer than its **control polygon** (P0 to P1 to P2), so each short line is
+about a pixel long at most. More pieces are fine; much fewer, such as a fixed 8, leave visible
 corners on long curves.
 
 Lines and curves both use thickness `lineThickness` and the outline's colour.
 
 ### Markers
 
-After **all** the lines and curves of an outline are drawn, draw a square of size
+Draw the markers after **all** the lines and curves of an outline: a square of size
 `2 * lineThickness` on each point, rounded to the nearest pixel. The size is even, so the
 square covers columns x − lineThickness up to x + lineThickness − 1 (and rows likewise), as
 your `FrameBufferCanvas::drawRect` from assignment 06 does: a 6 x 6 marker at x = 50 covers
@@ -156,16 +157,16 @@ columns 47 to 52. The colour depends on the point:
 | every off-curve point of the input | green (0, 255, 0) |
 | every implied on-curve point | blue (0, 0, 255) |
 
-Markers go on top of the lines, so each square shows its full colour. The tests never let
-markers of different colours overlap, so their order among themselves doesn't matter.
+Markers go on top of the lines, so each square shows its full colour. In the tests, markers of
+different colours don't overlap, so you can draw them in any order.
 
 ### How the picture is compared
 
-The checker compares your PNG with the expected picture pixel by pixel. It forgives only an
-edge that moved by at most 1 pixel. So small rounding differences pass, but a straight line
-where a curve should be, a missing marker or a marker of the wrong colour fails.
+The checker compares your PNG with the expected picture pixel by pixel. The one difference it
+forgives is an edge that moved by at most 1 pixel, so small rounding differences pass. A
+straight line where a curve should be, a missing marker or a marker of the wrong colour fails.
 
-When a test fails, the checker writes a diff picture:
+If a test fails, the checker writes a diff picture:
 
 - red where you have extra ink;
 - blue where ink is missing;
@@ -174,20 +175,21 @@ When a test fails, the checker writes a diff picture:
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-it targets.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** Two on-curve points in a row are joined by a straight line (the last and first
-  point of a contour included).
+- **R1** A straight line joins two on-curve points in a row, including the last and first
+  point of a contour.
 - **R2** An off-curve point between two on-curve points makes one quadratic curve between
   them, drawn as short lines.
-- **R3** Between two off-curve points in a row there is an implied on-curve point, halfway;
-  curves end and start there, and it gets a blue marker.
-- **R4** A contour that starts with an off-curve point, or has no on-curve point at all, is
-  drawn completely, closing curve included.
+- **R3** Two off-curve points in a row have an implied on-curve point halfway between them.
+  One curve ends there and the next starts there, and the point gets a blue marker.
+- **R4** Your program draws every piece of a contour that starts with an off-curve point or
+  has no on-curve point, the closing curve included.
 - **R5** Markers are `2 * lineThickness` squares on top of the lines: red on-curve, green
   off-curve, blue implied.
-- **R6** Points are placed with `place` (x0 + scale * x, baseline - scale * y), and several
+- **R6** `place` positions the points (x0 + scale * x, baseline - scale * y), and several
   outlines on one canvas each use their own `place`, `style` and `color`.
 
 ## Examples
@@ -218,7 +220,7 @@ between them, M = (172, 12). The pieces are:
 | curve | M (172, 12) | C (332, 12) | D (332, 332) | 160 + 320 = 480 |
 | line | D (332, 332) | | A (12, 332) | |
 
-Then 6 x 6 markers: red on A and D, green on B and C, blue on M.
+Then draw 6 x 6 markers: red on A and D, green on B and C, blue on M.
 
 ### Example 2: a contour that starts off-curve (test `11-R4-off-first`)
 
@@ -245,8 +247,8 @@ P1, the first on-curve point, and go round:
 3. P0 is off-curve and the next point, P1, is on-curve: a curve from (147, 237) with control
    P0 back to P1.
 
-Starting at P0 with a "previous point" of (0, 0) would draw the first curve from (12, 282),
-where font (0, 0) lands, and never draw the curve from the implied point into P1.
+If you start at P0 with a "previous point" of (0, 0), you draw the first curve from (12, 282),
+where font (0, 0) lands, and miss the curve from the implied point into P1.
 
 ### Example 3: only off-curve points (test `11-R4-circle4`)
 
@@ -289,9 +291,9 @@ is then the control point of one curve, and the 4 curves meet at 4 implied point
 
 <details><summary>Hint 1: where to start</summary>
 
-Write `drawQuadratic()` first and test it on Example 1's numbers. Then copy your loop from
-assignment 08 and change what happens at an off-curve point. Look at Example 1 and Example 3 in the
-expected pictures before you start: the blue markers show where curves join.
+Before you start, open the expected pictures for Example 1 and Example 3: the blue markers
+show where curves join. Write `drawQuadratic()` first and test it on Example 1's numbers.
+Then copy your loop from assignment 08 and change what happens at an off-curve point.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -301,7 +303,7 @@ length, so the point after the last is the first. Keep a `current` position: whe
 piece starts. Find the first on-curve point and start there (or start at the midpoint of the
 last and first points if there is none). Then, for each point after the start, all the way
 round: an on-curve point ends a straight line; an off-curve point ends a curve at the next
-point if that is on-curve (skip it, it is used up) or at the midpoint with the next point.
+point if that is on-curve (skip it, since the curve used it) or at the midpoint with the next point.
 Each time, `current` becomes the end of what you drew. Collect the markers as you go and draw
 them after the loop.
 </details>
@@ -317,7 +319,7 @@ them after the loop.
   neighbours.
 - Draw markers after all lines, or later lines cross earlier markers.
 - Use the pixel positions for the piece count: `n` from font units would be far too many at
-  a small scale (still correct, just slow) or too few at a large one.
+  a small scale (still correct, but slow) or too few at a large one.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -377,12 +379,12 @@ this:
 replaces the start position with a transform matrix: `setGlyphBaseline` moves the glyph to
 its baseline and `transformVec2` maps a point to the picture. The new `renderGlyphOutline`
 walks each contour once, and `drawBezier` flattens a curve with `quadBezierLerp`, using the
-ceiling of the control polygon's length as the number of pieces, as on this page. Markers are
-twice the line thickness, red, green and blue, as here.
+ceiling of the control polygon's length as the number of pieces, as on this page. Its markers
+are twice the line thickness and coloured red, green and blue, as here.
 
 **Something to look for:** the snippet keeps a "previous point" that starts at (0, 0) and
-isn't reset between contours. A contour whose first point is off-curve therefore starts its
-first curve from that stale point and never draws its real closing curve. The JetBrains Mono
-Nerd Font has over two thousand such contours (mostly icons), which is why R4 has its own
-tests. The snippet also draws each marker inside the walk, so a line drawn later can cross an
-earlier marker; this page draws all markers last.
+doesn't reset it between contours. A contour whose first point is off-curve therefore starts
+its first curve from that stale point and skips its real closing curve. The JetBrains Mono
+Nerd Font has over two thousand such contours, most of them in icons, and R4's tests cover
+them. The snippet also draws each marker inside the walk, so a line drawn later can cross an
+earlier marker. On this page you draw all markers last.

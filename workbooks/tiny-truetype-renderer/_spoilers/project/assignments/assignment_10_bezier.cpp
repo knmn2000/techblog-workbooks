@@ -13,7 +13,7 @@
 
 namespace {
 
-// Whole numbers print plainly; others with 4 decimals, trailing zeros dropped.
+// Whole numbers print with no decimal point; others with 4 decimals, trailing zeros dropped.
 std::string number(double v) {
   if (std::isnan(v)) return "nan";
   if (std::isinf(v)) return v > 0 ? "inf" : "-inf";

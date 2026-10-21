@@ -4,9 +4,10 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The part of filling that doesn't depend on the rule: an outline turned into edges in
-//   pixels and, row by row, where the line through the pixel centres crosses them. Your
-//   even-odd fill here and the non-zero fill of assignments 16 and 17 both run on it.
+//   It holds the steps both fill rules share: it turns an outline into edges in pixels and
+//   finds, row by row, where the line through the pixel centres crosses them. Your
+//   even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both
+//   run on it.
 //
 // Your job:
 //   Declare what both fill rules share: a type for an edge piece (a straight line or a
@@ -16,7 +17,7 @@
 //   sorted by x, and fill a stretch of one row.
 //
 // How to start:
-//   Two ways: write it all yourself from here, or press Boilerplate in the book's editor
-//   for ready-made input/output code and declarations named as the author names them (the
-//   same files are in starters/boilerplate/).
+//   Write it yourself from here, or press Boilerplate in the book's editor to get the
+//   input/output code and the declarations, with the author's names (the same files are in
+//   starters/boilerplate/).
 // ======================================================================================

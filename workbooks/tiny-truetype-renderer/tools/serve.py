@@ -99,7 +99,7 @@ def first_time_setup(wb: Workbook):
     Before the project exists there's nothing to set up yet: the book offers to make it."""
     missing = missing_tools(wb.config)
     if missing:
-        return (f"Your code can't be built yet: {', '.join(missing)} isn't installed (or isn't on PATH). "
+        return (f"The book can't build your code yet: {', '.join(missing)} isn't installed (or isn't on PATH). "
                 "Ask Claude to set this workbook up, or see the README's Needs line.")
     setup = wb.config.get("setup")
     if not setup or not project.exists(wb.config) or (ROOT / setup["creates"]).exists():

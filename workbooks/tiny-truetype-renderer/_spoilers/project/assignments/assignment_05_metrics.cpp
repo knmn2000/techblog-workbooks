@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
         const GlyphMetric& g = metrics.glyphs[id];
         output << "glyph " << id << " advance " << g.advanceWidth << " lsb " << g.leftSideBearing << '\n';
       } else {
-        output << "glyph " << id << " missing\n";  // never right: every glyph has metrics
+        output << "glyph " << id << " missing\n";  // a wrong answer: every glyph has metrics
       }
     }
   } catch (const std::exception& e) {

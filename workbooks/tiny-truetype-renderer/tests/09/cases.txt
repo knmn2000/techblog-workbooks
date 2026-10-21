@@ -7,7 +7,7 @@ requirement R1 Empty glyph -> 0 components; simple glyph -> 1 component
 requirement R2 Component records: flags, glyph id, signed 1- or 2-byte arguments, MORE_COMPONENTS
 requirement R3 One scale, separate x and y scales, or a 2x2 matrix (F2Dot14)
 requirement R4 x' = a*x + c*y + e and y' = b*x + d*y + f for every point
-requirement R5 SCALED_COMPONENT_OFFSET: the offset is transformed too
+requirement R5 SCALED_COMPONENT_OFFSET: the matrix transforms the offset too
 requirement R6 Nested compound glyphs: transforms compose, inner one first
 requirement R7 Components in depth-first order; empty components skipped
 requirement E2E Accented letters from JetBrains Mono Bold

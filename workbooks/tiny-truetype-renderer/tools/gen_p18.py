@@ -18,13 +18,13 @@ import imageio  # noqa: E402
 import wb  # noqa: E402
 
 REQUIREMENTS = [
-    ("R1", "UTF-8 text decoded into code points (1- to 4-byte characters)"),
-    ("R2", "Characters mapped to glyphs with cmap; unmapped ones draw glyph 0"),
+    ("R1", "Decode UTF-8 text into code points (1- to 4-byte characters)"),
+    ("R2", "Map characters to glyphs with cmap; an unmapped one draws glyph 0"),
     ("R3", "Each glyph moves the pen by its advance width times the scale"),
-    ("R4", "Compound glyphs are drawn"),
-    ("R5", "Glyphs are filled with the non-zero rule (curves and overlaps)"),
+    ("R4", "Draw compound glyphs"),
+    ("R5", "Fill glyphs by the non-zero rule (curves and overlaps)"),
     ("R6", "Several pen positions, colours and text lines"),
-    ("R7", "Scale; text running off the canvas is clipped"),
+    ("R7", "Scale; clip text that runs off the canvas"),
     ("E2E", "Whole phrases"),
 ]
 COMPARE = "image band=1 allow=0.0002"

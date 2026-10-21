@@ -3,10 +3,10 @@
 // Problem: problems/15-bezier-min-y.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 15, as
-//   `build/solutions/assignment_15.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 15`, or Run and Submit in the book.
+//   The checker runs this program for assignment 15 as `build/solutions/assignment_15.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 15`, or use Run and Submit in the book.
 //
 // Your job:
 //   Read each `curve` line's six numbers as three points, call your lowest-point function,
@@ -21,9 +21,9 @@
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:
-//   Two ways: write it all yourself from here, or press Boilerplate in the book's editor
-//   for ready-made input/output code and declarations named as the author names them (the
-//   same files are in starters/boilerplate/).
+//   Write it yourself from here, or press Boilerplate in the book's editor to get the
+//   input/output code and the declarations, with the author's names (the same files are in
+//   starters/boilerplate/).
 // ======================================================================================
 
 int main(int argc, char** argv) {

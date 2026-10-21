@@ -9,18 +9,19 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's **"Glyph Parsing & Outline Rendering"** section, from
+You can pass using this page alone. For the background, read the blog's
+**"Glyph Parsing & Outline Rendering"** section, from
 [Parsing glyf tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parsing%20glyf%20tables)
 through the list of flag rules under **Simple glyph**. Stop at the paragraph that starts
-"Implementation." The author's code comes right after it.
+"Implementation.", before the author's code.
 
 ## Where this fits
 
 Your `Cmap` (assignment 03) and `Loca` (assignment 04) take you from a character to a byte
-offset inside the font file. This assignment reads what is stored at that offset: the points
-that make up the glyph's outline. Assignment 08 draws them as straight lines and assignment 11
-as curves. Assignment 09 handles **compound glyphs**, glyphs built out of other glyphs, which
-this assignment only recognises.
+offset inside the font file. Here you decode the record at that offset into the points of the
+glyph's outline. Assignment 08 draws those points with straight lines and assignment 11 with
+curves. Assignment 09 handles **compound glyphs**, glyphs built out of other glyphs; in this
+assignment you only recognise them.
 
 ## The problem
 
@@ -37,8 +38,8 @@ The input file contains two kinds of lines:
 | `font <path>` | The file that the following `glyph` lines refer to. The path is relative to the workbook folder and contains no spaces. This line may appear more than once. |
 | `glyph <id> <offset> <length>` | A glyph record `length` bytes long, starting at byte `offset` of the current file. `id` is a non-negative whole number used as a label: print it back unchanged. |
 
-Offsets and lengths are what your `Loca` from assignment 04 works out, so you don't need any
-other table here.
+Your `Loca` from assignment 04 works out these offsets and lengths, so you need no other table
+here.
 
 - You only need `length` to tell whether there is a record at all (0 means none). Records are
   well-formed, so you don't have to bounds-check against it.
@@ -50,7 +51,8 @@ other table here.
 For each `glyph` line, in input order, write one of three things:
 
 - **Length 0** (the glyph has no outline, e.g. the space character): `glyph <id> empty`
-- **`numberOfContours` < 0** (a compound glyph): `glyph <id> compound`. Don't decode it.
+- **`numberOfContours` < 0** (a compound glyph): `glyph <id> compound`, without decoding the
+  rest of the record.
 - **Otherwise** (a simple glyph), three lines:
 
 ```
@@ -66,7 +68,7 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
   it).
 - If `numberOfContours` is 0 (no test has one), print the header line, then `ends` and
   `points` with nothing after them.
-- Words are separated by spaces. The checker ignores extra whitespace.
+- Separate words with spaces; the checker ignores extra whitespace.
 
 <figure class="split-figure">
 <svg viewBox="-30 -30 660 800" role="img" aria-label="The outline of A in JetBrains Mono Bold, drawn from its 17 decoded points"><rect x="35" y="0" width="530" height="730" fill="none" stroke="var(--rule)" stroke-width="4" stroke-dasharray="14 10"/><line x1="-30" y1="730" x2="630" y2="730" stroke="var(--muted)" stroke-width="3"/><polygon points="35,730 219,0 380,0 565,730 437,730 397,553 203,553 163,730" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/><polygon points="226,451 374,451 330,255 319,206 303,127 300,109 297,127 281,206 270,254" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/><g fill="var(--fig-a)"><circle cx="35" cy="730" r="13"/><circle cx="219" cy="0" r="13"/><circle cx="380" cy="0" r="13"/><circle cx="565" cy="730" r="13"/><circle cx="437" cy="730" r="13"/><circle cx="397" cy="553" r="13"/><circle cx="203" cy="553" r="13"/><circle cx="163" cy="730" r="13"/><circle cx="226" cy="451" r="13"/><circle cx="374" cy="451" r="13"/><circle cx="330" cy="255" r="13"/><circle cx="300" cy="109" r="13"/><circle cx="270" cy="254" r="13"/></g><g fill="var(--surface)" stroke="var(--fig-b)" stroke-width="6"><circle cx="319" cy="206" r="11"/><circle cx="303" cy="127" r="11"/><circle cx="297" cy="127" r="11"/><circle cx="281" cy="206" r="11"/></g></svg>
@@ -84,19 +86,19 @@ All numbers are **big-endian**: the most significant byte comes first.
 | `numberOfContours` | int16 | ≥ 0: a simple glyph (this assignment). < 0: a compound glyph |
 | `xMin`, `yMin`, `xMax`, `yMax` | int16 each | Bounding box in font units |
 
-**Simple-glyph description**, immediately after the header:
+**Simple-glyph description**, starting at byte 10 of the record:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `endPtsOfContours[numberOfContours]` | uint16 each | Index of the last point of each contour, in increasing order |
 | `instructionLength` | uint16 | Number of hinting-instruction bytes that follow |
-| `instructions[instructionLength]` | uint8 each | Hinting bytecode. Skip it. |
+| `instructions[instructionLength]` | uint8 each | Hinting bytecode, which you skip |
 | `flags[]` | uint8 each | One flag per point, compressed (see below) |
 | `xCoordinates[]` | 0, 1 or 2 bytes per point | Every point's x, delta-encoded |
 | `yCoordinates[]` | 0, 1 or 2 bytes per point | Every point's y, delta-encoded |
 
-The number of points is not stored anywhere. It is `endPtsOfContours[last] + 1`. A record may
-end with up to 3 padding bytes, which you can ignore.
+The record has no point count: work it out as `endPtsOfContours[last] + 1`. A record may end
+with up to 3 padding bytes, which you can ignore.
 
 **Flag bits:**
 
@@ -110,7 +112,7 @@ end with up to 3 padding bytes, which you can ignore.
 | 5 | `0x20` | Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR | Meaning depends on bit 2 (table below) |
 | 6, 7 | | | Ignore |
 
-**Reading one coordinate.** This is shown for x; y works the same way using bits 2 and 5.
+**Reading one coordinate.** The table shows x; y works the same way with bits 2 and 5.
 
 | Bit 1 (short) | Bit 4 | Bytes read | Delta |
 |---|---|---|---|
@@ -119,26 +121,28 @@ end with up to 3 padding bytes, which you can ignore.
 | 0 | 1 | none | 0, meaning "same as the previous point" |
 | 0 | 0 | 2, int16 | value (already signed) |
 
-A **delta** is a change in position, which is what the file stores instead of the coordinate
-itself. The first point's delta is relative to (0, 0). Each later point's delta is relative to
-the point before it.
+A **delta** is a change in position: the file stores each point's delta instead of its
+coordinate. The first point's delta is relative to (0, 0), and each later point's delta is
+relative to the point before it.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-the difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** One output record per `glyph` line, in input order, in the format above.
 - **R2** A record of length 0 → `glyph <id> empty`.
 - **R3** `numberOfContours` < 0 → `glyph <id> compound`, with nothing decoded.
-- **R4** The header's contour count and bounding box are printed exactly as stored.
+- **R4** Your program prints the header's contour count and bounding box as the font stores
+  them.
 - **R5** `ends` lists `endPtsOfContours` in file order. The point count is the last value + 1.
-- **R6** The hinting instructions are skipped, however long they are.
-- **R7** REPEAT is expanded, so every point gets its own flag. Each point's on/off comes from
-  its own flag, **including points created by a repeat**.
-- **R8** The 1-byte, 2-byte and "same" deltas are added up into absolute coordinates. All x
-  values come before all y values, and the running total carries on across contour
-  boundaries (it is not reset to 0 for each contour).
+- **R6** Your program skips the hinting instructions, however long they are.
+- **R7** Your program expands REPEAT so that every point gets its own flag, and takes each
+  point's on/off from that flag, **including points created by a repeat**.
+- **R8** Your program adds up the 1-byte, 2-byte and "same" deltas into absolute coordinates.
+  All x values come before all y values, and the running total carries on across contour
+  boundaries without going back to 0.
 
 ## Examples
 
@@ -163,7 +167,7 @@ These are the 56 bytes at offset 115392:
 00                           padding
 ```
 
-| Point | Flag | x rule | x bytes | x | y rule | y bytes | y | On curve? |
+| Point | Flag | x rule | x bytes | x | y rule | y bytes | y | on/off |
 |---|---|---|---|---|---|---|---|---|
 | 0 | `0x13` | short, + | `8c` | 0 + 140 = **140** | int16 | `01 10` | 0 + 272 = **272** | on |
 | 1 | `0x35` | same | none | **140** | short, + | `74` | 272 + 116 = **388** | on |
@@ -244,14 +248,14 @@ output:  glyph 17 contours 1 bbox 140 272 460 388
 
 <details><summary>Hint 1: where to start</summary>
 
-Read the fields in exactly the order they are laid out: header, contour ends, instructions,
-flags, every x, every y. You can't read any coordinate until all the flags are expanded,
+Read the fields in the order the record lays them out: header, contour ends, instructions,
+flags, every x, every y. You can't read any coordinate until you have expanded all the flags,
 because the flags decide how many bytes each coordinate takes.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Work in two passes. First expand the compressed flags into a list with exactly one flag per
+Work in two passes. First expand the compressed flags into a list with one flag for each
 point. Then walk that list twice, once for x and once for y. Each time, keep a running total
 and read 0, 1 or 2 bytes per point depending on two bits. Write the coordinate reader once
 and give it the bit numbers for the axis (1 and 4 for x, 2 and 5 for y).
@@ -260,8 +264,8 @@ and give it the bit numbers for the axis (1 and 4 for x, 2 and 5 for y).
 <details><summary>Hint 3: the traps</summary>
 
 - A REPEAT count of 3 means 3 **more** copies, so that one flag covers 4 points.
-- A repeated point gets every bit of the flag, including ON_CURVE. If you record on-curve
-  points separately from the flag list, make sure the repeated points are included too.
+- A repeated point gets every bit of the flag, including ON_CURVE. If you keep the on-curve
+  points in a list of their own, add the repeated points to it too.
 - "Same as previous" (short bit clear, bit 4/5 set) reads **no** bytes.
 - A short delta is an unsigned size from 0 to 255, and its sign comes from bit 4/5. A long
   delta is already a signed int16.
@@ -322,7 +326,7 @@ A failing test looks like this:
 
 [The blog's simple-glyph parser](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parser%20for%20simple%20glyphs)
 splits the work into `readGlyphHeader` (the header), `getGlyphComponent` (contour ends,
-instructions and flags) and `getGlyphCoordinates`, which is called once for x and once for y.
+instructions and flags) and `getGlyphCoordinates`, which it calls once for x and once for y.
 It stores the contour ends and on-curve indices in `unordered_set`s and multiplies every
 point by an affine matrix. The matrix is the identity for simple glyphs; it matters for
 compound glyphs in assignment 09.

@@ -12,7 +12,7 @@
 
 namespace {
 
-// k / 16384 has at most 14 digits after the point, so this prints it exactly.
+// k / 16384 has at most 14 digits after the point, so 14 decimals print it without rounding.
 std::string decimal(const double value) {
   std::ostringstream s;
   s << std::fixed << std::setprecision(14) << value;
@@ -23,7 +23,7 @@ std::string decimal(const double value) {
 }
 
 // Runs one operation. Read operations write one line, `<op> <value>`.
-// The value is read before anything is written, so a read that fails writes nothing.
+// It reads the value before writing anything, so a read that fails writes nothing.
 // (The + in front of 8-bit values prints them as numbers, not characters.)
 void run(ByteReader& reader, const std::string& op, std::istringstream& words, std::ostream& out) {
   const auto line = [&](const auto& value) { out << op << ' ' << value << '\n'; };

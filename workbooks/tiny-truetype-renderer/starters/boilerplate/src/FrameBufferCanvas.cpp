@@ -3,17 +3,17 @@
 // Problem: problems/06-canvas.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   A picture in memory, one colour per pixel, with three ways to draw on it (one pixel, a
-//   filled rectangle, a thick line) and a way to save it as a PNG. Every picture from
-//   assignment 08 on is drawn on it: outlines in 08 and 11, filled glyphs in 14, 16 and
-//   17, and a line of text in 18.
+//   The canvas holds a picture in memory, one colour per pixel. It can paint one pixel,
+//   fill a rectangle, draw a thick line and save the picture as a PNG. You draw every
+//   later picture on it: outlines in 08 and 11, filled glyphs in 14, 16 and 17, and a line
+//   of text in 18.
 //
 // Your job:
-//   Implement those operations as "Painting one pixel", "Drawing a rectangle" and "Drawing
-//   a line" describe: painting a pixel ignores anything outside the picture, a rectangle
-//   clips its loops to the canvas, and a line stamps a square at every step. Write the
-//   pixels out as a PNG with `stbi_write_png`, or as a binary PPM. The Boilerplate has the
-//   declarations written: fill in what's marked TODO.
+//   Implement the canvas operations as "Painting one pixel", "Drawing a rectangle" and
+//   "Drawing a line" describe. Painting a pixel ignores coordinates outside the picture, a
+//   rectangle clips its loops to the canvas, and a line stamps a square at every step.
+//   Save the pixels as a PNG with `stbi_write_png` or as a binary PPM. The Boilerplate
+//   gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

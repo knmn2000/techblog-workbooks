@@ -4,7 +4,7 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The form every outline takes in the project: its points (x and y in font units, on or
+//   Every outline in the project takes this form: its points (x and y in font units, on or
 //   off the curve) and the index where each contour ends. Assignments 08 and 11 draw
 //   outlines in this form, 09 produces one per part of a compound glyph, and 14, 16 and 17
 //   fill them.
@@ -16,7 +16,7 @@
 //   assignment 09 scales points.
 //
 // How to start:
-//   Two ways: write it all yourself from here, or press Boilerplate in the book's editor
-//   for ready-made input/output code and declarations named as the author names them (the
-//   same files are in starters/boilerplate/).
+//   Write it yourself from here, or press Boilerplate in the book's editor to get the
+//   input/output code and the declarations, with the author's names (the same files are in
+//   starters/boilerplate/).
 // ======================================================================================

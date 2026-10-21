@@ -3,23 +3,22 @@
 // Problem: problems/13-line-curve-intersection.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 13, as
-//   `build/solutions/assignment_13.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 13`, or Run and Submit in the book.
+//   The checker runs this program for assignment 13 as `build/solutions/assignment_13.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 13`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
 //   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
 //   a quadratic curve (start, control point, end) and two points on an infinite line, and
-//   returns the points where they meet: none, one or two, in increasing t. A dot product
-//   helper and a helper that solves a t^2 + b t + c = 0, the linear case a = 0 included,
-//   belong here too. The Boilerplate's `Geometry.h` from assignment 10 already declares
-//   the function as `segmentQuadBezierIntersect`.
+//   returns the points where they meet, in increasing t. There can be none, one or two.
+//   Put a dot product helper here too, and a helper that solves a t^2 + b t + c = 0,
+//   including the linear case a = 0. The Boilerplate's `Geometry.h` from assignment 10
+//   already declares the function as `segmentQuadBezierIntersect`.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:

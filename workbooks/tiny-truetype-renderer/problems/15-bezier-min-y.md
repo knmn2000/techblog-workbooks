@@ -9,7 +9,7 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. In the blog's
+You can pass using this page alone. For the background, in the blog's
 **"Renderer: Filling Glyph"** section, read
 [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
 up to the formula for the t where the curve turns. The author's code (the listing "Find a
@@ -18,11 +18,11 @@ itself.
 
 ## Where this fits
 
-The blog's even-odd fill can count a row's crossings twice, or miss them, where an edge only
-touches the row or two edges meet exactly on it. Its repair checks how far each edge reaches above
-the row, and for a curved edge that needs the curve's smallest y. Your fill from assignment 14
-splits curves instead and doesn't need it: this is the last of the blog's geometry helpers, added
-to your `utils/Geometry.h` from assignment 10.
+The blog's even-odd fill can count a row's crossings twice, or miss them, where an edge touches
+the row without crossing it or two edges meet on the row. The blog's repair checks how far each
+edge reaches above the row, and for a curved edge it needs the curve's smallest y. Your fill from
+assignment 14 splits curves instead and doesn't need this function. It is the last of the blog's
+geometry helpers, and you add it to your `utils/Geometry.h` from assignment 10.
 
 ## The problem
 
@@ -36,9 +36,9 @@ Every line of the input file has the same form:
 
 | Line | Meaning |
 |---|---|
-| `curve p1x p1y p2x p2y p3x p3y` | The curve starts at p1, is pulled toward the control point p2, and ends at p3. |
+| `curve p1x p1y p2x p2y p3x p3y` | The curve starts at p1, bends toward the control point p2, and ends at p3. |
 
-It is the curve your `utils/Geometry.h` evaluates since assignment 10: the point at parameter t
+Your `utils/Geometry.h` has evaluated this curve since assignment 10: the point at parameter t
 is (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1.
 
 ### Output
@@ -47,14 +47,14 @@ One line per input line, in the same order: the smallest y of any point on the c
 from 0 to 1 inclusive.
 
 - The checker accepts any number within 0.001 of the expected value.
-- When a value isn't whole, print enough decimals to be within 0.001 (4 is plenty). Don't round
-  to a whole number.
-- The boilerplate's `number()` does this: whole numbers plainly, others rounded to 4 decimals
-  with trailing zeros dropped (`37.5`, `0.0625`).
+- If a value isn't whole, print enough decimals to be within 0.001 (4 is plenty), and don't
+  round it to a whole number.
+- The boilerplate's `number()` does this: it prints whole numbers without a decimal point, and
+  rounds others to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
 
 ### The curve's height as a polynomial
 
-Only y matters here. Multiplying out the curve's formula for y gives
+You only need y. Multiplying out the curve's formula for y gives
 
 ```
 y(t) = a t² + b t + y1,    where a = y1 − 2 y2 + y3   and   b = 2 (y2 − y1)
@@ -62,7 +62,7 @@ y(t) = a t² + b t + y1,    where a = y1 − 2 y2 + y3   and   b = 2 (y2 − y1)
 
 with y1, y2, y3 the y coordinates of p1, p2, p3.
 
-### Where the lowest point can be
+### Candidates for the lowest point
 
 On 0 ≤ t ≤ 1, the lowest point is at one of the ends, y(0) = y1 or y(1) = y3, or at the
 **turning point**, where y stops falling and starts rising. There the slope 2at + b is 0:
@@ -78,28 +78,30 @@ t* = −b / (2a),     y(t*) = a t*² + b t* + y1
 | a = 0, b ≠ 0 | straight: y changes at a steady rate | min(y1, y3) |
 | a = 0, b = 0 | flat: y1 = y2 = y3 | y1 |
 
-A shorter way to say the same thing: take the smallest of y1, y3, and y(t*) when a > 0 and
-t* is between 0 and 1. Don't compute t* when a = 0: it divides by zero.
+The answer is the smallest of y1, y3 and, when a > 0 and 0 < t* < 1, y(t*). Don't compute t*
+when a = 0, because the formula divides by zero.
 
-**Decimal inputs and a = 0.** Coordinates like 0.1 aren't exact in binary, so for a curve that is
-really straight, a can come out as a tiny non-zero number such as 1e-17 instead of 0. That's
-harmless if you only use t* when a > 0 and 0 < t* < 1: for such a curve t* lands far outside
-[0, 1], or y(t*) is within rounding of an endpoint. No `a == 0` comparison is needed.
+**Decimal inputs and a = 0.** Coordinates like 0.1 aren't exact in binary, so a can come out as a
+tiny non-zero number such as 1e-17 when it should be 0. That does no harm if you use t* only when
+a > 0 and 0 < t* < 1: on a curve whose a should be 0, t* lands far outside [0, 1], or y(t*) is
+within rounding of an endpoint. You don't need an `a == 0` comparison.
 
 ### Screen coordinates
 
-The blog uses this after the outline has been scaled to pixels and flipped so that y points
-down (row 0 at the top of the image). There, the smallest y is the curve's highest point on
+The blog calls this function after it has scaled the outline to pixels and flipped it so that y
+points down (row 0 at the top of the image). There, the smallest y is the curve's highest point on
 screen.
 
 The blog returns it as a whole number (`static_cast<int>`, which drops the fraction) because it
-compares it with integer row numbers. This assignment asks for the exact minimum instead.
+compares it with integer row numbers. Your program prints the exact minimum instead.
 
 The tests use both font units (y up) and screen coordinates (y down); the rule is the same.
 
 ## Requirements
 
-Each test case is designed around one of these.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** A curve that only rises or only falls has its minimum at an end.
 - **R2** A valley whose turning point lies inside the curve (0 < t* < 1) has its minimum there.
@@ -156,7 +158,7 @@ is the top of the curve. The lowest point is the lower end: min(0, 4) = 0.
 
 ## Source material
 
-- Pomax, *A Primer on Bézier Curves*, [Component functions](https://pomax.github.io/bezierinfo/#components) and [Finding extremities: root finding](https://pomax.github.io/bezierinfo/#extremities), on treating x and y separately and finding where the derivative is 0
+- Pomax, *A Primer on Bézier Curves*, [Component functions](https://pomax.github.io/bezierinfo/#components) and [Finding extremities: root finding](https://pomax.github.io/bezierinfo/#extremities), on treating x and y as separate functions of t and finding where the derivative is 0
 - Wikipedia, [Quadratic function: vertex](https://en.wikipedia.org/wiki/Quadratic_function#Vertex)
 - Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), on the quadratic curves in TrueType outlines
 - The blog: [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
@@ -165,26 +167,27 @@ is the top of the curve. The lowest point is the lower end: min(0, 4) = 0.
 
 <details><summary>Hint 1: where to start</summary>
 
-Forget x. Write y(t) as a t² + b t + y1 and sketch the three shapes it can have on 0 ≤ t ≤ 1:
-a valley, a hill or a straight line. Where can the lowest point of each one be?
+Ignore x and write y(t) as a t² + b t + y1. Sketch the three shapes it can have on 0 ≤ t ≤ 1, a
+valley, a hill and a straight line, and mark on each sketch the places its lowest point can be.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-The two ends are always candidates. The turning point is a candidate only when a > 0 and it
-lies between t = 0 and t = 1. Take the smallest candidate. Check yourself on Examples 1 and 2.
+Both ends are candidates on every curve. The turning point is a candidate only when a > 0 and it
+lies between t = 0 and t = 1. Take the smallest candidate, and test your reasoning on Examples 1
+and 2.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - A turning point outside 0 ≤ t ≤ 1 is not on the curve (R3).
-- When a < 0 the turning point is the top of a hill, not the bottom (R5). If you return y(t*)
-  whenever t* is in range, you return the highest point.
-- When a = 0, −b / (2a) is ±infinity, or `nan` (0 / 0) when b is also 0. A `nan` that reaches
+- If a < 0, the turning point is the top of a hill (R5). If you return y(t*) whenever t* is in
+  range, you return the highest point.
+- With a = 0, −b / (2a) is ±infinity, or `nan` (0 / 0) if b is also 0. A `nan` that reaches
   `std::min` can come out as the answer, depending on the argument order. Handle a = 0 before
   dividing (R4).
-- A straight curve can fall: when a = 0 the answer is min(y1, y3), not always y1.
-- Keep the fraction. The blog's whole-number result would turn −1.25 into −1.
+- A straight curve can fall, so with a = 0 the answer is min(y1, y3), which can be y3.
+- Keep the fraction: the blog's whole-number result would turn −1.25 into −1.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -227,8 +230,8 @@ A failing test looks like this:
 is one function, `getBezierMinY`, that takes the three points and returns an `int`. It computes
 a and b as on this page. If |a| is below a small eps it returns p1.y when |b| is also tiny, and
 min(p1.y, p3.y) otherwise. Else it computes t*, and returns y(t*) when t* lies in
-[−eps, 1 + eps] and a > 0, and min(p1.y, p3.y) in every other case. That is the table above,
-branch by branch.
+[−eps, 1 + eps] and a > 0, and min(p1.y, p3.y) in every other case. Its branches match the rows
+of the table above.
 
 **Something to look for:** the result goes through `static_cast<int>`, which drops the fraction
 by rounding toward zero. On screen, where y is positive, that is the same as rounding down, so

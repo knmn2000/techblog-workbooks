@@ -22,7 +22,7 @@ FONT_SOURCE = f"outline read by {wb.FT}, points computed with fractions.Fraction
 
 REQUIREMENTS = [
     ("R1", "lerp: the point a fraction t of the way from a to b"),
-    ("R2", "bezier: the point at t on the curve from a to c, pulled toward b"),
+    ("R2", "bezier: the point at t on the curve from a to c, which bends toward b"),
     ("R3", "Exact endpoints: t = 0 gives the start, t = 1 the end (not the control point)"),
     ("R4", "Negative and fractional coordinates and t"),
     ("E2E", "Real curves from JetBrains Mono Bold and Noto Sans JP, and random inputs"),

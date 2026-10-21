@@ -2,13 +2,13 @@
 source reference picture, checked pixel by pixel against fontTools 4.67.0 PointInsidePen
 seed 1
 compare image band=1 allow=0.0002
-requirement R1 Pixels whose centre is inside are filled; the rest stay black
-requirement R2 Holes: a contour inside another is left empty
-requirement R3 Curves, with implied on-curve points, are followed exactly
-requirement R4 Vertices exactly on a scanline are counted correctly
+requirement R1 Fill each pixel whose centre is inside; the rest stay black
+requirement R2 Holes: a contour inside another stays empty
+requirement R3 Follow the curves, implied on-curve points included
+requirement R4 A vertex on a scanline counts the right number of times
 requirement R5 Crossing or overlapping contours: even-odd leaves the overlap empty
-requirement R6 Several outlines are filled one after another
-requirement R7 Placement and scale; parts outside the canvas are clipped
+requirement R6 Fill several outlines one after another
+requirement R7 Placement and scale; clip what falls outside the canvas
 requirement E2E Letters from JetBrains Mono Bold
 case 14-R1-square R1
 title a 40 x 40 square at scale 1

@@ -29,7 +29,7 @@ SOURCE = f"Python struct, cross-checked against {wb.FT} SFNTReader"
 REQUIREMENTS = [
     ("R1", "Header: numTables after the scaler type; search fields skipped"),
     ("R2", "Records: tag, then checkSum, offset, length (big-endian uint32)"),
-    ("R3", "Tags exactly as stored: 4 characters, trailing spaces kept"),
+    ("R3", "Tags as the font stores them: 4 characters, trailing spaces kept"),
     ("E2E", "Real fonts and random directories"),
 ]
 

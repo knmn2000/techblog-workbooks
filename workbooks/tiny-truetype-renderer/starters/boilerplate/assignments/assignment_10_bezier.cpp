@@ -3,18 +3,18 @@
 // Problem: problems/10-bezier.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 10, as
-//   `build/solutions/assignment_10.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 10`, or Run and Submit in the book.
+//   The checker runs this program for assignment 10 as `build/solutions/assignment_10.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 10`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
-//   This assignment also has you write src/utils/Geometry.h; each says its job at the top.
+//   You also write src/utils/Geometry.h in this assignment; each one gives its job at the
+//   top.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:
@@ -34,7 +34,7 @@
 
 namespace {
 
-// Whole numbers print plainly; others with 4 decimals, trailing zeros dropped.
+// Whole numbers print with no decimal point; others with 4 decimals, trailing zeros dropped.
 std::string number(double v) {
   if (std::isnan(v)) return "nan";
   if (std::isinf(v)) return v > 0 ? "inf" : "-inf";

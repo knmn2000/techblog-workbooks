@@ -3,19 +3,18 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 07, as
-//   `build/solutions/assignment_07.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 07`, or Run and Submit in the book.
+//   The checker runs this program for assignment 07 as `build/solutions/assignment_07.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 07`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
-//   This assignment also has you write src/GlyphComponent.h, src/Glyph.h,
-//   src/font/GlyphParser.h and src/font/GlyphParser.cpp; each says its job at the top.
+//   You also write src/GlyphComponent.h, src/Glyph.h, src/font/GlyphParser.h and
+//   src/font/GlyphParser.cpp in this assignment; each one gives its job at the top.
 //   Earlier files you can use: src/font/ByteReader.h.
 //   Include them by their path under src/, e.g. #include "GlyphComponent.h".
 //

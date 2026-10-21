@@ -4,14 +4,14 @@
 // Problem: problems/06-canvas.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   A picture in memory, one colour per pixel, with three ways to draw on it (one pixel, a
-//   filled rectangle, a thick line) and a way to save it as a PNG. Every picture from
-//   assignment 08 on is drawn on it: outlines in 08 and 11, filled glyphs in 14, 16 and
-//   17, and a line of text in 18.
+//   The canvas holds a picture in memory, one colour per pixel. It can paint one pixel,
+//   fill a rectangle, draw a thick line and save the picture as a PNG. You draw every
+//   later picture on it: outlines in 08 and 11, filled glyphs in 14, 16 and 17, and a line
+//   of text in 18.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in
@@ -34,7 +34,7 @@ class FrameBufferCanvas {
   [[nodiscard]] int width() const { return width_; }
   [[nodiscard]] int height() const { return height_; }
 
-  // One pixel; (0, 0) is the top-left corner. Pixels outside the canvas are ignored.
+  // One pixel; (0, 0) is the top-left corner. It ignores pixels outside the canvas.
   void set(int x, int y, RGB color);
   [[nodiscard]] RGB get(int x, int y) const;
 

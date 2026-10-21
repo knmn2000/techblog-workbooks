@@ -677,10 +677,10 @@ span.CodeMirror-selectedtext { background: none; }
       <section class="panel code" aria-label="Code">
         <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: every file, and the assignment it belongs to"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
         <div class="code-tools">
-          <span class="lang" id="lang" title="Your project's language. To work in another one, ask Claude to set it up: it keeps this project and starts a new one."></span>
+          <span class="lang" id="lang" title="Your project's language. To switch, ask Claude: it keeps this project and starts a new one beside it."></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
-            <button type="button" data-kind="boilerplate" aria-pressed="true" title="Input/output and declarations written; you fill in what's marked TODO">Boilerplate</button>
-            <button type="button" data-kind="blank" aria-pressed="false" title="Empty files apart from a comment saying your job: the includes, input and output are yours">From scratch</button>
+            <button type="button" data-kind="boilerplate" aria-pressed="true" title="You get the input/output code and the declarations, and fill in each TODO">Boilerplate</button>
+            <button type="button" data-kind="blank" aria-pressed="false" title="Each file starts with only a comment giving your job; you write the rest, includes and input/output too">From scratch</button>
           </div>
           <span class="file" id="file"></span>
           <div class="tools-right">
@@ -816,14 +816,14 @@ span.CodeMirror-selectedtext { background: none; }
           <div class="ring-c"><div><b>${done.length}</b><span>/${CPS.length}</span></div><small>Solved</small></div></div>
         <div class="bars">${bars}</div>
       </div>
-      <div class="card how"><h2>How checking works</h2><ol>
-        <li><span><b>Build a project.</b> Each assignment adds properly named files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later ones include them. Go in order: when you're done it's a program of its own, ready to put on GitHub.</span></li>
-        <li><span><b>Write it</b> in the editor here, or in your own editor. A assignment's files start blank (a comment and an empty <code>main</code>); Boilerplate above the editor has the input and output done.</span></li>
-        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the assignment solved. Your files are saved as you type.</span></li>`
+      <div class="card how"><h2>Using the book</h2><ol>
+        <li><span><b>You build one project.</b> Each assignment adds files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
+        <li><span><b>Write the code</b> here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
+        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test. The verdict appears in Test Result, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
           : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
-        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the assignment solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
-        <li><span><b>Tests stay fair.</b> Each test input carries what the earlier assignments would produce, so a assignment's tests only depend on the earlier files it uses. <b>Re-check solved</b> catches a change that broke something you'd passed.</span></li>
-        <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
+        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
+        <li><span><b>Each assignment stands alone.</b> A test input carries what earlier assignments would produce, so an assignment's tests depend only on the earlier files it uses. <b>Re-check solved</b> reruns your solved assignments and shows any that a later change broke.</span></li>
+        <li><span><b>If a test looks wrong,</b> run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask Claude to review your disputes.</span></li>
       </ol></div>`;
     if (CPS.length && done.length === CPS.length) renderFinish();
   }
@@ -832,7 +832,7 @@ span.CodeMirror-selectedtext { background: none; }
   function renderFinish() {
     const card = document.createElement('div');
     card.className = 'card finish';
-    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} assignments pass. <code>${esc(PROJECT_DIR)}</code> is a ${esc(PROJECT.label)} project of its own: it builds anywhere with its own build file, so you can put it on GitHub as it is.</p><div id="finish-files"></div>`;
+    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} assignments pass. <code>${esc(PROJECT_DIR)}</code> has its own build file and builds without the workbook, so you can put it on GitHub as it is.</p><div id="finish-files"></div>`;
     $('#side').prepend(card);
     const show = (all) => {
       // The assignment programs are test scaffolding: compare the project itself.
@@ -932,7 +932,7 @@ span.CodeMirror-selectedtext { background: none; }
         ${c.tags.length ? `<button class="chip" type="button" data-jump="acc-topics">${I.tag}Topics</button>` : ''}
         ${c.hints.length ? `<button class="chip" type="button" data-jump="hints">${I.bulb}Hint</button>` : ''}
         <span class="chip">${c.tests} tests</span>
-        <span class="chip" title="Only your program's output is checked, so any structure, language or library works.">Any language</span>
+        <span class="chip" title="The checker compares only what your program writes, so you can use any structure, language or library.">Any language</span>
       </div>
       ${c.read ? `<div class="callout">${I.book}<div><b>Read in the blog first.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
       ${startCard(c)}
@@ -958,8 +958,8 @@ span.CodeMirror-selectedtext { background: none; }
     return m ? [m[1], t.slice(m[0].length)] : [t || '', ''];
   };
   const WAY_NOTES = {
-    boilerplate: "The input and output and the declarations are written; you fill in what's marked TODO.",
-    blank: 'Each file is empty apart from a comment saying why it exists and your job in it.',
+    boilerplate: 'You get the input/output code and the declarations, and fill in each TODO.',
+    blank: 'Each file starts with only a comment: why the file exists and your job in it.',
   };
   function startCard(c) {
     const order = [...c.files.filter((f) => f.role !== 'entry'), ...c.files.filter((f) => f.role === 'entry')];
@@ -973,7 +973,7 @@ span.CodeMirror-selectedtext { background: none; }
     };
     const steps = order.map((f, k) => {
       const [lead, rest] = splitJob(f.job);
-      const why = f.role === 'entry' ? 'It reads a test input, calls your code and writes the answer. Only that output is checked.'
+      const why = f.role === 'entry' ? 'It reads a test input, calls your code and writes the answer. The checker compares that answer with the expected one.'
         : f.role === 'new' ? f.purpose : '';
       const more = rest || why ? `<details class="step-more"><summary><span class="when-closed">Expand for more info</span><span class="when-open">Show less</span>${I.down}</summary>
           <div class="step-more-body">${rest ? `<p><span class="lbl">In more detail</span>${withCode(rest)}</p>` : ''}${why ? `<p><span class="lbl">Why this file</span>${withCode(why)}</p>` : ''}</div></details>` : '';
@@ -994,8 +994,8 @@ span.CodeMirror-selectedtext { background: none; }
     facts.push(['Done when', `<span>Submit says <b>Accepted</b> on all ${c.tests} tests.</span>`]);
     return `<section class="start" aria-labelledby="start-title">
       <div class="start-top"><span class="start-eyebrow">Start here</span>
-        <h2 id="start-title">Write ${order.length === 1 ? 'this file' : `${order.length} files, in this order`}</h2>
-        <p class="start-sub">Only the program's output is checked, so the design is yours.</p></div>
+        <h2 id="start-title">You write ${order.length === 1 ? 'one file' : `${order.length} files`}</h2>
+        <p class="start-sub">${order.length === 1 ? '' : 'Go from top to bottom. '}The checker runs ${order.length === 1 ? 'it' : 'the last one'} on ${c.tests} test inputs and compares what it writes with the expected output. You can organise the code any way you like.</p></div>
       <ol class="steps">${steps}</ol>
       <dl class="start-facts">${facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
     </section>`;
@@ -1068,7 +1068,7 @@ span.CodeMirror-selectedtext { background: none; }
     $('#ed-sep').hidden = !has;
     if (!has) return;
     if (!(solved(c.id) || peeked.has(c.id))) {
-      $('#editorial').innerHTML = `<div class="locked">${I.lock}<h2>Solve it first, or peek</h2><p>The editorial has a complete solution that passes every test${c.editorial ? ', and compares it with the author\'s code from the blog' : ''}. It opens by itself when the checker says Accepted.</p><button class="btn" type="button" id="peek">Show the solution anyway</button></div>`;
+      $('#editorial').innerHTML = `<div class="locked">${I.lock}<h2>Solve it first, or peek</h2><p>The editorial has a complete solution that passes every test${c.editorial ? ', and compares it with the author\'s code from the blog' : ''}. The book opens it for you when the checker says Accepted.</p><button class="btn" type="button" id="peek">Show the solution anyway</button></div>`;
       return;
     }
     solFile = Math.min(solFile, sol ? sol.files.length - 1 : 0);
@@ -1079,7 +1079,7 @@ span.CodeMirror-selectedtext { background: none; }
       ? `<div class="case-pills" role="tablist">${sol.files.map((f, i) => `<button class="pill-btn" type="button" role="tab" data-sol="${i}" aria-selected="${i === solFile}">${esc(f.path)}</button>`).join('')}</div>` : '';
     $('#editorial').innerHTML = `<h1 class="ed-title">Editorial</h1>`
       + (sol ? `<section class="ed-sec"><h2>A solution that passes <span class="muted">(${esc(PROJECT.label)})</span></h2>${proof}
-          <p class="note">Written from the problem page, not copied from the blog. Yours can look completely different and still be right: only the output is checked.</p>
+          <p class="note">This solution follows the problem page and doesn't copy the blog's code. Yours can look different and still pass, because the checker compares only what your program writes.</p>
           ${files}<div class="sol-head"><code>${esc(sol.files[solFile].path)}</code><button class="btn" type="button" id="sol-copy">Copy</button></div>
           <pre class="sol-code" id="sol-code"></pre>
           ${sol.also.length ? `<p class="note">It also uses earlier assignments' files: ${sol.also.map((u) => `<code>${esc(u)}</code>`).join(', ')}. Their Editorials show them.</p>` : ''}</section>` : '')
@@ -1155,8 +1155,8 @@ span.CodeMirror-selectedtext { background: none; }
     } else if ((m = t.match(/Wrong Answer: (\d+) \/ (\d+) tests passed/))) {
       v = { kind: 'bad', label: 'Wrong Answer', passed: +m[1], total: +m[2] };
       v.help = /wrote nothing in any failing test/.test(t)
-        ? `Your program ran but didn't write anything. It's started with two file names: the input to read and the output to write. Write your answer to the second one.`
-        : `Some tests failed. Each one below shows what was expected and what your program wrote, and the requirement it most likely breaks.`;
+        ? `Your program ran but didn't write anything. The checker starts it with two file names, the input to read and the output to write; write your answer to the second one.`
+        : `Some tests failed. Each one below shows the expected output, what your program wrote, and the requirement the checker thinks it breaks.`;
     } else if (/Compile Error/.test(t)) {
       v = { kind: 'bad', label: 'Compile Error' };
       v.help = /has no main\(\) function/.test(t)
@@ -1207,7 +1207,7 @@ span.CodeMirror-selectedtext { background: none; }
       + (v.total ? `<span class="sub">${v.passed} / ${v.total} testcases passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
       + `<button class="btn" type="button" id="clear-result">Clear</button></div>`;
     if (v.other) h += `<p class="note warn">This output is from assignment ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here. Open assignment ${esc(v.other)} and paste it there.</p>`;
-    else if (v.kind === 'ok' && !v.single) h += `<p class="note">Saved as solved. The Editorial tab is open now.</p>`;
+    else if (v.kind === 'ok' && !v.single) h += `<p class="note">The book marked the assignment solved and opened the Editorial tab.</p>`;
     if (v.help) h += `<p class="note">${v.help}</p>`;
     if (v.reqs.length) {
       h += '<div class="req-rows">' + v.reqs.map((r) => `<div class="req-row${r.ok === r.n ? '' : ' fail'}"><span class="rid">${esc(r.id)}</span><span class="rq" title="${esc(r.text)}">${esc(r.text)}</span><span class="cnt">${r.ok} / ${r.n}</span><span class="bar"><i style="width:${r.n ? (r.ok / r.n) * 100 : 0}%"></i></span></div>`).join('') + '</div>';
@@ -1230,11 +1230,11 @@ span.CodeMirror-selectedtext { background: none; }
     const copied = !act ? '<b>Copy your code</b> and paste it over'
       : act.empty ? '<b>Nothing to copy yet:</b> the editor is empty. Write your program, then paste it over'
       : act.copied ? '<b>Code copied.</b> Paste it over'
-      : '<b>Copy didn\'t work here:</b> the code is selected in the editor, so press Ctrl+C, then paste it over';
+      : '<b>Copy didn\'t work here:</b> the book selected the code in the editor, so press Ctrl+C, then paste it over';
     $('#result').innerHTML = (notice ? `<p class="note warn">${notice}</p>` : '')
       + (act && act.warn ? `<p class="note warn">${act.warn}</p>` : '') + (v ? verdictHtml(v, c) : '') + `
       <ol class="steps">
-        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(act && act.path ? act.path : c.entry)}</code>, and the same for this assignment's other files you changed (the tabs above the editor). Skip this if you edit the files directly.</p>
+        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(act && act.path ? act.path : c.entry)}</code>, and the same for this assignment's other files you changed (the tabs above the editor). Skip this step if you write in the project's files with your own editor.</p>
           <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
         <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
         <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p><b>Copy what the checker prints</b> in the terminal and paste it here (the result, not your code).</p>
@@ -1766,7 +1766,7 @@ span.CodeMirror-selectedtext { background: none; }
     box.hidden = !(LOCAL && live.noProject);
     if (box.hidden) return;
     box.innerHTML = `<div><h2>Set up your project first</h2>
-      <p>Your code goes in <code>${esc(PROJECT_DIR)}</code>: a ${esc(PROJECT.label)} project of its own, with its build file and README, that you can put on GitHub when you're done. It hasn't been made yet.</p>
+      <p>Your code goes in <code>${esc(PROJECT_DIR)}</code>, a ${esc(PROJECT.label)} project with its own build file and README that you can put on GitHub when you finish. The folder doesn't exist yet.</p>
       <p>Ask Claude to set up your workbook (it asks which language you'd like), or make the ${esc(PROJECT.label)} project now:</p>
       <button class="btn green" type="button" id="setup-project">Set up the ${esc(PROJECT.label)} project</button></div>`;
     showSaved();
@@ -1820,7 +1820,7 @@ span.CodeMirror-selectedtext { background: none; }
       <form class="new-file" id="new-file-form" hidden><input id="new-file-name" spellcheck="false" placeholder="src/utils/Bit.h" aria-label="New file, a path in your project"></form>
       ${cur ? `<p class="tree-key"><span><i class="k-now"></i>this assignment</span><span><i class="k-uses"></i>you can use</span></p>` : ''}
       ${live.project.length ? order.map((d) => (d ? `<div class="tree-dir${folders[d].some((f) => isNow(f.path)) ? ' now' : ''}"><span>${esc(d)}</span></div>` : '') + folders[d].map(item).join('')).join('')
-        : '<p class="tree-empty">Nothing yet. Each assignment adds its files when you open it.</p>'}
+        : '<p class="tree-empty">The project is empty. Opening an assignment adds its files.</p>'}
       <div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>`;
   }
   $('#tree-btn').addEventListener('click', () => {
@@ -1872,7 +1872,7 @@ span.CodeMirror-selectedtext { background: none; }
     $('#run').disabled = $('#submit').disabled = false;
     const broke = rows.filter((x) => x.r.verdict !== 'accepted');
     $('#result').innerHTML = `<div class="verdict ${broke.length ? 'bad' : 'ok'}"><h2>${broke.length ? `${broke.length} broke` : 'All still pass'}</h2><span class="sub">${rows.length - broke.length} / ${rows.length} solved assignments pass</span></div>`
-      + `<p class="note">${broke.length ? 'These passed before and fail now, most likely because of a change to a file they use. Open one to see its failing tests.' : 'Every assignment you solved still passes with your project as it is now.'}</p>`
+      + `<p class="note">${broke.length ? 'These passed before and fail now. A change to a file they use is the usual cause; open one to see its failing tests.' : `All ${rows.length} assignments you solved still pass with your project as it is now.`}</p>`
       + recheckTable(rows);
     renderTree();
   }
@@ -1897,7 +1897,7 @@ span.CodeMirror-selectedtext { background: none; }
     document.body.insertAdjacentHTML('beforeend', `<div class="bye" role="status"><div>
       <span class="logo">${esc(DATA.title.trim().charAt(0).toUpperCase())}</span>
       <h1>See you again!</h1>
-      <p>${esc(DATA.title)} has stopped. Your code is saved in <code>solutions/</code>.</p>
+      <p>${esc(DATA.title)} has stopped. Your code is in <code>solutions/</code>.</p>
       <p>To come back, double-click <code>study.cmd</code> or ask Claude to open your workbook.</p>
       <p class="bye-close" hidden>You can close this tab now.</p></div></div>`);
     // Browsers only let a page close tabs it opened itself; otherwise the message stays.
@@ -1980,15 +1980,15 @@ span.CodeMirror-selectedtext { background: none; }
 
   function liveHelp(r, c) {
     switch (r.verdict) {
-      case 'accepted': return 'Every test passes. Saved as solved; the Editorial tab is open now.';
+      case 'accepted': return 'The book marked the assignment solved and opened the Editorial tab.';
       case 'wrong-answer': return r.wroteNothing
-        ? "Your program ran but didn't write anything. It's started with two file names: the input to read and the output to write. Write your answer to the second one."
-        : 'Some tests failed. Each one below shows what was expected and what your program wrote.'
+        ? "Your program ran but didn't write anything. The checker starts it with two file names, the input to read and the output to write; write your answer to the second one."
+        : 'Some tests failed. Each one below shows the expected output and what your program wrote.'
           + (r.mostLikely ? ` Most of them point to <b>${esc(r.mostLikely.id)}</b>: ${esc(r.mostLikely.text)}.` : '');
       case 'compile-error': return r.noMain
         ? `<code>${esc(c.entry)}</code> has no <code>main</code> function, so it can't be built into a program. Add a <code>main</code> that reads the input file and writes the output file.`
-        : r.blame ? `Your project didn't build, so no tests ran. The first error is in <code>${esc(shortName(r.blame.file))}</code>, ${r.blame.checkpoint && BY[r.blame.checkpoint] ? `assignment ${esc(BY[r.blame.checkpoint].num)}'s file` : 'another file of your project'}: the whole project is built together, so fix that first.`
-        : "Your code didn't build, so no tests ran. Lines with errors are marked in the editor; fix the first error first, since later ones often follow from it.";
+        : r.blame ? `Your project didn't build, so no tests ran. The first error is in <code>${esc(shortName(r.blame.file))}</code>, ${r.blame.checkpoint && BY[r.blame.checkpoint] ? `assignment ${esc(BY[r.blame.checkpoint].num)}'s file` : 'another file of your project'}. The build compiles the whole project at once, so fix that file first.`
+        : "Your code didn't build, so no tests ran. The editor marks the lines with errors; fix the first error first, since later ones often follow from it.";
       case 'not-started': return r.empty
         ? `<code>${esc(c.entry)}</code> is empty, so there was nothing to check. Write the program in it.`
         : `<code>${esc(c.entry)}</code> is still the blank starter, so there was nothing to check. Write it, or pick Boilerplate above the editor for ready-made input/output code.`;
@@ -2073,7 +2073,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (x.images) {
       const pics = [['Expected', x.images.expected], ['Yours', x.images.actual], ['Difference', x.images.diff]].filter((p) => p[1]);
       h += `<div class="img-cmp">${pics.map(([t, p]) => `<figure><img src="${fileUrl(p)}" alt="${esc(t)}"><figcaption>${t}</figcaption></figure>`).join('')}</div>`;
-      if (x.images.diff) h += '<p class="note">In the difference: red is ink you added, blue is ink you missed, magenta is the wrong colour, and yellow is forgiven (edges may move one pixel).</p>';
+      if (x.images.diff) h += '<p class="note">In the difference: red is ink you added, blue is ink you missed, magenta is the wrong colour, and yellow is allowed (the checker lets edges move one pixel).</p>';
     } else {
       const d = diffOutputs(x.actual || [], x.expected || [], report && report.compare);
       h += `<div class="field"><div class="field-k">Input</div><pre class="field-v">${esc((x.input || []).join('\n'))}</pre></div>`
@@ -2121,7 +2121,7 @@ span.CodeMirror-selectedtext { background: none; }
   function renderLiveResult(c) {
     const r = live.report[c.id];
     const intro = LOCAL.problem ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
-      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). Your files are saved to <code>${esc(PROJECT_DIR)}</code> as you type, and changes you make in another editor show up here.</p>`;
+      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). The book saves your files to <code>${esc(PROJECT_DIR)}</code> as you type and shows changes you make in another editor.</p>`;
     // After an Accepted Submit: what comes next, and what of this it builds on.
     const k = CPS.indexOf(c), next = CPS[k + 1];
     const uses = next ? next.files.filter((f) => f.role === 'adds').concat(next.buildsOn).filter((f) => c.files.some((g) => g.path === f.path)) : [];
@@ -2130,9 +2130,9 @@ span.CodeMirror-selectedtext { background: none; }
     const solvedCount = CPS.filter((x) => solved(x.id)).length;
     $('#result').innerHTML = (r ? reportHtml(r, c) : intro) + nudge
       + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`
-      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Run every assignment you've solved again, to catch anything a change to an earlier file broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
-      + `<details class="more"><summary>Think a test is wrong?</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
-        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside, so it no longer counts. Then ask Claude to review your disputes.</p></div></details>`;
+      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Runs every assignment you've solved again, to find any that a change to an earlier file broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
+      + `<details class="more"><summary>If a test looks wrong</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
+        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside so it stops counting, then ask Claude to review your disputes.</p></div></details>`;
   }
   if (LOCAL) {
     $('#result').addEventListener('click', (e) => {

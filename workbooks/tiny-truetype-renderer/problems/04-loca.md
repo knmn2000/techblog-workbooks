@@ -9,17 +9,17 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [loca table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=loca%20table)
 section through the paragraph that starts "Additionally, a minor point is". The author's
-code comes right after it.
+code follows that paragraph.
 
 ## Where this fits
 
-Assignment 03 turns a character into a glyph id. This assignment turns the glyph id into the
-place where the glyph's outline is stored: a byte offset and a length inside the `glyf`
-table. The `glyph` lines you write are exactly the input format of assignment 07, which
-decodes the outline found there. Assignments 09 and 18 also find glyphs through your `Loca`.
+Assignment 03 turns a character into a glyph id. Here you turn the glyph id into the location
+of the glyph's outline: a byte offset and a length inside the `glyf` table. The `glyph` lines
+you write use assignment 07's input format, and assignment 07 decodes the outline at that
+location. Assignments 09 and 18 also find glyphs through your `Loca`.
 
 ## The problem
 
@@ -27,8 +27,8 @@ Write a program that finds where each requested glyph's record is in the font fi
 many bytes long it is.
 
 A glyph's **record** is the block of bytes in the `glyf` table that holds its outline. The
-`loca` table (index to location) says where each record starts, and two fields from `maxp`
-and `head` say how to read `loca`.
+`loca` table (index to location) gives the start of each record, and two fields in `maxp` and
+`head` tell you how to read `loca`.
 
 ### Input
 
@@ -39,14 +39,14 @@ The input file contains these lines, in this order:
 |---|---|
 | `font <path>` | The font file. The path is relative to the workbook folder and contains no spaces. |
 | `table "<tag>" <checkSum> <offset> <length>` | Four lines, for `glyf`, `head`, `loca` and `maxp`: their records from the table directory, written as assignment 02 writes them. `offset` is where the table starts in the file. |
-| `glyph <id>` | A glyph id, from 0 to `numGlyphs` − 1. There may be none of these lines, or many. |
+| `glyph <id>` | A glyph id, from 0 to `numGlyphs` − 1. An input can have none of these lines, or many. |
 
 Your program can parse the `table` lines into the table records your `FontParser` from
 assignment 02 declares, and read the font with your `ByteReader` from assignment 01.
 
 ### Output
 
-The first line is always
+The first line is
 
 ```
 glyphs <numGlyphs> loca <short|long>
@@ -62,8 +62,8 @@ glyph <id> <offset> <length>
 - `length` is the record's size in bytes. A length of 0 means the glyph has no outline (the
   space character, for example).
 
-The `glyph` lines are exactly assignment 07's input lines: put the `font` line in front of
-them and assignment 07 can decode the glyphs.
+The `glyph` lines match assignment 07's input lines: put the `font` line in front of them,
+and your assignment 07 program can decode the glyphs.
 
 ### The tables you need
 
@@ -82,7 +82,7 @@ All numbers are **big-endian**.
 |---|---|---|---|
 | 0 to 49 | version, revision, checksum adjustment, magic number, flags, `unitsPerEm`, dates, bounding box, ... | | Not needed here |
 | 50 | `indexToLocFormat` | int16 | 0: `loca` holds short offsets. 1: `loca` holds long offsets. |
-| 52 | `glyphDataFormat` | int16 | 0. Not needed. |
+| 52 | `glyphDataFormat` | int16 | 0 (not needed) |
 
 **`loca`**: `numGlyphs` + 1 entries, one after another from the start of the table.
 
@@ -101,25 +101,23 @@ offset(i) up to, but not including, offset(i + 1):
 - absolute offset = `glyf` table offset + offset(i)
 - length = offset(i + 1) − offset(i)
 
-Three things follow from this:
-
-- `loca` has one more entry than there are glyphs: entry `numGlyphs` marks where the last
-  glyph ends.
-- A glyph with no outline has length 0, so it shares its offset with the next glyph.
-- The length may include a few bytes of padding at the end of the record. That's fine,
-  because assignment 07 ignores them.
+`loca` has one more entry than there are glyphs: entry `numGlyphs` marks where the last glyph
+ends. A glyph with no outline has length 0 and shares its offset with the next glyph. The
+length may include a few bytes of padding at the end of the record, and assignment 07 ignores
+those bytes.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-the difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** `numGlyphs` is the uint16 at `maxp` + 4.
 - **R2** The format is the int16 `indexToLocFormat` at `head` + 50: 0 is `short`, 1 is
   `long`.
-- **R3** In the short format, each entry is a uint16 holding half the offset, so it is
-  multiplied by 2. The results can be larger than 65535, so do the multiplication in 32 bits:
-  a uint16 doubled in 16-bit arithmetic overflows.
+- **R3** In the short format, each entry is a uint16 holding half the offset, and your program
+  multiplies it by 2. The results can be larger than 65535, so do the multiplication in 32
+  bits: a uint16 doubled in 16-bit arithmetic overflows.
 - **R4** A glyph's offset is the `glyf` table's offset plus its `loca` offset.
 - **R5** A glyph's length is the next `loca` offset minus its own. This includes the last
   glyph, whose end is the extra entry `numGlyphs`.
@@ -145,7 +143,7 @@ input:   font tests/04/data/04-R3-short-x2.ttf
 ```
 
 `maxp` + 4 (byte 268) holds `00 08`: 8 glyphs. `head` + 50 (byte 222) holds `00 00`: short
-format. So `loca` has 9 uint16 entries:
+format, and `loca` has 9 uint16 entries:
 
 ```
 00 00  00 0d  00 21  00 2d  00 3b  00 4f  00 5c  00 6a  00 76
@@ -189,7 +187,7 @@ output:  glyphs 12125 loca long
 ```
 
 JetBrains Mono uses long offsets. Entry 17 (at byte 64980 + 4 × 17) is `00 00 07 74` = 1908,
-and entry 18 is 1964. So glyph 17, the hyphen, starts at 113484 + 1908 = 115392 and is
+and entry 18 is 1964, so glyph 17, the hyphen, starts at 113484 + 1908 = 115392 and is
 1964 − 1908 = 56 bytes long. Entries 4 and 5 are both 100, so glyph 4 (the space) is empty.
 These four lines are the input of assignment 07's example 3.
 
@@ -214,16 +212,17 @@ output:  glyphs 4 loca short
 ```
 
 The 5 entries are 0, 13, 25, 45, 45, so the offsets are 0, 26, 50, 90, 90. Glyph 3, the
-last one, runs from 90 to 90: it is empty. This font's `glyf` table is 94 bytes long, 4 more
-than the last entry, so "the last glyph runs to the end of `glyf`" gives the wrong answer
-here (4). Only `loca`'s extra entry tells you where the last glyph ends.
+last one, runs from 90 to 90, so it is empty. This font's `glyf` table is 94 bytes long, 4
+more than the last entry, so taking the end of `glyf` as the end of the last glyph gives the
+wrong length here (4). Use `loca`'s extra entry for the end of the last glyph.
 
 ## Constraints
 
 - `numGlyphs` is at most 17,936 in the tests. Every `glyph` id is below it.
-- `indexToLocFormat` is always 0 or 1, and the `loca` entries never decrease.
+- `indexToLocFormat` is 0 or 1 in every test, and each `loca` entry is at least as large as
+  the one before it.
 - Each input has at most 30 `glyph` lines.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
+- Each case has a 10-second limit. A correct solution finishes in milliseconds.
 - There are 18 tests: both real fonts (long format, empty glyphs, first and last glyphs,
   random glyphs) and small fonts built with fontTools (short and long formats, a short
   `loca` whose offsets pass 65535, empty glyphs at the start, middle and end, and spare
@@ -244,8 +243,8 @@ here (4). Only `loca`'s extra entry tells you where the last glyph ends.
 <details><summary>Hint 1: where to start</summary>
 
 Read the two numbers that tell you how to read `loca`: how many glyphs there are (`maxp`)
-and how big each entry is (`head`). Then read the whole `loca` table into a list of offsets.
-Everything else is subtraction.
+and how big each entry is (`head`). Then read the whole `loca` table into a list of offsets,
+and get each length by subtracting neighbouring offsets.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -258,14 +257,14 @@ entry[i + 1] − entry[i]).
 <details><summary>Hint 3: the traps</summary>
 
 - Read `numGlyphs` + 1 entries, not `numGlyphs`. Without the extra one you can't tell how
-  long the last glyph is. The `glyf` table's length is not a substitute: a font may have
+  long the last glyph is. The `glyf` table's length can't stand in for it: a font may have
   spare bytes after the last glyph.
 - In the short format, multiply by 2. Do it in a 32-bit variable: twice a uint16 can be more
   than 65535.
 - `indexToLocFormat` is at `head` + 50. The field right after it (+52) is `glyphDataFormat`,
-  which is always 0, so reading the wrong one makes every font look short.
+  whose value is 0, so reading it by mistake makes every font look short.
 - `loca` offsets count from the start of `glyf`, not from the start of the file.
-- An empty glyph has the same offset as the next glyph. That's correct, not a bug.
+- An empty glyph has the same offset as the next glyph. Write both lines with that offset.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -311,8 +310,8 @@ map from glyph id to file offset, `glyphCodeToOffset`. It doesn't store lengths.
 glyph i − 1 has the same offset as glyph i, it marks glyph i − 1 as empty, and later steps
 skip empty glyphs.
 
-**Something to look for:** the snippet reads `numGlyphs` entries, not `numGlyphs` + 1. With
-only those, nothing follows the last glyph to compare against, so the last glyph can never be
-marked empty, and its record would be read even when it has no outline. In JetBrains Mono the
-last glyph (12124) is in fact empty. The spec's extra entry exists for exactly this, which is
-why R5 asks for it.
+**Something to look for:** the snippet reads `numGlyphs` entries, where the spec has
+`numGlyphs` + 1. With no entry after the last glyph to compare against, the loader can't mark
+the last glyph as empty, and later steps would read its record even when it has no outline.
+In JetBrains Mono the last glyph (12124) is empty. The spec's extra entry covers this case,
+and R5 tests it.

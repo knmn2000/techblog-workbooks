@@ -4,9 +4,9 @@
 // Problem: problems/05-metrics.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The `hhea` and `hmtx` tables: the font's ascent and descent, and each glyph's advance
-//   width and left side bearing. Later, assignment 18 moves the pen by each glyph's
-//   advance width and sizes the text from the ascent and descent.
+//   This header declares your reader for the `hhea` and `hmtx` tables: the font's ascent
+//   and descent, and each glyph's advance width and left side bearing. Assignment 18 moves
+//   the pen by each glyph's advance width and sizes the text from the ascent and descent.
 //
 // Your job:
 //   Declare the metrics of one glyph (advance width and left side bearing) and a function
@@ -14,7 +14,7 @@
 //   `ByteReader` and the table records from your `FontParser`.
 //
 // How to start:
-//   Two ways: write it all yourself from here, or press Boilerplate in the book's editor
-//   for ready-made input/output code and declarations named as the author names them (the
-//   same files are in starters/boilerplate/).
+//   Write it yourself from here, or press Boilerplate in the book's editor to get the
+//   input/output code and the declarations, with the author's names (the same files are in
+//   starters/boilerplate/).
 // ======================================================================================

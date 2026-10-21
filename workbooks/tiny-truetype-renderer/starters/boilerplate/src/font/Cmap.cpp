@@ -3,15 +3,14 @@
 // Problem: problems/03-cmap.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The code that reads the platform 0 / encoding 4 subtable of `cmap` into a
-//   character-to-glyph map. Assignment 18 builds this map once per font.
+//   This file reads the platform 0 / encoding 4 subtable of `cmap` into a map from
+//   character to glyph. Assignment 18 builds this map once per font.
 //
 // Your job:
-//   Implement it: find the encoding record with platform 0 and encoding 4, check that its
-//   subtable is format 12, and read its groups so that every code point they cover can be
-//   looked up. Report the two `unsupported` cases (no such record, or another format) the
-//   way your header declares. The Boilerplate has the declarations written: fill in what's
-//   marked TODO.
+//   Find the encoding record with platform 0 and encoding 4, check that its subtable is
+//   format 12, and read its groups so your code can look up every code point they cover.
+//   Report the two `unsupported` cases (no such record, or another format) the way your
+//   header declares. The Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

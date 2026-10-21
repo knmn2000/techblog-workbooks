@@ -4,14 +4,14 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The form every outline takes in the project: its points (x and y in font units, on or
+//   Every outline in the project takes this form: its points (x and y in font units, on or
 //   off the curve) and the index where each contour ends. Assignments 08 and 11 draw
 //   outlines in this form, 09 produces one per part of a compound glyph, and 14, 16 and 17
 //   fill them.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

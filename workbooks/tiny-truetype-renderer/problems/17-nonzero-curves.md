@@ -9,17 +9,18 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
 section to the end, including the two cases where a scanline crosses one curve twice. Skip the
 code blocks if you want to work it out yourself.
 
 ## Where this fits
 
-Assignment 16 filled straight-line outlines with the non-zero rule. Real glyphs have curves, and a
-curve can cross one scanline twice, going up at one crossing and down at the other. This assignment
-brings curves to your `render/NonZero` from assignment 16, using the curve splitting of your
-`render/Scanline` from assignment 14; the text renderer of assignment 18 fills every glyph with it.
+In assignment 16 you filled straight-line outlines with the non-zero rule. Real glyphs have
+curves, and a curve can cross one scanline twice, going up at one crossing and down at the other.
+In this assignment you extend your `render/NonZero` from assignment 16 to curves, using the curve
+splitting in your `render/Scanline` from assignment 14. The text renderer in assignment 18 fills
+every glyph with this fill.
 
 ## The problem
 
@@ -44,9 +45,10 @@ Compound glyphs arrive already resolved into one outline (assignment 09's job).
 
 ### Output
 
-A PNG (or binary PPM) of exactly `width` x `height` pixels, black to begin with. A pixel is painted
-in the fill colour when its **centre** (px + 0.5, py + 0.5) is inside an outline by the non-zero rule.
-The checker forgives edges that move by one pixel; missing or extra shapes and stray lines fail.
+A PNG (or binary PPM) `width` pixels wide and `height` pixels high, black to begin with. Paint a
+pixel in the fill colour when its **centre** (px + 0.5, py + 0.5) is inside an outline by the
+non-zero rule. The checker forgives edges that move by one pixel; missing or extra shapes and
+stray lines fail.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
 the checker looks at the contents, so either of these works:
@@ -55,22 +57,22 @@ the checker looks at the contents, so either of these works:
   boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
   path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
+- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
+  height and `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
 
 ### From points to edges
 
-Each contour is closed: after its last point it continues to its first. The walk is the same as
+Every contour is a closed loop: after its last point it continues to its first. Walk the points as
 in assignment 14:
 
-- Two on-curve points in a row are joined by a straight line.
+- Two on-curve points in a row make a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
   point to the next one: B(t) = (1−t)²·P0 + 2(1−t)t·P1 + t²·P2 for t from 0 to 1.
-- Between two off-curve points next to each other there is an **implied on-curve point** halfway
-  between them.
+- Two off-curve points next to each other have an **implied on-curve point** halfway between
+  them.
 - A contour can start with an off-curve point, or consist only of off-curve points.
 
 ### The non-zero rule with curves
@@ -82,40 +84,44 @@ x, keep a running count from left to right, and fill wherever the count isn't ze
 **A curve can cross one scanline twice.** At the bottom of a `U`, the curve goes down then up, so its
 two crossings have opposite directions. Split each curve at the point where its y turns around:
 for y(t) = (1−t)²·y0 + 2(1−t)t·y1 + t²·y2 that is t = (y0 − y1) / (y0 − 2·y1 + y2), when the
-denominator isn't 0 and t is strictly between 0 and 1. Each piece is then **monotone**:
+denominator isn't 0 and 0 < t < 1. Each piece is then **monotone**:
 
 - it goes only up or only down;
 - it crosses a scanline at most once;
-- its direction is simply whether its end is below its start.
+- its direction comes from comparing its end's y with its start's y.
 
-**Where a piece crosses the scanline.** For a line, interpolate. For a curve piece, solve
-y(t) = scanline y, a quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and
-c = y0 − scanline y (linear when a = 0). After the split above exactly one root lies in [0, 1]; its
-x is (1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
+**Finding the crossing.** For a line, interpolate. For a curve piece, solve y(t) = scanline y, a
+quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and c = y0 − scanline y
+(linear when a = 0). After the split, a single root lies in [0, 1]; its x is
+(1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
 
 **Vertices and touching scanlines.** Treat every piece as half-open in y: it counts at scanline y when
-min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that just touches a curve's extreme then
-counts it either:
+min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a curve's extreme without
+crossing it then counts it either:
 
 - twice, with opposite directions, when the extreme is the smaller y of both pieces, or
 - not at all, when the extreme is the larger y of both.
 
-Neither changes the result.
+Neither case changes the fill.
 
-**Clipping.** Crossings can lie far outside the canvas, especially at large scales. Clamp x to the
-canvas before converting it to an integer pixel index: converting a huge double to `int` is
-undefined behaviour in C++.
+**Clipping.** Crossings can lie far outside the canvas, for example at large scales. Clamp x to the
+canvas before you convert it to an integer pixel index, because C++ doesn't define what happens
+when you convert a huge double to `int`.
 
 ## Requirements
 
-- **R1** Curved outlines fill exactly the pixels whose centre is inside.
-- **R2** Implied on-curve points are handled, and so are contours that start with, or consist
-  only of, off-curve points.
-- **R3** Where curved contours going the same way overlap, the overlap is filled.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
+
+- **R1** Fill each pixel whose centre is inside a curved outline, and no others.
+- **R2** Handle implied on-curve points, and contours that start with an off-curve point or have
+  only off-curve points.
+- **R3** Fill the overlap of curved contours that go the same way.
 - **R4** A contour going the opposite way inside another cuts a hole.
-- **R5** A scanline that crosses one curve twice, or just touches it, is counted correctly.
-- **R6** Several outlines are filled one after another; compound glyphs arrive as one outline.
-- **R7** Placement and scale are applied; anything outside the canvas is clipped.
+- **R5** Get the count right where a scanline crosses one curve twice or touches its extreme.
+- **R6** Fill several outlines one after another; compound glyphs arrive as one outline.
+- **R7** Apply the placement and scale, and clip anything outside the canvas.
 
 ## Examples
 
@@ -131,8 +137,8 @@ input:   canvas 133 133
                 60 119.53 off 102.1 102.1 off
 ```
 
-(The `points` line is one line in the real input.) Eight off-curve points, so all eight on-curve
-points are implied midpoints. The curves between them make a circle:
+(The `points` line is one line in the real input.) All eight points are off-curve, so each
+on-curve point is an implied midpoint. The curves between them make a circle:
 
 ![expected picture for 17-R2-all-off](tests/17/expected/17-R2-all-off.png)
 
@@ -149,15 +155,15 @@ input:   canvas 223 148
 ```
 
 (One `points` line in the real input.) Two contours of four curves each, both going the same way,
-overlap in the middle. The overlap has a
-count of 2, so it is filled. With the even-odd rule it would be a hole.
+overlap in the middle. The overlap has a count of 2, so the non-zero rule fills it; the even-odd
+rule would leave a hole.
 
 ![expected picture for 17-R3-two-circles](tests/17/expected/17-R3-two-circles.png)
 
 ### Example 3: overlapping strokes in a real glyph (test `17-R3-a-hiragana`)
 
-U+3042 (あ) from Noto Sans JP is drawn as overlapping curved strokes, which is common in variable
-fonts. Its outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full input.
+Noto Sans JP draws U+3042 (あ) as overlapping curved strokes, as many variable fonts do. Its
+outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full input.
 
 ![expected picture for 17-R3-a-hiragana](tests/17/expected/17-R3-a-hiragana.png)
 
@@ -188,8 +194,8 @@ crossing the right direction.
 <details><summary>Hint 2: the approach</summary>
 
 Turn each contour into lines and curves in pixel coordinates. Split every curve at its y turning
-point so each piece is monotone in y. Now every piece, line or curve, crosses a row at most once,
-with a direction you can read from its endpoints. Then fill exactly as in assignment 16.
+point so each piece is monotone in y. After that, every piece, line or curve, crosses a row at
+most once, with a direction you can read from its endpoints. Then fill as in assignment 16.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -197,7 +203,7 @@ with a direction you can read from its endpoints. Then fill exactly as in assign
 - After splitting, solve the piece's quadratic for the scanline y and keep the root in [0, 1]; if the
   quadratic coefficient is 0, the equation is linear.
 - The direction of a curve piece is its end's y compared with its start's y, not the control point.
-- Implied midpoints, and contours that start off-curve, as in assignment 14.
+- Insert implied midpoints and handle contours that start off-curve, as in assignment 14.
 - Fill where the count is not zero, of either sign.
 </details>
 
@@ -233,10 +239,10 @@ for row in 0 .. height-1:
 ## After you pass: compare with the author's code
 
 The blog's [non-zero renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Fixing%20the%20counting%20error%20of%20B%C3%A9zier%20curve)
-doesn't split curves. When a scanline meets a curve twice, it decides the two directions from the
-curve's convexity: the crossing nearer the curve's start gets one direction and the other crossing
-gets the opposite. It scans only the rows inside the glyph's bounding box, and fills each component
-of a compound glyph separately.
+doesn't split curves. If a scanline meets a curve twice, the renderer decides the two directions
+from the curve's convexity: the crossing nearer the curve's start gets one direction and the other
+crossing gets the opposite. It scans only the rows inside the glyph's bounding box, and fills each
+component of a compound glyph on its own.
 
 **Something to look for:** like the line-only version, it fills only where the count is positive,
 so a contour wound the other way on its own would stay empty (assignment 16, test `16-R4-reversed`).

@@ -303,7 +303,7 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
     except subprocess.TimeoutExpired:
         return Result(case, "timeout", f"Time Limit Exceeded (over {timeout} s)", reproduce=command)
     except FileNotFoundError:
-        return Result(case, "error", f"could not start `{command}` - is it built?", reproduce=command)
+        return Result(case, "error", f"could not start `{command}`; check that it built", reproduce=command)
     actual = []
     if how.mode != "image" and out_path.exists():
         actual = out_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -317,7 +317,7 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
                       + (f": {clip(detail)}" if detail else ""), actual, command)
     if not out_path.exists():
         return Result(case, "no-output", f"no output file: your program finished without writing {rel_out} "
-                      "(the second argument it was given)", reproduce=command)
+                      "(the second argument the checker passed it)", reproduce=command)
     if how.mode == "image":
         diff_path = work / f"{case.id}.diff.png"
         diff_path.unlink(missing_ok=True)
@@ -364,8 +364,8 @@ def dispute(checkpoint: str, case_file: CaseFile, test_id: str, reason: str) -> 
     disputes.append({"checkpoint": checkpoint, "test": test_id, "reason": reason,
                      "opened": date.today().isoformat(), "status": "open"})
     (ROOT / "disputes.json").write_text(json.dumps(disputes, indent=2) + "\n", encoding="utf-8")
-    print(f"Set aside {test_id}: it won't count until the dispute is closed.\n"
-          f"Ask Claude to \"review my disputes\" to have it checked and either fixed or explained.")
+    print(f"Set aside {test_id}: it won't count while the dispute is open.\n"
+          f"Ask Claude to \"review my disputes\": Claude checks the test, then fixes it or shows you why it's right.")
     return 0
 
 
@@ -404,7 +404,7 @@ def not_started(checkpoint: str, meta: dict, config: dict):
     its files if they're missing), or None when there's something to check."""
     folder = config["project"]["dir"]
     if not project.exists(config):
-        print(f"There's no project yet: {folder}/ hasn't been set up.\n"
+        print(f"There's no project yet: {folder}/ doesn't exist.\n"
               "Ask Claude to set up your workbook, or run:  py -P tools/project.py setup")
         return finish(2, verdict="no-project")
     created = project.start(config, checkpoint)
@@ -525,8 +525,8 @@ def compile_error(checkpoint: str, output: str, config: dict, use_ref: bool = Fa
     if blame and not use_ref:
         whose = f"assignment {blame['checkpoint']}'s file" if blame["checkpoint"] else "a file in your project"
         print(f"The build stopped in {blame['file']}, which is {whose}, not one of this assignment's.\n"
-              "Your whole project is built together, so fix that file first.")
-    print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
+              "The build compiles your whole project at once, so fix that file first.")
+    print(f"Compile Error: fix the errors above and run .\\check {checkpoint} again.")
     return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=errors, blame=blame)
 
 
@@ -627,15 +627,15 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
     if silent:
         # Nothing was written anywhere: that's the problem to fix, not any one requirement.
         example = run_template.replace("{input}", "<input-file>").replace("{output}", "<output-file>")
-        print(f"\n  Your program wrote nothing in any failing test. It is run as\n      {example}\n"
-              f"  and must write its answer to <output-file>, the second argument.")
+        print(f"\n  Your program wrote nothing in any failing test. The checker runs it as\n      {example}\n"
+              f"  and it must write its answer to <output-file>, the second argument.")
     elif tally:
         top, count = max(tally.items(), key=lambda kv: kv[1])
         print(f"\n  Most failures ({count}) point to {top} - {texts.get(top, '')}")
         REPORT["mostLikely"] = {"id": top, "text": texts.get(top, ""), "count": count}
     print(f"\nWrong Answer: {passed} / {len(results)} tests passed.\n"
           f"  See one case in full:     .\\check {checkpoint} -Case <test-id>\n"
-          f"  Think a test is wrong?    .\\check {checkpoint} -Dispute <test-id> \"why\"")
+          f"  If a test looks wrong:    .\\check {checkpoint} -Dispute <test-id> \"why\"")
     return finish(1, verdict="wrong-answer", wroteNothing=silent)
 
 

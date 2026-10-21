@@ -9,23 +9,23 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph)
 section up to the transformation matrix. Stop at the paragraph that starts "Implementation.
-As compound glyphs are nested". The author's code comes right after it.
+As compound glyphs are nested", before the author's code.
 
 ## Where this fits
 
 Your `GlyphParser` from assignment 07 decodes simple glyphs and only reports compound ones. A
 **compound glyph** has no points of its own: it lists other glyphs, its **components**, and where
-to put each one. For example, `é` is `e` plus an acute accent moved above it. This assignment
-turns any glyph into the outlines of the simple glyphs it is made of, each in its final
-position. The fill assignments (14, 16, 17) and the text renderer (18) draw those outlines.
+to put each one. For example, `é` is `e` plus an acute accent moved above it. Here you turn any
+glyph into the outlines of the simple glyphs that make it up, each in its final position. The
+fill assignments (14, 16, 17) and the text renderer (18) draw those outlines.
 
 ## The problem
 
 Write a program that takes a glyph, simple or compound, and prints the outlines of the simple
-glyphs it is made of, each moved to its final position.
+glyphs that make it up, each moved to its final position.
 
 ### Input
 
@@ -41,7 +41,7 @@ The input file contains three kinds of lines:
 ### Output
 
 For each `decode` line, write a header line and then one `ends` / `points` pair per simple glyph
-the glyph is made of:
+inside the glyph:
 
 ```
 glyph <id> components <k>
@@ -56,11 +56,12 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
   nested compound glyph, its components in their order before moving on. A component that is an
   empty glyph adds nothing and isn't counted.
 - `ends` and `on|off` are the simple glyph's own values, as in assignment 07.
-- Coordinates are after every transform that applies, so they can be fractional: one of the
+- Print coordinates after every transform that applies, so they can be fractional: one of the
   random tests expects `points 338.5 -275.25 on 324.4375 -266.8125 off ...`.
 - The checker accepts a difference of up to 0.01 per number, so the exact value or anything
   rounded to two or more decimals passes. The boilerplate's `number()` prints whole numbers
-  plainly and others rounded to 4 decimals with trailing zeros dropped (`47.5`, `374.9062`).
+  without a decimal point and others rounded to 4 decimals with trailing zeros dropped (`47.5`,
+  `374.9062`).
 
 ### The compound glyph record
 
@@ -87,13 +88,13 @@ All numbers are big-endian. **F2Dot14** is a signed 16-bit number divided by 163
 | Bit | Mask | Name | Meaning |
 |---|---|---|---|
 | 0 | `0x0001` | ARG_1_AND_2_ARE_WORDS | The two arguments are int16; otherwise int8 |
-| 1 | `0x0002` | ARGS_ARE_XY_VALUES | The arguments are an x/y offset. Always set in the tests |
+| 1 | `0x0002` | ARGS_ARE_XY_VALUES | The arguments are an x/y offset. Every test sets it |
 | 3 | `0x0008` | WE_HAVE_A_SCALE | One F2Dot14 follows: a = d = scale |
 | 5 | `0x0020` | MORE_COMPONENTS | Another component record follows this one |
 | 6 | `0x0040` | WE_HAVE_AN_X_AND_Y_SCALE | Two F2Dot14 follow: a, then d |
 | 7 | `0x0080` | WE_HAVE_A_TWO_BY_TWO | Four F2Dot14 follow: a, b, c, d |
 | 8 | `0x0100` | WE_HAVE_INSTRUCTIONS | Hinting instructions follow the last component; ignore them |
-| 11 | `0x0800` | SCALED_COMPONENT_OFFSET | The offset is transformed by a, b, c, d too (see below) |
+| 11 | `0x0800` | SCALED_COMPONENT_OFFSET | a, b, c, d transform the offset too (see below) |
 
 At most one of bits 3, 6 and 7 is set. With none of them, a = d = 1 and b = c = 0.
 
@@ -111,23 +112,24 @@ and (e, f) is the **offset**, (argument1, argument2). If SCALED_COMPONENT_OFFSET
 offset goes through the 2 x 2 part first: e = a*argument1 + c*argument2 and
 f = b*argument1 + d*argument2.
 
-A component can itself be a compound glyph. Then its own components are placed with their own
-transforms first, and the result is placed with the outer transform. In other words, transforms
+A component can itself be a compound glyph. In that case you place its own components with
+their own transforms first, then place the result with the outer transform, so transforms
 compose **from the inside out**.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** An empty glyph gives `components 0`; a simple glyph gives `components 1` and its outline.
-- **R2** Component records are read correctly: flags, glyph index, signed 1-byte or 2-byte
+- **R2** Your program reads the component records: flags, glyph index, signed 1-byte or 2-byte
   arguments, and the loop over MORE_COMPONENTS.
 - **R3** The three scale forms: one scale, separate x and y scales, and the full 2 x 2 matrix.
-- **R4** Every point is transformed with x' = a*x + c*y + e and y' = b*x + d*y + f.
-- **R5** With SCALED_COMPONENT_OFFSET, the offset is transformed by a, b, c, d too.
+- **R4** Every point goes through x' = a*x + c*y + e and y' = b*x + d*y + f.
+- **R5** With SCALED_COMPONENT_OFFSET, a, b, c, d transform the offset too.
 - **R6** Nested compound glyphs: inner transforms apply first, then outer ones.
-- **R7** Components come out depth first, in record order; empty components are skipped.
+- **R7** Components come out depth first, in record order, and empty components add nothing.
 
 ## Examples
 
@@ -151,8 +153,8 @@ ff ff                       numberOfContours = -1: compound
 20 00                       scale 0x2000 / 16384 = 0.5
 ```
 
-The square is scaled by 0.5, and because SCALED_COMPONENT_OFFSET is set the offset (40, 40) is
-scaled too, to (20, 20):
+The scale of 0.5 halves the square, and because SCALED_COMPONENT_OFFSET is set, it also halves
+the offset (40, 40) to (20, 20):
 
 ```
 output:  glyph 14 components 1
@@ -164,7 +166,7 @@ output:  glyph 14 components 1
 
 Glyph 11's component record is `00 82 | 00 02 | 64 00 | 00 00 40 00 c0 00 00 00`: flags
 WE_HAVE_A_TWO_BY_TWO with byte arguments, glyph 2, offset (100, 0), and a = 0, b = 1, c = -1,
-d = 0. So x' = -y + 100 and y' = x, a quarter turn:
+d = 0. That gives x' = -y + 100 and y' = x, a quarter turn:
 
 ```
 input:   font tests/09/data/compound-test.ttf
@@ -203,7 +205,7 @@ output:  glyph 8 components 3
 
 - Records are well-formed, every glyph you need has a `glyph` line, and compound glyphs nest at
   most 3 levels deep. Point-matched components (ARGS_ARE_XY_VALUES clear) don't occur.
-- Scales are within the F2Dot14 range (-2 to just under 2).
+- Scales are within the F2Dot14 range, from -2 up to 32767/16384 (a little under 2).
 - Each case has a 10-second limit.
 - There are 36 tests: hand-made glyphs for each rule in a small test font, accented letters from
   JetBrains Mono Bold such as `é` and `Ü`, and 6 random compound glyphs (new ones with
@@ -228,13 +230,13 @@ each component.
 
 Write one recursive function that takes a glyph id and the transform to apply, and appends
 outlines to a list. For a compound glyph, read **all** of its component records first (reading a
-component moves the file position elsewhere), then call yourself for each one with the combined
-transform. Keep a transform as six numbers a, b, c, d, e, f.
+component moves the file position elsewhere), then call the function again for each one with the
+combined transform. Keep a transform as six numbers a, b, c, d, e, f.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- int8 arguments are signed: read them as `int8_t`, not `uint8_t`.
+- Read int8 arguments as `int8_t`, not `uint8_t`, so that `e2` comes out as -30.
 - After WE_HAVE_A_TWO_BY_TWO the order is a, b, c, d, and x' uses c (not b) for y.
 - Inner transforms apply first. Combining outer (A) after inner (B) gives
   a = A.a*B.a + A.c*B.b, b = A.b*B.a + A.d*B.b, c = A.a*B.c + A.c*B.d, d = A.b*B.c + A.d*B.d,

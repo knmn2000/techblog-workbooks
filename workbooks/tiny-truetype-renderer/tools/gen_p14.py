@@ -13,13 +13,13 @@ import fillgen as fg  # noqa: E402
 import wb  # noqa: E402
 
 REQUIREMENTS = [
-    ("R1", "Pixels whose centre is inside are filled; the rest stay black"),
-    ("R2", "Holes: a contour inside another is left empty"),
-    ("R3", "Curves, with implied on-curve points, are followed exactly"),
-    ("R4", "Vertices exactly on a scanline are counted correctly"),
+    ("R1", "Fill each pixel whose centre is inside; the rest stay black"),
+    ("R2", "Holes: a contour inside another stays empty"),
+    ("R3", "Follow the curves, implied on-curve points included"),
+    ("R4", "A vertex on a scanline counts the right number of times"),
     ("R5", "Crossing or overlapping contours: even-odd leaves the overlap empty"),
-    ("R6", "Several outlines are filled one after another"),
-    ("R7", "Placement and scale; parts outside the canvas are clipped"),
+    ("R6", "Fill several outlines one after another"),
+    ("R7", "Placement and scale; clip what falls outside the canvas"),
     ("E2E", "Letters from JetBrains Mono Bold"),
 ]
 

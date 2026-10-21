@@ -9,7 +9,7 @@ requirement R3 No crossing with 0 <= t <= 1 -> none
 requirement R4 A tangent line gives its touching point once
 requirement R5 K.A = 0: the equation is linear (or has no solution)
 requirement R6 Points are ordered by t, whichever way the line points
-requirement R7 Crossings exactly at the ends, t = 0 and t = 1, count
+requirement R7 Crossings at the ends, t = 0 and t = 1, count
 requirement E2E Horizontal scanlines across every curve of real glyphs, and random lines
 case 13-R1-arch R1
 title a horizontal line crosses an arch twice, at t = 0.2 and 0.8

@@ -1,7 +1,7 @@
 {
   "01": {
     "files": {
-      "_spoilers/project/assignments/assignment_01_byte_readers.cpp": "0ea211047eda879a46c7115002416b7b0801b36d80ffdc1c6a22c85def084dee",
+      "_spoilers/project/assignments/assignment_01_byte_readers.cpp": "1640b22cb9686f4bdf865cb0aea85f287e189452ecdce7e0de89eb9d32855a58",
       "_spoilers/project/src/font/ByteReader.h": "f4488b828443303218d4fde30195a3aca4e92319a0c890ec9f1b1f188ce251f3",
       "_spoilers/project/src/font/ByteReader.cpp": "ba689e3a15861709a9422ed3484b694689d613f2516bf84b72fd6ee09803f01a"
     },
@@ -51,7 +51,7 @@
   },
   "05": {
     "files": {
-      "_spoilers/project/assignments/assignment_05_metrics.cpp": "4cc922bcb76388070a820c37eae80df0b72bb5876a1461bb5e994cd96b32142e",
+      "_spoilers/project/assignments/assignment_05_metrics.cpp": "478dbb6d3e81956a71d43e29b0c3a2637e19761fd37cbbdc1079fd13c28b8455",
       "_spoilers/project/src/font/Metrics.h": "a231cf90424d47878f9cab9738d8ee5eed10139fec4bd780f5939dbb92a86c02",
       "_spoilers/project/src/font/Metrics.cpp": "a78c57a26bd8adec2172842295cbec88c694b45c8a7dacd8aedbe074e07d7100",
       "_spoilers/project/src/font/ByteReader.h": "f4488b828443303218d4fde30195a3aca4e92319a0c890ec9f1b1f188ce251f3",
@@ -66,7 +66,7 @@
   "06": {
     "files": {
       "_spoilers/project/assignments/assignment_06_canvas.cpp": "a2d89bdde3af97ae3eb34ba5ca4f4bf2ab88e7e94342e79888e83e39189a3fa1",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/FrameBufferCanvas.cpp": "77cda940b5041948f8b0546d6a58a62ed239cc398367c11c24dc3f179310cc37"
     },
     "passed": 30,
@@ -92,7 +92,7 @@
       "_spoilers/project/assignments/assignment_08_outline_lines.cpp": "f2bfc35c1a480e5288cd571082ab7ad7bdde3e3eee84cda140b969274a18f559",
       "_spoilers/project/src/render/Outline.h": "41776c676b14ec80208ae3d6f048bf41d21886948363a39a970aa392e8bacfd1",
       "_spoilers/project/src/render/Outline.cpp": "e223631e23bdd6330905fb4b5943d4cc9acc87f12d4cf1c4e2d40c941bf542ef",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/GlyphComponent.h": "6b5f02fe2bce3f5d3c2f1a41c9b345bb813e93791ce8ab9465339d7be81d8ba8",
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
       "_spoilers/project/src/FrameBufferCanvas.cpp": "77cda940b5041948f8b0546d6a58a62ed239cc398367c11c24dc3f179310cc37"
@@ -123,7 +123,7 @@
   },
   "10": {
     "files": {
-      "_spoilers/project/assignments/assignment_10_bezier.cpp": "6946c9aaf71493c368eabd350c37b12ec2f63c0142206a3d8417f9625212c27d",
+      "_spoilers/project/assignments/assignment_10_bezier.cpp": "0dbadfaf74c6e0a4e2fec32ccfa916f0c92defdd67c47cad4312b1e106ed0753",
       "_spoilers/project/src/utils/Geometry.h": "a67a33125dec4333afdd1703edb0222fb19516221df67fc1382a10282dfb8427"
     },
     "passed": 24,
@@ -135,7 +135,7 @@
       "_spoilers/project/assignments/assignment_11_outline_curves.cpp": "b5aae2c75ea7e02ae89a18466038d77ed5136ad9a601fdfe5c923f920cd9145a",
       "_spoilers/project/src/render/Outline.h": "7eb39d4e5b337179dac564065b5ad1c12adb0802b27c9df05bb1ea7361d488cf",
       "_spoilers/project/src/render/Outline.cpp": "6b00077ae79f9c301425ae21192f25468804ceeae3a80e1b34615db59244b5da",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/GlyphComponent.h": "6b5f02fe2bce3f5d3c2f1a41c9b345bb813e93791ce8ab9465339d7be81d8ba8",
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
       "_spoilers/project/src/utils/Geometry.h": "a67a33125dec4333afdd1703edb0222fb19516221df67fc1382a10282dfb8427",
@@ -168,10 +168,10 @@
       "_spoilers/project/assignments/assignment_14_even_odd_fill.cpp": "93327c1338d4e98e845e8db475abcb100231de0239335f946d9d18b9ae6a93fc",
       "_spoilers/project/src/render/EvenOdd.h": "a2a5a32a2dee36c6a7ac2bfb7e8d025ed2f5f32ae4882a83d59620b7f3bcf4f8",
       "_spoilers/project/src/render/EvenOdd.cpp": "9989c8adc45d207137f47b41d111991f9a56a2b620255b64ea8f02689005faaa",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/GlyphComponent.h": "6b5f02fe2bce3f5d3c2f1a41c9b345bb813e93791ce8ab9465339d7be81d8ba8",
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
-      "_spoilers/project/src/render/Scanline.h": "8b94cd135d77829beab8a65abb1dc6eb109167849bed92fe3f64c0768deb5085",
+      "_spoilers/project/src/render/Scanline.h": "1ef26dd2384ad6f209e8a429529e2a16c53053f6f0376494b6ee120c61b4bede",
       "_spoilers/project/src/FrameBufferCanvas.cpp": "77cda940b5041948f8b0546d6a58a62ed239cc398367c11c24dc3f179310cc37",
       "_spoilers/project/src/render/Scanline.cpp": "fccdc0568cc0ef9ef3b6ca1cf116de319d5a3999c4f769a1f9ad7f736d8b06ac",
       "_spoilers/project/src/utils/Geometry.h": "fa995f0862ad1d9a5a9696428a7b0aeabb797a71072318b60dcb1a0c593e4e52"
@@ -194,10 +194,10 @@
       "_spoilers/project/assignments/assignment_16_nonzero_lines.cpp": "594e45485e7ead6e5481c4fd947aec5a272b20d8d912c6bdc9ad82d3c9840976",
       "_spoilers/project/src/render/NonZero.h": "baeac865b7e6302fa74d91bce9e33f1922c5923a5edacd5dc2b76665c3a4d7d1",
       "_spoilers/project/src/render/NonZero.cpp": "1157b048f852ed470393d62906b5977feb149640e256fe042666d4fc374dc599",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/GlyphComponent.h": "6b5f02fe2bce3f5d3c2f1a41c9b345bb813e93791ce8ab9465339d7be81d8ba8",
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
-      "_spoilers/project/src/render/Scanline.h": "8b94cd135d77829beab8a65abb1dc6eb109167849bed92fe3f64c0768deb5085",
+      "_spoilers/project/src/render/Scanline.h": "1ef26dd2384ad6f209e8a429529e2a16c53053f6f0376494b6ee120c61b4bede",
       "_spoilers/project/src/FrameBufferCanvas.cpp": "77cda940b5041948f8b0546d6a58a62ed239cc398367c11c24dc3f179310cc37",
       "_spoilers/project/src/render/Scanline.cpp": "fccdc0568cc0ef9ef3b6ca1cf116de319d5a3999c4f769a1f9ad7f736d8b06ac",
       "_spoilers/project/src/utils/Geometry.h": "979f76bd5c6e6b0d1b9c49b147b325c05fb8651550a05976cf9b130dfae0a04b"
@@ -211,10 +211,10 @@
       "_spoilers/project/assignments/assignment_17_nonzero_curves.cpp": "18e81d3465bb3f04deb8e0664003e862363b77f2b606609a53d96d6f742cde94",
       "_spoilers/project/src/render/NonZero.h": "baeac865b7e6302fa74d91bce9e33f1922c5923a5edacd5dc2b76665c3a4d7d1",
       "_spoilers/project/src/render/NonZero.cpp": "1157b048f852ed470393d62906b5977feb149640e256fe042666d4fc374dc599",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/GlyphComponent.h": "6b5f02fe2bce3f5d3c2f1a41c9b345bb813e93791ce8ab9465339d7be81d8ba8",
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
-      "_spoilers/project/src/render/Scanline.h": "8b94cd135d77829beab8a65abb1dc6eb109167849bed92fe3f64c0768deb5085",
+      "_spoilers/project/src/render/Scanline.h": "1ef26dd2384ad6f209e8a429529e2a16c53053f6f0376494b6ee120c61b4bede",
       "_spoilers/project/src/FrameBufferCanvas.cpp": "77cda940b5041948f8b0546d6a58a62ed239cc398367c11c24dc3f179310cc37",
       "_spoilers/project/src/render/Scanline.cpp": "fccdc0568cc0ef9ef3b6ca1cf116de319d5a3999c4f769a1f9ad7f736d8b06ac",
       "_spoilers/project/src/utils/Geometry.h": "979f76bd5c6e6b0d1b9c49b147b325c05fb8651550a05976cf9b130dfae0a04b"
@@ -228,7 +228,7 @@
       "_spoilers/project/assignments/assignment_18_render_text.cpp": "df4949d6c9869718761c115a8b226cf77a2490a705d38a1c98dd34337b42df87",
       "_spoilers/project/src/TextRenderer.h": "08aa33886810106c88786dcc67fd6ba0f4795fa4681b1fdd0cbe9bbd1a4bb9b6",
       "_spoilers/project/src/TextRenderer.cpp": "ed2dff53f9320f7c9e6453b11085f13bbe68331ec29c9137d98d9b90dec50dfe",
-      "_spoilers/project/src/FrameBufferCanvas.h": "ba69e394d700b302c1ced0853d0f3c551d5ee90ec5a1769a8d57a9fd0ada70a8",
+      "_spoilers/project/src/FrameBufferCanvas.h": "a05ae156eda4ae46074a624c471f1efe5058f99396038d5802d4535cad5b343f",
       "_spoilers/project/src/font/FontParser.h": "94af78bae49507a5b20585b24dcd583b8f6af7e5eb67e34cd6bb01b84e2ec6e0",
       "_spoilers/project/src/font/Loca.h": "ffb3b4f7e453e811b2b580c1aac1333c8621c92bba650f2569de0d20146910a3",
       "_spoilers/project/src/font/Metrics.h": "a231cf90424d47878f9cab9738d8ee5eed10139fec4bd780f5939dbb92a86c02",
@@ -248,7 +248,7 @@
       "_spoilers/project/src/render/Placement.h": "822e14601055d965decb2477d78b5d15be0dbb9f48aef77b33fb9f48ac643d99",
       "_spoilers/project/src/font/ByteReader.cpp": "ba689e3a15861709a9422ed3484b694689d613f2516bf84b72fd6ee09803f01a",
       "_spoilers/project/src/font/GlyphParser.h": "706c78e47dc1532ab7a02927c2a2b46c0f71058d17caa1e48f999134b355f19e",
-      "_spoilers/project/src/render/Scanline.h": "8b94cd135d77829beab8a65abb1dc6eb109167849bed92fe3f64c0768deb5085",
+      "_spoilers/project/src/render/Scanline.h": "1ef26dd2384ad6f209e8a429529e2a16c53053f6f0376494b6ee120c61b4bede",
       "_spoilers/project/src/font/GlyphParser.cpp": "5e3c6071f69dc2b9fb575abc2a245ad8683d2370d65f87baf320f2c380f5e120",
       "_spoilers/project/src/Glyph.h": "a018650a181916bbff4e5bf0e20487bb4be85e2677554a3d33cd7571cfd0df3d",
       "_spoilers/project/src/render/Scanline.cpp": "fccdc0568cc0ef9ef3b6ca1cf116de319d5a3999c4f769a1f9ad7f736d8b06ac",

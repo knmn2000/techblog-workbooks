@@ -5,7 +5,7 @@ compare unordered table=tag,checkSum,offset,length
 explain tables=R1 table=R2 table:tag=R3
 requirement R1 Header: numTables after the scaler type; search fields skipped
 requirement R2 Records: tag, then checkSum, offset, length (big-endian uint32)
-requirement R3 Tags exactly as stored: 4 characters, trailing spaces kept
+requirement R3 Tags as the font stores them: 4 characters, trailing spaces kept
 requirement E2E Real fonts and random directories
 case 02-R1-no-tables R1
 title hand-made: a 12-byte header with numTables 0

@@ -3,16 +3,16 @@
 // Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The reader's implementation: opening the file, moving around in it, and turning its
-//   bytes into numbers. Every later assignment that reads the font runs through this code,
-//   so a mistake here shows up everywhere.
+//   This file implements the reader: it opens the font, moves the position and turns bytes
+//   into numbers. Every later assignment that reads the font runs this code, so a bug here
+//   makes their tests fail too.
 //
 // Your job:
-//   Implement the reader: open the file in binary mode, move the position for jumps and
-//   skips, and build each number from its bytes, most significant first, with two's
-//   complement for the signed types. A read that needs a byte past the end of the file
-//   must report it instead of returning a value. The Boilerplate has the declarations
-//   written: fill in what's marked TODO.
+//   Open the file in binary mode, move the position for jumps and skips, and build each
+//   number from its bytes, most significant first, with two's complement for the signed
+//   types. If a read needs a byte past the end of the file, report it the way your header
+//   declares and return no value. The Boilerplate gives you the declarations; fill in each
+//   TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

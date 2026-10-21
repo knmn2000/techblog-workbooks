@@ -2,13 +2,13 @@
 source reference picture, checked pixel by pixel against fontTools 4.67.0 (cmap, hmtx, outlines, PointInsidePen)
 seed 1
 compare image band=1 allow=0.0002
-requirement R1 UTF-8 text decoded into code points (1- to 4-byte characters)
-requirement R2 Characters mapped to glyphs with cmap; unmapped ones draw glyph 0
+requirement R1 Decode UTF-8 text into code points (1- to 4-byte characters)
+requirement R2 Map characters to glyphs with cmap; an unmapped one draws glyph 0
 requirement R3 Each glyph moves the pen by its advance width times the scale
-requirement R4 Compound glyphs are drawn
-requirement R5 Glyphs are filled with the non-zero rule (curves and overlaps)
+requirement R4 Draw compound glyphs
+requirement R5 Fill glyphs by the non-zero rule (curves and overlaps)
 requirement R6 Several pen positions, colours and text lines
-requirement R7 Scale; text running off the canvas is clipped
+requirement R7 Scale; clip text that runs off the canvas
 requirement E2E Whole phrases
 case 18-R1-latin1 R1
 title 'naive cafe' with i-diaeresis and e-acute (2-byte UTF-8)

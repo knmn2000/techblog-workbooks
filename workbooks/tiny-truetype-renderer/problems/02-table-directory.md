@@ -4,23 +4,23 @@
 
 **Tags**
 - *Language:* structs · fixed-width unsigned integers (`uint16_t`, `uint32_t`) · strings built from bytes · binary file I/O (`seekg`, `get`)
-- *Library:* `std::ifstream` in binary mode · `std::vector` · `std::string` (optionally `std::unordered_map`)
+- *Library:* `std::ifstream` in binary mode · `std::vector` · `std::string` · `std::unordered_map` (optional)
 - *Concepts:* the sfnt container · table tags · offsets from the start of the file · big-endian byte order
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table)
 section through the paragraph that starts "This is the structure of the". The author's code
-comes right after it.
+follows that paragraph.
 
 ## Where this fits
 
 A TrueType font is a set of **tables** (`cmap`, `glyf`, `head`, ...) packed into one file. The
-**table directory** at the start of the file says where each table is. Assignments 03 to 05
+**table directory** at the start of the file lists where each table is. Assignments 03 to 05
 read the `cmap`, `loca` and metrics tables at the offsets you find here. Their inputs already
-contain this assignment's output lines for the tables they need, so you can also do them
-without this one.
+contain this assignment's output lines for the tables they need, so you can solve them without
+finishing this one.
 
 ## The problem
 
@@ -37,7 +37,8 @@ The input file has one line:
 | `font <path>` | The file to read. The path is relative to the workbook folder and contains no spaces. |
 
 Some test files are real fonts. Others are hand-made files that hold only a table directory,
-so their offsets may point past the end of the file. You never need to follow an offset.
+so their offsets may point past the end of the file. Your program doesn't need to follow any
+offset.
 
 ### Output
 
@@ -50,8 +51,8 @@ table "<tag>" <checkSum> <offset> <length>
 
 - First the line `tables <numTables>`.
 - Then one `table` line per record. The records may come in any order.
-- Write the tag's 4 characters inside double quotes, exactly as stored, including any spaces
-  at the end: `"cvt "`, not `"cvt"`.
+- Write the tag's 4 characters inside double quotes as the font stores them, including any
+  spaces at the end: `"cvt "`, not `"cvt"`.
 - The three numbers (`checkSum`, `offset`, `length`) are in decimal.
 
 ### The table directory
@@ -63,37 +64,40 @@ The directory starts at byte 0 of the file. All numbers are **big-endian**, and 
 
 | Field | Type | Meaning |
 |---|---|---|
-| scaler type | uint32 | What kind of font this is: `0x00010000` or `'true'` for TrueType outlines. You don't need it. |
+| scaler type | uint32 | What kind of font this is: `0x00010000` or `'true'` for TrueType outlines |
 | `numTables` | uint16 | How many table records follow |
-| `searchRange` | uint16 | (the largest power of 2 that is ≤ `numTables`) × 16. A binary-search aid. Skip it. |
-| `entrySelector` | uint16 | log2 of that power of 2. Skip it. |
-| `rangeShift` | uint16 | `numTables` × 16 − `searchRange`. Skip it. |
+| `searchRange` | uint16 | (the largest power of 2 that is ≤ `numTables`) × 16, an aid for binary search |
+| `entrySelector` | uint16 | log2 of that power of 2 |
+| `rangeShift` | uint16 | `numTables` × 16 − `searchRange` |
+
+Of these five fields, your program needs `numTables`. Skip the other four, whatever they hold.
 
 **Table records**: `numTables` of them, 16 bytes each, starting at byte 12:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `tag` | 4 bytes | The table's name as 4 ASCII characters. Shorter names are padded with spaces at the end, as in `'cvt '`. |
+| `tag` | 4 bytes | The table's name as 4 ASCII characters. A name shorter than 4 characters ends in spaces, as in `'cvt '`. |
 | `checkSum` | uint32 | A checksum of the table's bytes |
 | `offset` | uint32 | Where the table starts, in bytes from the start of the file |
 | `length` | uint32 | The table's length in bytes |
 
-So record k (counting from 0) starts at byte 12 + 16k.
+Record k (counting from 0) starts at byte 12 + 16k.
 
-In a well-made font the records are sorted by tag, byte by byte, so uppercase tags come
-before lowercase ones. You don't need to rely on that.
+A well-made font sorts the records by tag, byte by byte, so uppercase tags come before
+lowercase ones. Your program can ignore that order.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-the difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** `numTables` is the uint16 at byte 4, written as `tables <numTables>` (it can be 0).
-  The scaler type before it and the 6 bytes of search fields after it are skipped, whatever
-  they hold.
+- **R1** Your program reads `numTables` as the uint16 at byte 4 and writes it as
+  `tables <numTables>` (it can be 0). It skips the scaler type before it and the 6 bytes of
+  search fields after it, whatever they hold.
 - **R2** Each record is 16 bytes: the tag, then `checkSum`, `offset` and `length` as
   big-endian uint32 values, which can be 2^31 or more.
-- **R3** The tag is written exactly as its 4 bytes, trailing spaces included.
+- **R3** Your program writes the tag as its 4 bytes, trailing spaces included.
 
 ## Examples
 
@@ -124,8 +128,9 @@ output:  tables 3
          table "head" 858993459 76 4
 ```
 
-The search fields hold nonsense here (a real font with 3 tables would have 32, 1 and 16).
-That doesn't matter, because they are skipped.
+The 6 bytes of search fields are all `ff` here, where a real font with 3 tables would hold 32,
+1 and 16.
+Your program skips them, so their values don't change the output.
 
 ### Example 2: tags that end in spaces (test `02-R3-spaces`)
 
@@ -170,15 +175,16 @@ output:  tables 18
          table "prep" 2328730654 64596 214
 ```
 
-Notice that the records are sorted by tag, not by offset: `head` is the first table in the
-file (offset 300) but the eleventh record.
+The records follow tag order, and the tables sit in the file in a different order: `head`
+comes first in the file (offset 300) but has the eleventh record.
 
 ## Constraints
 
 - `numTables` is between 0 and 30 in the tests, and the tags in one file are all different.
-- Tags are printable ASCII and never contain `"`. Spaces only appear at the end.
-- The directory itself is always complete. Offsets and lengths may point anywhere.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
+- Tags are printable ASCII without `"`, and spaces appear only at the end.
+- Each file holds the whole directory. Offsets and lengths may point anywhere, including past
+  the end of the file.
+- Each case has a 10-second limit. A correct solution finishes in milliseconds.
 - There are 13 tests: hand-made directories for each rule, three small fonts built with
   fontTools (with and without the hinting tables, and with three tables removed), both real
   fonts, and 3 random directories.
@@ -195,8 +201,8 @@ file (offset 300) but the eleventh record.
 
 <details><summary>Hint 1: where to start</summary>
 
-Everything you need is in the first 12 + 16 × `numTables` bytes. Read the header fields in
-the order they are stored, then loop `numTables` times, reading one record per pass.
+The answer comes from the first 12 + 16 × `numTables` bytes. Read the header fields in the
+order the font stores them, then loop `numTables` times, reading one record per pass.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -212,7 +218,8 @@ does the byte order for you.
 - Don't trim the tag. `"cvt "` and `"cvt"` are different answers.
 - Read the tag byte by byte. If you read it as a uint32 and pull the characters out with
   shifts, start with the most significant byte, or you'll get `pamc` for `cmap`.
-- Skip exactly 6 bytes after `numTables`. If you skip 4 or 8, every record is misaligned.
+- Skip 6 bytes after `numTables`. If you skip 4 or 8, you read every record from the wrong
+  position.
 - `checkSum` and `offset` can be 2^31 or more. Keep them in an unsigned 32-bit (or wider)
   type.
 - The search fields may be wrong. Don't use them to count the records.
@@ -249,22 +256,22 @@ for each record: write 'table "' + tag + '"', checkSum, offset, length
 A failing test looks like this:
 
 ```
-  R3  Tags exactly as stored: 4 characters, trailing spaces kept ...........    0 / 2   FAILED
+  R3  Tags as the font stores them: 4 characters, trailing spaces kept ...........    0 / 2   FAILED
       x 02-R3-tiny-hinted  the 4-glyph font plus 'cvt ', fpgm, prep and gasp (14 tables)
           expected `table "cvt " 4292346576 544 8`, closest line written: `table "cvt" 4292346576 544 8` - differs in tag (15 lines written, 15 expected)
-          likely cause: R3 - Tags exactly as stored: 4 characters, trailing spaces kept
+          likely cause: R3 - Tags as the font stores them: 4 characters, trailing spaces kept
           expected values from: Python struct, cross-checked against fontTools 4.67.0 SFNTReader
           reproduce: build/solutions/assignment_02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
 ```
 
-The lines may be in any order, so the checker looks for each expected line in your output and,
-when one is missing, shows the closest line you wrote with the same keyword. Spaces inside a
-quoted tag are kept exactly.
+Your lines may come in any order, so the checker looks for each expected line in your output.
+If one is missing, it shows the closest line you wrote with the same keyword. Inside a quoted
+tag, the checker compares every space.
 
 ## After you pass: compare with the author's code
 
 [The blog's directory parser](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parser%20for%20table%20directory)
-runs in `FontParser`'s constructor, right after the file is opened. It skips the scaler type,
+runs in `FontParser`'s constructor, right after it opens the file. It skips the scaler type,
 reads `numTables`, skips the three search fields, and then reads each record: the tag as 4
 raw bytes turned into a string, followed by the checksum, offset and length. The records go
 into an `unordered_map` keyed by tag, so every later step finds its table by name, for

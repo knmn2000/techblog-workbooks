@@ -9,18 +9,18 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Render outlines as straight lines](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
-section up to and including the paragraph that starts "The glyph coordinates are". The
-author's code comes right after it.
+section up to and including the paragraph that starts "The glyph coordinates are", and stop
+before the author's code that follows it.
 
 ## Where this fits
 
-Assignment 07 decodes a glyph into contours of points (the types in your `GlyphComponent.h`),
-and your `FrameBufferCanvas` from assignment 06 draws lines and squares. This assignment puts
-the two together and draws the first picture of a real glyph: every contour as a closed
-polygon, with a square on each point. It ignores curves on purpose; assignment 11 adds them to
-the same `render/Outline` files.
+In assignment 07 you decoded a glyph into contours of points (the types in your
+`GlyphComponent.h`), and your `FrameBufferCanvas` from assignment 06 draws lines and squares.
+Here you put the two together and draw your first picture of a real glyph: every contour as a
+closed polygon, with a square on each point. This assignment leaves out curves; assignment 11
+adds them to the same `render/Outline` files.
 
 ## The problem
 
@@ -42,22 +42,22 @@ The output file name ends in `.png`. The input file contains these lines:
 | `ends <e0> <e1> ...` | Index of the last point of each contour, in increasing order. |
 | `points <x> <y> <on\|off> ...` | Every point of the outline, in order, in font units. |
 
-- `place`, `style` and `color` always come before the first `outline`, and may appear again
-  between outlines. Each outline uses the most recent ones.
-- `ends` and `points` have exactly the format that assignment 07 prints, except that a
-  coordinate may have a fractional part (e.g. `120.75`), as assignment 09 produces for scaled
+- The input sets `place`, `style` and `color` before the first `outline`, and may set them
+  again between outlines. Each outline uses the most recent ones.
+- `ends` and `points` use the format that assignment 07 prints, except that a coordinate may
+  have a fractional part (e.g. `120.75`), as assignment 09 produces for scaled
   components.
 - `x0`, `baseline` and `scale` may be fractional or negative. `lineThickness`, `markerSize`,
   `w`, `h` and colours are whole numbers.
 
 ### Output
 
-A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner
-and pixel y grows downwards.
+A PNG (or binary PPM) file of `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner and
+pixel y grows downwards.
 
-**Writing the picture.** Your `FrameBufferCanvas` from assignment 06 already does this (in the
-Boilerplate, `writePng`). Write it to the output path you're given. The name ends in `.png`,
-but the checker looks at the contents, so either of these works:
+**Writing the picture.** Your `FrameBufferCanvas` from assignment 06 can already do this
+(`writePng` in the Boilerplate). Write the picture to the output path the checker gives you.
+The name ends in `.png`, but the checker looks at the contents, so either of these works:
 
 - **A binary PPM**: the header `P6`, the width, the height and `255`, separated by spaces or
   newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
@@ -77,9 +77,9 @@ px = x0 + scale * x
 py = baseline - scale * y
 ```
 
-rounded to the nearest whole number. So `x0` is the pixel column where font x = 0 lands,
-`baseline` is the pixel row where font y = 0 lands, and a point with a negative y (a
-descender, like the tail of `g`) ends up **below** the baseline row.
+rounded to the nearest whole number. This makes `x0` the pixel column where font x = 0 lands
+and `baseline` the pixel row where font y = 0 lands. A point with a negative y (a descender,
+like the tail of `g`) ends up **below** the baseline row.
 
 ### What to draw
 
@@ -88,20 +88,20 @@ For each outline, in input order:
 1. **Lines.** The `ends` values split the points into contours: contour 0 is points 0 to
    `e0`, contour 1 is points `e0 + 1` to `e1`, and so on. Within each contour, draw a line
    from every point to the next one, and from the **last point back to the contour's first
-   point**. Never draw a line from one contour to the next. Draw each line with your
+   point**. Don't draw a line from one contour to the next. Draw each line with your
    `FrameBufferCanvas` line from assignment 06, with thickness `lineThickness`.
 2. **Markers.** Then, on every point, draw a `markerSize` x `markerSize` square centred on it
    (your canvas's rectangle): columns x − size/2 up to x − size/2 + size − 1 with size/2 rounded
-   down, and rows likewise. An odd size is exactly centred; an even size has one more pixel on
-   the left and top, so a 10-pixel marker at x = 16 covers columns 11 to 20.
+   down, and rows likewise. With an odd size the point sits in the middle; with an even size the
+   left and top sides get one pixel more, so a 10-pixel marker at x = 16 covers columns 11 to 20.
 
 Three more rules:
 
-- Everything is drawn in the outline's colour.
-- Whether a point is `on` or `off` doesn't matter here: every point is joined by straight lines
-  and gets a marker.
-- Later outlines are drawn over earlier ones, though no test makes outlines of different
-  colours overlap.
+- Draw the lines and the markers in the outline's colour.
+- Treat `on` and `off` points the same: join every point with straight lines and give it a
+  marker.
+- Later outlines paint over earlier ones, though no test makes outlines of different colours
+  overlap.
 
 ### How the picture is compared
 
@@ -110,7 +110,7 @@ edge that moved by at most 1 pixel, so rounding a coordinate down instead of to 
 still passes. A missing line, a line that shouldn't be there or a shape in the wrong place
 fails.
 
-When a test fails, the checker writes a diff picture:
+If a test fails, the checker writes a diff picture:
 
 - red where you have extra ink;
 - blue where ink is missing;
@@ -119,18 +119,18 @@ When a test fails, the checker writes a diff picture:
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-it targets.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** Point (x, y) is drawn at pixel (x0 + scale * x, baseline - scale * y), rounded, so
-  the glyph is upright and sits on the baseline.
-- **R2** Every contour is closed: a line joins its last point to its first.
-- **R3** Contours are kept separate: no line joins the end of one contour to the start of
-  the next.
+- **R1** Point (x, y) lands on pixel (x0 + scale * x, baseline - scale * y), rounded, so the
+  glyph stands upright on the baseline.
+- **R2** A line joins each contour's last point to its first, closing the contour.
+- **R3** Contours stay separate: no line joins the end of one contour to the start of the
+  next.
 - **R4** Every point, on-curve or off-curve, gets a `markerSize` x `markerSize` square.
 - **R5** Several outlines on one canvas each use their own `place`, `style` and `color`.
-- **R6** The scale is applied to every coordinate, including coordinates with a fractional
-  part.
+- **R6** The scale applies to every coordinate, including coordinates with a fractional part.
 
 ## Examples
 
@@ -157,7 +157,7 @@ output:  a 430 x 350 PNG
 | 2 | (130, 400) | 119 | 15 |
 
 `ends 2` means one contour with points 0 to 2. The lines are 0 → 1, 1 → 2 and the closing
-line 2 → 0. Point 2 is `off`, but here it is joined with straight lines like the others.
+line 2 → 0. Point 2 is `off`, but here you join it with straight lines like the others.
 Then each point gets a 9 x 9 square: point 2's covers columns 115 to 123 and rows 11 to 19.
 
 ### Example 2: the hyphen (test `08-R1-hyphen`)
@@ -175,8 +175,8 @@ output:  a 352 x 148 PNG: a 320 x 116 rectangle outline from (16, 16) to (336, 1
 ```
 
 `x0` is negative here: font x = 140 lands on pixel 140 - 124 = 16. The hyphen's bottom edge
-(y = 272) lands on row 404 - 272 = 132 and its top edge (y = 388) on row 16, so the top edge
-is higher up in the picture, as it should be.
+(y = 272) lands on row 404 - 272 = 132 and its top edge (y = 388) on row 16, which puts the
+top edge higher in the picture.
 
 ### Example 3: two outlines (test `08-R5-two`)
 
@@ -236,8 +236,8 @@ the markers.
 
 <details><summary>Hint 3: the traps</summary>
 
-- Subtract `scale * y` from the baseline; adding it draws the glyph upside down and mostly
-  off the canvas.
+- Subtract `scale * y` from the baseline; adding it draws the glyph upside down, with most of
+  it off the canvas.
 - Apply the scale to the coordinates only: `x0 + scale * x`, not `scale * (x0 + x)`.
 - The closing line goes back to the contour's own first point, not to point 0 of the
   outline.
@@ -291,13 +291,13 @@ this:
 [The blog's `renderGlyphOutline`](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
 takes a start position, the glyph and a colour. It walks the contours with a running start
 index, and at a contour's last point it sets the next point back to the contour's first
-point, just like Hint 2. It draws each line with thickness 5 and puts a 20 x 20 square on
+point, as Hint 2 does. It draws each line with thickness 5 and puts a 20 x 20 square on
 the current point in the same loop. Its `main` draws `a` from JetBrains Mono Bold at
 (300, 300) on a 1200 x 1200 canvas; test `08-E2E-blog-a` is the same picture at half size.
 
 **Something to look for:** the snippet doesn't flip y itself. It adds the start position to
-the font coordinates and asks stb to flip the whole image vertically when writing the PNG.
-That works for one glyph, but the start position is then measured from the bottom of the
+the font coordinates and asks stb to turn the whole image upside down when it writes the PNG.
+That works for one glyph, but the start position then counts from the bottom of the
 picture. This page uses an explicit baseline instead, which the later assignments need when
 several glyphs share a line of text; the blog switches to a transform matrix
 (`setGlyphBaseline`) for the same reason in its curve section.

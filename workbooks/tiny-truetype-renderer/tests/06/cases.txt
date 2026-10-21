@@ -4,11 +4,11 @@ seed 1
 compare image band=1 allow=0
 explain image:size=R1 image:missing=R1 image:format=R1
 requirement R1 Canvas size; black background; (0, 0) top-left, y grows down
-requirement R2 point paints exactly one pixel
+requirement R2 point paints a single pixel
 requirement R3 rect is centred on (cx, cy): even and odd sizes
 requirement R4 line in every direction (shallow, steep, axis-aligned), both ends included
 requirement R5 line thickness: a thickness x thickness square at every step
-requirement R6 Clipping: shapes partly or fully outside the canvas
+requirement R6 Clipping: shapes that cross the canvas edge or lie outside it
 requirement R7 Drawing order: later commands paint over earlier ones
 requirement E2E Whole scenes: the blog's demo and random scenes
 case 06-E2E-blog-demo E2E

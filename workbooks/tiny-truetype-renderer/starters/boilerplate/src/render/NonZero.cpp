@@ -3,17 +3,16 @@
 // Problem: problems/16-nonzero-lines.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Filling a glyph by the non-zero rule, the rule fonts are designed for, on top of
+//   It fills a glyph by the non-zero rule, the rule TrueType uses, on top of your
 //   `render/Scanline`. This assignment handles straight edges, assignment 17 adds curves,
-//   and the text renderer of assignment 18 fills every glyph with it. Later, assignment 17
-//   adds to this file.
+//   and the text renderer in assignment 18 fills every glyph with it.
 //
 // Your job:
-//   Implement it with your `render/Scanline`: on every row, walk the sorted crossings left
-//   to right with a running winding count and fill each stretch where the count isn't
-//   zero. Each crossing needs the direction of its edge; if your crossings from assignment
-//   14 don't record it yet, add it to `render/Scanline` first. The Boilerplate has the
-//   declarations written: fill in what's marked TODO.
+//   Implement the non-zero fill with your `render/Scanline`: on every row, walk the sorted
+//   crossings left to right with a running winding count and fill each stretch where the
+//   count isn't zero. Each crossing needs the direction of its edge; if your crossings
+//   from assignment 14 don't record it yet, add it to `render/Scanline` first. The
+//   Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

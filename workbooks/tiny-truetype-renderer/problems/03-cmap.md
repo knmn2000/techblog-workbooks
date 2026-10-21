@@ -9,17 +9,17 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [cmap table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=cmap%20table)
-section up to the paragraph that starts "In the implementation, simply loop". The author's
-code comes right after it.
+section up to the paragraph that starts "In the implementation, simply loop". The author's code
+follows that paragraph.
 
 ## Where this fits
 
-Text arrives as characters, but a font stores glyphs, numbered 0, 1, 2, ... The `cmap`
-table turns a character's code point into a glyph id. Assignment 04 then turns the glyph id
-into the byte offset of the glyph's outline, and assignment 07 decodes the outline there.
-Assignment 18 looks up every character of its text in the map you read here.
+A font stores glyphs, numbered 0, 1, 2, ..., and its `cmap` table maps each character's code
+point to a glyph id. Assignment 04 then turns the glyph id into the byte offset of the glyph's
+outline, and assignment 07 decodes the outline there. Assignment 18 looks up every character
+of its text in the map you read here.
 
 ## The problem
 
@@ -28,9 +28,9 @@ characters it maps, and which glyph a given character maps to.
 
 A **code point** is a character's number in Unicode, written `U+` and hexadecimal digits: `A`
 is U+0041. A **glyph** is a shape the font can draw, and its **glyph id** is its number in the
-font, from 0 up. The **character map** (the `cmap` table) says which glyph id each code point
-uses. This assignment reads one part of it: the platform 0 / encoding 4 subtable in format 12,
-explained below.
+font, from 0 up. The **character map** (the `cmap` table) lists the glyph id for each code
+point. Your program reads one part of it: the platform 0 / encoding 4 subtable in format 12,
+described below.
 
 ### Input
 
@@ -40,9 +40,9 @@ The input file contains these lines, in this order:
 | Line | Meaning |
 |---|---|
 | `font <path>` | The font file. The path is relative to the workbook folder and contains no spaces. |
-| `table "cmap" <checkSum> <offset> <length>` | The `cmap` table's record from the table directory, written as assignment 02 writes it. You only need `offset`: where `cmap` starts, in bytes from the start of the file. |
-| `count` | A question: how many code points does the subtable map? |
-| `lookup U+<hex>` | A question: which glyph does this code point map to? The code point is in hexadecimal, uppercase, with 4 to 6 digits (`U+0041`, `U+1F600`, `U+10FFFD`). |
+| `table "cmap" <checkSum> <offset> <length>` | The `cmap` table's record from the table directory, written as assignment 02 writes it. Your program needs only `offset`: where `cmap` starts, in bytes from the start of the file. |
+| `count` | Asks for the number of code points the subtable maps. |
+| `lookup U+<hex>` | Asks which glyph this code point maps to. The code point is in hexadecimal, uppercase, with 4 to 6 digits (`U+0041`, `U+1F600`, `U+10FFFD`). |
 
 There are one or more `count` and `lookup` lines, in any mix.
 
@@ -58,18 +58,18 @@ Otherwise write one line per question, in input order:
 
 - `count` → `count <n>`, the number of code points the subtable maps
 - `lookup U+<hex>` → `lookup U+<hex> <glyphId>`, or `lookup U+<hex> none` if no group covers
-  the code point. Write the code point exactly as it appears in the input.
+  the code point. Write the code point as it appears in the input.
 
 ### The `cmap` table
 
-All numbers are **big-endian**. Every offset in `cmap` is counted from the start of the
+All numbers are **big-endian**. Every offset inside `cmap` counts from the start of the
 `cmap` table, not from the start of the file.
 
 **Header**, 4 bytes, at the table's offset:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `version` | uint16 | 0. Skip it. |
+| `version` | uint16 | 0 (skip it) |
 | `numberSubtables` | uint16 | How many encoding records follow |
 
 **Encoding records**: `numberSubtables` of them, 8 bytes each, right after the header:
@@ -80,7 +80,7 @@ All numbers are **big-endian**. Every offset in `cmap` is counted from the start
 | `encodingID` | uint16 | Meaning depends on the platform. For platform 0: 3 = Unicode, BMP only (code points up to U+FFFF); 4 = Unicode, full repertoire; 5 = variation sequences |
 | `offset` | uint32 | Where this record's subtable starts, from the start of `cmap` |
 
-**Which subtable.** Every subtable starts with a uint16 `format`. Look for the **(0, 4)
+**Which subtable.** Every subtable starts with a uint16 `format`. Find the **(0, 4)
 record**, the one with `platformID` 0 and `encodingID` 4:
 
 - If it exists and its subtable is format 12, use that subtable, wherever the record is in
@@ -90,18 +90,20 @@ record**, the one with `platformID` 0 and `encodingID` 4:
 - Ignore every other record, even one that points to a format 12 subtable.
 
 Fonts also use format 4 for BMP-only maps, format 13 for "many codes, one glyph" maps, and
-format 14 for variation sequences. This assignment reads only format 12.
+format 14 for variation sequences. Your program reads only format 12.
 
 **Format 12 subtable** ("segmented coverage"):
 
 | Field | Type | Meaning |
 |---|---|---|
 | `format` | uint16 | 12 |
-| `reserved` | uint16 | 0. Skip it. |
-| `length` | uint32 | Length of the subtable in bytes, header included. Skip it. |
-| `language` | uint32 | 0 for Unicode subtables. Skip it. |
+| `reserved` | uint16 | 0 |
+| `length` | uint32 | Length of the subtable in bytes, header included |
+| `language` | uint32 | 0 for Unicode subtables |
 | `numGroups` | uint32 | How many groups follow |
 | `groups[numGroups]` | 12 bytes each | See below |
+
+Your program skips `reserved`, `length` and `language`, 10 bytes in all.
 
 **One group**, 12 bytes:
 
@@ -113,24 +115,25 @@ format 14 for variation sequences. This assignment reads only format 12.
 
 A code point c with `startCharCode` ≤ c ≤ `endCharCode` maps to glyph
 `startGlyphID` + (c − `startCharCode`). A group of one code point has
-`startCharCode` = `endCharCode`. Groups are sorted and never overlap, so the subtable maps
-Σ (`endCharCode` − `startCharCode` + 1) code points in total.
+`startCharCode` = `endCharCode`. The groups come in increasing order and don't overlap, so the
+subtable maps Σ (`endCharCode` − `startCharCode` + 1) code points in total.
 
-Code points go up to U+10FFFF, so they need 32 bits. Format 12 exists for exactly that
-reason: format 4 stores 16-bit codes and can't reach emoji, rare CJK characters or the Nerd
-Font icons in JetBrains Mono.
+Code points go up to U+10FFFF, so they need 32 bits. Format 4 stores 16-bit codes and can't
+reach emoji, rare CJK characters or the Nerd Font icons in JetBrains Mono, and format 12
+exists to cover them.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-the difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** The subtable is the one whose record has platform 0 and encoding 4, wherever that
-  record is in the list. Other subtables, even format 12 ones with different mappings, are
-  ignored.
+- **R1** Your program reads the subtable whose record has platform 0 and encoding 4, wherever
+  that record is in the list, and ignores the others, including format 12 subtables with
+  different mappings.
 - **R2** Each group maps every code point from `startCharCode` to `endCharCode`, both
   included, to consecutive glyph ids starting at `startGlyphID`.
-- **R3** Code points above U+FFFF work like any other: they are 32-bit numbers.
+- **R3** Code points above U+FFFF follow the same rules as the rest, as 32-bit numbers.
 - **R4** A code point that no group covers gives `none`.
 - **R5** `count` is the number of code points the subtable maps.
 - **R6** If there is no (0, 4) record, or its subtable isn't format 12, the whole output is
@@ -200,10 +203,10 @@ output:  lookup U+0041 37
 ```
 
 JetBrains Mono's `cmap` has 5 encoding records: (0, 3) at `cmap` + 44, (0, 4) at
-`cmap` + 8728, (1, 0), (3, 1) and (3, 10). The first one is a format 4 subtable, so the
-program has to keep looking. The (0, 4) subtable at byte 49020 + 8728 = 57748 has 226 groups.
-The second group is `00 00 00 20 00 00 00 7e 00 00 00 04`: U+0020..U+007E → glyphs 4..98. So
-U+0041 maps to 4 + (0x41 − 0x20) = 4 + 33 = 37.
+`cmap` + 8728, (1, 0), (3, 1) and (3, 10). The first record points to a format 4 subtable, so
+your program has to keep looking. The (0, 4) subtable at byte 49020 + 8728 = 57748 has 226
+groups. The second group is `00 00 00 20 00 00 00 7e 00 00 00 04`: U+0020..U+007E → glyphs
+4..98, which puts U+0041 at glyph 4 + (0x41 − 0x20) = 4 + 33 = 37.
 
 ### Example 3: a format 13 subtable (test `03-R6-format13`)
 
@@ -217,17 +220,18 @@ input:   font tests/03/data/03-R6-format13.ttf
 output:  unsupported
 ```
 
-This font's (0, 4) record points to a format 13 subtable. Format 13 has exactly the same
-layout as format 12, but every code in a group maps to the *same* glyph. Reading it as
-format 12 would give wrong answers, so the program must check the format.
+This font's (0, 4) record points to a format 13 subtable. Format 13 has the same layout as
+format 12, but every code in a group maps to the *same* glyph. Reading it as format 12 would
+give wrong answers, so your program has to check the format.
 
 ## Constraints
 
 - The tests' subtables map up to about 17,000 code points, in up to about 5,500 groups.
   Every group has `startCharCode` ≤ `endCharCode` ≤ U+10FFFF.
-- Groups are sorted by `startCharCode` and don't overlap. There is at most one (0, 4) record.
+- The groups come in increasing `startCharCode` order and don't overlap. There is at most one
+  (0, 4) record.
 - Each input has at most 100 questions.
-- Each case has a 10-second limit. A correct solution takes well under a second.
+- Each case has a 10-second limit. A correct solution finishes in under a second.
 - There are 24 tests: both real fonts (ASCII, Latin-1, Nerd Font icons above U+F0000, kanji
   and kana, CJK characters above U+FFFF, unmapped code points, counts), small fonts built
   with fontTools (decoy subtables, (0, 4) listed last, long runs, one-code groups, emoji-range
@@ -247,31 +251,32 @@ format 12 would give wrong answers, so the program must check the format.
 
 <details><summary>Hint 1: where to start</summary>
 
-It's three hops: the `cmap` header, the right encoding record, then the subtable and its
-groups. Remember that the offset in an encoding record is counted from the start of `cmap`,
-so the subtable is at (`cmap` offset + record offset) in the file.
+Your program makes three hops: the `cmap` header, the right encoding record, then the
+subtable and its groups. The offset in an encoding record counts from the start of `cmap`, so
+the subtable is at (`cmap` offset + record offset) in the file.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Read every encoding record and remember the offset of the one with platform 0 and encoding
 4. Jump to it and read the format; if there is no such record or the format isn't 12, report
-that the font is unsupported (the Boilerplate throws `UnsupportedCmap`). Otherwise skip the 10 bytes of `reserved`, `length` and `language`, read
+an unsupported font (the Boilerplate throws `UnsupportedCmap`). Otherwise skip the 10 bytes of `reserved`, `length` and `language`, read
 `numGroups`, and for each group put every code point from start to end into a hash map with
 its glyph id. `count` is then the size of the map.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- The (0, 4) record is usually not the first. JetBrains Mono lists (0, 3) first, and that
-  one is format 4.
-- Don't take "any format 12 subtable". The (3, 10) subtable often holds the same mappings,
-  but nothing guarantees it, and two tests contain decoys with different mappings.
-- `endCharCode` is included: loop with `<=`, not `<`.
+- The (0, 4) record may not come first. JetBrains Mono lists (0, 3) first, and that one is
+  format 4.
+- Don't take the first format 12 subtable you find. The (3, 10) subtable often holds the same
+  mappings, but the spec doesn't require it, and two tests contain decoys with different
+  mappings.
+- The range includes `endCharCode`: loop with `<=`, not `<`.
 - Keep code points in 32-bit (or wider) variables everywhere. A `uint16_t` key turns U+1F600
   into U+F600. If your loop counter has the same type as `endCharCode`, `c <= end` can never
   become false when end is the largest value of that type; a 64-bit counter avoids that.
-- Format 13 looks exactly like format 12. Check the format number.
+- Format 13 has the same layout as format 12. Check the format number.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -327,9 +332,9 @@ supported format" if there is none, or if the subtable's format isn't 12. Then i
 from code point to glyph id, `unicodeToGlyphCode`, which later steps look characters up in.
 
 **Something to look for:** the loop doesn't stop at the first match, so if a font had two
-(0, 4) records the last one would win. The spec doesn't allow duplicate records (fontTools
-refuses to write them), so it makes no difference in practice. Expanding every group trades
-memory for simplicity: a font that maps most of Unicode would need over a million map
-entries, while keeping the sorted groups and binary-searching them stays small. Finally,
-many fonts that cover only the BMP have no format 12 subtable at all, just format 4 (like
-test `03-R6-format4-only`). A complete renderer would read format 4 as a fallback.
+(0, 4) records, the loader would keep the last one. The spec doesn't allow duplicate records
+(fontTools won't write them), so this makes no difference in practice. Expanding every group
+trades memory for simpler code: a font that maps most of Unicode would need over a million
+map entries, while the sorted groups with a binary search stay small. Many fonts that cover
+only the BMP have a format 4 subtable and no format 12 one (like test `03-R6-format4-only`).
+A complete renderer would read format 4 as a fallback.

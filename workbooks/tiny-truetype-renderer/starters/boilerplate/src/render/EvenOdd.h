@@ -4,13 +4,13 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Filling a glyph by the even-odd rule, on top of `render/Scanline`. Assignment 16 adds
-//   the non-zero rule beside it, and that is the one the text renderer of assignment 18
-//   uses.
+//   It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16
+//   adds the non-zero rule beside it, and the text renderer in assignment 18 uses that
+//   rule.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

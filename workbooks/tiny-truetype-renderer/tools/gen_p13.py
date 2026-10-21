@@ -34,7 +34,7 @@ REQUIREMENTS = [
     ("R4", "A tangent line gives its touching point once"),
     ("R5", "K.A = 0: the equation is linear (or has no solution)"),
     ("R6", "Points are ordered by t, whichever way the line points"),
-    ("R7", "Crossings exactly at the ends, t = 0 and t = 1, count"),
+    ("R7", "Crossings at the ends, t = 0 and t = 1, count"),
     ("E2E", "Horizontal scanlines across every curve of real glyphs, and random lines"),
 ]
 

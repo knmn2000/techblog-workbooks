@@ -3,15 +3,16 @@
 // Problem: problems/08-outline-lines.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Drawing a glyph's outline on the canvas: straight lines between its points and a
-//   marker on every point. Assignment 11 adds a second drawing with the real curves to the
-//   same files. Later, assignment 11 adds to this file.
+//   These files draw a glyph's outline on the canvas, with straight lines between its
+//   points and a marker on every point. In assignment 11 you add a second drawing, with
+//   the real curves, to the same files.
 //
 // Your job:
-//   Implement it: turn every point into a pixel with the formulas in "From font units to
-//   pixels", join the points of each contour with lines, closing line included, then draw
-//   a marker on every point. Use your canvas's line and rectangle for both. The
-//   Boilerplate has the declarations written: fill in what's marked TODO.
+//   Implement the outline drawing as "What to draw" describes: turn every point into a
+//   pixel with the formulas in "From font units to pixels", join the points of each
+//   contour with lines, including the closing line, then draw a marker on every point. Use
+//   your canvas's line and rectangle for both. The Boilerplate gives you the declarations;
+//   fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

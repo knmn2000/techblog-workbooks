@@ -2,13 +2,13 @@
 source reference picture, checked pixel by pixel against fontTools 4.67.0 PointInsidePen
 seed 1
 compare image band=1 allow=0.0002
-requirement R1 Curved outlines fill exactly the pixels whose centre is inside
+requirement R1 Curved outlines fill the pixels whose centre is inside, and no others
 requirement R2 Implied on-curve points; contours that start or stay off-curve
 requirement R3 Overlapping curved contours going the same way stay filled
 requirement R4 Contours going the opposite way cut holes
-requirement R5 Scanlines that cross one curve twice or just touch it
+requirement R5 Scanlines that cross one curve twice or touch it
 requirement R6 Several outlines; compound glyphs given as one outline
-requirement R7 Placement and scale; parts outside the canvas are clipped
+requirement R7 Placement and scale; clip what falls outside the canvas
 requirement E2E Glyphs from JetBrains Mono Bold and Noto Sans JP
 case 17-R1-o R1
 title 'o'

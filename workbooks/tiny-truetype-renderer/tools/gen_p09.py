@@ -21,7 +21,7 @@ REQUIREMENTS = [
     ("R2", "Component records: flags, glyph id, signed 1- or 2-byte arguments, MORE_COMPONENTS"),
     ("R3", "One scale, separate x and y scales, or a 2x2 matrix (F2Dot14)"),
     ("R4", "x' = a*x + c*y + e and y' = b*x + d*y + f for every point"),
-    ("R5", "SCALED_COMPONENT_OFFSET: the offset is transformed too"),
+    ("R5", "SCALED_COMPONENT_OFFSET: the matrix transforms the offset too"),
     ("R6", "Nested compound glyphs: transforms compose, inner one first"),
     ("R7", "Components in depth-first order; empty components skipped"),
     ("E2E", "Accented letters from JetBrains Mono Bold"),

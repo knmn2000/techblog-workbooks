@@ -4,14 +4,15 @@
 // Problem: problems/09-compound-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Turning any glyph into the simple outlines it is drawn with: a compound glyph's
-//   components are read, moved, scaled or rotated, and resolved however deeply they nest.
-//   Assignment 18 draws every character of a line of text through it, so it never has to
-//   tell simple glyphs from compound ones.
+//   This code turns any glyph into the simple outlines you draw it with. It reads a
+//   compound glyph's components, moves, scales or rotates each one, and resolves
+//   components nested at any depth. In assignment 18 you draw every character of a line of
+//   text through it, so your text renderer doesn't need to tell simple glyphs from
+//   compound ones.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

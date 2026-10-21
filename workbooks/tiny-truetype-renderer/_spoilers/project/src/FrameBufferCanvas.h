@@ -17,7 +17,7 @@ class FrameBufferCanvas {
   [[nodiscard]] int width() const { return width_; }
   [[nodiscard]] int height() const { return height_; }
 
-  // One pixel; (0, 0) is the top-left corner. Pixels outside the canvas are ignored.
+  // One pixel; (0, 0) is the top-left corner. It ignores pixels outside the canvas.
   void set(int x, int y, RGB color);
   [[nodiscard]] RGB get(int x, int y) const;
 

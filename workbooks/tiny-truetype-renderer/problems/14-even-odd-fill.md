@@ -9,18 +9,18 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Renderer: Filling Glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Renderer%3A%20Filling%20Glyph)
 section through [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors),
-skipping the code blocks if you want to work it out yourself. The blog builds this in two steps
-(a first version, then a fix for errors at vertices); here they are one assignment.
+skipping the code blocks if you want to work it out yourself. The blog builds this in two steps,
+a first version and then a fix for errors at vertices; this assignment covers both.
 
 ## Where this fits
 
-A glyph is only an outline until it's filled. This assignment takes the outlines you decoded in
-assignments 07 and 09 (your `GlyphComponent`) and paints their inside by the even-odd rule. The
-row-by-row scanning goes in `render/Scanline`, which assignments 16 and 17 reuse for the non-zero
-rule; assignment 18 then renders whole lines of text.
+In this assignment you take the outlines you decoded in assignments 07 and 09 (your
+`GlyphComponent`) and paint their inside by the even-odd rule. The row-by-row scanning goes in
+`render/Scanline`, which assignments 16 and 17 reuse for the non-zero rule. Assignment 18 then
+renders whole lines of text with the non-zero fill.
 
 ## The problem
 
@@ -44,14 +44,14 @@ There can be several outlines. Fill each one on its own, one after another, in t
 
 ### Output
 
-A PNG (or binary PPM) of exactly `width` x `height` pixels. Every pixel starts black (0, 0, 0). A
-pixel is painted in the fill colour when its **centre** is inside an outline by the even-odd rule.
-Pixel (px, py), with py counted down from the top, has its centre at screen position
+A PNG (or binary PPM) `width` pixels wide and `height` pixels high. Every pixel starts black
+(0, 0, 0). Paint a pixel in the fill colour when its **centre** is inside an outline by the
+even-odd rule. Pixel (px, py), with py counted down from the top, has its centre at screen position
 (px + 0.5, py + 0.5), which is glyph point ((px + 0.5 − x0) / scale, (baseline − py − 0.5) / scale).
 
 **The checker forgives edges that move by one pixel.** If you sample at the top of each row instead
-of the centre, or round x differently, you still pass. Missing or extra shapes, holes in the wrong
-place, and stray lines don't pass.
+of the centre, or round x another way, you still pass. Missing or extra shapes, holes in the wrong
+place and stray lines fail.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
 the checker looks at the contents, so either of these works:
@@ -60,24 +60,24 @@ the checker looks at the contents, so either of these works:
   boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
   path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
+- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
+  height and `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
 
 ### From points to edges
 
-Each contour is closed: after its last point it continues to its first. Walk the points in order,
-as your `render/Outline` did when it drew curves in assignment 11:
+Every contour is a closed loop: after its last point it continues to its first. Walk the points in
+order, as your `render/Outline` did when it drew curves in assignment 11:
 
-- Two on-curve points in a row are joined by a straight line.
+- Two on-curve points in a row make a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
   point to the next on-curve point: B(t) = (1−t)²·P0 + 2(1−t)t·P1 + t²·P2 for t from 0 to 1.
-- When two off-curve points are next to each other, there is an **implied on-curve point** exactly
-  halfway between them. Each off-curve point then has on-curve points on both sides.
+- Two off-curve points next to each other have an **implied on-curve point** at their midpoint.
+  Each off-curve point then has on-curve points on both sides.
 - A contour can start with an off-curve point, and can even consist only of off-curve points (then
-  every on-curve point is implied).
+  each of its on-curve points is an implied one).
 
 ### The even-odd rule
 
@@ -88,16 +88,16 @@ A **scanline** is a horizontal line through a row of pixel centres. With scanlin
 becomes, for each row:
 
 1. Find every x where the scanline crosses an edge.
-2. Sort them.
+2. Sort the crossings by x.
 3. Fill between the 1st and 2nd, the 3rd and 4th, and so on.
 
-**The trap: vertices on the scanline.** When a scanline passes exactly through a point where two
-edges meet, a naive count sees that point twice and the rest of the row flips (a stray line), or it
-misses a crossing it should count. A clean fix is to treat each edge as **half-open in y**:
+**Vertices on the scanline.** If a scanline passes through a point where two edges meet, a naive
+count sees that point twice and flips the rest of the row (a stray line), or misses a crossing it
+should count. To fix this, treat each edge as **half-open in y**:
 
 - An edge from y0 to y1 counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured
   on the screen (pixels, growing downward).
-- Horizontal edges never count.
+- A horizontal edge doesn't count.
 
 Then a vertex the outline passes through counts once. A pointed tip (both edges above, or both
 below) counts twice or not at all, which leaves the parity right either way.
@@ -107,27 +107,32 @@ around: each piece then crosses a scanline at most once, and the half-open rule 
 too.
 
 - For a curve P0, P1, P2 the turning point is at t = (P0.y − P1.y) / (P0.y − 2·P1.y + P2.y).
-  Split there only when the denominator isn't 0 and t is strictly between 0 and 1. Otherwise the
-  curve is already **monotone**: it only rises or only falls.
+  Split there only when the denominator isn't 0 and 0 < t < 1. Otherwise the curve is already
+  **monotone**: it only rises or only falls.
 - Use the same split point, with the same y, for both halves.
 - To find where a piece crosses scanline y, solve y(t) = y as a quadratic in t (linear when
   P0.y − 2·P1.y + P2.y = 0) and keep the root in [0, 1].
 
-**Clipping.** Crossings can lie far outside the canvas. Clamp x to the canvas before converting it
-to an integer, since converting a huge double to `int` is undefined behaviour in C++. Whatever fills
-a stretch of a row (the boilerplate's `fillSpan`) should skip columns outside the canvas and do
-nothing when the stretch is empty.
+**Clipping.** Crossings can lie far outside the canvas. Clamp x to the canvas before you convert it
+to an integer, because C++ doesn't define what happens when you convert a huge double to `int`. The
+function that fills a stretch of a row (the boilerplate's `fillSpan`) should skip columns outside
+the canvas and do nothing when the stretch is empty.
 
 ## Requirements
 
-- **R1** Pixels whose centre is inside are filled; every other pixel stays black.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
+
+- **R1** Fill each pixel whose centre is inside, and leave every other pixel black.
 - **R2** A contour inside another is a hole and stays empty.
-- **R3** Curves are followed exactly, with implied on-curve points and contours that start or stay
-  off-curve.
-- **R4** Vertices that sit exactly on a scanline are counted correctly (no stray lines).
+- **R3** Follow the curves, including implied on-curve points and contours that start off-curve or
+  have only off-curve points.
+- **R4** Count each vertex that lies on a scanline the right number of times, so no stray lines
+  appear.
 - **R5** Where contours cross or overlap, the even-odd rule leaves the overlap empty.
-- **R6** Several outlines are filled one after another (their union).
-- **R7** Placement and scale are applied; anything outside the canvas is clipped.
+- **R6** Fill several outlines one after another, painting their union.
+- **R7** Apply the placement and scale, and clip anything outside the canvas.
 
 ## Examples
 
@@ -142,8 +147,8 @@ input:   canvas 205 195
          points 50 100 on 79 9 on 2 65 on 98 65 on 21 9 on
 ```
 
-One contour that crosses itself. Under even-odd the pentagon in the middle is covered twice, so it
-stays black:
+The star is one contour that crosses itself. A ray from the pentagon in the middle crosses the
+outline an even number of times, so the even-odd rule leaves the pentagon black:
 
 ![expected picture for 14-R5-star](tests/14/expected/14-R5-star.png)
 
@@ -159,9 +164,9 @@ input:   canvas 133 133
 ```
 
 A diamond with corners at (41, 1), (1, 41), (41, 81) and (81, 41), placed at scale 1.5. Every
-corner lands exactly on a pixel centre, so the scanlines through those rows pass right through a
-vertex. With the half-open rule the side corners count once (one edge above, one below) and the
-top and bottom tips count twice or zero times. The result is a clean diamond with no stray
+corner lands on a pixel centre, so the scanlines through those rows pass through a vertex. With
+the half-open rule the side corners count once (one edge above, one below) and the top and bottom
+tips count twice or zero times. The result is a clean diamond with no stray
 horizontal line:
 
 ![expected picture for 14-R4-diamond-half](tests/14/expected/14-R4-diamond-half.png)
@@ -202,15 +207,15 @@ they cross empty. Assignment 16 fills it with the non-zero rule.
 <details><summary>Hint 1: where to start</summary>
 
 Turn the outline into a list of edges first (lines and quadratic curves, in pixel coordinates),
-then fill row by row. Getting the edges right is half the job, and your `render/Outline` from
-assignment 11 (drawing curves) already does most of it.
+then fill row by row. Your `render/Outline` from assignment 11 (drawing curves) already does most
+of the first step.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 For each pixel row, take the horizontal line through the pixel centres (y = row + 0.5). Collect
 the x of every place an edge crosses it, sort the list, and fill from the 1st crossing to the 2nd,
-the 3rd to the 4th, and so on. A pixel is filled when its centre x (px + 0.5) is in one of those
+the 3rd to the 4th, and so on. Fill a pixel when its centre x (px + 0.5) is in one of those
 ranges.
 </details>
 
@@ -218,11 +223,10 @@ ranges.
 
 - Use half-open intervals in y (min ≤ y < max) so a shared vertex counts once; skip horizontal edges.
 - Split each quadratic curve where its y turns around (t = (y0 − yc) / (y0 − 2·yc + y2), with yc
-  the control point's y, when that t is strictly between 0 and 1), so each piece crosses a row at
-  most once.
+  the control point's y, when 0 < t < 1), so each piece crosses a row at most once.
 - Implied on-curve points: between two off-curve points, add their midpoint.
 - A contour may start off-curve: start walking from an on-curve point (or an implied one).
-- Remember y flips: pixel y = baseline − scale·glyph y.
+- The y axis flips: pixel y = baseline − scale·glyph y.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -258,7 +262,7 @@ for row in 0 .. height-1:
 A failing picture comes with a diff image:
 
 ```
-  R4  Vertices exactly on a scanline are counted correctly .................    4 / 5   FAILED
+  R4  A vertex on a scanline counts the right number of times .................    4 / 5   FAILED
       x 14-R4-W  'W' at scale 0.5: vertices sharing a row
           26 extra pixels, e.g. (145, 115) should be black (beyond the 1-pixel edge tolerance).
           Diff: build/cases/14/14-R4-W.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
@@ -269,11 +273,11 @@ A failing picture comes with a diff image:
 The blog's [even-odd renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Glyph%20rendering%20with%20Even-odd%20rule)
 loops over every pixel row of the canvas and every point of the outline. It uses two helper
 functions from assignments 12 and 13 to intersect the row with each line or curve, truncates the
-crossing x to an integer, and draws horizontal lines between pairs. The scanline is the row's top
-edge (integer y), not its centre. Its fix for vertices counts an edge only when the edge's lowest y
-(on screen) is above the scanline, and handles curves that cross twice with a convexity check
-(assignment 15 finds the curve's lowest point).
+crossing x to an integer, and draws horizontal lines between pairs. Its scanline runs along the
+row's top edge (integer y) instead of through the pixel centres. Its fix for vertices counts an
+edge only when the edge's lowest y (on screen) is above the scanline, and handles curves that cross
+twice with a convexity check (assignment 15 finds the curve's lowest point).
 
 **Something to look for:** in the fixed version, the check for a curve's endpoint on the scanline
-compares the row y with the endpoints' **x** coordinates, so that branch rarely does what it
-intends.
+compares the row y with the endpoints' **x** coordinates. That branch tests the wrong coordinate
+and seldom catches an endpoint that sits on the scanline.

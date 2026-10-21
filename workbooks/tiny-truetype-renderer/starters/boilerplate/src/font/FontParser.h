@@ -4,13 +4,14 @@
 // Problem: problems/02-table-directory.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Opening a font and reading its table directory: the tag, checksum, offset and length
-//   of every table (`cmap`, `glyf`, `loca`, ...). Assignments 03 to 05 find their tables
-//   by tag in these records, and assignment 18 opens the font through it.
+//   This header declares the code that opens a font and reads its table directory: the
+//   tag, checksum, offset and length of each table (`cmap`, `glyf`, `loca`, ...).
+//   Assignments 03 to 05 find their tables by tag in these records, and assignment 18
+//   opens the font through it.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

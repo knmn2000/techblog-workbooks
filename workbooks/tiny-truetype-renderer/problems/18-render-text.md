@@ -9,17 +9,17 @@
 
 ## Read in the blog first
 
-This page is complete on its own. This is where the blog ends up: its goal is a program that loads
-a Unicode font, draws any string with it and saves the result as a PNG. Skim the
+You can pass using this page alone. In this assignment you reach the blog's goal: a program that
+loads a Unicode font, draws any string with it and saves the result as a PNG. Skim the
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
 pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
 
 ## Where this fits
 
-Every earlier assignment built one piece. This one puts them together: from the bytes of a font
-file and a string of text to a picture of that text. It's the last piece of your project:
-`TextRenderer` uses the files of assignments 02 to 17, and `main.cpp` turns the project into a
-program you can run, `tiny_ttf <font.ttf> "<text>" <out.png>`.
+In assignments 01 to 17 you built the pieces one at a time. Here you put them together, going from
+the bytes of a font file and a string of text to a picture of that text. This is the last part of
+your project: `TextRenderer` uses the files of assignments 02 to 17, and `main.cpp` turns the
+project into a program you can run, `tiny_ttf <font.ttf> "<text>" <out.png>`.
 
 ## The problem
 
@@ -40,17 +40,17 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 - `pen`, `color` and `text` can repeat.
 - A `text` line starts where the pen is: at the most recent `pen` line, moved right by any text
   drawn since. (The boilerplate passes the pen x on from one `text` line to the next.)
-- Later text is drawn on top of earlier text.
+- Draw later text on top of earlier text.
 
 ### Output
 
-A PNG (or binary PPM) of exactly `width` x `height` pixels. For each character, in order:
+A PNG (or binary PPM) `width` pixels wide and `height` pixels high. For each character, in order:
 
 1. **Decode UTF-8** into Unicode code points. A code point takes 1 to 4 bytes: `0xxxxxxx`,
    `110xxxxx 10xxxxxx`, `1110xxxx 10xxxxxx 10xxxxxx` or `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx`.
 2. **Find the glyph** with the font's cmap: the format 12 subtable with platform 0, encoding 4
    (your `font/Cmap` from assignment 03). A code point the font doesn't map uses **glyph 0**
-   (`.notdef`), usually a box.
+   (`.notdef`, which most fonts draw as a box).
 3. **Get its outline** (assignments 04, 07 and 09): find the glyph's record with `loca`. A simple
    glyph gives one outline. A compound glyph gives the outlines of its components placed with
    their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment 09's
@@ -59,8 +59,8 @@ A PNG (or binary PPM) of exactly `width` x `height` pixels. For each character, 
    Noto Sans JP is a variable font: use the outlines stored in `glyf` and ignore its variation
    tables.
 4. **Fill it** with the non-zero rule (your `render/NonZero` from assignment 17), placed with
-   glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). A pixel is painted
-   when its centre is inside.
+   glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). Paint a pixel when
+   its centre is inside.
 5. **Move the pen**: penX += advanceWidth × scale, using the glyph's advance width from `hmtx`
    (your `font/Metrics` from assignment 05; glyphs past numberOfHMetrics use the last advance).
    Don't round the pen position: keep it fractional.
@@ -75,13 +75,13 @@ the checker looks at the contents, so either of these works:
   boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
   path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
+- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
+  height and `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
 
-### Where each piece is explained
+### The pieces and the assignments that cover them
 
 | Step | Assignment | Key facts |
 |---|---|---|
@@ -98,13 +98,17 @@ per `font` line and calls its `drawText` once per `text` line.)
 
 ## Requirements
 
-- **R1** UTF-8 is decoded into code points, including 2-, 3- and 4-byte characters.
-- **R2** Characters are mapped to glyphs with cmap; characters the font doesn't have draw glyph 0.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
+
+- **R1** Decode UTF-8 into code points, including 2-, 3- and 4-byte characters.
+- **R2** Map characters to glyphs with cmap; a character the font doesn't have draws glyph 0.
 - **R3** Each glyph moves the pen right by its advance width times the scale.
-- **R4** Compound glyphs are drawn with their components in place.
-- **R5** Glyphs are filled with the non-zero rule, curves and overlapping strokes included.
-- **R6** Several pen positions, colours and text lines; later text is drawn on top.
-- **R7** The scale is applied; text that runs off the canvas is clipped.
+- **R4** Draw compound glyphs with their components in place.
+- **R5** Fill glyphs with the non-zero rule, curves and overlapping strokes included.
+- **R6** Handle several pen positions, colours and text lines, and draw later text on top.
+- **R7** Apply the scale, and clip text that runs off the canvas.
 
 ## Examples
 
@@ -118,8 +122,8 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
          text Hello, World!
 ```
 
-JetBrains Mono is monospaced: every advance width is 600 font units, so each character moves the
-pen 600 × 0.07 = 42 pixels.
+JetBrains Mono is a monospaced font: every advance width is 600 font units, so each character
+moves the pen 600 × 0.07 = 42 pixels.
 
 ![expected picture for 18-E2E-hello](tests/18/expected/18-E2E-hello.png)
 
@@ -148,8 +152,9 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
          text A͸B
 ```
 
-The middle character, U+0378 (bytes `cd b8` in UTF-8), isn't in JetBrains Mono's cmap, so glyph 0 is drawn in its place: a
-box with a slash. The pen still moves on by glyph 0's advance width.
+The middle character, U+0378 (bytes `cd b8` in UTF-8), isn't in JetBrains Mono's cmap, so your
+program draws glyph 0 in its place, a box with a slash. The pen still moves on by glyph 0's
+advance width.
 
 ![expected picture for 18-R2-unmapped](tests/18/expected/18-R2-unmapped.png)
 
@@ -171,15 +176,16 @@ box with a slash. The pen still moves on by glyph 0's advance width.
 
 <details><summary>Hint 1: where to start</summary>
 
-Make a small font class that loads everything once: the table directory, the cmap mapping, the
-`loca` offsets and lengths, and the advance widths. Then drawing a string is a loop over code points.
+Make a small font class that loads these once: the table directory, the cmap mapping, the `loca`
+offsets and lengths, and the advance widths. Then drawing a string is a loop over code points.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Call the project files you already have: assignments 02 to 05 (tables), 07 and 09 (glyph
-outlines) and 17 (filling). Each one already turns a font file into exactly what the next step
-needs. Decode the UTF-8 into code points first, then for each: glyph id, outlines, fill, advance.
+outlines) and 17 (filling). Each one already hands the next step the data it needs. Decode the
+UTF-8 into code points first, then for each one find the glyph id, get its outlines, fill them and
+move the pen by the advance.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -217,5 +223,5 @@ return penX
 
 The blog's final program loads the font once in a `FontParser`, converts the string to code points
 with a small `utf8ToCodepoints` helper, asks the parser for each glyph and renders it with the
-non-zero renderer, moving a start x by each glyph's metrics. The pictures at the end of the blog are
-made that way.
+non-zero renderer, moving a start x by each glyph's metrics. That program draws the pictures at the
+end of the blog.

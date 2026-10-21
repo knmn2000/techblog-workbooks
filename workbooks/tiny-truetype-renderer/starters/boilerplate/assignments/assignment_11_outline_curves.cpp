@@ -3,28 +3,27 @@
 // Problem: problems/11-outline-curves.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 11, as
-//   `build/solutions/assignment_11.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 11`, or Run and Submit in the book.
+//   The checker runs this program for assignment 11 as `build/solutions/assignment_11.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 11`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
-//   It adds to src/render/Outline.h, which you started earlier: Add a second drawing
+//   It adds to src/render/Outline.h, which you started earlier: Declare a second drawing
 //   function next to your straight-line one from assignment 08. It takes the canvas, an
-//   outline, its placement, a line thickness and a colour, and draws the outline with real
+//   outline, its placement, a line thickness and a colour, and draws the outline with its
 //   curves. The Boilerplate's `Outline.h` already declares it as `renderGlyphCurves`; if
 //   you wrote the header your own way, add the declaration now.
 //   It adds to src/render/Outline.cpp, which you started earlier: Implement the curve
-//   drawing. Walk each contour from an on-curve point, turning the points into straight
-//   lines and quadratic curves (with an implied on-curve point between two off-curve
-//   points), and draw each curve as short lines using your curve function from
-//   `utils/Geometry.h`. Draw the red, green and blue markers only after all the lines of
-//   the outline.
+//   drawing. Walk each contour from an on-curve point and turn its points into straight
+//   lines and quadratic curves, adding an implied on-curve point between two off-curve
+//   points. Draw each curve as short lines with your curve function from
+//   `utils/Geometry.h`. Draw the red, green and blue markers after all the lines of the
+//   outline.
 //   Earlier files you can use: src/utils/Geometry.h.
 //   Include them by their path under src/, e.g. #include "render/Outline.h".
 //

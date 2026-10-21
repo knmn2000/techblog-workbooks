@@ -3,23 +3,22 @@
 // Problem: problems/12-segment-intersection.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 12, as
-//   `build/solutions/assignment_12.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 12`, or Run and Submit in the book.
+//   The checker runs this program for assignment 12 as `build/solutions/assignment_12.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 12`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
 //   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
 //   two segments, each given by its two end points, and returns the one point where they
-//   meet, or nothing when they don't meet or are parallel or collinear (`std::optional`
-//   suits this). Small helpers for the 2D cross product and the side value belong here
-//   too, `inline` like the rest of the header. The Boilerplate's `Geometry.h` from
-//   assignment 10 already declares the function as `segmentsIntersect`.
+//   meet. If they don't meet, or are parallel or collinear, it returns nothing;
+//   `std::optional` suits this. Put small helpers for the 2D cross product and the side
+//   value here too, `inline` like the rest of the header. The Boilerplate's `Geometry.h`
+//   from assignment 10 already declares the function as `segmentsIntersect`.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:

@@ -4,13 +4,13 @@
 // Problem: problems/05-metrics.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The `hhea` and `hmtx` tables: the font's ascent and descent, and each glyph's advance
-//   width and left side bearing. Later, assignment 18 moves the pen by each glyph's
-//   advance width and sizes the text from the ascent and descent.
+//   This header declares your reader for the `hhea` and `hmtx` tables: the font's ascent
+//   and descent, and each glyph's advance width and left side bearing. Assignment 18 moves
+//   the pen by each glyph's advance width and sizes the text from the ascent and descent.
 //
 // Your job:
-//   In the Boilerplate this file is already written: the declarations, named as the author
-//   names them. Your work is in this assignment's other files, where it says TODO.
+//   The Boilerplate gives you this file finished: the declarations, with the author's
+//   names. You fill in the TODOs in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

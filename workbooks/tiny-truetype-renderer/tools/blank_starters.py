@@ -59,30 +59,31 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
     if path == entry:
         run = config["run"].replace("{id}", cid).replace("{input}", "<input-file>").replace("{output}", "<output-file>")
         check = config.get("book", {}).get("checkCommand", ".\\check {id}").replace("{id}", cid)
-        why = (f"This is the program the checker runs for assignment {cid}, as `{run}`: it reads a test "
-               f"input, calls your code and writes the answer to the output file. Only that output is "
-               f"checked. Check it with `{check}`, or Run and Submit in the book.")
+        why = (f"The checker runs this program for assignment {cid} as `{run}`. It reads a test input, "
+               f"calls your code and writes the answer to the output file, and the checker compares that "
+               f"answer with the expected one. Run `{check}`, or use Run and Submit in the book.")
     else:
         why = config["project"].get("purposes", {}).get(path, "")
         later = sorted(c for c, m in config["checkpoints"].items() if path in m.get("extends", []))
-        if later:
+        # Say which later assignments add to the file, unless the purpose already names them.
+        if later and not all(re.search(rf"\b0?{int(c)}\b", why) for c in later):
             why += f" Later, assignment{'s' if len(later) > 1 else ''} {listing(later)} add{'' if len(later) > 1 else 's'} to this file."
     sections.append(["Why this file exists:", *("  " + l for l in wrap(why))])
     job = jobs.get(path) or "See this assignment's Start here card in the problem book."
     if kind == "boilerplate" and path == entry:
-        job = ("In the Boilerplate this program is already written: it reads the input, calls your code "
-               "and writes the answer. Your work is in this assignment's other files, where it says TODO.")
+        job = ("The Boilerplate gives you this program finished: it reads the input, calls your code and "
+               "writes the answer. You fill in the TODOs in this assignment's other files.")
     elif kind == "boilerplate" and todo:
-        job += " The Boilerplate has the declarations written: fill in what's marked TODO."
+        job += " The Boilerplate gives you the declarations; fill in each TODO."
     elif kind == "boilerplate":
-        job = ("In the Boilerplate this file is already written: the declarations, named as the author "
-               "names them. Your work is in this assignment's other files, where it says TODO.")
+        job = ("The Boilerplate gives you this file finished: the declarations, with the author's names. "
+               "You fill in the TODOs in this assignment's other files.")
     sections.append(["Your job:", *("  " + l for l in wrap(job))])
     if path == entry:
         others = [p for p in meta.get("files", [])]
         lines = []
         if others:
-            lines += wrap(f"This assignment also has you write {listing(others)}; each says its job at the top.")
+            lines += wrap(f"You also write {listing(others)} in this assignment; each one gives its job at the top.")
         for p in meta.get("extends", []):
             lines += wrap(f"It adds to {p}, which you started earlier: {jobs.get(p, 'see the Start here card.')}")
         if meta.get("buildsOn"):
@@ -94,9 +95,9 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
             sections.append(["The other files of this assignment:", *("  " + l for l in lines)])
     how = ("This is the Boilerplate. To start from an empty file instead, choose From scratch in the "
            "book (the empty files are in starters/blank/)." if kind == "boilerplate" else
-           "Two ways: write it all yourself from here, or press Boilerplate in the book's editor for "
-           "ready-made input/output code and declarations named as the author names them (the same "
-           "files are in starters/boilerplate/).")
+           "Write it yourself from here, or press Boilerplate in the book's editor to get the "
+           "input/output code and the declarations, with the author's names (the same files are in "
+           "starters/boilerplate/).")
     sections.append(["How to start:", *("  " + l for l in wrap(how))])
     body = []
     for k, section in enumerate(sections):

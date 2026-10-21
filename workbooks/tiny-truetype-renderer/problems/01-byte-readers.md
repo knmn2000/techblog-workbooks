@@ -9,18 +9,17 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
-**"What is TrueType?"** section for the big picture, then
+You can pass using this page alone. For the background, read the blog's
+**"What is TrueType?"** section, then
 [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files).
-That section has a single paragraph, starting "Let's create a FontParser class". The author's
-code comes right after it, below a link card.
+That section has one paragraph, and the author's code follows it, below a link card.
 
 ## Where this fits
 
-A TrueType file is a long run of bytes, and every number in it is stored big-endian. This is
-the first piece of your project, and every later assignment that reads the font reads it
-through your `ByteReader`: assignment 02 for the table directory, assignments 03 to 05 for the
-`cmap`, `loca` and metrics tables, and assignments 07 and 09 for glyph outlines.
+A TrueType font stores every number big-endian. Your `ByteReader` is the first piece of your
+project, and every later assignment that reads the font goes through it: assignment 02 for the
+table directory, assignments 03 to 05 for the `cmap`, `loca` and metrics tables, and
+assignments 07 and 09 for glyph outlines.
 
 ## The problem
 
@@ -45,21 +44,21 @@ The reader keeps a **current position**: the byte the next read starts at.
 
 - The position starts at byte 0.
 - Each read moves it forward by the number of bytes it read.
-- A `jump` or `skip` may land at or past the end of the file. That is not an error by itself,
-  but the next read will run out of bytes.
+- A `jump` or `skip` may move the position to the end of the file or past it. The move itself
+  succeeds, and the next read runs out of bytes.
 
 ### Output
 
 - Each read operation writes one line, in input order: the operation's name, a space, and the
   value in decimal. For example `u16 65535`, `i16 -1` or `f2dot14 1.75`.
 - `jump` and `skip` write nothing.
-- **F2Dot14 values** never have more than 14 digits after the decimal point, and the
-  boilerplate's output code prints them exactly. If you write your own output code, any value
-  within 0.000001 of the exact one is accepted.
+- **F2Dot14 values** have at most 14 digits after the decimal point, and the Boilerplate's
+  output code prints all of them. If you write your own output code, the checker accepts any
+  value within 0.000001 of the exact one.
 
 **Running out of bytes.** If a read needs a byte past the end of the file, write the line
-`eof` instead, and stop: run no further operations. A read that ends exactly on the last
-byte of the file is fine.
+`eof` in place of its value and stop: your program runs no further operations. A read that
+ends on the last byte of the file succeeds.
 
 ### Big-endian byte order
 
@@ -86,7 +85,7 @@ this way. The two bytes `12 34` hold `0x1234` = 4660 (a little-endian reader wou
 same bytes as the unsigned read of the same size. Call the unsigned result u and the size in
 bits n (8, 16 or 32):
 
-- If the top bit is set, that is, u ≥ 2^(n−1), the value is u − 2^n.
+- If the top bit is 1 (u ≥ 2^(n−1)), the value is u − 2^n.
 - Otherwise it is u.
 
 | Bytes | Unsigned | Signed |
@@ -117,8 +116,9 @@ variable-font axis coordinates.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-the difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** `u8`, `u16` and `u32` read 1, 2 and 4 bytes, most significant byte first, as
   non-negative numbers.
@@ -127,8 +127,8 @@ the difference most likely comes from.
 - **R3** `f2dot14` is the `i16` value divided by 16384.
 - **R4** `jump` moves to an absolute offset. `skip` moves forward from the current position.
   Each read moves forward by its own size.
-- **R5** A read that needs bytes past the end of the file writes `eof`, and nothing is
-  written after it.
+- **R5** A read that needs bytes past the end of the file writes `eof`, and your program
+  writes nothing after it.
 
 ## Examples
 
@@ -194,8 +194,8 @@ output:  u16 258
          eof
 ```
 
-`u16` reads `01 02` = 258. The `u32` needs 4 bytes but only 3 are left, so the program
-writes `eof` and stops. The last `u8` is never run, even though a byte is left.
+`u16` reads `01 02` = 258. The `u32` needs 4 bytes and the file has 3 left, so the program
+writes `eof` and stops. It doesn't run the last `u8`, even though one byte remains.
 
 ## Constraints
 
@@ -205,7 +205,7 @@ writes `eof` and stops. The last `u8` is never run, even though a byte is left.
 - The files are hand-made files of up to 64 bytes (one is empty) and the two fonts in
   `fonts/` (2.4 MB and 9.6 MB).
 - Each input has at most 40 operations.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
+- Each case has a 10-second limit. A correct solution finishes in milliseconds.
 - There are 28 tests: hand-made files for each rule (sign boundaries, the spec's F2Dot14
   table, jumps and skips, every way to run out of bytes), header fields of both fonts,
   F2Dot14 values from Noto Sans JP's `avar` table, and 4 random files with random
@@ -237,7 +237,7 @@ byte of the type, building the value in a wide unsigned variable such as `uint64
 the end of the file (by throwing an exception, for example) as soon as `get()` reports it. For a
 signed type, apply the two's complement rule to the finished value.
 
-The rest is short: an F2Dot14 is a 16-bit signed read divided by 16384.0, a jump is
+An F2Dot14 is a 16-bit signed read divided by 16384.0, a jump is
 `seekg(offset, std::ios::beg)`, and a skip is `seekg(count, std::ios::cur)`. (In the
 Boilerplate these are `readBigEndian`, `readF2Dot14`, `jumpTo` and `skipBytes`, and the end of
 the file is the `UnexpectedEof` exception.)
@@ -247,12 +247,11 @@ the file is the `UnexpectedEof` exception.)
 
 - Compare `get()`'s result with EOF before turning it into a byte. Once cast, EOF looks like
   the byte `ff`.
-- If you read into a `char` instead (with `read`), remember that `char` may be signed: the
-  byte `ff` becomes −1, and shifting a negative value spreads ones through the high bits.
-  Convert to `uint8_t` first.
+- `char` may be signed. If you read into a `char` (with `read`), the byte `ff` becomes −1,
+  and shifting a negative value spreads ones through the high bits. Convert to `uint8_t` first.
 - The sign rule uses the full width: subtract 2^16 for an `i16`, not 2^15 or 2^8.
-- Check for the end on every byte, not just the first. `file.eof()` is no help before a
-  read: it only turns true after a read has failed.
+- Check for the end after every `get()` in a read. `file.eof()` is no help before a read: it
+  turns true after a read has failed.
 - A stream that has failed ignores `seekg` until you call `clear()`. Calling `clear()` at the
   start of your jump keeps your reader usable after an error.
 - Printing a `uint8_t` with `<<` prints a character. Put `+` in front of it, or cast it to `int`, to print the number.
@@ -308,7 +307,8 @@ of the file, assembles the bytes most significant first, and converts signed typ
 complement by hand. `readUint8` to `readInt32` are one-line wrappers around it, and
 `readF2Dot14` divides an `int16` by 2^14.
 
-**Something to look for:** since C++20, converting an unsigned value to a signed type of the
-same width is defined to wrap around modulo 2^n, so `static_cast<int16_t>(uint16_t{0xfffe})`
-is already −2. Before C++20 the result was implementation-defined, which is one reason to
-write the conversion out by hand as the author does. Either way gives the same answers here.
+**Something to look for:** since C++20, the standard defines a conversion from an unsigned
+value to a signed type of the same width as wrapping modulo 2^n, so
+`static_cast<int16_t>(uint16_t{0xfffe})` is −2. Before C++20 the result was
+implementation-defined, which is one reason to write the conversion out by hand as the author
+does. Both versions give the same answers on these tests.

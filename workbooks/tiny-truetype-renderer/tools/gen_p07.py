@@ -31,7 +31,7 @@ REQUIREMENTS = [
     ("R3", "Compound glyph (contours < 0) -> `glyph <id> compound`"),
     ("R4", "Header: number of contours and bounding box"),
     ("R5", "Contour end indices in file order; point count = last + 1"),
-    ("R6", "Hinting instructions are skipped"),
+    ("R6", "Skip the hinting instructions"),
     ("R7", "REPEAT expanded; on/off for every point, repeats included"),
     ("R8", "1-byte, 2-byte and 'same' deltas -> absolute coordinates"),
     ("E2E", "Real glyphs from JetBrains Mono Bold"),

@@ -3,26 +3,27 @@
 // Problem: problems/17-nonzero-curves.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 17, as
-//   `build/solutions/assignment_17.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 17`, or Run and Submit in the book.
+//   The checker runs this program for assignment 17 as `build/solutions/assignment_17.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 17`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
-//   It adds to src/render/NonZero.h, which you started earlier: Keep the same fill
-//   function: from now on it also gets outlines with off-curve points, so curves. There is
-//   nothing new to declare unless you add a helper for curves.
+//   It adds to src/render/NonZero.h, which you started earlier: Keep the non-zero fill
+//   function you declared in assignment 16. Your program now also passes it outlines with
+//   off-curve points, so it has to handle curves. You have nothing new to declare unless
+//   you add a helper for curves.
 //   It adds to src/render/NonZero.cpp, which you started earlier: Make the non-zero fill
-//   right for curved outlines: every crossing on a curve needs the direction the curve
-//   runs at that row, which is easy once each curve is split where its y turns around. If
-//   your `render/Scanline` from assignment 14 already splits curves and gives every
-//   crossing its direction, your assignment 16 fill may pass as it is; otherwise add
-//   what's missing (in `render/Scanline` or here).
+//   work for curved outlines. Every crossing on a curve needs the direction the curve runs
+//   at that row. Once you split each curve where its y turns around, each piece runs one
+//   way, and comparing its end's y with its start's y gives that direction. If your
+//   `render/Scanline` from assignment 14 already splits curves and gives every crossing
+//   its direction, your assignment 16 fill may pass as it is; otherwise add what's
+//   missing, in `render/Scanline` or here.
 //   Earlier files you can use: src/render/Scanline.h and src/utils/Geometry.h.
 //   Include them by their path under src/, e.g. #include "render/NonZero.h".
 //

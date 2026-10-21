@@ -9,27 +9,27 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the start of the
-blog's **"Renderer: Curve Rendering"** section:
+You can pass using this page alone. For the background, read the start of the blog's
+**"Renderer: Curve Rendering"** section:
 [Definition of Bézier Curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Definition%20of%20B%C3%A9zier%20Curves)
 and [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm).
 Stop at the sentence that introduces the code. The author's code (the listing "Lerp for a
-segment and a quadratic Bézier curve") comes right after it. "TrueType Bézier curves" belongs
-to assignment 11.
+segment and a quadratic Bézier curve") follows it. "TrueType Bézier curves" belongs to
+assignment 11.
 
 ## Where this fits
 
-Assignment 08 drew glyph outlines with straight lines only. Real glyphs are made of quadratic
-Bezier curves. Each curve has an on-curve start point, an off-curve **control point** that
-pulls the curve toward itself, and an on-curve end point.
+In assignment 08 you drew glyph outlines with straight lines. TrueType outlines also use
+quadratic Bezier curves. Each curve has an on-curve start point, an off-curve **control point**
+that pulls the curve toward itself, and an on-curve end point.
 
-This assignment computes points along such a curve. Assignment 11 draws each curve by joining
+Here you compute points along such a curve. In assignment 11 you draw each curve by joining
 many of these points with short straight lines.
 
 ## The problem
 
-The program reads one request per line and prints the point it asks for: a point part of the
-way along a straight segment, or a point on a quadratic Bezier curve.
+Your program reads one request per line and writes the point that line asks for: a point part
+of the way along a straight segment, or a point on a quadratic Bezier curve.
 
 ### Input
 
@@ -39,22 +39,22 @@ The input file contains two kinds of lines:
 | Line | Meaning |
 |---|---|
 | `lerp ax ay bx by t` | The point a fraction `t` of the way along the straight segment from a = (ax, ay) to b = (bx, by). |
-| `bezier ax ay bx by cx cy t` | The point at parameter `t` on the quadratic Bezier curve that starts at a = (ax, ay), ends at c = (cx, cy), and is pulled toward the control point b = (bx, by). |
+| `bezier ax ay bx by cx cy t` | The point at parameter `t` on the quadratic Bezier curve that starts at a = (ax, ay), ends at c = (cx, cy), and bends toward the control point b = (bx, by). |
 
 - Every number is a decimal such as `12`, `-3.25` or `0.0625`.
-- `t` is always between 0 and 1, inclusive.
+- `t` is between 0 and 1, inclusive.
 - Mind the order on a `bezier` line: start, **control point**, end. The control point is the
   middle pair of numbers.
 
 ### Output
 
-One line per input line, in the same order: the point's coordinates `x y`, separated by a
-space.
+Write one line per input line, in the same order, holding the point's coordinates as `x y`
+with a space between them.
 
 The checker accepts any number within 0.001 of the expected value, so `25`, `25.0` and
-`25.0000` all match `25`. When a value isn't whole, print enough decimals to be within 0.001
-(4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded
-to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
+`25.0000` all match `25`. If a value isn't whole, print enough decimals to land within 0.001;
+4 decimals are enough. The boilerplate's `number()` prints whole numbers with no decimal point
+and rounds the others to 4 decimals, dropping trailing zeros (`37.5`, `0.0625`).
 
 ### Linear interpolation
 
@@ -64,33 +64,32 @@ to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
 lerp(a, b, t) = a + (b − a) · t
 ```
 
-- Work it out for x and y separately.
+- Apply the formula to x and to y.
 - t = 0 gives a, t = 1 gives b and t = 0.5 gives the midpoint.
-- t is measured from a, so `lerp(a, b, 0.25)` is close to a, and `lerp(b, a, 0.25)` is close
-  to b.
+- t counts from a, so `lerp(a, b, 0.25)` lands near a and `lerp(b, a, 0.25)` lands near b.
 
 ### A point on a quadratic Bezier curve
 
-A **quadratic Bezier curve** is defined by three points: the start a, the control point b and
-the end c. The curve leaves a heading toward b and arrives at c coming from the direction of
-b. It is pulled toward b but doesn't pass through it (unless all three points lie on one
-line, with b between a and c).
+Three points define a **quadratic Bezier curve**: the start a, the control point b and the end
+c. The curve leaves a heading toward b and arrives at c coming from the direction of b. It
+bends toward b but doesn't pass through it, unless all three points lie on one line with b
+between a and c.
 
-Each value of the **curve parameter** t picks one point on the curve. The point at t takes
-three lerps, all with the same t. This is **de Casteljau's construction**:
+Each value of the **curve parameter** t picks one point on the curve. **De Casteljau's
+construction** finds the point at t with three lerps, all with the same t:
 
 1. p = lerp(a, b, t), a point on the leg from a to the control point
 2. q = lerp(b, c, t), a point on the leg from the control point to c
 3. The curve point is lerp(p, q, t).
 
-Multiplying it out gives the same point as one formula, which you may use instead:
+If you multiply it out, you get one formula for the same point, and you may use it instead:
 
 ```
 B(t) = (1 − t)² · a  +  2 (1 − t) t · b  +  t² · c
 ```
 
-The three weights, (1 − t)², 2(1 − t)t and t², always add up to 1. At t = 0 the curve is at
-a; at t = 1 it is at c.
+For any t, the three weights (1 − t)², 2(1 − t)t and t² add up to 1. At t = 0 the curve is
+at a, and at t = 1 it is at c.
 
 | t | (1 − t)² | 2(1 − t)t | t² |
 |---|---|---|---|
@@ -101,7 +100,9 @@ a; at t = 1 it is at c.
 
 ## Requirements
 
-Each test case is designed around one of these.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** A `lerp` line gives the point a fraction t of the way from a to b.
 - **R2** A `bezier` line gives the point at t on the curve that starts at a, ends at c and is
@@ -127,7 +128,7 @@ output:  20 40
 ```
 
 On the first line, b − a = (40, 80). A quarter of that is (10, 20), and a + (10, 20) =
-(20, 40). The second line swaps a and b, so the quarter is measured from (50, 100) instead.
+(20, 40). The second line swaps a and b, so you measure the quarter from (50, 100).
 
 ### Example 2: the middle of an arch (test `10-R2-midpoint`)
 
@@ -168,12 +169,13 @@ At t = 1 every weight except t² is 0, so the curve ends at c = (100, 100). The 
   'S' and 'o' (JetBrains Mono Bold) and 'あ' (Noto Sans JP), plus one curve of '3' cut into 16
   steps.
 - Each case has a 10-second limit. A correct solution takes milliseconds.
-- 32-bit `float` is accurate enough for these tests, but `double` is the safer habit.
+- 32-bit `float` is accurate enough for these tests. The point type in `Geometry.h` uses
+  `double`.
 
 ## Source material
 
 - Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html), on quadratic curves in TrueType outlines
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), where on-curve and off-curve points are defined
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), which defines on-curve and off-curve points
 - Pomax, *A Primer on Bézier Curves*, [de Casteljau's algorithm](https://pomax.github.io/bezierinfo/#decasteljau), with interactive drawings
 - The blog: [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm)
 
@@ -181,8 +183,8 @@ At t = 1 every weight except t² is 0, so the curve ends at c = (100, 100). The 
 
 <details><summary>Hint 1: where to start</summary>
 
-Write `lerp` first and test it on Example 1. A curve point can be built from three calls to
-`lerp`, so once `lerp` works, the curve function is one line.
+Write `lerp` first and test it on Example 1. Once `lerp` works, you can write the curve
+function as three calls to it.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -229,7 +231,7 @@ bezier(a, b, c, t):
 A failing test looks like this:
 
 ```
-  R2  bezier: the point at t on the curve from a to c, pulled toward b .....    0 / 7   FAILED
+  R2  bezier: the point at t on the curve from a to c, which bends toward b .....    0 / 7   FAILED
       x 10-R2-midpoint  an arch from (0,0) to (100,0) pulled toward (50,100): t = 0.5
           line 1: expected `50 50`, got `37.5 25`
           expected values from: exact arithmetic with Python fractions.Fraction
@@ -241,7 +243,7 @@ A failing test looks like this:
 [The blog's listing](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Lerp%20for%20a%20segment)
 has two short functions on `glm::vec2`. `lerp` asserts that t is between 0 and 1 and returns
 a + (b − a) · t. `bezierLerp` nests three `lerp` calls in de Casteljau's order, as in
-Example 2. The expanded formula appears only in the blog's prose, not in its code.
+Example 2. The blog gives the expanded formula in its prose and doesn't use it in the code.
 
 **Something to look for:** the drawing code in the next section ("TrueType Bézier curves")
 calls the curve function `quadBezierLerp`, while this listing names it `bezierLerp`. They are

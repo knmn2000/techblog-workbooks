@@ -9,18 +9,18 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the blog tells the story behind it. Read the blog's
+You can pass using this page alone. For the background, read the blog's
 [Preparation of a renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
-section up to and including the paragraph that starts "The line drawing algorithm". The
-author's code comes right after it.
+section up to and including the paragraph that starts "The line drawing algorithm", and stop
+before the author's code that follows it.
 
 ## Where this fits
 
-Assignments 01 to 05 read numbers out of the font file. From here on, every few assignments
-draw a picture: outlines with straight lines (08) and with curves (11), filled glyphs (14, 16,
-17) and a line of text (18). They all draw on the **framebuffer** you build here: a grid of
-pixels in memory with three operations (one pixel, a rectangle, a thick line) that is saved as
-a PNG. It lives in `src/FrameBufferCanvas.h` and `.cpp`, so it's worth getting right.
+In assignments 01 to 05 you read numbers out of the font file. Six later assignments draw
+pictures: outlines with straight lines (08) and with curves (11), filled glyphs (14, 16, 17)
+and a line of text (18). They all draw on the **framebuffer** you build here, in
+`src/FrameBufferCanvas.h` and `.cpp`. It is a grid of pixels in memory with three operations
+(paint one pixel, fill a rectangle, draw a thick line) and a way to save the grid as a PNG.
 
 ## The problem
 
@@ -44,14 +44,14 @@ Colours are 0 to 255 per channel. Coordinates can be negative or beyond the pict
 
 ### Output
 
-A PNG (or binary PPM) file, exactly `w` x `h` pixels, 8 bits per channel, RGB (RGBA works too; alpha is
-ignored). Pixel (0, 0) is the **top-left** corner; x grows to the right and **y grows
-downwards**. Every pixel that no command paints stays black (0, 0, 0).
+A PNG (or binary PPM) file of `w` x `h` pixels, 8 bits per channel, RGB (RGBA works too; the
+checker ignores alpha). Pixel (0, 0) is the **top-left** corner; x grows to the right and **y
+grows downwards**. Every pixel that no command paints stays black (0, 0, 0).
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so either of these works:
+**Writing the picture.** Write the picture to the output path the checker gives you. The name
+ends in `.png`, but the checker looks at the contents, so either of these works:
 
-- **A binary PPM**, the easiest to write by hand: the header `P6`, the width, the height and
+- **A binary PPM**, which needs no library: the header `P6`, the width, the height and
   `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`), then 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
@@ -67,11 +67,12 @@ wherever they overlap.
 
 ### Painting one pixel
 
-`point x y ...` paints exactly one pixel. If (x, y) is outside the picture (x < 0, y < 0,
+`point x y ...` paints a single pixel. If (x, y) is outside the picture (x < 0, y < 0,
 x ≥ w or y ≥ h), nothing happens.
 
-Every other operation is built from this one, so this is where **clipping** lives: a shape
-partly outside the picture keeps its inside part, and the rest is dropped.
+The rectangle and the line paint through this operation, so its bounds check does the
+**clipping** for every shape: a shape that crosses the edge of the picture keeps only its
+inside part.
 
 ### Drawing a rectangle
 
@@ -82,8 +83,8 @@ partly outside the picture keeps its inside part, and the rest is dropped.
 | x | `cx - w/2` | `cx - w/2 + w - 1` |
 | y | `cy - h/2` | `cy - h/2 + h - 1` |
 
-where `w/2` and `h/2` round down. An odd size is centred exactly; an even size has one more
-pixel on the left (or top) side than on the right (or bottom):
+where `w/2` and `h/2` round down. With an odd size the centre pixel sits in the middle; with
+an even size the left (or top) side gets one pixel more than the right (or bottom):
 
 | w | columns, for cx = 100 |
 |---|---|
@@ -107,21 +108,21 @@ step along the line's longer direction:
    swapping back).
 4. If both ends are the same pixel, the line is a single square.
 
-**Rounding.** Rounding to the nearest is the cleanest choice, but truncating toward zero also
-passes, and a tie (exactly .5) may go either way: the checker forgives an edge that moves by one
-pixel. It doesn't forgive a missing piece, a gap or a shape in the wrong place.
+**Rounding.** Round to the nearest whole number. Truncating toward zero also passes, and a tie
+at .5 may go either way, because the checker forgives an edge that moves by one pixel. It
+doesn't forgive a missing piece, a gap or a shape in the wrong place.
 
 **The slope.** Compute it in floating point: with ints, `(by - ay) / (bx - ax)` is integer
 division and loses the fraction.
 
 ### How the picture is compared
 
-The checker reads your PNG and compares it with the expected picture pixel by pixel. A pixel
-that differs is forgiven only when it is an edge that moved by at most 1 pixel: extra ink
-right next to the same ink in the expected picture, or missing ink with the same ink right
-next to it in yours. Everything else counts, and every test allows 0 such pixels.
+The checker reads your PNG and compares it with the expected picture pixel by pixel. It
+forgives a differing pixel only when it belongs to an edge that moved by at most 1 pixel:
+extra ink next to the same ink in the expected picture, or missing ink with the same ink next
+to it in your picture. Every other difference counts, and every test allows 0 of them.
 
-When a test fails, the checker writes a diff picture:
+If a test fails, the checker writes a diff picture:
 
 - red where you have extra ink;
 - blue where ink is missing;
@@ -130,19 +131,20 @@ When a test fails, the checker writes a diff picture:
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement
-it targets.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** The picture is exactly `w` x `h`, black where nothing is drawn, with (0, 0) at the
-  top-left and y growing downwards.
-- **R2** `point` paints exactly one pixel in its colour.
+- **R1** The picture is `w` x `h` pixels, black wherever no command paints, with (0, 0) at
+  the top-left and y growing downwards.
+- **R2** `point` paints one pixel, in its colour.
 - **R3** `rect` covers columns `cx - w/2` to `cx - w/2 + w - 1` and rows likewise, for even
   and odd sizes.
 - **R4** `line` works in every direction (shallow, steep, horizontal, vertical, either end
   first), with both ends included and no gaps, and a zero-length line is one square.
 - **R5** `line` stamps a `thickness` x `thickness` square at every step.
-- **R6** Shapes partly outside the picture keep their inside part; shapes entirely outside
-  draw nothing and don't crash.
+- **R6** A shape that crosses the edge of the picture keeps its inside part, and a shape with
+  no pixel inside the picture draws nothing and doesn't crash your program.
 - **R7** Later commands paint over earlier ones.
 
 ## Examples
@@ -160,9 +162,9 @@ output:  a 500 x 500 PNG
 
 ![The blog's demo: a thick white line, a thin red line crossing it, and a green square](../tests/06/expected/06-E2E-blog-demo.png)
 
-The white line is steep (it rises 300 while moving 200 across), so it steps along y. The red
-line goes right to left, so its ends are swapped before stepping along x. Where the lines
-cross, the red one is on top because it comes later.
+The white line is steep (it moves 300 down and 200 across), so it steps along y. The red line
+goes right to left, so your program swaps its ends before stepping along x. The red line is on
+top where the two cross, because it comes later.
 
 ### Example 2: even-sized rectangles (test `06-R3-even`)
 
@@ -179,10 +181,10 @@ output:  a 220 x 140 PNG
 
 The green square covers columns 60 - 25 = 35 to 35 + 49 = 84 and rows 45 to 94: 25 pixels
 left of the centre column, 24 to the right. The pink bar covers columns 150 to 169 and rows
-36 to 43. The 2 x 2 square covers columns 159 to 160 and rows 99 to 100. The two points are
-drawn last, so they show on top of the rectangles' centres.
+36 to 43. The 2 x 2 square covers columns 159 to 160 and rows 99 to 100. The two points come
+last, so they show on top of the rectangles' centres.
 
-### Example 3: very short lines (test `06-R4-short`)
+### Example 3: lines 1 to 3 pixels long (test `06-R4-short`)
 
 ```
 input:   canvas 120 80
@@ -199,7 +201,7 @@ output:  a 120 x 80 PNG
 Take the green line from (50, 10) to (52, 13). It moves 3 down and 2 across, so it is steep:
 step y from 10 to 13 and work out x = 50 + 2/3 * (y - 10).
 
-| y | x exactly | x rounded | pixel |
+| y | x before rounding | x rounded | pixel |
 |---|---|---|---|
 | 10 | 50 | 50 | (50, 10) |
 | 11 | 50.67 | 51 | (51, 11) |
@@ -214,8 +216,7 @@ Without the swap you would step x from 50 to 52 and paint only 3 pixels, leaving
   Clip each rectangle's loops to the canvas rather than skipping pixels one by one: a thick line
   stamps one rectangle per step, and most of a big stamp can lie outside the canvas.
 - Coordinates are between -1000 and 1000, so a line has at most a few thousand steps.
-- At most 15 colours appear in one picture, all clearly different from each other and from
-  black.
+- At most 15 colours appear in one picture, each far from the others and from black.
 - Each case has a 10-second limit. A correct solution takes milliseconds.
 - There are 30 tests: the blog's demo, hand-made scenes for each requirement and 5 random
   scenes.
@@ -240,15 +241,15 @@ checks the bounds, nothing else has to. Then `drawRect()` is two loops calling `
 
 Pixel (x, y) lives at index `y * width + x` of the vector. For the line, decide once whether
 it is steep, swap x and y of both ends if so, and swap the ends if the first has the larger
-x. Now there is a single case: x goes up by 1 per step and y changes by `slope` per step,
-where `|slope| <= 1`. Swap x and y back when you stamp the square.
+x. After those swaps you have one case left: x goes up by 1 per step and y changes by `slope`
+per step, where `|slope| <= 1`. Swap x and y back when you stamp the square.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - Check `x >= width`, not `x > width`: index `y * width + width` is the first pixel of the
   next row (or past the end of the vector on the last row).
-- Without the steep swap, a nearly vertical line becomes a few dots.
+- Without the steep swap, a line close to vertical comes out as a few dots.
 - `(by - ay) / (bx - ax)` with ints is integer division. Convert to `double` first.
 - A zero-length line has `bx - ax == 0`. Don't divide by it; draw one square.
 - `w / 2` for the rectangle is integer division on purpose: it rounds down.
@@ -311,5 +312,5 @@ scene from Example 1.
 
 **Something to look for:** the snippet turns the stepped coordinate into a pixel with a plain
 cast, which truncates toward zero instead of rounding, so its lines can sit up to a pixel to
-one side. The tests accept both. It also divides by `bx - ax` without checking, so a
+one side, and the tests accept both. It also divides by `bx - ax` without checking, so a
 zero-length line divides by zero; this page asks for one square instead.

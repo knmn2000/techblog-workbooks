@@ -3,14 +3,14 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Filling a glyph by the even-odd rule, on top of `render/Scanline`. Assignment 16 adds
-//   the non-zero rule beside it, and that is the one the text renderer of assignment 18
-//   uses.
+//   It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16
+//   adds the non-zero rule beside it, and the text renderer in assignment 18 uses that
+//   rule.
 //
 // Your job:
-//   Implement it with your `render/Scanline`: build the edge pieces, then on every row
-//   fill from the 1st crossing to the 2nd, the 3rd to the 4th, and so on. The Boilerplate
-//   has the declarations written: fill in what's marked TODO.
+//   Implement the even-odd fill with your `render/Scanline`: build the edge pieces, then
+//   on every row fill from the 1st crossing to the 2nd, the 3rd to the 4th, and so on. The
+//   Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

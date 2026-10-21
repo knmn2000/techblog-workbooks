@@ -13,13 +13,13 @@ import fillgen as fg  # noqa: E402
 import wb  # noqa: E402
 
 REQUIREMENTS = [
-    ("R1", "Curved outlines fill exactly the pixels whose centre is inside"),
+    ("R1", "Curved outlines fill the pixels whose centre is inside, and no others"),
     ("R2", "Implied on-curve points; contours that start or stay off-curve"),
     ("R3", "Overlapping curved contours going the same way stay filled"),
     ("R4", "Contours going the opposite way cut holes"),
-    ("R5", "Scanlines that cross one curve twice or just touch it"),
+    ("R5", "Scanlines that cross one curve twice or touch it"),
     ("R6", "Several outlines; compound glyphs given as one outline"),
-    ("R7", "Placement and scale; parts outside the canvas are clipped"),
+    ("R7", "Placement and scale; clip what falls outside the canvas"),
     ("E2E", "Glyphs from JetBrains Mono Bold and Noto Sans JP"),
 ]
 

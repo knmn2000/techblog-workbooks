@@ -29,11 +29,11 @@ from imageio import compare_images, write_png  # noqa: E402
 
 REQUIREMENTS = [
     ("R1", "Canvas size; black background; (0, 0) top-left, y grows down"),
-    ("R2", "point paints exactly one pixel"),
+    ("R2", "point paints a single pixel"),
     ("R3", "rect is centred on (cx, cy): even and odd sizes"),
     ("R4", "line in every direction (shallow, steep, axis-aligned), both ends included"),
     ("R5", "line thickness: a thickness x thickness square at every step"),
-    ("R6", "Clipping: shapes partly or fully outside the canvas"),
+    ("R6", "Clipping: shapes that cross the canvas edge or lie outside it"),
     ("R7", "Drawing order: later commands paint over earlier ones"),
     ("E2E", "Whole scenes: the blog's demo and random scenes"),
 ]

@@ -2,10 +2,11 @@
 
 LeetCode-style assignments for the blog post
 [Writing a tiny TrueType parser and renderer from scratch](https://yayo1.com/en/blog/tiny-truetype-renderer/)
-by Yohei Yamasaki. Each assignment asks you to build what one part of the post builds, from
-reading big-endian bytes (01) to rendering a line of text (18), and each one adds properly named
-files to a project of your own. When you finish, `solutions/` is a working TrueType renderer in
-C++, laid out much like the author's, that you can put on GitHub as it is.
+by Yohei Yamasaki. In each assignment you build what one part of the post builds, from reading
+big-endian bytes (01) to rendering a line of text (18), and add its files, with names like
+`Cmap.cpp` and `GlyphParser.cpp`, to a project of your own. After the last one, `solutions/` holds
+a working TrueType renderer in C++, laid out much like the author's, that you can put on GitHub as
+it is.
 
 The problems are in `problems/` and, nicer to read, in the web problem book
 (`book/problem-book.html`: open it in a browser). The book has a problem list with your
@@ -48,21 +49,21 @@ solutions/
   third_party/      stb_image_write.h, for writing PNG files
 ```
 
-Do the assignments in order. Opening an assignment (in the book, or `.\check NN`) creates its
-files, each with a comment saying why it exists and your job in it; nothing you've written is
-ever replaced.
-An assignment's real work goes in `src/`, and later assignments include it: the outline renderer
-draws on your canvas, the text renderer uses nearly everything. Its program in `assignments/`
-reads a test input, calls your code and writes the answer.
+Do the assignments in order. Opening an assignment (in the book, or with `.\check NN`) creates
+its files, each with a comment saying why the file exists and what your job in it is. It doesn't
+overwrite anything you've written.
+You write an assignment's real work in `src/`, and later assignments use it: the outline renderer
+draws on your canvas, and the text renderer uses most of the project. The assignment's program in
+`assignments/` reads a test input, calls your code and writes the answer.
 
-Test inputs still carry what earlier assignments would produce (a table's offset, a glyph's
-location), so an assignment's tests only depend on the earlier files it uses. The whole project is
-built together, though: if a file of another assignment doesn't compile, the checker says which
-one. **Re-check solved** in the book runs every solved assignment again, so a change that breaks
-an earlier one shows up at once (marked with a red `!`).
+Each test input carries what earlier assignments would produce (a table's offset, a glyph's
+location), so an assignment's tests depend only on the earlier files it uses. The checker builds
+the whole project at once, though, and if a file from another assignment doesn't compile, it tells
+you which one. **Re-check solved** in the book runs every solved assignment again, so you see at
+once when a change breaks an earlier one (the book marks it with a red `!`).
 
 The **Files** panel in the book's editor shows the project as it grows, with each file's
-assignment. When everything passes, the problem list shows your project next to the author's.
+assignment. The problem list shows your project next to the author's once all 18 assignments pass.
 Build and run the finished program:
 
 ```
@@ -77,10 +78,11 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
 
 1. Read the problem (book or `problems/NN-*.md`). In the book, its **Start here** card lists the
    files to write, your job in each, the earlier files you can use, and the two ways to start.
-2. Write them. They start as the Boilerplate: the input/output and the declarations are written
-   (with the author's names where the post has them), and you fill in what's marked `TODO`. To
-   write everything yourself, including the includes, the parsing and the output, choose **From
-   scratch** on the Start here card: each file is then empty apart from its comment.
+2. Write the files. Each one starts as the Boilerplate, which gives you the input/output code and
+   the declarations (with the author's names where the post has them), and you fill in the parts
+   marked `TODO`. To write all of it yourself, including the includes, the parsing and the output,
+   choose **From scratch** on the Start here card: each file then starts empty apart from its
+   comment.
 3. Check it from this folder in PowerShell, or with Run and Submit in the book:
 
 ```
@@ -91,38 +93,40 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
 ```
 
 The verdict is `Accepted`, `Wrong Answer`, `Compile Error`, `Runtime Error` or
-`Time Limit Exceeded`. Text output is compared word by word, so line endings (`\n` or `\r\n`)
-and extra spaces don't matter, except inside quoted strings. Every failure shows the requirement
-it most likely comes from, where the expected value came from, and the command to reproduce it.
-Picture assignments also write a diff image (red: extra pixels, blue: missing, yellow: forgiven).
+`Time Limit Exceeded`. The checker compares text output word by word, so line endings (`\n` or
+`\r\n`) and extra spaces don't matter, except inside quoted strings. For each failure it shows its
+best guess at the requirement behind it, where the expected value came from, and the command that
+reproduces it. For picture assignments it also writes a diff image (red: extra pixels, blue:
+missing, yellow: forgiven).
 
-**Pictures are compared with a 1-pixel tolerance** along edges, so a different but correct
-line or fill algorithm passes. Missing shapes, stray lines and holes in the wrong place don't.
+**The checker compares pictures with a 1-pixel tolerance** along edges, so a different but correct
+line or fill algorithm passes. Missing shapes, stray lines and holes in the wrong place still fail.
 
 ## If you think a test is wrong
 
 Run `.\check 07 -Dispute <test-id> "your reason"`. That test stops counting and you can carry on;
 the verdict reads `Accepted (1 disputed)`. Then ask Claude to "review my disputes". Claude
 rechecks the expected value against its independent source and either fixes the test or shows
-you why it's right. Disputes are kept in `disputes.json`.
+you why it's right. The checker keeps disputes in `disputes.json`.
 
 ## Another language
 
-Only the output is checked, so the project can be in any language. This workbook's project, its
-starters and its reference are C++. To work in another language, ask Claude: it shows which
-languages are installed (`py -P tools/langs.py` lists them) and how to install the others, keeps
-your C++ project in a folder of its own, and sets up a project in the new language, with its own
-build file and the same layout in that language's style. Nothing is created for languages you
-don't choose.
+The checker reads only your program's output, so you can write the project in any language. This
+workbook's project, its starters and its reference are C++.
 
-To check a one-off program without changing anything:
+To work in another language, ask Claude. It shows which languages you have installed
+(`py -P tools/langs.py` lists them) and how to install the others, keeps your C++ project in a
+folder of its own, and sets up a project in the new language, with its own build file and the same
+layout in that language's style. It creates nothing for languages you don't choose.
+
+To check a one-off program without changing anything, run
 `.\check 07 -Run "path/to/program.exe {input} {output}"`.
 
 ## What's in here
 
 | Path | What it is |
 |---|---|
-| `problems/` | Problem statements (the book is built from these) |
+| `problems/` | Problem statements (`tools/build_book.py` makes the book from these) |
 | `solutions/` | Your project, created when you set the workbook up (see above) |
 | `starters/project/` | What your project starts with: the build file, README and `.gitignore` |
 | `starters/blank/`, `starters/boilerplate/` | Each assignment's files, blank and with the input/output done |
@@ -136,13 +140,13 @@ To check a one-off program without changing anything:
 | `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
 | `fonts/` | JetBrains Mono Bold (Nerd Font build) and Noto Sans JP, both SIL Open Font License (see `fonts/README.md`) |
 | `third_party/` | stb_image_write, under its own licence (see `third_party/README.md`) |
-| `docs/authoring-guide.md` | How the assignments and their tests are made |
+| `docs/authoring-guide.md` | How to write the assignments and their tests |
 | `_spoilers/` | The reference project. Don't open it until you've passed. |
 
 Needs: g++ (MinGW) with CMake and Ninja, and Python 3.11+ with `fontTools` for `-Fresh`. The
-commands in `workbook.json` are set up for Windows (PowerShell, the `py` launcher, `.exe`
-programs); on macOS or Linux, change the `.exe` paths there and run `python3 tools/check.py 07`
-instead of `.\check 07`.
+commands in `workbook.json` assume Windows (PowerShell, the `py` launcher, `.exe` programs). On
+macOS or Linux, change the `.exe` paths there and run `python3 tools/check.py 07` instead of
+`.\check 07`.
 
-This workbook is licensed under Apache-2.0, except the fonts and `third_party/`. It contains no
+Apache-2.0 covers this workbook, except the fonts and `third_party/`. The workbook contains no
 text or code from the blog post; the problem pages link to it.

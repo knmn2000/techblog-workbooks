@@ -3,19 +3,18 @@
 // Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the program the checker runs for assignment 01, as
-//   `build/solutions/assignment_01.exe <input-file> <output-file>`: it reads a test input,
-//   calls your code and writes the answer to the output file. Only that output is checked.
-//   Check it with `.\check 01`, or Run and Submit in the book.
+//   The checker runs this program for assignment 01 as `build/solutions/assignment_01.exe
+//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
+//   answer to the output file, and the checker compares that answer with the expected one.
+//   Run `.\check 01`, or use Run and Submit in the book.
 //
 // Your job:
-//   In the Boilerplate this program is already written: it reads the input, calls your
-//   code and writes the answer. Your work is in this assignment's other files, where it
-//   says TODO.
+//   The Boilerplate gives you this program finished: it reads the input, calls your code
+//   and writes the answer. You fill in the TODOs in this assignment's other files.
 //
 // The other files of this assignment:
-//   This assignment also has you write src/font/ByteReader.h and src/font/ByteReader.cpp;
-//   each says its job at the top.
+//   You also write src/font/ByteReader.h and src/font/ByteReader.cpp in this assignment;
+//   each one gives its job at the top.
 //   Include them by their path under src/, e.g. #include "font/ByteReader.h".
 //
 // How to start:
@@ -34,7 +33,7 @@
 
 namespace {
 
-// k / 16384 has at most 14 digits after the point, so this prints it exactly.
+// k / 16384 has at most 14 digits after the point, so 14 decimals print it without rounding.
 std::string decimal(const double value) {
   std::ostringstream s;
   s << std::fixed << std::setprecision(14) << value;
@@ -45,7 +44,7 @@ std::string decimal(const double value) {
 }
 
 // Runs one operation. Read operations write one line, `<op> <value>`.
-// The value is read before anything is written, so a read that fails writes nothing.
+// It reads the value before writing anything, so a read that fails writes nothing.
 // (The + in front of 8-bit values prints them as numbers, not characters.)
 void run(ByteReader& reader, const std::string& op, std::istringstream& words, std::ostream& out) {
   const auto line = [&](const auto& value) { out << op << ' ' << value << '\n'; };
