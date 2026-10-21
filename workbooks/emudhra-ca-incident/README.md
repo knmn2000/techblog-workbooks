@@ -1,8 +1,14 @@
-# CA Key Incident Workbook
+# Elliptic-Curve Keys, Certificates and Chains of Trust
 
-LeetCode-style checkpoints for [eMudhra Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident) by eMudhra. Each checkpoint asks
-you to build what one part of the post builds. Your program is checked by its output only, so you
-can structure it your own way, in any language, with any library.
+*Learn how to not f*ck up like eMudhra.*
+
+LeetCode-style checkpoints built around [eMudhra Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident): eight of eMudhra's intermediate
+certificate authority keys turned out to be weak (one had the private key value 4), and anyone
+could have recovered them in under a second. You build the maths that makes a key pair work,
+parse and validate certificates by hand, recover that weak key yourself, sign with it, and then
+build the checks (correct key generation, a key linter, a ceremony checker, SPKI blocklisting)
+that would have caught it. Your program is checked by its output only, so you can structure it
+your own way, in any language, with any library.
 
 The problems are in `problems/` and, nicer to read, in the web problem book
 (`book/problem-book.html`). The book has a problem list with your progress, and for each

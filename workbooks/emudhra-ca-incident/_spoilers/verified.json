@@ -43,7 +43,7 @@
   "06": {
     "files": {
       "_spoilers/reference/p06_read_certificate.py": "a77bdab909a79a698f0da60a48e922e7023ac37d3f12746ba31e068f3c03e5de",
-      "_spoilers/reference/common/certlib.py": "e216729957c1216d12bb988c5a7823a30f62a7a94e1099d32680e0682597fdc9"
+      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
     },
     "passed": 17,
     "total": 17,
@@ -65,6 +65,15 @@
     },
     "passed": 10,
     "total": 10,
+    "date": "2026-10-21"
+  },
+  "09": {
+    "files": {
+      "_spoilers/reference/p09_validate_chain.py": "1d2e74e88dd6fb939dea0c5ec10e9970f7cfa081b5587fd5ec201efcad32dcbc",
+      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+    },
+    "passed": 13,
+    "total": 13,
     "date": "2026-10-21"
   },
   "10": {
@@ -113,6 +122,15 @@
     },
     "passed": 8,
     "total": 8,
+    "date": "2026-10-21"
+  },
+  "16": {
+    "files": {
+      "_spoilers/reference/p16_audit_pki.py": "0cd649581ecc8cb8a6e2bd0abb306f66f4d0141688261bdcdcac9b28e571e87f",
+      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+    },
+    "passed": 12,
+    "total": 12,
     "date": "2026-10-21"
   }
 }
