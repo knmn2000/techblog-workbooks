@@ -1,6 +1,6 @@
 # 04 · Locate glyph records (loca)
 
-**Difficulty:** Medium · **Checkpoint** 4 of 18 · **Check:** `.\check 04`
+**Difficulty:** Medium · **Assignment** 4 of 18 · **Check:** `.\check 04`
 
 **Tags**
 - *Language:* unsigned arithmetic (`uint16_t`, `uint32_t`) · signed `int16_t` · off-by-one reasoning · `std::vector`
@@ -16,22 +16,19 @@ code comes right after it.
 
 ## Where this fits
 
-Checkpoint 3 turns a character into a glyph id. This checkpoint turns the glyph id into the
+Assignment 03 turns a character into a glyph id. This assignment turns the glyph id into the
 place where the glyph's outline is stored: a byte offset and a length inside the `glyf`
-table. The `glyph` lines you write are exactly the input format of checkpoint 7, which
-decodes the outline found there.
+table. The `glyph` lines you write are exactly the input format of assignment 07, which
+decodes the outline found there. Assignments 09 and 18 also find glyphs through your `Loca`.
 
 ## The problem
 
-Write a program that reads a font's `maxp`, `head` and `loca` tables and prints, for each
-requested glyph id, where that glyph's record is in the file and how long it is.
+Write a program that finds where each requested glyph's record is in the font file, and how
+many bytes long it is.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p04_loca.cpp` is a comment and an empty `main`: the
-includes, reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p04_loca.cpp` over it, or pick Boilerplate in the
-book's editor. The boilerplate reads the input and writes the output; you fill in
-`readGlyphLocations()`, which works out the location of every glyph.
+A glyph's **record** is the block of bytes in the `glyf` table that holds its outline. The
+`loca` table (index to location) says where each record starts, and two fields from `maxp`
+and `head` say how to read `loca`.
 
 ### Input
 
@@ -41,8 +38,11 @@ The input file contains these lines, in this order:
 | Line | Meaning |
 |---|---|
 | `font <path>` | The font file. The path is relative to the workbook folder and contains no spaces. |
-| `table "<tag>" <checkSum> <offset> <length>` | Four lines, for `glyf`, `head`, `loca` and `maxp`: their records from the table directory, written as checkpoint 2 writes them. `offset` is where the table starts in the file. |
+| `table "<tag>" <checkSum> <offset> <length>` | Four lines, for `glyf`, `head`, `loca` and `maxp`: their records from the table directory, written as assignment 02 writes them. `offset` is where the table starts in the file. |
 | `glyph <id>` | A glyph id, from 0 to `numGlyphs` − 1. There may be none of these lines, or many. |
+
+Your program can parse the `table` lines into the table records your `FontParser` from
+assignment 02 declares, and read the font with your `ByteReader` from assignment 01.
 
 ### Output
 
@@ -58,12 +58,12 @@ Then, for each `glyph` line, in input order:
 glyph <id> <offset> <length>
 ```
 
-`offset` is where the glyph's record starts, in bytes from the start of the **file**.
-`length` is the record's size in bytes. A length of 0 means the glyph has no outline (the
-space character, for example).
+- `offset` is where the glyph's record starts, in bytes from the start of the **file**.
+- `length` is the record's size in bytes. A length of 0 means the glyph has no outline (the
+  space character, for example).
 
-The `glyph` lines are exactly checkpoint 7's input lines: put the `font` line in front of
-them and checkpoint 7 can decode the glyphs.
+The `glyph` lines are exactly assignment 07's input lines: put the `font` line in front of
+them and assignment 07 can decode the glyphs.
 
 ### The tables you need
 
@@ -101,10 +101,13 @@ offset(i) up to, but not including, offset(i + 1):
 - absolute offset = `glyf` table offset + offset(i)
 - length = offset(i + 1) − offset(i)
 
-That is why `loca` has one more entry than there are glyphs: entry `numGlyphs` marks where
-the last glyph ends. Glyphs with no outline have length 0, so they share their offset with the
-next glyph. The length may include a few bytes of padding at the end of the record; that's
-fine, because checkpoint 7 ignores them.
+Three things follow from this:
+
+- `loca` has one more entry than there are glyphs: entry `numGlyphs` marks where the last
+  glyph ends.
+- A glyph with no outline has length 0, so it shares its offset with the next glyph.
+- The length may include a few bytes of padding at the end of the record. That's fine,
+  because assignment 07 ignores them.
 
 ## Requirements
 
@@ -165,7 +168,7 @@ output:  glyphs 8 loca short
          glyph 7 696 24
 ```
 
-### Example 2: checkpoint 7's glyphs (test `04-R4-jetbrains-07`)
+### Example 2: assignment 07's glyphs (test `04-R4-jetbrains-07`)
 
 ```
 input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
@@ -188,7 +191,7 @@ output:  glyphs 12125 loca long
 JetBrains Mono uses long offsets. Entry 17 (at byte 64980 + 4 × 17) is `00 00 07 74` = 1908,
 and entry 18 is 1964. So glyph 17, the hyphen, starts at 113484 + 1908 = 115392 and is
 1964 − 1908 = 56 bytes long. Entries 4 and 5 are both 100, so glyph 4 (the space) is empty.
-These four lines are the input of checkpoint 7's example 3.
+These four lines are the input of assignment 07's example 3.
 
 ### Example 3: an empty last glyph (test `04-R5-empty-last-spare`)
 
@@ -296,7 +299,7 @@ A failing test looks like this:
           glyph[0]: expected (id=0, offset=484, length=26), got (id=0, offset=484, length=13) - differs in length  (in `glyphs 8 loca short`)
           likely cause: R5 - Length = next entry - this one (x2 if short); numGlyphs + 1 entries
           expected values from: fontTools 4.67.0 maxp, head, loca and the glyf offset, cross-checked against a struct parse of loca
-          reproduce: build/p04.exe build/cases/04/04-R3-short-x2.in build/cases/04/04-R3-short-x2.out
+          reproduce: build/solutions/assignment_04.exe build/cases/04/04-R3-short-x2.in build/cases/04/04-R3-short-x2.out
 ```
 
 ## After you pass: compare with the author's code

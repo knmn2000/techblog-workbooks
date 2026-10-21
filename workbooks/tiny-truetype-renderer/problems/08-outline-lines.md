@@ -1,10 +1,10 @@
 # 08 · Draw an outline with straight lines
 
-**Difficulty:** Easy · **Checkpoint** 8 of 18 · **Check:** `.\check 08`
+**Difficulty:** Easy · **Assignment** 8 of 18 · **Check:** `.\check 08`
 
 **Tags**
 - *Language:* nested loops over index ranges · wrapping an index back to the start · `std::lround`
-- *Library:* `Canvas` from `include/provided/Canvas.h` (`drawLine`, `drawRect`, `writePng`)
+- *Library:* your `FrameBufferCanvas` from assignment 06 (`drawLine`, `drawRect`, `writePng`)
 - *Concepts:* glyph outlines and contours · font units vs pixels · flipping the y axis · scale and offset (a simple transform)
 
 ## Read in the blog first
@@ -16,22 +16,16 @@ author's code comes right after it.
 
 ## Where this fits
 
-Checkpoint 7 decodes a glyph into contours of points; checkpoint 6 draws lines and squares.
-This checkpoint puts the two together and draws the first picture of a real glyph: every
-contour as a closed polygon, with a square on each point. It ignores curves on purpose.
-Checkpoint 11 draws the same outlines with proper curves.
+Assignment 07 decodes a glyph into contours of points (the types in your `GlyphComponent.h`),
+and your `FrameBufferCanvas` from assignment 06 draws lines and squares. This assignment puts
+the two together and draws the first picture of a real glyph: every contour as a closed
+polygon, with a square on each point. It ignores curves on purpose; assignment 11 adds them to
+the same `render/Outline` files.
 
 ## The problem
 
-Write a program that reads one or more glyph outlines and draws each one as straight lines
-between its points, with a small square on every point, and writes the picture as a PNG.
-
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p08_outline_lines.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p08_outline_lines.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, gives you a `Canvas` and
-writes the PNG; you fill in `drawOutline()`.
+Write a program that draws glyph outlines into a PNG: straight lines between each outline's
+points, and a small square on every point.
 
 ### Input
 
@@ -48,33 +42,35 @@ The output file name ends in `.png`. The input file contains these lines:
 | `ends <e0> <e1> ...` | Index of the last point of each contour, in increasing order. |
 | `points <x> <y> <on\|off> ...` | Every point of the outline, in order, in font units. |
 
-`place`, `style` and `color` always come before the first `outline`, and may appear again
-between outlines; each outline uses the most recent ones. `ends` and `points` have exactly
-the format that checkpoint 7 prints, except that a coordinate may have a fractional part
-(e.g. `120.75`), as checkpoint 9 produces for scaled components. `x0`, `baseline` and
-`scale` may be fractional or negative; `lineThickness`, `markerSize`, `w`, `h` and colours
-are whole numbers.
+- `place`, `style` and `color` always come before the first `outline`, and may appear again
+  between outlines. Each outline uses the most recent ones.
+- `ends` and `points` have exactly the format that assignment 07 prints, except that a
+  coordinate may have a fractional part (e.g. `120.75`), as assignment 09 produces for scaled
+  components.
+- `x0`, `baseline` and `scale` may be fractional or negative. `lineThickness`, `markerSize`,
+  `w`, `h` and colours are whole numbers.
 
 ### Output
 
-A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner and pixel y
-grows downwards. The boilerplate writes it with `Canvas::writePng`.
+A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner
+and pixel y grows downwards.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+**Writing the picture.** Your `FrameBufferCanvas` from assignment 06 already does this (in the
+Boilerplate, `writePng`). Write it to the output path you're given. The name ends in `.png`,
+but the checker looks at the contents, so either of these works:
+
+- **A binary PPM**: the header `P6`, the width, the height and `255`, separated by spaces or
+  newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
+  (red, green, blue), row by row from the top-left. Open the file in binary mode
+  (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
+- **A real PNG**: `third_party/stb_image_write.h` in your project is on the include path.
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### From font units to pixels
 
-Font coordinates grow **upwards** from the baseline; pixel coordinates grow downwards from
-the top. A point (x, y) in font units lands on pixel
+Glyph coordinates are in **font units**, which grow **upwards** from the baseline; pixel
+coordinates grow downwards from the top. A point (x, y) in font units lands on pixel
 
 ```
 px = x0 + scale * x
@@ -92,24 +88,34 @@ For each outline, in input order:
 1. **Lines.** The `ends` values split the points into contours: contour 0 is points 0 to
    `e0`, contour 1 is points `e0 + 1` to `e1`, and so on. Within each contour, draw a line
    from every point to the next one, and from the **last point back to the contour's first
-   point**. Never draw a line from one contour to the next. Use `Canvas::drawLine` (or your
-   own from checkpoint 6) with thickness `lineThickness`.
+   point**. Never draw a line from one contour to the next. Draw each line with your
+   `FrameBufferCanvas` line from assignment 06, with thickness `lineThickness`.
 2. **Markers.** Then, on every point, draw a `markerSize` x `markerSize` square centred on it
-   (`Canvas::drawRect`): columns x − size/2 up to x − size/2 + size − 1 with size/2 rounded down,
-   and rows likewise. An odd size is exactly centred; an even size has one more pixel on the left
-   and top, so a 10-pixel marker at x = 16 covers columns 11 to 20.
+   (your canvas's rectangle): columns x − size/2 up to x − size/2 + size − 1 with size/2 rounded
+   down, and rows likewise. An odd size is exactly centred; an even size has one more pixel on
+   the left and top, so a 10-pixel marker at x = 16 covers columns 11 to 20.
 
-Everything is drawn in the outline's colour. Whether a point is `on` or `off` doesn't matter
-here: every point is joined by straight lines and gets a marker. Later outlines are drawn
-over earlier ones, though no test makes outlines of different colours overlap.
+Three more rules:
+
+- Everything is drawn in the outline's colour.
+- Whether a point is `on` or `off` doesn't matter here: every point is joined by straight lines
+  and gets a marker.
+- Later outlines are drawn over earlier ones, though no test makes outlines of different
+  colours overlap.
 
 ### How the picture is compared
 
 The checker compares your PNG with the expected picture pixel by pixel and forgives only an
 edge that moved by at most 1 pixel, so rounding a coordinate down instead of to the nearest
 still passes. A missing line, a line that shouldn't be there or a shape in the wrong place
-fails. When a test fails, the checker writes a diff picture: red where you have extra ink,
-blue where ink is missing, magenta for the wrong colour, yellow for forgiven pixels.
+fails.
+
+When a test fails, the checker writes a diff picture:
+
+- red where you have extra ink;
+- blue where ink is missing;
+- magenta for the wrong colour;
+- yellow for forgiven pixels.
 
 ## Requirements
 
@@ -277,7 +283,7 @@ this:
           1127 pixels missing, e.g. (116, 21) should be white (beyond the 1-pixel edge tolerance). Diff: build/cases/08/08-R2-triangle.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R2 - Every contour is closed: its last point joins its first
           expected values from: hand-made outline; picture checked against the ideal segments and markers
-          reproduce: build/p08.exe build/cases/08/08-R2-triangle.in build/cases/08/08-R2-triangle.out.png
+          reproduce: build/solutions/assignment_08.exe build/cases/08/08-R2-triangle.in build/cases/08/08-R2-triangle.out.png
 ```
 
 ## After you pass: compare with the author's code
@@ -292,6 +298,6 @@ the current point in the same loop. Its `main` draws `a` from JetBrains Mono Bol
 **Something to look for:** the snippet doesn't flip y itself. It adds the start position to
 the font coordinates and asks stb to flip the whole image vertically when writing the PNG.
 That works for one glyph, but the start position is then measured from the bottom of the
-picture. This page uses an explicit baseline instead, which the later checkpoints need when
+picture. This page uses an explicit baseline instead, which the later assignments need when
 several glyphs share a line of text; the blog switches to a transform matrix
 (`setGlyphBaseline`) for the same reason in its curve section.

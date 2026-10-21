@@ -1,0 +1,30 @@
+// ======================================================================================
+// Assignment 15: Lowest point of a quadratic curve
+// Problem: problems/15-bezier-min-y.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   This is the program the checker runs for assignment 15, as
+//   `build/solutions/assignment_15.exe <input-file> <output-file>`: it reads a test input,
+//   calls your code and writes the answer to the output file. Only that output is checked.
+//   Check it with `.\check 15`, or Run and Submit in the book.
+//
+// Your job:
+//   Read each `curve` line's six numbers as three points, call your lowest-point function,
+//   and write one answer per curve, in the same order (see Output for the precision).
+//
+// The other files of this assignment:
+//   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
+//   a quadratic curve's start, control and end points and returns the smallest y on the
+//   curve for t from 0 to 1, as an exact `double` (don't round it to a whole number). The
+//   Boilerplate from assignment 10 already declares it as `getBezierMinY`; if you wrote
+//   this file your own way, add it next to your curve functions.
+//   Include them by their path under src/, e.g. #include "utils/Geometry.h".
+//
+// How to start:
+//   Two ways: write it all yourself from here, or press Boilerplate in the book's editor
+//   for ready-made input/output code and declarations named as the author names them (the
+//   same files are in starters/boilerplate/).
+// ======================================================================================
+
+int main(int argc, char** argv) {
+}

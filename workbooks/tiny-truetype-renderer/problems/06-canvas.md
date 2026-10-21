@@ -1,10 +1,10 @@
 # 06 · Draw on a framebuffer
 
-**Difficulty:** Medium · **Checkpoint** 6 of 18 · **Check:** `.\check 06`
+**Difficulty:** Medium · **Assignment** 6 of 18 · **Check:** `.\check 06`
 
 **Tags**
 - *Language:* structs · `std::vector` as a 2D grid · integer division · `std::swap` · converting a float to an int (rounding vs truncating)
-- *Library:* `stbi_write_png` from stb_image_write (already called for you)
+- *Library:* `stbi_write_png` from stb_image_write (the Boilerplate already calls it)
 - *Concepts:* framebuffer · row-major pixel layout · clipping · line rasterization along the longer axis · drawing order
 
 ## Read in the blog first
@@ -16,23 +16,16 @@ author's code comes right after it.
 
 ## Where this fits
 
-Checkpoints 1 to 5 read numbers out of the font file. From here on, every few checkpoints
-draw a picture: outlines with straight lines (8), with curves (11), then filled glyphs (14,
-16, 17). They all draw on the framebuffer you build here: a grid of pixels with three
-operations (one pixel, a rectangle, a thick line) that is written out as a PNG. Later checkpoints can use `include/provided/Canvas.h`, a ready-made version (their boilerplate starters include it), so you can skip ahead.
+Assignments 01 to 05 read numbers out of the font file. From here on, every few assignments
+draw a picture: outlines with straight lines (08) and with curves (11), filled glyphs (14, 16,
+17) and a line of text (18). They all draw on the **framebuffer** you build here: a grid of
+pixels in memory with three operations (one pixel, a rectangle, a thick line) that is saved as
+a PNG. It lives in `src/FrameBufferCanvas.h` and `.cpp`, so it's worth getting right.
 
 ## The problem
 
-Write a program that reads a list of drawing commands and writes the picture they draw as a
-PNG file.
-
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p06_canvas.cpp` is a comment and an empty `main`:
-the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p06_canvas.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, keeps the pixels in a
-`FrameBuffer` and writes the PNG; you fill in `set()`, `drawRect()` and `drawLine()`. Don't
-include `provided/Canvas.h` here: writing it is the exercise.
+Write a program that reads a list of drawing commands and saves the picture they draw as a PNG
+file.
 
 ### Input
 
@@ -56,14 +49,16 @@ ignored). Pixel (0, 0) is the **top-left** corner; x grows to the right and **y 
 downwards**. Every pixel that no command paints stays black (0, 0, 0).
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`.
+the checker looks at the contents, so either of these works:
+
+- **A binary PPM**, the easiest to write by hand: the header `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
+  `P6\n205 195\n255\n`), then 3 bytes per pixel (red, green, blue), row by row from the
+  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
+  byte 10 as two bytes.
+- **A real PNG**: `third_party/stb_image_write.h` in your project is on the include path.
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### The commands, in order
 
@@ -73,8 +68,10 @@ wherever they overlap.
 ### Painting one pixel
 
 `point x y ...` paints exactly one pixel. If (x, y) is outside the picture (x < 0, y < 0,
-x ≥ w or y ≥ h), nothing happens. Every other operation is built from this one, so this is
-where clipping lives: a shape partly outside the picture keeps its inside part.
+x ≥ w or y ≥ h), nothing happens.
+
+Every other operation is built from this one, so this is where **clipping** lives: a shape
+partly outside the picture keeps its inside part, and the rest is dropped.
 
 ### Drawing a rectangle
 
@@ -110,19 +107,26 @@ step along the line's longer direction:
    swapping back).
 4. If both ends are the same pixel, the line is a single square.
 
-Rounding to the nearest is the cleanest choice, but truncating toward zero also passes, and a
-tie (exactly .5) may go either way: the checker forgives an edge that moves by one pixel. What it
-doesn't forgive is a missing piece, a gap or a shape in the wrong place. Compute the slope in
-floating point: with ints, `(by - ay) / (bx - ax)` is integer division and loses the fraction.
+**Rounding.** Rounding to the nearest is the cleanest choice, but truncating toward zero also
+passes, and a tie (exactly .5) may go either way: the checker forgives an edge that moves by one
+pixel. It doesn't forgive a missing piece, a gap or a shape in the wrong place.
+
+**The slope.** Compute it in floating point: with ints, `(by - ay) / (bx - ax)` is integer
+division and loses the fraction.
 
 ### How the picture is compared
 
 The checker reads your PNG and compares it with the expected picture pixel by pixel. A pixel
 that differs is forgiven only when it is an edge that moved by at most 1 pixel: extra ink
 right next to the same ink in the expected picture, or missing ink with the same ink right
-next to it in yours. Everything else counts, and every test allows 0 such pixels. When a test
-fails, the checker writes a diff picture: red where you have extra ink, blue where ink is
-missing, magenta for the wrong colour and yellow for forgiven pixels.
+next to it in yours. Everything else counts, and every test allows 0 such pixels.
+
+When a test fails, the checker writes a diff picture:
+
+- red where you have extra ink;
+- blue where ink is missing;
+- magenta for the wrong colour;
+- yellow for forgiven pixels.
 
 ## Requirements
 
@@ -292,7 +296,7 @@ this:
           570 pixels missing, e.g. (20, 12) should be white (beyond the 1-pixel edge tolerance). Diff: build/cases/06/06-R4-steep.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R4 - line in every direction (shallow, steep, axis-aligned), both ends included
           expected values from: reference drawing, checked against the ideal shapes (exact pixels for point/rect, true segment for line)
-          reproduce: build/p06.exe build/cases/06/06-R4-steep.in build/cases/06/06-R4-steep.out.png
+          reproduce: build/solutions/assignment_06.exe build/cases/06/06-R4-steep.in build/cases/06/06-R4-steep.out.png
 ```
 
 ## After you pass: compare with the author's code

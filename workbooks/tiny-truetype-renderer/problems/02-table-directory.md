@@ -1,6 +1,6 @@
 # 02 · Read the table directory
 
-**Difficulty:** Easy · **Checkpoint** 2 of 18 · **Check:** `.\check 02`
+**Difficulty:** Easy · **Assignment** 2 of 18 · **Check:** `.\check 02`
 
 **Tags**
 - *Language:* structs · fixed-width unsigned integers (`uint16_t`, `uint32_t`) · strings built from bytes · binary file I/O (`seekg`, `get`)
@@ -16,22 +16,16 @@ comes right after it.
 
 ## Where this fits
 
-A TrueType font is a set of tables (`cmap`, `glyf`, `head`, ...) packed into one file. The
-table directory at the start of the file says where each table is. Checkpoints 3 to 5 read
-the `cmap`, `loca` and metrics tables at the offsets you find here. Their inputs already
-contain your output lines for the tables they need, so you can also do them without this one.
+A TrueType font is a set of **tables** (`cmap`, `glyf`, `head`, ...) packed into one file. The
+**table directory** at the start of the file says where each table is. Assignments 03 to 05
+read the `cmap`, `loca` and metrics tables at the offsets you find here. Their inputs already
+contain this assignment's output lines for the tables they need, so you can also do them
+without this one.
 
 ## The problem
 
-Write a program that reads a font file's table directory and prints the header's table count
-and every table record.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p02_table_directory.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p02_table_directory.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `readTableDirectory()`.
+Write a program that reads a font file's table directory and writes how many tables the font
+has, then the record of every table.
 
 ### Input
 
@@ -54,13 +48,16 @@ table "<tag>" <checkSum> <offset> <length>
 ...
 ```
 
-First the line `tables <numTables>`, then one `table` line per record. The records may come
-in any order. Write the tag's 4 characters inside double quotes, exactly as stored, including
-any spaces at the end: `"cvt "`, not `"cvt"`. The three numbers are in decimal.
+- First the line `tables <numTables>`.
+- Then one `table` line per record. The records may come in any order.
+- Write the tag's 4 characters inside double quotes, exactly as stored, including any spaces
+  at the end: `"cvt "`, not `"cvt"`.
+- The three numbers (`checkSum`, `offset`, `length`) are in decimal.
 
 ### The table directory
 
-The directory starts at byte 0 of the file. All numbers are **big-endian**.
+The directory starts at byte 0 of the file. All numbers are **big-endian**, and your
+`ByteReader` from assignment 01 can read every field.
 
 **Header** (the "offset subtable"), 12 bytes:
 
@@ -81,8 +78,10 @@ The directory starts at byte 0 of the file. All numbers are **big-endian**.
 | `offset` | uint32 | Where the table starts, in bytes from the start of the file |
 | `length` | uint32 | The table's length in bytes |
 
-So record k starts at byte 12 + 16k. In a well-made font the records are sorted by tag, byte
-by byte, so uppercase tags come before lowercase ones. You don't need to rely on that.
+So record k (counting from 0) starts at byte 12 + 16k.
+
+In a well-made font the records are sorted by tag, byte by byte, so uppercase tags come
+before lowercase ones. You don't need to rely on that.
 
 ## Requirements
 
@@ -204,8 +203,8 @@ the order they are stored, then loop `numTables` times, reading one record per p
 
 Seek to byte 0. Read and ignore a uint32 (the scaler type). Read the uint16 `numTables`.
 Skip 6 bytes. Then, for each record, read 4 single bytes and append each one to a string as a
-character, and read three uint32 values. Checkpoint 1's readers (or `provided/BigEndian.h`)
-do the byte order for you.
+character, and read three uint32 values. Your `ByteReader` from assignment 01
+does the byte order for you.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -255,7 +254,7 @@ A failing test looks like this:
           expected `table "cvt " 4292346576 544 8`, closest line written: `table "cvt" 4292346576 544 8` - differs in tag (15 lines written, 15 expected)
           likely cause: R3 - Tags exactly as stored: 4 characters, trailing spaces kept
           expected values from: Python struct, cross-checked against fontTools 4.67.0 SFNTReader
-          reproduce: build/p02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
+          reproduce: build/solutions/assignment_02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
 ```
 
 The lines may be in any order, so the checker looks for each expected line in your output and,
@@ -269,7 +268,7 @@ runs in `FontParser`'s constructor, right after the file is opened. It skips the
 reads `numTables`, skips the three search fields, and then reads each record: the tag as 4
 raw bytes turned into a string, followed by the checksum, offset and length. The records go
 into an `unordered_map` keyed by tag, so every later step finds its table by name, for
-example the `cmap` table in checkpoint 3.
+example the `cmap` table in assignment 03.
 
 **Something to look for:** the snippet doesn't check the scaler type or verify any
 checksums. Neither matters for this workbook. A stricter parser would reject files whose

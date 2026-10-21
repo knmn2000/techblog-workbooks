@@ -1,10 +1,10 @@
 # 11 · Draw an outline with curves
 
-**Difficulty:** Medium · **Checkpoint** 11 of 18 · **Check:** `.\check 11`
+**Difficulty:** Medium · **Assignment** 11 of 18 · **Check:** `.\check 11`
 
 **Tags**
 - *Language:* walking a circular list with an index modulo its length · a small 2D vector struct · floating-point arithmetic, rounding only at the end
-- *Library:* `Canvas` from `include/provided/Canvas.h` (`drawLine` with floating-point ends, `drawRect`, `writePng`)
+- *Library:* your `FrameBufferCanvas` from assignment 06 (`drawLine`, `drawRect`, `writePng`)
 - *Concepts:* quadratic Bézier curves · on-curve and off-curve points · implied on-curve points · flattening a curve into short lines
 
 ## Read in the blog first
@@ -16,30 +16,24 @@ and stop at the sentence "Let's put it into code." The author's code comes right
 
 ## Where this fits
 
-Checkpoint 8 joined every point of an outline with a straight line. Real glyphs are made of
+Assignment 08 joined every point of an outline with a straight line. Real glyphs are made of
 quadratic curves: an off-curve point pulls the outline toward itself without lying on it.
-This checkpoint draws outlines the way they are meant to look, using the curve formula from
-checkpoint 10. Checkpoints 13, 14 and 17 use the same pieces (lines and curves) to fill
-glyphs.
+
+This assignment draws outlines the way they are meant to look, using your curve function in
+`utils/Geometry.h` from assignment 10. Assignments 13, 14 and 17 work with the same pieces
+(lines and curves) to fill glyphs.
 
 ## The problem
 
-Write a program that reads one or more glyph outlines and draws each one with straight
-lines and quadratic curves, marks every point with a coloured square, and writes the picture
-as a PNG.
-
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p11_outline_curves.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p11_outline_curves.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, gives you a `Canvas` and
-writes the PNG; you fill in `drawQuadratic()` and `drawOutline()`.
+The program reads one or more glyph outlines and draws each one with straight lines and
+quadratic curves. It marks every point with a coloured square and writes the picture as a
+PNG.
 
 ### Input
 
 The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-The output file name ends in `.png`. The input is the same as in checkpoint 8, except that
-`style` has one number:
+The output file name ends in `.png`. The input is the same as in assignment 08, except that
+`style` has one number (there is no marker size):
 
 | Line | Meaning |
 |---|---|
@@ -57,18 +51,20 @@ outlines; each outline uses the most recent ones. Coordinates may have a fractio
 ### Output
 
 A PNG (or binary PPM) file, exactly `w` x `h` pixels, RGB, with (0, 0) at the top-left and y growing
-downwards. The boilerplate writes it with `Canvas::writePng`.
+downwards.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+the checker looks at the contents, so a PNG and a binary PPM both work.
+
+- **The easy way:** your `FrameBufferCanvas` from assignment 06 already does this in
+  `writePng`. The boilerplate calls it.
+- **A binary PPM by hand:** the header `P6`, the width, the height and `255`, separated by
+  spaces or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes
+  per pixel (red, green, blue), row by row from the top-left. Open the file in binary mode
+  (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
+- **A real PNG by hand:** `third_party/stb_image_write.h` in your project is on the include
+  path. `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### From font units to pixels
 
@@ -80,18 +76,22 @@ py = baseline - scale * y
 ```
 
 Keep these as floating-point numbers. Work out curves and implied points from them, and round
-to whole pixels only when you draw (`Canvas::drawLine` with `float` or `double` ends rounds them
-for you).
-Rounding every point first, as in checkpoint 8, moves a curve by less than a pixel and also
+to whole pixels only when you draw. Your `FrameBufferCanvas::drawLine` from assignment 06
+takes whole pixels, so round each end to the nearest pixel (`std::lround`) as you call it; a
+plain conversion to `int` cuts off the fraction instead of rounding.
+
+Rounding every point first, as in assignment 08, moves a curve by less than a pixel and also
 passes.
 
 ### Walking a contour
 
-`ends` splits the points into contours exactly as in checkpoint 8: contour 0 is points 0 to
+`ends` splits the points into contours exactly as in assignment 08: contour 0 is points 0 to
 `e0`, contour 1 is points `e0 + 1` to `e1`, and so on. Each contour is closed, so after its
-last point comes its first point again. Go round a contour keeping a **current position**,
-which is always an on-curve point (real or implied). Each point you reach adds one piece
-that starts at the current position:
+last point comes its first point again.
+
+Go round a contour keeping a **current position**: the point where the next piece starts. It
+is always an on-curve point, real or implied. Each point you reach adds one piece that starts
+at the current position:
 
 | Point reached | The point after it | Piece | Current position becomes |
 |---|---|---|---|
@@ -99,18 +99,22 @@ that starts at the current position:
 | off-curve | on-curve | a **curve** with this point as control point, ending at the point after it (which is then used up) | the point after it |
 | off-curve | off-curve | a **curve** with this point as control point, ending at the **implied on-curve point** halfway between the two | the implied point |
 
-An implied on-curve point is not in the file. Whenever two off-curve points follow each
+An **implied on-curve point** is not in the file. Whenever two off-curve points follow each
 other (the last and the first point of a contour count as neighbours), the outline passes
-through the point exactly halfway between them, and that point is where one curve ends and
-the next begins.
+through the point exactly halfway between them. That point is where one curve ends and the
+next begins.
 
-**Where to start.** A piece always starts at an on-curve point, real or implied. So start
-the walk at an on-curve point of the contour (the first one you find), and go all the way
-round back to it: the walk ends when it reaches the starting point again, so if the contour's
-last point is on-curve the final piece is a line back to the start, and if it is off-curve the
-final piece is a curve that ends at the start. A contour with k off-curve control points draws
-exactly k curves. If the contour has **no** on-curve point at all, start at the implied
-point halfway between its last and first points. Two cases need this:
+**Where to start.** A piece always starts at an on-curve point, real or implied. So start the
+walk at the first on-curve point of the contour and go all the way round back to it. The walk
+ends when it reaches the starting point again:
+
+- if the contour's last point is on-curve, the final piece is a line back to the start;
+- if it is off-curve, the final piece is a curve that ends at the start.
+
+A contour with k off-curve control points draws exactly k curves. If the contour has **no**
+on-curve point at all, start at the implied point halfway between its last and first points.
+
+Two kinds of contour need this care:
 
 - a contour whose first point is off-curve: its first curve starts at the last on-curve
   point of the contour (or at the implied point between its last and first points), not
@@ -132,16 +136,19 @@ Draw it as `n` short straight lines from B((i - 1) / n) to B(i / n) for i = 1 to
 n = max(1, ceil(|P1 - P0| + |P2 - P1|))       lengths in pixels
 ```
 
-The control polygon is never shorter than the curve, so every short line is at most about a
-pixel long. More pieces are fine; much fewer (say a fixed 8) leave visible corners on long
-curves. Lines and curves both use thickness `lineThickness` and the outline's colour.
+The **control polygon** (P0 to P1 to P2) is never shorter than the curve, so every short line
+is at most about a pixel long. More pieces are fine; much fewer (say a fixed 8) leave visible
+corners on long curves.
+
+Lines and curves both use thickness `lineThickness` and the outline's colour.
 
 ### Markers
 
 After **all** the lines and curves of an outline are drawn, draw a square of size
-`2 * lineThickness`, on the point rounded to the nearest pixel. The size is even, so the square
-covers columns x − lineThickness up to x + lineThickness − 1 (and rows likewise), as
-`Canvas::drawRect` does: a 6 x 6 marker at x = 50 covers columns 47 to 52. Draw it on:
+`2 * lineThickness` on each point, rounded to the nearest pixel. The size is even, so the
+square covers columns x − lineThickness up to x + lineThickness − 1 (and rows likewise), as
+your `FrameBufferCanvas::drawRect` from assignment 06 does: a 6 x 6 marker at x = 50 covers
+columns 47 to 52. The colour depends on the point:
 
 | Point | Colour |
 |---|---|
@@ -154,11 +161,16 @@ markers of different colours overlap, so their order among themselves doesn't ma
 
 ### How the picture is compared
 
-The checker compares your PNG with the expected picture pixel by pixel and forgives only an
-edge that moved by at most 1 pixel, so small rounding differences pass, but a straight line
-where a curve should be, a missing marker or a marker of the wrong colour fails. When a test
-fails, the checker writes a diff picture: red where you have extra ink, blue where ink is
-missing, magenta for the wrong colour, yellow for forgiven pixels.
+The checker compares your PNG with the expected picture pixel by pixel. It forgives only an
+edge that moved by at most 1 pixel. So small rounding differences pass, but a straight line
+where a curve should be, a missing marker or a marker of the wrong colour fails.
+
+When a test fails, the checker writes a diff picture:
+
+- red where you have extra ink;
+- blue where ink is missing;
+- magenta for the wrong colour;
+- yellow for forgiven pixels.
 
 ## Requirements
 
@@ -225,12 +237,16 @@ output:  a 384 x 294 PNG
 ![expected picture for 11-R4-off-first](../tests/11/expected/11-R4-off-first.png)
 
 In pixels: P0 (282, 282) off, P1 (372, 102) on, P2 (192, 12) on, P3 (12, 192) off. Start at
-P1, the first on-curve point, and go round: a line P1 → P2; P3 is off and so is the next
-point P0 (the walk has wrapped round), so a curve from P2 with control P3 to the implied
-point (147, 237); P0 is off and the next point P1 is on, so a curve from (147, 237) with
-control P0 back to P1. Starting at P0 with a "previous point" of (0, 0) would draw the first
-curve from (12, 282), where font (0, 0) lands, and never draw the curve from the implied
-point into P1.
+P1, the first on-curve point, and go round:
+
+1. P2 is on-curve: a line P1 → P2.
+2. P3 is off-curve and so is the next point, P0 (the walk has wrapped round): a curve from P2
+   with control P3 to the implied point (147, 237).
+3. P0 is off-curve and the next point, P1, is on-curve: a curve from (147, 237) with control
+   P0 back to P1.
+
+Starting at P0 with a "previous point" of (0, 0) would draw the first curve from (12, 282),
+where font (0, 0) lands, and never draw the curve from the implied point into P1.
 
 ### Example 3: only off-curve points (test `11-R4-circle4`)
 
@@ -273,8 +289,8 @@ is then the control point of one curve, and the 4 curves meet at 4 implied point
 
 <details><summary>Hint 1: where to start</summary>
 
-Write `drawQuadratic()` first and test it on Example 1's numbers. Then copy your checkpoint 8
-loop and change what happens at an off-curve point. Look at Example 1 and Example 3 in the
+Write `drawQuadratic()` first and test it on Example 1's numbers. Then copy your loop from
+assignment 08 and change what happens at an off-curve point. Look at Example 1 and Example 3 in the
 expected pictures before you start: the blue markers show where curves join.
 </details>
 
@@ -352,7 +368,7 @@ this:
           2263 pixels missing, e.g. (169, 9) should be blue; 2353 extra pixels, e.g. (306, 11) should be black (beyond the 1-pixel edge tolerance). Diff: build/cases/11/11-R3-two-offs.diff.png - red extra, blue missing, magenta wrong colour, yellow forgiven
           likely cause: R3 - Two off-curve points in a row: implied on-curve point halfway (blue)
           expected values from: hand-made outline; reference drawing, checked against fontTools' pieces and implied points
-          reproduce: build/p11.exe build/cases/11/11-R3-two-offs.in build/cases/11/11-R3-two-offs.out.png
+          reproduce: build/solutions/assignment_11.exe build/cases/11/11-R3-two-offs.in build/cases/11/11-R3-two-offs.out.png
 ```
 
 ## After you pass: compare with the author's code

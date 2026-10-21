@@ -1,10 +1,10 @@
 # 13 · Intersect a line and a quadratic curve
 
-**Difficulty:** Medium · **Checkpoint** 13 of 18 · **Check:** `.\check 13`
+**Difficulty:** Medium · **Assignment** 13 of 18 · **Check:** `.\check 13`
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · returning a list of results (`std::vector`) · sorting
-- *Library:* `std::sqrt`, `std::sort` · optional: `glm::dvec2` and `glm::dot` from `third_party/glm-1.0.1`
+- *Library:* `std::sqrt`, `std::sort`
 - *Concepts:* quadratic Bezier curve as a polynomial · normal vector and dot product · quadratic equations and the discriminant · the degenerate (linear) case · tangent lines · curve parameter t
 
 ## Read in the blog first
@@ -13,27 +13,21 @@ This page is complete on its own; the blog tells the story behind it. In the blo
 **"Renderer: Filling Glyph"** section, read
 [Intersection detection for Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Intersection%20detection%20for%20B%C3%A9zier%20curves)
 up to the quadratic equation in t. The author's code (the listing "Function to find a
-intersections of a segment and a quadratic Bezier curve") comes right after it. Checkpoint 10
+intersections of a segment and a quadratic Bezier curve") comes right after it. Assignment 10
 covers the curve itself.
 
 ## Where this fits
 
-Checkpoint 14 fills a glyph by laying a horizontal line across it for every row of pixels and
-finding where that line crosses the outline. Checkpoint 12 found the crossing with a straight
-edge. This checkpoint finds the crossings with a curved edge, which can be zero, one or two
-points.
+Assignment 14 fills a glyph row by row. For every row of pixels it lays a horizontal line
+across the glyph and finds where that line crosses the outline. Assignment 12 found the
+crossing with a straight edge.
+
+This assignment finds the crossings with a curved edge. There can be zero, one or two of them.
 
 ## The problem
 
-Write a program that reads pairs of a quadratic Bezier curve and a straight line, and prints
-the points where the line meets the curve.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p13_line_curve_intersection.cpp` is a comment and an
-empty `main`: the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, copy `starters/boilerplate/p13_line_curve_intersection.cpp`
-over it, or pick Boilerplate in the book's editor. The boilerplate reads the input and writes
-the output; you fill in `solveQuadratic()` and `intersect()`.
+The program reads pairs of a quadratic Bezier curve and a straight line. For each pair it
+prints the points where the line meets the curve, or `none`.
 
 ### Input
 
@@ -44,20 +38,25 @@ Every line of the input file has the same form:
 |---|---|
 | `curve p1x p1y p2x p2y p3x p3y line l1x l1y l2x l2y` | The curve starts at p1, is pulled toward the control point p2, and ends at p3. The line is the **infinite** straight line through l1 and l2. |
 
-The curve is the one from checkpoint 10: the point at parameter t is
-P(t) = (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1. The line doesn't stop at l1 or
-l2: those two points only fix its position and direction.
+- The curve is the one from assignment 10: the point at parameter t is
+  P(t) = (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1.
+- The line doesn't stop at l1 or l2: those two points only fix its position and direction.
 
 ### Output
 
 One line per input line, in the same order:
 
 - `none` when the line doesn't meet the curve, or
-- the meeting points on one line: `x1 y1`, or `x1 y1 x2 y2`. Points come in increasing order of
-  t (the order you meet them travelling along the curve from p1 to p3), not by x or y. A line
-  that touches the curve without crossing it (a tangent) gives its one point once.
+- the meeting points on one line: `x1 y1`, or `x1 y1 x2 y2`.
 
-The checker accepts any number within 0.001 of the expected value. When a value isn't whole, print enough decimals to be within 0.001 (4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
+Points come in increasing order of t (the order you meet them travelling along the curve from
+p1 to p3), not by x or y. A line that touches the curve without crossing it (a **tangent**)
+gives its one point once.
+
+The checker accepts any number within 0.001 of the expected value. When a value isn't whole,
+print enough decimals to be within 0.001 (4 is plenty). The boilerplate's `number()` does
+this: whole numbers plainly, others rounded to 4 decimals with trailing zeros dropped (`37.5`,
+`0.0625`).
 
 ### The curve as a polynomial
 
@@ -71,8 +70,8 @@ A, B and C are vectors; work out x and y separately.
 
 ### The line as an equation
 
-Let d = l2 − l1 be the line's direction, and K = (d.y, −d.x). K is perpendicular to the line.
-A point X lies on the line exactly when
+Let d = l2 − l1 be the line's direction, and K = (d.y, −d.x). K is perpendicular to the line:
+it is a **normal vector** of the line. A point X lies on the line exactly when
 
 ```
 K · (X − l1) = 0           (· is the dot product: u · v = u.x v.x + u.y v.y)
@@ -93,6 +92,8 @@ a, b and c are plain numbers. Every solution t is a place where the curve's poly
 the line.
 
 ### Solving for t
+
+Which case you are in depends on whether a is 0, and on D = b² − 4ac, the **discriminant**:
 
 | Case | Roots |
 |---|---|
@@ -116,10 +117,13 @@ For each root you keep, the point is P(t) = A t² + B t + C.
 ### Precision
 
 Every coordinate is a multiple of 0.25 between −1000 and 1000, so a, b, c and D are exact in
-`double`. In tangent cases D is exactly 0, and in linear cases a is exactly 0, so comparing
-with 0 works. A tiny tolerance also works: every root that isn't exactly 0 or 1 is at least
-0.01 away from 0 and 1, and two different roots are at least 0.01 apart. Accepting t within,
-say, 1e-9 of the ends gives the same answers.
+`double`.
+
+- In tangent cases D is exactly 0, and in linear cases a is exactly 0, so comparing with 0
+  works.
+- A tiny tolerance also works: every root that isn't exactly 0 or 1 is at least 0.01 away from
+  0 and 1, and two different roots are at least 0.01 apart. Accepting t within, say, 1e-9 of
+  the ends gives the same answers.
 
 ## Requirements
 
@@ -262,7 +266,7 @@ A failing test looks like this:
       x 13-R4-arch-top  a horizontal line touching the top of an arch at t = 0.5
           line 1: expected `5 5`, got `5 5 5 5`
           expected values from: exact arithmetic (fractions.Fraction, 60-digit decimal square roots), root count cross-checked
-          reproduce: build/p13.exe build/cases/13/13-R4-arch-top.in build/cases/13/13-R4-arch-top.out
+          reproduce: build/solutions/assignment_13.exe build/cases/13/13-R4-arch-top.in build/cases/13/13-R4-arch-top.out
 ```
 
 ## After you pass: compare with the author's code
@@ -278,5 +282,5 @@ dot(k, c - l1))`, and keeps the roots with −eps ≤ t ≤ 1 + eps.
   point lies between them. That suits the blog's fill, whose scanline spans the whole image.
 - `solveQuadratic` isn't shown. A version that always uses the quadratic formula loses every
   crossing where a = 0 (R5), and in real glyphs that is a common case for horizontal lines.
-- The points come out in whatever order `solveQuadratic` returns the roots. This checkpoint
+- The points come out in whatever order `solveQuadratic` returns the roots. This assignment
   asks for increasing t so that every answer has one correct form.

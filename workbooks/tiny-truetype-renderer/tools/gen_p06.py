@@ -12,7 +12,7 @@ a scene only if each of those passes the checker too. A missing or extra single 
 counts (allow=0, so a lost point fails), so scenes where such a choice would decide one
 pixel at a clipped or covered end of a line are left out.
 
-    py -P tools/gen_p06.py --ref build/ref_p06.exe                    # tests/06 (seed 1)
+    py -P tools/gen_p06.py --ref build/ref/assignment_06.exe                    # tests/06 (seed 1)
     py -P tools/gen_p06.py --seed 77 --out build/fresh/06             # what `.\\check 06 -Fresh` runs
 """
 

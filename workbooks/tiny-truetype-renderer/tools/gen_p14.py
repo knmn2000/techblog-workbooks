@@ -1,6 +1,6 @@
 """Test cases for checkpoint 14 (fill a glyph with the even-odd rule).
 
-    py -P tools/gen_p14.py --ref build/ref_p14.exe                  # tests/14 (seed 1)
+    py -P tools/gen_p14.py --ref build/ref/assignment_14.exe                  # tests/14 (seed 1)
     py -P tools/gen_p14.py --seed 7 --out build/fresh/14 --ref ...
 """
 

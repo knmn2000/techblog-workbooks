@@ -7,7 +7,7 @@ segment between consecutive (rounded) points, the closing one included, must hav
 along it at both edges of its thickness; every point must have its full marker; and
 no ink may lie further than half a line or marker (+1.5 px) from those shapes.
 
-    py -P tools/gen_p08.py --ref build/ref_p08.exe                    # tests/08 (seed 1)
+    py -P tools/gen_p08.py --ref build/ref/assignment_08.exe                    # tests/08 (seed 1)
     py -P tools/gen_p08.py --seed 77 --out build/fresh/08             # what `.\\check 08 -Fresh` runs
 """
 

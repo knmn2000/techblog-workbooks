@@ -4,7 +4,7 @@ The reference program draws each expected picture. It is then checked pixel by p
 against fontTools: its own cmap, advance widths and (compound-resolved) outlines, with
 PointInsidePen deciding which glyph, if any, covers each pixel centre.
 
-    py -P tools/gen_p18.py --ref build/ref_p18.exe                  # tests/18 (seed 1)
+    py -P tools/gen_p18.py --ref build/ref/assignment_18.exe                  # tests/18 (seed 1)
     py -P tools/gen_p18.py --seed 7 --out build/fresh/18 --ref ...
 """
 

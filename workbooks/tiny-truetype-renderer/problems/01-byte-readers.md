@@ -1,6 +1,6 @@
 # 01 · Read big-endian numbers
 
-**Difficulty:** Easy · **Checkpoint** 1 of 18 · **Check:** `.\check 01`
+**Difficulty:** Easy · **Assignment** 1 of 18 · **Check:** `.\check 01`
 
 **Tags**
 - *Language:* fixed-width integers (`uint8_t` ... `int32_t`) · bit shifts and OR · two's complement · templates (optional) · exceptions
@@ -17,24 +17,15 @@ code comes right after it, below a link card.
 
 ## Where this fits
 
-A TrueType file is a long run of bytes, and every number in it is stored big-endian. Each
-later checkpoint reads the font through small functions like the ones you write here:
-checkpoint 2 uses them to read the table directory, checkpoints 3 to 5 to read the `cmap`,
-`loca` and metrics tables, and checkpoint 7 to decode glyph outlines.
+A TrueType file is a long run of bytes, and every number in it is stored big-endian. This is
+the first piece of your project, and every later assignment that reads the font reads it
+through your `ByteReader`: assignment 02 for the table directory, assignments 03 to 05 for the
+`cmap`, `loca` and metrics tables, and assignments 07 and 09 for glyph outlines.
 
 ## The problem
 
 Write a program that opens a binary file, runs a list of read and move operations on it, and
-prints every number it reads.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p01_byte_readers.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p01_byte_readers.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in the `ByteReader` functions marked TODO: `jumpTo`, `skipBytes`, `readBigEndian` and
-`readF2Dot14`. Don't use `provided/BigEndian.h` here: this checkpoint is where you write those
-readers yourself.
+writes every number it reads.
 
 ### Input
 
@@ -50,19 +41,21 @@ The first line of the input file names the file to read. Every other line is one
 | `jump <offset>` | Move to byte `offset`, counted from the start of the file. Byte 0 is the first byte. |
 | `skip <count>` | Move `count` bytes forward from the current position. |
 
-The position starts at byte 0. Each read moves it forward by the number of bytes it read.
-A `jump` or `skip` may land at or past the end of the file. That is not an error by itself,
-but the next read will run out of bytes.
+The reader keeps a **current position**: the byte the next read starts at.
+
+- The position starts at byte 0.
+- Each read moves it forward by the number of bytes it read.
+- A `jump` or `skip` may land at or past the end of the file. That is not an error by itself,
+  but the next read will run out of bytes.
 
 ### Output
 
-For each read operation, in input order, write one line: the operation's name, a space, and
-the value in decimal. For example `u16 65535`, `i16 -1` or `f2dot14 1.75`. `jump` and `skip`
-write nothing.
-
-The boilerplate's output code prints F2Dot14 values exactly (they never have more than 14 digits
-after the decimal point). If you write your own output code, any value within 0.000001 of the
-exact one is accepted.
+- Each read operation writes one line, in input order: the operation's name, a space, and the
+  value in decimal. For example `u16 65535`, `i16 -1` or `f2dot14 1.75`.
+- `jump` and `skip` write nothing.
+- **F2Dot14 values** never have more than 14 digits after the decimal point, and the
+  boilerplate's output code prints them exactly. If you write your own output code, any value
+  within 0.000001 of the exact one is accepted.
 
 **Running out of bytes.** If a read needs a byte past the end of the file, write the line
 `eof` instead, and stop: run no further operations. A read that ends exactly on the last
@@ -70,9 +63,9 @@ byte of the file is fine.
 
 ### Big-endian byte order
 
-TrueType stores the most significant byte first. The two bytes `12 34` hold `0x1234` = 4660
-(a little-endian reader would get `0x3412` = 13330 instead). With the bytes b0, b1, b2, b3 in
-file order:
+**Big-endian** means the most significant byte comes first, and TrueType stores every number
+this way. The two bytes `12 34` hold `0x1234` = 4660 (a little-endian reader would get
+`0x3412` = 13330 instead). With the bytes b0, b1, b2, b3 in file order:
 
 - u16 = b0 × 256 + b1
 - u32 = b0 × 2^24 + b1 × 2^16 + b2 × 2^8 + b3
@@ -89,9 +82,12 @@ file order:
 
 ### Signed numbers: two's complement
 
-A signed read takes the same bytes as the unsigned read of the same size. Call the unsigned
-result u and the size in bits n (8, 16 or 32). If the top bit is set, that is, u ≥ 2^(n−1),
-the value is u − 2^n. Otherwise it is u.
+**Two's complement** is how the signed types store negative numbers. A signed read takes the
+same bytes as the unsigned read of the same size. Call the unsigned result u and the size in
+bits n (8, 16 or 32):
+
+- If the top bit is set, that is, u ≥ 2^(n−1), the value is u − 2^n.
+- Otherwise it is u.
 
 | Bytes | Unsigned | Signed |
 |---|---|---|
@@ -103,8 +99,8 @@ the value is u − 2^n. Otherwise it is u.
 
 ### F2Dot14
 
-An F2Dot14 is a fixed-point number: 2 bits before the binary point and 14 after. Read the 2
-bytes as an `i16`, then divide by 16384 (2^14). The OpenType specification gives these
+An **F2Dot14** is a fixed-point number: 2 bits before the binary point and 14 after. Read the
+2 bytes as an `i16`, then divide by 16384 (2^14). The OpenType specification gives these
 examples:
 
 | Bytes | As `i16` | Value | The spec rounds it to |
@@ -116,7 +112,7 @@ examples:
 | `ff ff` | −1 | −0.00006103515625 | −0.000061 |
 | `80 00` | −32768 | −2 | −2 |
 
-Fonts use F2Dot14 for the scale factors of compound glyphs (checkpoint 9) and for
+Fonts use F2Dot14 for the scale factors of compound glyphs (assignment 09) and for
 variable-font axis coordinates.
 
 ## Requirements
@@ -179,10 +175,10 @@ output:  u16 1000
          i16 1
 ```
 
-The font's `head` table starts at byte 300 (checkpoint 2 shows how to find that). Its
+The font's `head` table starts at byte 300 (assignment 02 shows how to find that). Its
 `unitsPerEm` field is 18 bytes in, at byte 318. Reading it moves the position to 320, and
 `skip 30` lands on byte 350, which is `head` + 50: the `indexToLocFormat` field that
-checkpoint 4 needs.
+assignment 04 needs.
 
 ### Example 3: running out of bytes (test `01-R5-eof-in-u32`)
 
@@ -295,7 +291,7 @@ A failing test looks like this:
           line 3: expected `i8 -128`, got `i8 0`
           likely cause: R2 - Signed reads (i8, i16, i32): two's complement
           expected values from: Python struct (>B >b >H >h >I >i; F2Dot14 = >h / 16384 exactly)
-          reproduce: build/p01.exe build/cases/01/01-R2-i8.in build/cases/01/01-R2-i8.out
+          reproduce: build/solutions/assignment_01.exe build/cases/01/01-R2-i8.in build/cases/01/01-R2-i8.out
 ```
 
 ## After you pass: compare with the author's code

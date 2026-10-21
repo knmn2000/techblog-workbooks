@@ -1,6 +1,6 @@
 # 07 · Decode simple glyphs
 
-**Difficulty:** Medium · **Checkpoint** 7 of 18 · **Check:** `.\check 07`
+**Difficulty:** Medium · **Assignment** 7 of 18 · **Check:** `.\check 07`
 
 **Tags**
 - *Language:* bit flags and masks · signed vs unsigned integers (`int16`, `uint8`) · running sums · binary file I/O (`seekg`, `get`)
@@ -16,22 +16,16 @@ through the list of flag rules under **Simple glyph**. Stop at the paragraph tha
 
 ## Where this fits
 
-Checkpoints 3 and 4 take you from a character to a byte offset inside the font file. This
-checkpoint reads what is stored at that offset: the points that make up the glyph's outline.
-Checkpoint 8 draws them as straight lines, checkpoint 11 as curves, and checkpoint 9 handles
-compound glyphs, which are glyphs built out of other glyphs.
+Your `Cmap` (assignment 03) and `Loca` (assignment 04) take you from a character to a byte
+offset inside the font file. This assignment reads what is stored at that offset: the points
+that make up the glyph's outline. Assignment 08 draws them as straight lines and assignment 11
+as curves. Assignment 09 handles **compound glyphs**, glyphs built out of other glyphs, which
+this assignment only recognises.
 
 ## The problem
 
-Write a program that reads a list of glyph records from font files and prints each glyph's
-decoded outline.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p07_simple_glyph.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p07_simple_glyph.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `decodeGlyph()`.
+Write a program that decodes glyph records in font files and prints each glyph's outline: where
+its contours end and where every point is.
 
 ### Input
 
@@ -43,10 +37,13 @@ The input file contains two kinds of lines:
 | `font <path>` | The file that the following `glyph` lines refer to. The path is relative to the workbook folder and contains no spaces. This line may appear more than once. |
 | `glyph <id> <offset> <length>` | A glyph record `length` bytes long, starting at byte `offset` of the current file. `id` is a non-negative whole number used as a label: print it back unchanged. |
 
-Offsets and lengths are what checkpoint 4 works out from the `loca` table, so you don't need
-any other table here. You only need `length` to tell whether there is a record at all (0 means
-none). Records are well-formed, so you don't have to bounds-check against it. Some test files are real fonts. Others are hand-made files that contain
-one glyph record at offset 0.
+Offsets and lengths are what your `Loca` from assignment 04 works out, so you don't need any
+other table here.
+
+- You only need `length` to tell whether there is a record at all (0 means none). Records are
+  well-formed, so you don't have to bounds-check against it.
+- Some test files are real fonts. Others are hand-made files that contain one glyph record at
+  offset 0.
 
 ### Output
 
@@ -62,15 +59,18 @@ ends <endPtsOfContours[0]> <endPtsOfContours[1]> ...
 points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
 ```
 
-If `numberOfContours` is 0 (no test has one), print the header line, then `ends` and `points`
-with nothing after them. `ends` lists the values in the order they appear in the file. `points` gives every point in
-order as **absolute** coordinates in font units, followed by `on` if the point lies on the
-curve or `off` if it is a control point. Words are separated by spaces. The checker ignores
-extra whitespace.
+- `ends` lists the `endPtsOfContours` values in the order they appear in the file.
+- `points` gives every point in order as **absolute** coordinates in font units. Each is
+  followed by `on` if it is an **on-curve point** (the outline passes through it) or `off` if
+  it is an **off-curve point**, also called a control point (it bends a curve without lying on
+  it).
+- If `numberOfContours` is 0 (no test has one), print the header line, then `ends` and
+  `points` with nothing after them.
+- Words are separated by spaces. The checker ignores extra whitespace.
 
 <figure class="split-figure">
 <svg viewBox="-30 -30 660 800" role="img" aria-label="The outline of A in JetBrains Mono Bold, drawn from its 17 decoded points"><rect x="35" y="0" width="530" height="730" fill="none" stroke="var(--rule)" stroke-width="4" stroke-dasharray="14 10"/><line x1="-30" y1="730" x2="630" y2="730" stroke="var(--muted)" stroke-width="3"/><polygon points="35,730 219,0 380,0 565,730 437,730 397,553 203,553 163,730" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/><polygon points="226,451 374,451 330,255 319,206 303,127 300,109 297,127 281,206 270,254" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/><g fill="var(--fig-a)"><circle cx="35" cy="730" r="13"/><circle cx="219" cy="0" r="13"/><circle cx="380" cy="0" r="13"/><circle cx="565" cy="730" r="13"/><circle cx="437" cy="730" r="13"/><circle cx="397" cy="553" r="13"/><circle cx="203" cy="553" r="13"/><circle cx="163" cy="730" r="13"/><circle cx="226" cy="451" r="13"/><circle cx="374" cy="451" r="13"/><circle cx="330" cy="255" r="13"/><circle cx="300" cy="109" r="13"/><circle cx="270" cy="254" r="13"/></g><g fill="var(--surface)" stroke="var(--fig-b)" stroke-width="6"><circle cx="319" cy="206" r="11"/><circle cx="303" cy="127" r="11"/><circle cx="297" cy="127" r="11"/><circle cx="281" cy="206" r="11"/></g></svg>
-<figcaption><p>What the output describes: <code>A</code> is glyph 37, with two contours (<code>ends 7 16</code>) and 17 points, joined here with straight lines as checkpoint 08 will draw them. The four off-curve points at the top of the inner triangle are what checkpoint 11 turns into a curve.</p><div class="legend"><span><span class="dot a"></span>on-curve point</span><span><span class="dot b"></span>off-curve (control) point</span><span>dashed: bbox 35 0 565 730</span></div></figcaption>
+<figcaption><p>What the output describes: <code>A</code> is glyph 37, with two contours (<code>ends 7 16</code>) and 17 points, joined here with straight lines as assignment 08 will draw them. The four off-curve points at the top of the inner triangle are what assignment 11 turns into a curve.</p><div class="legend"><span><span class="dot a"></span>on-curve point</span><span><span class="dot b"></span>off-curve (control) point</span><span>dashed: bbox 35 0 565 730</span></div></figcaption>
 </figure>
 
 ### The glyph record you are decoding
@@ -81,7 +81,7 @@ All numbers are **big-endian**: the most significant byte comes first.
 
 | Field | Type | Meaning |
 |---|---|---|
-| `numberOfContours` | int16 | ≥ 0: a simple glyph (this checkpoint). < 0: a compound glyph |
+| `numberOfContours` | int16 | ≥ 0: a simple glyph (this assignment). < 0: a compound glyph |
 | `xMin`, `yMin`, `xMax`, `yMax` | int16 each | Bounding box in font units |
 
 **Simple-glyph description**, immediately after the header:
@@ -119,8 +119,9 @@ end with up to 3 padding bytes, which you can ignore.
 | 0 | 1 | none | 0, meaning "same as the previous point" |
 | 0 | 0 | 2, int16 | value (already signed) |
 
-The first point's delta is relative to (0, 0). Each later point's delta is relative to the
-point before it.
+A **delta** is a change in position, which is what the file stores instead of the coordinate
+itself. The first point's delta is relative to (0, 0). Each later point's delta is relative to
+the point before it.
 
 ## Requirements
 
@@ -314,7 +315,7 @@ A failing test looks like this:
           points[26]: expected (x=199, y=626, curve=on), got (x=199, y=626, curve=off) - differs in curve
           likely cause: R7 - REPEAT expanded; on/off for every point, repeats included
           expected values from: fontTools 4.67.0
-          reproduce: build/p07.exe build/cases/07/07-R4-B.in build/cases/07/07-R4-B.out
+          reproduce: build/solutions/assignment_07.exe build/cases/07/07-R4-B.in build/cases/07/07-R4-B.out
 ```
 
 ## After you pass: compare with the author's code
@@ -324,7 +325,7 @@ splits the work into `readGlyphHeader` (the header), `getGlyphComponent` (contou
 instructions and flags) and `getGlyphCoordinates`, which is called once for x and once for y.
 It stores the contour ends and on-curve indices in `unordered_set`s and multiplies every
 point by an affine matrix. The matrix is the identity for simple glyphs; it matters for
-compound glyphs in checkpoint 9.
+compound glyphs in assignment 09.
 
 **Something to look for:** in the snippet as published, the flag loop records ON_CURVE only
 for the first point of a repeated run. In JetBrains Mono Bold, 42 of the 90 simple ASCII

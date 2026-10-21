@@ -1,6 +1,6 @@
 # 18 · Render a line of text
 
-**Difficulty:** Hard · **Checkpoint** 18 of 18 · **Check:** `.\check 18`
+**Difficulty:** Hard · **Assignment** 18 of 18 · **Check:** `.\check 18`
 
 **Tags**
 - *Language:* UTF-8 decoding · organising a larger program · reusing your own code
@@ -9,31 +9,21 @@
 
 ## Read in the blog first
 
-This page is complete on its own. This is where the blog ends up: its goal was to "load a Unicode
-font, render an arbitrary string, and output it as a PNG file". Skim the
+This page is complete on its own. This is where the blog ends up: its goal is a program that loads
+a Unicode font, draws any string with it and saves the result as a PNG. Skim the
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
 pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
 
 ## Where this fits
 
-Every earlier checkpoint built one piece. This one puts them together: from the bytes of a font file
-and a string of text to a picture of that text. Reusing your own solutions to checkpoints 02-17 is
-the intended route: if you moved them into `solutions/common/` as you went, this checkpoint
-can call them directly.
+Every earlier assignment built one piece. This one puts them together: from the bytes of a font
+file and a string of text to a picture of that text. It's the last piece of your project:
+`TextRenderer` uses the files of assignments 02 to 17, and `main.cpp` turns the project into a
+program you can run, `tiny_ttf <font.ttf> "<text>" <out.png>`.
 
 ## The problem
 
-Write a program that draws lines of text with a TrueType font and writes the picture as a PNG.
-
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p18_render_text.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p18_render_text.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, creates the canvas and writes
-the PNG; you fill in `drawText()`. The boilerplate includes the optional helpers
-`provided/BigEndian.h` (checkpoint 01) and `provided/SimpleGlyph.h` (checkpoint 07), and the
-canvas from `provided/Canvas.h`. With the blank starter, include what you need yourself, or call
-your own code from `solutions/common/`.
+Write a program that draws lines of text with a TrueType font and saves the picture as a PNG.
 
 ### Input
 
@@ -47,9 +37,10 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `color <r> <g> <b>` | The colour of the next text |
 | `text <...>` | Text to draw, in UTF-8, from after the space following `text` to the end of the line (spaces included) |
 
-`pen`, `color` and `text` can repeat. A `text` line starts where the pen is: at the most recent `pen`
-line, moved right by any text drawn since (the provided code passes the pen x on). Later text is
-drawn on top of earlier text.
+- `pen`, `color` and `text` can repeat.
+- A `text` line starts where the pen is: at the most recent `pen` line, moved right by any text
+  drawn since. (The boilerplate passes the pen x on from one `text` line to the next.)
+- Later text is drawn on top of earlier text.
 
 ### Output
 
@@ -58,36 +49,41 @@ A PNG (or binary PPM) of exactly `width` x `height` pixels. For each character, 
 1. **Decode UTF-8** into Unicode code points. A code point takes 1 to 4 bytes: `0xxxxxxx`,
    `110xxxxx 10xxxxxx`, `1110xxxx 10xxxxxx 10xxxxxx` or `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx`.
 2. **Find the glyph** with the font's cmap: the format 12 subtable with platform 0, encoding 4
-   (checkpoint 03). A code point the font doesn't map uses **glyph 0** (`.notdef`), usually a box.
-3. **Get its outline** (checkpoints 04, 07, 09): find the glyph's record with `loca`; a simple glyph
-   gives one outline, a compound glyph the outlines of its components placed with their full
-   transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: checkpoint 09's rules), and
-   an empty glyph (such as space) nothing. Fill every component outline; filling them one by one
-   or merged gives the same picture for these fonts. Noto Sans JP is a variable font: use the
-   outlines stored in `glyf` and ignore its variation tables.
-4. **Fill it** with the non-zero rule (checkpoint 17), placed with glyph point (x, y) at pixel
-   position (penX + scale·x, baseline − scale·y). A pixel is painted when its centre is inside.
+   (your `font/Cmap` from assignment 03). A code point the font doesn't map uses **glyph 0**
+   (`.notdef`), usually a box.
+3. **Get its outline** (assignments 04, 07 and 09): find the glyph's record with `loca`. A simple
+   glyph gives one outline. A compound glyph gives the outlines of its components placed with
+   their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment 09's
+   rules, your `font/CompoundGlyph`). An empty glyph (such as space) gives nothing. Fill every
+   component outline; filling them one by one or merged gives the same picture for these fonts.
+   Noto Sans JP is a variable font: use the outlines stored in `glyf` and ignore its variation
+   tables.
+4. **Fill it** with the non-zero rule (your `render/NonZero` from assignment 17), placed with
+   glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). A pixel is painted
+   when its centre is inside.
 5. **Move the pen**: penX += advanceWidth × scale, using the glyph's advance width from `hmtx`
-   (checkpoint 05; glyphs past numberOfHMetrics use the last advance). Don't round the pen
-   position: keep it fractional.
+   (your `font/Metrics` from assignment 05; glyphs past numberOfHMetrics use the last advance).
+   Don't round the pen position: keep it fractional.
 
 The checker forgives edges that move by one pixel. Missing glyphs, glyphs in the wrong place or
 colour, and holes in the wrong places fail.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+the checker looks at the contents, so either of these works:
+
+- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
+  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
+  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
+  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
+  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
+  byte 10 as two bytes.
 
 ### Where each piece is explained
 
-| Step | Checkpoint | Key facts |
+| Step | Assignment | Key facts |
 |---|---|---|
 | Table directory | 02 | numTables: uint16 at byte 4; 16-byte records from byte 12: tag, checkSum, offset, length |
 | cmap | 03 | encoding records (platform, encoding, offset from cmap) after a 4-byte header; format 12 groups: start, end, startGlyphID (uint32 each) |
@@ -97,7 +93,8 @@ boilerplate uses it.
 | Compound glyphs | 09 | component records: flags, glyph index, arguments, optional scale / x-y scale / 2 × 2 |
 | Filling | 17 | non-zero rule, curves split at their y turning point, pixel centres |
 
-Load the font once and reuse it for every `text` line: `drawText` is called once per line.
+Load the font once and reuse it for every `text` line. (The boilerplate makes one `TextRenderer`
+per `font` line and calls its `drawText` once per `text` line.)
 
 ## Requirements
 
@@ -180,9 +177,9 @@ Make a small font class that loads everything once: the table directory, the cma
 
 <details><summary>Hint 2: the approach</summary>
 
-Copy in your solutions to checkpoints 02-05 (tables), 07 and 09 (glyph outlines) and 17 (filling),
-adapting their inputs: each one already turns a font file into exactly what the next step needs.
-Decode the UTF-8 into code points first, then for each: glyph id, outlines, fill, advance.
+Call the project files you already have: assignments 02 to 05 (tables), 07 and 09 (glyph
+outlines) and 17 (filling). Each one already turns a font file into exactly what the next step
+needs. Decode the UTF-8 into code points first, then for each: glyph id, outlines, fill, advance.
 </details>
 
 <details><summary>Hint 3: the traps</summary>

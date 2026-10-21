@@ -1,6 +1,6 @@
 # 09 · Resolve compound glyphs
 
-**Difficulty:** Hard · **Checkpoint** 9 of 18 · **Check:** `.\check 09`
+**Difficulty:** Hard · **Assignment** 9 of 18 · **Check:** `.\check 09`
 
 **Tags**
 - *Language:* recursion · affine transforms as six numbers · signed bytes (`int8`) · fixed-point numbers
@@ -16,30 +16,26 @@ As compound glyphs are nested". The author's code comes right after it.
 
 ## Where this fits
 
-Checkpoint 07 decoded simple glyphs and reported compound ones without decoding them. A compound
-glyph has no points of its own: it lists other glyphs (components) and where to put each one, for
-example `é` is `e` plus an acute accent moved above it. This checkpoint turns a compound glyph into
-the outlines of the simple glyphs it is made of, each in its final position. The fill checkpoints
-(14, 16, 17) and the text renderer (18) draw those outlines.
+Your `GlyphParser` from assignment 07 decodes simple glyphs and only reports compound ones. A
+**compound glyph** has no points of its own: it lists other glyphs, its **components**, and where
+to put each one. For example, `é` is `e` plus an acute accent moved above it. This assignment
+turns any glyph into the outlines of the simple glyphs it is made of, each in its final
+position. The fill assignments (14, 16, 17) and the text renderer (18) draw those outlines.
 
 ## The problem
 
-Write a program that resolves glyphs into the outlines of the simple glyphs they are made of.
-
-Only your program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p09_compound_glyph.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p09_compound_glyph.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `resolveGlyph()`. The boilerplate also includes `provided/SimpleGlyph.h`, a ready
-decoder for simple glyphs (checkpoint 07's job), which you can use or replace with your own.
+Write a program that takes a glyph, simple or compound, and prints the outlines of the simple
+glyphs it is made of, each moved to its final position.
 
 ### Input
+
+The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
+The input file contains three kinds of lines:
 
 | Line | Meaning |
 |---|---|
 | `font <path>` | The font file the following lines refer to (relative to the workbook folder). Starts a new font: forget earlier `glyph` lines. |
-| `glyph <id> <offset> <length>` | Where glyph `id`'s record is in the file and how long it is (0 = no outline), as checkpoint 04 works out. The input lists every glyph you will need. |
+| `glyph <id> <offset> <length>` | Where glyph `id`'s record is in the file and how long it is (0 = no outline), as your `Loca` from assignment 04 works out. The input lists every glyph you will need. |
 | `decode <id>` | Resolve glyph `id` and write it out. |
 
 ### Output
@@ -56,21 +52,23 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
 
 - An empty glyph (length 0) gives `components 0`. A simple glyph gives `components 1` with its own
   outline.
-- Components appear in depth-first order: the order of the component records, and inside a
+- Components appear in **depth-first order**: the order of the component records, and inside a
   nested compound glyph, its components in their order before moving on. A component that is an
   empty glyph adds nothing and isn't counted.
-- `ends` and `on|off` are the simple glyph's own values (checkpoint 07). Coordinates are after
-  every transform that applies, so they can be fractional: one of the random tests expects
-  `points 338.5 -275.25 on 324.4375 -266.8125 off ...`. The checker accepts a difference of up
-  to 0.01 per number, so the exact value or anything rounded to two or more decimals passes. The
-  boilerplate's `number()` prints whole numbers plainly and others rounded to 4 decimals with
-  trailing zeros dropped (`47.5`, `374.9062`).
+- `ends` and `on|off` are the simple glyph's own values, as in assignment 07.
+- Coordinates are after every transform that applies, so they can be fractional: one of the
+  random tests expects `points 338.5 -275.25 on 324.4375 -266.8125 off ...`.
+- The checker accepts a difference of up to 0.01 per number, so the exact value or anything
+  rounded to two or more decimals passes. The boilerplate's `number()` prints whole numbers
+  plainly and others rounded to 4 decimals with trailing zeros dropped (`47.5`, `374.9062`).
 
 ### The compound glyph record
 
 The 10-byte header is the same as for simple glyphs: `numberOfContours` (int16, negative for a
-compound glyph) and the bounding box (4 x int16, you can ignore it). Component records follow,
-one after another, until one has MORE_COMPONENTS clear:
+compound glyph) and the bounding box (4 x int16, you can ignore it).
+
+**Component records** follow, one per component, one after another, until one has
+MORE_COMPONENTS clear:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -79,8 +77,10 @@ one after another, until one has MORE_COMPONENTS clear:
 | `argument1`, `argument2` | int16 each if ARG_1_AND_2_ARE_WORDS is set, otherwise int8 each | The offset (e, f) |
 | transform | F2Dot14 x 0, 1, 2 or 4 | Depends on the scale flags |
 
-All numbers are big-endian. F2Dot14 is a signed 16-bit number divided by 16384 (checkpoint 01), so
-`40 00` is 1.0 and `c0 00` is -1.0. **The arguments are signed**: the byte `e2` is -30, not 226.
+All numbers are big-endian. **F2Dot14** is a signed 16-bit number divided by 16384 (your
+`ByteReader` from assignment 01 reads it), so `40 00` is 1.0 and `c0 00` is -1.0.
+
+**The arguments are signed**: the byte `e2` is -30, not 226.
 
 **Component flags** (bits not listed don't affect the output):
 
@@ -106,14 +106,19 @@ x' = a*x + c*y + e
 y' = b*x + d*y + f
 ```
 
-where (e, f) = (argument1, argument2). If SCALED_COMPONENT_OFFSET is set, the offset goes through
-the 2 x 2 part first: e = a*argument1 + c*argument2 and f = b*argument1 + d*argument2.
+where a, b, c, d are the **2 x 2 part** set by the scale flags (it scales, flips or rotates)
+and (e, f) is the **offset**, (argument1, argument2). If SCALED_COMPONENT_OFFSET is set, the
+offset goes through the 2 x 2 part first: e = a*argument1 + c*argument2 and
+f = b*argument1 + d*argument2.
 
 A component can itself be a compound glyph. Then its own components are placed with their own
 transforms first, and the result is placed with the outer transform. In other words, transforms
-compose from the inside out.
+compose **from the inside out**.
 
 ## Requirements
+
+Each test case is designed around one of these. A failing test also prints the requirement the
+difference most likely comes from.
 
 - **R1** An empty glyph gives `components 0`; a simple glyph gives `components 1` and its outline.
 - **R2** Component records are read correctly: flags, glyph index, signed 1-byte or 2-byte
@@ -199,9 +204,10 @@ output:  glyph 8 components 3
 - Records are well-formed, every glyph you need has a `glyph` line, and compound glyphs nest at
   most 3 levels deep. Point-matched components (ARGS_ARE_XY_VALUES clear) don't occur.
 - Scales are within the F2Dot14 range (-2 to just under 2).
+- Each case has a 10-second limit.
 - There are 36 tests: hand-made glyphs for each rule in a small test font, accented letters from
   JetBrains Mono Bold such as `é` and `Ü`, and 6 random compound glyphs (new ones with
-  `-Fresh`). Each case has 10 seconds.
+  `-Fresh`).
 
 ## Source material
 
@@ -278,7 +284,7 @@ A failing test looks like this:
           points[0]: expected (x=-30, y=-5, curve=on), got (x=226, y=251, curve=on) - differs in x, y
           likely cause: R4 - x' = a*x + c*y + e and y' = b*x + d*y + f for every point
           expected values from: fontTools 4.67.0
-          reproduce: build/p09.exe build/cases/09/09-R2-neg-bytes.in build/cases/09/09-R2-neg-bytes.out
+          reproduce: build/solutions/assignment_09.exe build/cases/09/09-R2-neg-bytes.in build/cases/09/09-R2-neg-bytes.out
 ```
 
 ## After you pass: compare with the author's code

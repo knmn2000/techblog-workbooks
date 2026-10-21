@@ -1,6 +1,6 @@
 # 17 · Fill a glyph: non-zero rule
 
-**Difficulty:** Hard · **Checkpoint** 17 of 18 · **Check:** `.\check 17`
+**Difficulty:** Hard · **Assignment** 17 of 18 · **Check:** `.\check 17`
 
 **Tags**
 - *Language:* sorting · solving a quadratic equation · floating-point care
@@ -16,21 +16,15 @@ code blocks if you want to work it out yourself.
 
 ## Where this fits
 
-Checkpoint 16 filled straight-line outlines with the non-zero rule. Real glyphs have curves, and a
-curve can cross one scanline twice, going up at one crossing and down at the other. This checkpoint
-fills full glyph outlines, curves included, which is what the text renderer in checkpoint 18 needs.
+Assignment 16 filled straight-line outlines with the non-zero rule. Real glyphs have curves, and a
+curve can cross one scanline twice, going up at one crossing and down at the other. This assignment
+brings curves to your `render/NonZero` from assignment 16, using the curve splitting of your
+`render/Scanline` from assignment 14; the text renderer of assignment 18 fills every glyph with it.
 
 ## The problem
 
-Write a program that fills glyph outlines on a black canvas with the non-zero rule and writes the
-picture as a PNG.
-
-Only the picture is checked, so you can structure the program however you like and use any
-language or library. The starter `solutions/p17_nonzero_curves.cpp` is a comment and an empty
-`main`: the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p17_nonzero_curves.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input, creates the canvas and writes
-the PNG; you fill in `fillOutline()`.
+Write a program that fills glyph outlines, curves included, on a black canvas with the non-zero
+rule and saves the picture as a PNG.
 
 ### Input
 
@@ -46,7 +40,7 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `points <x> <y> <on\|off> ...` | The outline's points; coordinates may be fractional |
 
 There can be several outlines. Fill each one on its own, one after another, in the same colour.
-Compound glyphs arrive already resolved into one outline (checkpoint 09's job).
+Compound glyphs arrive already resolved into one outline (assignment 09's job).
 
 ### Output
 
@@ -55,19 +49,22 @@ in the fill colour when its **centre** (px + 0.5, py + 0.5) is inside an outline
 The checker forgives edges that move by one pixel; missing or extra shapes and stray lines fail.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`stb_image_write.h` from `third_party/stb` is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. `include/provided/Canvas.h` does all of this for you; the
-boilerplate uses it.
+the checker looks at the contents, so either of these works:
+
+- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
+  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
+  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
+  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
+  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
+  byte 10 as two bytes.
 
 ### From points to edges
 
-Each contour is closed: after its last point it continues to its first.
+Each contour is closed: after its last point it continues to its first. The walk is the same as
+in assignment 14:
 
 - Two on-curve points in a row are joined by a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
@@ -82,21 +79,28 @@ Every edge has a direction, from a point to the next one. For each place a scanl
 outline, note the x and whether the outline is going down or up the screen there (+1 or −1). Sort by
 x, keep a running count from left to right, and fill wherever the count isn't zero.
 
-**Where a piece crosses the scanline.** For a line, interpolate. For a curve piece, solve
-y(t) = scanline y, a quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and
-c = y0 − scanline y (linear when a = 0). After the split below exactly one root lies in [0, 1]; its
-x is (1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
-
 **A curve can cross one scanline twice.** At the bottom of a `U`, the curve goes down then up, so its
 two crossings have opposite directions. Split each curve at the point where its y turns around:
 for y(t) = (1−t)²·y0 + 2(1−t)t·y1 + t²·y2 that is t = (y0 − y1) / (y0 − 2·y1 + y2), when the
-denominator isn't 0 and t is strictly between 0 and 1. Each piece then goes only up or only down,
-crosses a scanline at most once, and its direction is simply whether its end is below its start.
+denominator isn't 0 and t is strictly between 0 and 1. Each piece is then **monotone**:
+
+- it goes only up or only down;
+- it crosses a scanline at most once;
+- its direction is simply whether its end is below its start.
+
+**Where a piece crosses the scanline.** For a line, interpolate. For a curve piece, solve
+y(t) = scanline y, a quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and
+c = y0 − scanline y (linear when a = 0). After the split above exactly one root lies in [0, 1]; its
+x is (1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
 
 **Vertices and touching scanlines.** Treat every piece as half-open in y: it counts at scanline y when
 min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that just touches a curve's extreme then
-counts it twice with opposite directions (the extreme is the smaller y of both pieces) or not at all
-(the extreme is the larger y of both), which doesn't change the result either way.
+counts it either:
+
+- twice, with opposite directions, when the extreme is the smaller y of both pieces, or
+- not at all, when the extreme is the larger y of both.
+
+Neither changes the result.
 
 **Clipping.** Crossings can lie far outside the canvas, especially at large scales. Clamp x to the
 canvas before converting it to an integer pixel index: converting a huge double to `int` is
@@ -105,7 +109,8 @@ undefined behaviour in C++.
 ## Requirements
 
 - **R1** Curved outlines fill exactly the pixels whose centre is inside.
-- **R2** Implied on-curve points, and contours that start with or consist only of off-curve points.
+- **R2** Implied on-curve points are handled, and so are contours that start with, or consist
+  only of, off-curve points.
 - **R3** Where curved contours going the same way overlap, the overlap is filled.
 - **R4** A contour going the opposite way inside another cuts a hole.
 - **R5** A scanline that crosses one curve twice, or just touches it, is counted correctly.
@@ -175,15 +180,16 @@ fonts. Its outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints th
 
 <details><summary>Hint 1: where to start</summary>
 
-Combine your checkpoint 14 (curves into edges, crossings per row) and checkpoint 16 (counting with
-directions). The new part is giving each curve crossing the right direction.
+Combine your work from assignment 14 (`render/Scanline`: curves into edges, crossings per row)
+and assignment 16 (`render/NonZero`: counting with directions). The new part is giving each curve
+crossing the right direction.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Turn each contour into lines and curves in pixel coordinates. Split every curve at its y turning
 point so each piece is monotone in y. Now every piece, line or curve, crosses a row at most once,
-with a direction you can read from its endpoints. Then fill exactly as in checkpoint 16.
+with a direction you can read from its endpoints. Then fill exactly as in assignment 16.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -191,7 +197,7 @@ with a direction you can read from its endpoints. Then fill exactly as in checkp
 - After splitting, solve the piece's quadratic for the scanline y and keep the root in [0, 1]; if the
   quadratic coefficient is 0, the equation is linear.
 - The direction of a curve piece is its end's y compared with its start's y, not the control point.
-- Implied midpoints, and contours that start off-curve, as in checkpoint 14.
+- Implied midpoints, and contours that start off-curve, as in assignment 14.
 - Fill where the count is not zero, of either sign.
 </details>
 
@@ -233,4 +239,4 @@ gets the opposite. It scans only the rows inside the glyph's bounding box, and f
 of a compound glyph separately.
 
 **Something to look for:** like the line-only version, it fills only where the count is positive,
-so a contour wound the other way on its own would stay empty (checkpoint 16, test `16-R4-reversed`).
+so a contour wound the other way on its own would stay empty (assignment 16, test `16-R4-reversed`).

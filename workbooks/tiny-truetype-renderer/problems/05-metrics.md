@@ -1,6 +1,6 @@
 # 05 · Read the horizontal metrics
 
-**Difficulty:** Easy · **Checkpoint** 5 of 18 · **Check:** `.\check 05`
+**Difficulty:** Easy · **Assignment** 5 of 18 · **Check:** `.\check 05`
 
 **Tags**
 - *Language:* signed vs unsigned integers (`int16_t`, `uint16_t`) · structs · `std::vector`
@@ -16,23 +16,21 @@ author's code comes right after it.
 
 ## Where this fits
 
-To set a line of text, a renderer needs more than outlines. The font's ascent and descent
-say how much room a line needs above and below the baseline. Each glyph's advance width says
-how far to move the pen after drawing it, and its left side bearing says where its outline
-starts relative to the pen. Checkpoint 18 uses all of these to lay out a line of text.
+To set a line of text, a renderer needs more than outlines: it needs to know how much room a
+line takes and how far apart the glyphs go. Assignment 18 moves the pen by each glyph's
+advance width, and its `main.cpp` sizes the text from the ascent and descent you read here.
 
 ## The problem
 
-Write a program that reads a font's ascent and descent and the horizontal metrics of
-requested glyphs.
+Write a program that reads a font's ascent and descent, and the advance width and left side
+bearing of requested glyphs.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p05_metrics.cpp` is a comment and an empty `main`:
-the includes, reading the input and writing the output are yours. To start from working
-input/output code instead, copy `starters/boilerplate/p05_metrics.cpp` over it, or pick
-Boilerplate in the book's editor. The boilerplate reads the input and writes the output; you
-fill in `readHorizontalMetrics()`, which returns the ascent, the descent and every glyph's
-metrics.
+Text sits on a horizontal line, the **baseline**. A **pen** moves along it: each glyph is
+drawn at the pen's position, then the pen moves right. The numbers this assignment reads are:
+
+- **ascent** and **descent**: how much room a line needs above and below the baseline.
+- **advance width**: how far to move the pen after drawing a glyph.
+- **left side bearing** (lsb): where the glyph's outline starts, measured from the pen.
 
 ### Input
 
@@ -42,9 +40,12 @@ The input file contains these lines, in this order:
 | Line | Meaning |
 |---|---|
 | `font <path>` | The font file. The path is relative to the workbook folder and contains no spaces. |
-| `table "<tag>" <checkSum> <offset> <length>` | Three lines, for `hhea`, `hmtx` and `maxp`: their records from the table directory, written as checkpoint 2 writes them. `offset` is where the table starts in the file. |
+| `table "<tag>" <checkSum> <offset> <length>` | Three lines, for `hhea`, `hmtx` and `maxp`: their records from the table directory, written as assignment 02 writes them. `offset` is where the table starts in the file. |
 | `font-metrics` | A question: what are the font's ascent and descent? |
 | `glyph <id>` | A question: what are this glyph's metrics? `id` is from 0 to `numGlyphs` − 1. |
+
+Your program can parse the `table` lines into the table records your `FontParser` from
+assignment 02 declares, and read the font with your `ByteReader` from assignment 01.
 
 ### Output
 
@@ -53,8 +54,11 @@ One line per question, in input order:
 - `font-metrics` → `ascent <ascent> descent <descent>`
 - `glyph <id>` → `glyph <id> advance <advanceWidth> lsb <leftSideBearing>`
 
-All values are whole numbers in font units (both real fonts have 1000 units per em). The boilerplate writes `glyph <id> missing` if the list your function returns has no entry for a
-glyph. That line is never correct: every glyph has metrics.
+All values are whole numbers in **font units**, the grid the font's glyphs are designed on.
+In both real fonts, 1000 font units make one em, the font's nominal size.
+
+The boilerplate writes `glyph <id> missing` if the list your function returns has no entry for
+a glyph. That line is never correct: every glyph has metrics.
 
 ### The tables you need
 
@@ -279,7 +283,7 @@ A failing test looks like this:
           line 5: expected `glyph 4 advance 600 lsb 5`, got `glyph 4 missing`
           likely cause: R3 - Later glyphs: the last advance, lsb from the array after
           expected values from: fontTools 4.67.0 hhea and hmtx, cross-checked against a struct parse of hmtx
-          reproduce: build/p05.exe build/cases/05/05-R3-shared-advance.in build/cases/05/05-R3-shared-advance.out
+          reproduce: build/solutions/assignment_05.exe build/cases/05/05-R3-shared-advance.in build/cases/05/05-R3-shared-advance.out
 ```
 
 ## After you pass: compare with the author's code

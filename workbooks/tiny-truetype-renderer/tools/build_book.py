@@ -2,18 +2,20 @@
 
     py -P tools/build_book.py
 
-The page is tools/book_template.html filled with one JSON object: the book's metadata from
-workbook.json and, for each checkpoint, its problem page split into parts (statement,
-examples, hints, editorial, ...), its starter code and the starter's language. The template
-renders that as a problem list and a split-pane problem view with a code editor.
+The page is tools/book_template.html filled with one JSON object: the book's metadata and the
+learner's project layout from workbook.json and, for each assignment, its problem page split into
+parts (statement, examples, hints, editorial, ...) and its files: the entry program the checker
+runs, the project files it creates and the earlier ones it adds to, with their starters. The
+template renders that as a problem list and a split-pane problem view with a code editor.
 
 The Markdown is the small subset the problem pages use: headings, paragraphs, lists, tables,
 fenced code, images (embedded as data URIs), links, **bold**, *italic*, `code`, <details>
 blocks, and raw <figure>/<svg>/<div> blocks. Sections are recognised by their names (see
 ROLES); any other section is shown in the statement under its own heading.
 
-Starters: the editor offers the blank starter (starters/blank/<file>) and, when there is one,
-the boilerplate (starters/boilerplate/<file>). tools/blank_starters.py makes both.
+Starters: each of an assignment's own files has a blank starter (starters/blank/<path>, made by
+tools/blank_starters.py) and usually a boilerplate (starters/boilerplate/<path>). The Editorial
+shows the reference project as it stands after the assignment (see tools/project.py).
 """
 
 import base64
@@ -25,26 +27,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check import VERIFIED, fingerprint, reference_sources  # noqa: E402
+import project  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WARNINGS = []  # printed after a build; a book with warnings isn't ready to publish
 CODEMIRROR = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/"
 
-# Starter file extension -> (label, CodeMirror MIME type, mode).
-LANGS = {
-    ".cpp": ("C++", "text/x-c++src", "clike"), ".cc": ("C++", "text/x-c++src", "clike"),
-    ".cxx": ("C++", "text/x-c++src", "clike"), ".c": ("C", "text/x-csrc", "clike"),
-    ".java": ("Java", "text/x-java", "clike"), ".cs": ("C#", "text/x-csharp", "clike"),
-    ".kt": ("Kotlin", "text/x-kotlin", "clike"), ".py": ("Python", "text/x-python", "python"),
-    ".js": ("JavaScript", "text/javascript", "javascript"), ".mjs": ("JavaScript", "text/javascript", "javascript"),
-    ".ts": ("TypeScript", "text/typescript", "javascript"), ".rs": ("Rust", "text/x-rustsrc", "rust"),
-    ".go": ("Go", "text/x-go", "go"),
-}
+# File extension -> the CodeMirror mode that highlights it.
+EXT_MODES = {".cpp": "clike", ".cc": "clike", ".cxx": "clike", ".c": "clike", ".h": "clike", ".hpp": "clike",
+             ".java": "clike", ".cs": "clike", ".kt": "clike", ".py": "python", ".js": "javascript",
+             ".mjs": "javascript", ".ts": "javascript", ".rs": "rust", ".go": "go", ".lua": "lua"}
 # Mode -> the CodeMirror files it needs, after codemirror.min.js.
 MODE_FILES = {
     "clike": ["mode/clike/clike.min.js"], "python": ["mode/python/python.min.js"],
     "javascript": ["mode/javascript/javascript.min.js"], "go": ["mode/go/go.min.js"],
-    "rust": ["addon/mode/simple.min.js", "mode/rust/rust.min.js"],
+    "rust": ["addon/mode/simple.min.js", "mode/rust/rust.min.js"], "lua": ["mode/lua/lua.min.js"],
 }
 # Section name (lower case) -> where the page shows it.
 ROLES = {
@@ -289,27 +286,42 @@ def indent_unit(code: str, default: int) -> int:
     return min(common[0], 8) if common else default
 
 
-# ---- One checkpoint ---------------------------------------------------------------
+# ---- One assignment ---------------------------------------------------------------
 
-def starters(meta: dict):
-    """(blank starter, boilerplate or None) from starters/ (see tools/blank_starters.py)."""
-    name = Path(meta["solution"]).name
-
-    def read(path: Path):
-        return path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
-
-    blank = read(ROOT / "starters" / "blank" / name) or read(ROOT / meta["solution"]) or ""
-    return blank, read(ROOT / "starters" / "boilerplate" / name)
+def read(path: Path):
+    return path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
 
 
-def solution_code(cid: str, meta: dict) -> dict:
-    """The reference solution for the Editorial, with proof that exactly this code passes every
-    test (recorded by `check NN -Ref` in _spoilers/verified.json), or no proof and a warning."""
-    sources = reference_sources(meta)
-    if not sources:
+def checkpoint_files(cid: str, meta: dict, config: dict) -> list:
+    """The assignment's files, as paths in the workbook: its entry program and the project files
+    it creates, each with its blank and boilerplate starters, then the earlier files it adds to
+    (with their own assignment's blank starter, for the published book)."""
+    folder, purposes = config["project"]["dir"], config["project"].get("purposes", {})
+
+    def entry(path, role):
+        found = {"path": f"{folder}/{path}", "role": role, "purpose": purposes.get(path),
+                 "job": meta.get("jobs", {}).get(path),
+                 "blank": read(project.starter("blank", path)) or "", "boilerplate": None}
+        if role == "adds":
+            found["owner"] = project.owner(config, path)
+        else:
+            found["boilerplate"] = read(project.starter("boilerplate", path))
+        return found
+
+    return ([entry(project.entry(config, cid), "entry")] + [entry(p, "new") for p in meta.get("files", [])]
+            + [entry(p, "adds") for p in meta.get("extends", [])])
+
+
+def solution_code(cid: str, config: dict) -> dict:
+    """For the Editorial: the reference project's files for this assignment as they stand after it,
+    with proof that exactly this code passes every test (recorded by `check NN -Ref` in
+    _spoilers/verified.json), or no proof and a warning."""
+    sources = reference_sources(config, cid)
+    base = config["project"]["reference"] + "/"
+    texts = {path[len(base):]: text.replace("\r\n", "\n") for path, text in sources.items()}
+    if not texts:
         WARNINGS.append(f"{cid}: no reference solution found, so the Editorial has no solution")
         return None
-    base = sources[0].parent
     record = json.loads(VERIFIED.read_text(encoding="utf-8")).get(cid) if VERIFIED.exists() else None
     proof = None
     if record and record.get("files") == fingerprint(sources):
@@ -318,15 +330,13 @@ def solution_code(cid: str, meta: dict) -> dict:
         WARNINGS.append(f"{cid}: the reference changed after it was checked; run the check with -Ref again")
     else:
         WARNINGS.append(f"{cid}: the reference hasn't been checked; run the check with -Ref")
-    texts = [p.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n") for p in sources]
-    uses = sorted({f"include/{name}" for text in texts for name in re.findall(r'^\s*#\s*include\s+"([^"]+)"', text, re.M)
-                   if (ROOT / "include" / name).is_file()})
-    return {"files": [{"path": (p.relative_to(base) if base in p.parents else p.relative_to(ROOT)).as_posix(), "text": t}
-                      for p, t in zip(sources, texts)],
-            "proof": proof, "uses": uses}
+    meta = config["checkpoints"][cid]
+    shown = [*meta.get("files", []), *meta.get("extends", []), project.entry(config, cid)]
+    return {"files": [{"path": p, "text": texts[p]} for p in shown if p in texts],
+            "also": [p for p in texts if p not in shown], "proof": proof}
 
 
-def checkpoint(cid: str, meta: dict) -> dict:
+def checkpoint(cid: str, meta: dict, config: dict) -> dict:
     md = (ROOT / meta["problem"]).read_text(encoding="utf-8").splitlines()
     title = re.sub(r"^#\s+\d+\s*·\s*", "", md[0]).strip()
     found = re.search(r"\*\*Difficulty:\*\*\s*(\w+)", "\n".join(md[:8]))
@@ -369,23 +379,37 @@ def checkpoint(cid: str, meta: dict) -> dict:
         else:
             body.append(f'<section class="d-sec flow"><h2>{inline(name)}</h2>{blocks(lines)}</section>')
 
-    blank, boilerplate = starters(meta)
-    label, mime, mode = LANGS.get(Path(meta["solution"]).suffix.lower(), ("Text", "text/plain", None))
+    files = checkpoint_files(cid, meta, config)
+    folder, purposes = config["project"]["dir"], config["project"].get("purposes", {})
+    builds_on = [{"path": f"{folder}/{p}", "owner": project.owner(config, p), "purpose": purposes.get(p)}
+                 for p in meta.get("buildsOn", [])]
     cases = (ROOT / meta["cases"]).read_text(encoding="utf-8").count("\ncase ")
+    sample = "\n".join(f["boilerplate"] or f["blank"] for f in files)
     return {"id": cid, "num": str(int(cid)) if cid.isdigit() else cid, "title": title,
-            "difficulty": difficulty, "tests": cases, "solution": meta["solution"], "problem": meta["problem"],
-            "lang": {"label": label, "mime": mime, "mode": mode}, "starter": blank, "boilerplate": boilerplate,
-            "indent": indent_unit(boilerplate or blank, 4 if mode == "python" else 2),
-            "tags": tags, "body": "".join(body), "solutionCode": solution_code(cid, meta), **data}
+            "difficulty": difficulty, "tests": cases, "problem": meta["problem"],
+            "entry": f"{folder}/{project.entry(config, cid)}", "files": files, "buildsOn": builds_on,
+            "indent": indent_unit(sample, 4 if meta["solution"].endswith(".py") else 2),
+            "tags": tags, "body": "".join(body), "solutionCode": solution_code(cid, config), **data}
 
 
 # ---- Page -------------------------------------------------------------------------
+
+def project_data(config: dict) -> dict:
+    """The learner's project: where it is, its language, how to build and run the finished program,
+    every file the layout plans (with its assignment), and the author's files to compare with."""
+    spec = config["project"]
+    folder, purposes = spec["dir"], spec.get("purposes", {})
+    layout = [{"path": f"{folder}/{path}", "owner": cid, "purpose": purposes.get(path)}
+              for cid in config["checkpoints"] for path in project.own_files(config, cid)]
+    return {"dir": folder, "label": spec["languageLabel"], "name": spec.get("name", ""), "build": spec.get("build", ""),
+            "run": spec.get("run", ""), "author": spec.get("author"), "layout": layout}
+
 
 def build_page() -> str:
     """The whole book as one HTML string (tools/serve.py serves this directly)."""
     WARNINGS.clear()
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
-    cps = [checkpoint(cid, meta) for cid, meta in sorted(config["checkpoints"].items())
+    cps = [checkpoint(cid, meta, config) for cid, meta in sorted(config["checkpoints"].items())
            if (ROOT / meta["problem"]).exists() and (ROOT / meta["cases"]).exists()]
     book = config["book"]
     data = {
@@ -396,8 +420,10 @@ def build_page() -> str:
         # so a shared book doesn't carry the author's local path.
         "folder": book.get("folder") or ROOT.name, "check": book.get("checkCommand", ".\\check {id}"), "shell": book.get("shell", "PowerShell"),
         "checkpoints": cps,
+        "project": project_data(config),
     }
-    modes = dict.fromkeys(f for c in cps if c["lang"]["mode"] for f in MODE_FILES[c["lang"]["mode"]])
+    used = {EXT_MODES.get(Path(f["path"]).suffix.lower()) for c in cps for f in c["files"]} - {None}
+    modes = dict.fromkeys(f for mode in sorted(used) for f in MODE_FILES[mode])
     scripts = "\n".join(f'<script src="{CODEMIRROR}{f}"></script>' for f in modes)
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "\\u003c!--")
 
@@ -412,7 +438,7 @@ def main():
     out.parent.mkdir(exist_ok=True)
     out.write_text(page, encoding="utf-8")
     count = page.count('"difficulty":')
-    print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} checkpoints, {len(page) // 1024} KB")
+    print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} assignments, {len(page) // 1024} KB")
     for warning in WARNINGS:
         print(f"WARNING {warning}")
     if WARNINGS:

@@ -1,10 +1,10 @@
 # 12 · Intersect two segments
 
-**Difficulty:** Medium · **Checkpoint** 12 of 18 · **Check:** `.\check 12`
+**Difficulty:** Medium · **Assignment** 12 of 18 · **Check:** `.\check 12`
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · `std::optional` for "no answer" · small structs
-- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`) · optional: `glm::dvec2` from `third_party/glm-1.0.1`
+- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`)
 - *Concepts:* 2D cross product · which side of a line a point is on · parametric form of a segment · parallel and collinear lines · closed segments (endpoints included)
 
 ## Read in the blog first
@@ -18,22 +18,17 @@ intersections of 2 segments") comes right after it.
 
 ## Where this fits
 
-Checkpoint 14 fills a glyph with the even-odd rule. For each row of pixels it lays a long
-horizontal line across the glyph, finds every place where that line crosses the outline, and
-fills between pairs of crossings. This checkpoint finds the crossing with one straight edge.
-Checkpoint 13 does the same for a curved edge.
+Assignment 14 fills a glyph with the even-odd rule. For each row of pixels it lays a long
+horizontal line, a **scanline**, across the glyph. It finds every place where the scanline
+crosses the outline and fills between pairs of crossings.
+
+This assignment finds the crossing with one straight edge. Assignment 13 does the same for a
+curved edge.
 
 ## The problem
 
-Write a program that reads pairs of line segments and prints, for each pair, the point where
-the two segments meet, or `none`.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p12_segment_intersection.cpp` is a comment and an
-empty `main`: the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, copy `starters/boilerplate/p12_segment_intersection.cpp` over
-it, or pick Boilerplate in the book's editor. The boilerplate reads the input and writes the
-output; you fill in `intersect()`.
+The program reads pairs of line segments. For each pair it prints the point where the two
+segments meet, or `none`.
 
 ### Input
 
@@ -51,17 +46,18 @@ One line per input line, in the same order: either the meeting point `x y`, or t
 
 The checker accepts any number within 0.001 of the expected value, so `5`, `5.0` and
 `5.0000` all match `5`. When a value isn't whole, print enough decimals to be within 0.001
-(4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
+(4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded
+to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
 
 ### The rules
 
 1. **Segments include their endpoints.** If the two segments meet only at an endpoint, that
    point is the answer. This covers two edges of a polygon that share a corner, and a
-   T-junction, where one segment ends on the middle of the other.
-2. **Parallel segments give `none`.** That includes collinear segments, which lie on the same
-   line, even when they overlap, touch end to end, or are identical. They have no single
-   meeting point. (For filling this is harmless: an edge that lies along the horizontal line
-   adds no crossing.)
+   **T-junction**, where one segment ends on the middle of the other.
+2. **Parallel segments give `none`.** That includes **collinear** segments, which lie on the
+   same line, even when they overlap, touch end to end, or are identical. They have no single
+   meeting point. (For filling this is harmless: an edge that lies along the scanline adds no
+   crossing.)
 3. **Otherwise** the answer is the one point the two segments share, or `none` if they don't
    share one. Two lines that aren't parallel always cross somewhere, but that point may lie
    beyond the end of one segment or both.
@@ -72,10 +68,11 @@ The checker accepts any number within 0.001 of the expected value, so `5`, `5.0`
 cross(u, v) = u.x · v.y − u.y · v.x
 ```
 
-It is 0 exactly when u and v are parallel (or one of them is zero). Its sign says which way
-you turn going from the direction of u to the direction of v.
+- It is 0 exactly when u and v are parallel (or one of them is zero).
+- Its sign says which way you turn going from the direction of u to the direction of v.
 
-**Which side of a line a point is on.** For a line through s and e, and a point p:
+**Which side of a line a point is on.** For a line through s and e, and a point p, the
+**side value** is:
 
 ```
 side(p; s, e) = cross(e − s, p − s)
@@ -117,11 +114,13 @@ point only when both t and s are between 0 and 1, inclusive. It gives the same a
 ### Exact arithmetic
 
 Every coordinate is a multiple of 0.25 between −1000 and 1000. In `double` arithmetic every
-side value and cross product above is then exact, so touching gives exactly 0 and parallel
-segments give a cross product of exactly 0. (If you multiply two side values to compare their
-signs, the product can round, but its sign is still exact; comparing the signs directly avoids
-the question.) A tolerance such as `|cross(v1, v2)| < 1e-9` also
-works: when two segments in the tests aren't parallel, |cross(v1, v2)| is at least 0.25.
+side value and cross product above is then exact:
+
+- Touching gives exactly 0, and parallel segments give a cross product of exactly 0.
+- If you multiply two side values to compare their signs, the product can round, but its sign
+  is still exact. Comparing the signs directly avoids the question.
+- A tolerance such as `|cross(v1, v2)| < 1e-9` also works: when two segments in the tests
+  aren't parallel, |cross(v1, v2)| is at least 0.25.
 
 ## Requirements
 
@@ -166,7 +165,7 @@ output:  3 5
 The horizontal line y = 5 passes exactly through (3, 5), where the two edges meet. On the
 first line, side(b1; a1, a2) = cross((200, 0), (103, 0)) = 0, so the product is 0 and the
 touch counts. Both edges report the same corner. A fill that counts crossings would count this
-corner twice; the blog fixes that in "Removal of fill errors" (checkpoint 15 builds one piece
+corner twice; the blog fixes that in "Removal of fill errors" (assignment 15 builds one piece
 of that fix).
 
 ### Example 3: collinear segments (test `12-R4-collinear-overlap`)
@@ -265,7 +264,7 @@ A failing test looks like this:
           line 1: expected `none`, got `5 5`
           likely cause: R3 - Lines that cross outside either segment -> none
           expected values from: exact arithmetic with Python fractions.Fraction (parametric solve, cross-checked)
-          reproduce: build/p12.exe build/cases/12/12-R3-beyond-end.in build/cases/12/12-R3-beyond-end.out
+          reproduce: build/solutions/assignment_12.exe build/cases/12/12-R3-beyond-end.in build/cases/12/12-R3-beyond-end.out
 ```
 
 ## After you pass: compare with the author's code

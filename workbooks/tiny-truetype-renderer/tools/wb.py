@@ -37,7 +37,7 @@ def parse_args(checkpoint: str, extra=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--out", type=Path, default=Path("tests") / checkpoint)
-    ap.add_argument("--ref", type=Path, default=Path("build") / f"ref_p{checkpoint}.exe",
+    ap.add_argument("--ref", type=Path, default=Path("build") / "ref" / f"assignment_{checkpoint}.exe",
                     help="reference program, for checkpoints whose expected output is a picture")
     if extra:
         extra(ap)
