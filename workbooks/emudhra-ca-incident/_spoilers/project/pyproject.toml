@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pkiaudit"
 version = "0.1.0"
-description = "Built with the Elliptic-Curve Keys, Certificates and Chains of Trust"
+description = "Audit a small PKI: weak keys, trusted chains, and what each signing key could break"
 requires-python = ">=3.10"
 
 [project.scripts]

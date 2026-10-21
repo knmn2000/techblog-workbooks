@@ -42,11 +42,11 @@
   },
   "timeoutSeconds": 10,
   "book": {
-    "title": "Elliptic-Curve Keys, Certificates and Chains of Trust",
+    "title": "Build a PKI auditor yourself",
     "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
     "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
     "author": "eMudhra",
-    "headline": "Build a PKI auditor yourself",
+    "headline": "How to not f*ck up like eMudhra",
     "lede": "Each assignment has you write what one part of the incident calls for, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, then the checks that would have caught the weak key. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
     "credits": "Expected outputs come from independent sources. The book keeps your progress in this browser only.",
     "checkCommand": ".\\check {id}",

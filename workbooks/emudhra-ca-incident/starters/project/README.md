@@ -4,8 +4,8 @@
 certificates, chains and known-compromised keys, then reports which keys are weak or bad, which
 chains a verifier would trust, and which chains each signing key could break if it leaked.
 
-You build it one assignment at a time in the workbook *Elliptic-Curve Keys, Certificates and
-Chains of Trust*, which starts from eMudhra's
+You build it one assignment at a time in the workbook *Build a PKI auditor yourself*, which
+starts from eMudhra's
 [statement on a certificate security incident](https://emudhra.com/en/post/certificate-security-incident).
 
 ## Install and run

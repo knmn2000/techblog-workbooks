@@ -1,6 +1,6 @@
-# Elliptic-Curve Keys, Certificates and Chains of Trust
+# Build a PKI auditor yourself
 
-*Learn how to not f*ck up like eMudhra.*
+*How to not f*ck up like eMudhra.*
 
 LeetCode-style assignments built around
 [eMudhra's statement on a certificate security incident](https://emudhra.com/en/post/certificate-security-incident).
