@@ -5,7 +5,7 @@
 
 Starts a small web server that only this computer can reach (127.0.0.1), does the first-time
 build setup if it's needed, and opens the problem book. The page can load and save the files of
-your project (solutions/ by default), start a checkpoint, and run the checker, and nothing else.
+your project (solutions/ by default), start an assignment, and run the checker, and nothing else.
 Leave the window open while you work; close it or press Ctrl+C to stop.
 """
 
@@ -65,7 +65,7 @@ class Workbook:
         return None
 
     def files(self) -> list:
-        """Every file of the project, with the checkpoint it belongs to and whether it's still blank."""
+        """Every file of the project, with the assignment it belongs to and whether it's still blank."""
         out = []
         if not self.home.is_dir():
             return out
@@ -232,10 +232,10 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/api/start", "/api/starter"):
             cid = str(options.get("checkpoint", ""))
             if cid not in wb.config["checkpoints"]:
-                return self.reply(404, {"error": "no such checkpoint"})
+                return self.reply(404, {"error": "no such assignment"})
             if not project.exists(wb.config):
                 return self.reply(409, {"error": "no-project"})
-            if path == "/api/start":  # opening a checkpoint creates its files (never over existing ones)
+            if path == "/api/start":  # opening an assignment creates its files (never over existing ones)
                 return self.reply(200, {"created": project.start(wb.config, cid)})
             kind = str(options.get("kind", ""))
             if kind not in ("blank", "boilerplate"):
@@ -244,7 +244,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200, {"files": [file_state(project.home(wb.config) / p) for p in written]})
         m = re.match(r"^/api/check/(\w+)$", path)
         if not m or m.group(1) not in wb.config["checkpoints"]:
-            return self.reply(404, {"error": "no such checkpoint"})
+            return self.reply(404, {"error": "no such assignment"})
         args = [sys.executable, "-P", str(CHECK), m.group(1), "-Json"]
         if options.get("case"):
             if not CASE_ID.match(str(options["case"])):

@@ -36,12 +36,13 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/src/main.cpp)
   target_link_libraries(tiny_ttf PRIVATE tiny_ttf_core)
 endif()
 
-# One small program per checkpoint (checkpoints/p07_simple_glyph.cpp -> p07). Each reads
-# a test input, calls the renderer and writes what it found; the workbook's checker runs them.
-file(GLOB CHECKPOINT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/checkpoints/p*.cpp)
-foreach(source ${CHECKPOINT_SOURCES})
+# One small program per assignment (assignments/assignment_07_simple_glyph.cpp -> assignment_07).
+# Each reads a test input, calls the renderer and writes what it found; the workbook's checker
+# runs them.
+file(GLOB ASSIGNMENT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/assignments/assignment_*.cpp)
+foreach(source ${ASSIGNMENT_SOURCES})
   get_filename_component(name ${source} NAME_WE)
-  string(REGEX MATCH "^p[0-9]+" target ${name})
+  string(REGEX MATCH "^assignment_[0-9]+" target ${name})
   add_executable(${target} ${source})
   target_link_libraries(${target} PRIVATE tiny_ttf_core)
 endforeach()

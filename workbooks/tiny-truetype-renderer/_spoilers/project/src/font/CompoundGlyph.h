@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 09: compound glyphs, made of other glyphs that are moved, scaled or rotated.
+// Assignment 09: compound glyphs, made of other glyphs that are moved, scaled or rotated.
 
 #include <cstdint>
 #include <map>

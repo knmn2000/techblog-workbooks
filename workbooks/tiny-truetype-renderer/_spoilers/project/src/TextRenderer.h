@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 18: a font ready to draw lines of text, built from the earlier steps.
+// Assignment 18: a font ready to draw lines of text, built from the earlier steps.
 
 #include <cstdint>
 #include <map>

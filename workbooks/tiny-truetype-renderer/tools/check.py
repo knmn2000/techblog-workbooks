@@ -1,4 +1,4 @@
-"""Builds your program for one checkpoint, runs it on every test case, and
+"""Builds your program for one assignment, runs it on every test case, and
 compares what it writes with the expected output.
 
     .\\check 07                        check your solution
@@ -10,10 +10,10 @@ compares what it writes with the expected output.
                                        are replaced with file paths
     .\\check 07 -Json                  print the result as JSON (used by .\\study)
 
-Each checkpoint has an entry program in your project (e.g. solutions/checkpoints/p07_simple_glyph.cpp)
+Each assignment has a program in your project (e.g. solutions/assignments/assignment_07_simple_glyph.cpp)
 that reads a test input, calls your code and writes the output. It is built with your project and
 started from the workbook folder as `<run> <input-file> <output-file>`; workbook.json says how.
-Checking a checkpoint you haven't started creates its files first (see tools/project.py).
+Checking an assignment you haven't started creates its files first (see tools/project.py).
 For checkpoints whose answer is a picture, the output file name ends in .png and your
 program writes a PNG (or binary PPM) there.
 """
@@ -358,7 +358,7 @@ def load_disputes() -> list:
 
 def dispute(checkpoint: str, case_file: CaseFile, test_id: str, reason: str) -> int:
     if test_id not in {c.id for c in case_file.cases}:
-        print(f"There is no test {test_id} in checkpoint {checkpoint}.")
+        print(f"There is no test {test_id} in assignment {checkpoint}.")
         return 1
     disputes = load_disputes()
     disputes.append({"checkpoint": checkpoint, "test": test_id, "reason": reason,
@@ -411,7 +411,7 @@ def not_started(checkpoint: str, meta: dict, config: dict):
     entry = project.entry(config, checkpoint)
     if created:
         listed = "\n  ".join(f"{folder}/{p}" for p in created)
-        print(f"Not started yet. Created this checkpoint's files:\n  {listed}\n"
+        print(f"Not started yet. Created this assignment's files:\n  {listed}\n"
               f"The problem is in {meta['problem']}. Run .\\check {checkpoint} again when you've written them.")
         return finish(2, verdict="not-started", empty=False, created=[f"{folder}/{p}" for p in created])
     if not (ROOT / meta["solution"]).read_text(encoding="utf-8", errors="replace").strip():
@@ -424,7 +424,7 @@ def not_started(checkpoint: str, meta: dict, config: dict):
               f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.")
         if project.starter("boilerplate", entry).exists():
             print(f"For ready-made input/output code instead, copy the files under starters/boilerplate/ "
-                  f"for this checkpoint into {folder}/ (the book's Boilerplate button does this).")
+                  f"for this assignment into {folder}/ (the book's Boilerplate button does this).")
         return finish(2, verdict="not-started", empty=False)
     return None
 
@@ -433,14 +433,14 @@ def main(argv: list) -> int:
     args = [a.lower() if a.startswith("-") else a for a in argv]
     if not args or args[0].startswith("-"):
         print(__doc__)
-        return finish(2, verdict="error", message="no checkpoint number given")
+        return finish(2, verdict="error", message="no assignment number given")
     checkpoint = f"{int(args[0]):02d}"
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
     meta = config["checkpoints"].get(checkpoint)
     REPORT.update(checkpoint=checkpoint, title=meta["title"] if meta else "")
     if meta is None:
-        print(f"Checkpoint {checkpoint} isn't in workbook.json yet.")
-        return finish(2, verdict="error", message=f"checkpoint {checkpoint} isn't in workbook.json")
+        print(f"Assignment {checkpoint} isn't in workbook.json yet.")
+        return finish(2, verdict="error", message=f"assignment {checkpoint} isn't in workbook.json")
 
     def option(name, count=1):
         if name not in args:
@@ -523,8 +523,8 @@ def compile_error(checkpoint: str, output: str, config: dict, use_ref: bool = Fa
             blame = {"file": e["file"], "checkpoint": project.owner(config, path)}
             break
     if blame and not use_ref:
-        whose = f"checkpoint {blame['checkpoint']}'s file" if blame["checkpoint"] else "a file in your project"
-        print(f"The build stopped in {blame['file']}, which is {whose}, not one of this checkpoint's.\n"
+        whose = f"assignment {blame['checkpoint']}'s file" if blame["checkpoint"] else "a file in your project"
+        print(f"The build stopped in {blame['file']}, which is {whose}, not one of this assignment's.\n"
               "Your whole project is built together, so fix that file first.")
     print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
     return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=errors, blame=blame)
@@ -538,8 +538,8 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
     if only is not None:
         cases = [c for c in cases if c.id == only[0]]
         if not cases:
-            print(f"There is no test {only[0]} in checkpoint {checkpoint}.")
-            return finish(2, verdict="error", message=f"there is no test {only[0]} in checkpoint {checkpoint}")
+            print(f"There is no test {only[0]} in assignment {checkpoint}.")
+            return finish(2, verdict="error", message=f"there is no test {only[0]} in assignment {checkpoint}")
     disputed = {d["test"] for d in load_disputes() if d["checkpoint"] == checkpoint and d["status"] == "open"}
     set_aside = [c.id for c in cases if c.id in disputed and only is None]
     cases = [c for c in cases if c.id not in set_aside]
@@ -553,7 +553,7 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
         results = list(pool.map(lambda c: run_case(c, run_template, work, how, explain, timeout), cases))
 
-    print(f"Checkpoint {checkpoint} - {meta['title']}")
+    print(f"Assignment {checkpoint} - {meta['title']}")
     print(f"Program:  {run_template}   ({who})")
     print(f"Cases:    {cases_path.relative_to(ROOT).as_posix()} (seed {case_file.header.get('seed', '?')})\n")
 

@@ -1,5 +1,21 @@
 #pragma once
-// Checkpoint 05: how far each glyph moves the pen (the hhea and hmtx tables).
+// ======================================================================================
+// Assignment 05: Read the horizontal metrics
+// Problem: problems/05-metrics.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   The `hhea` and `hmtx` tables: the font's ascent and descent, and each glyph's advance
+//   width and left side bearing. Later, assignment 18 moves the pen by each glyph's
+//   advance width and sizes the text from the ascent and descent.
+//
+// Your job:
+//   In the Boilerplate this file is already written: the declarations, named as the author
+//   names them. Your work is in this assignment's other files, where it says TODO.
+//
+// How to start:
+//   This is the Boilerplate. To start from an empty file instead, press Blank in the
+//   book's editor (the blank files are in starters/blank/).
+// ======================================================================================
 
 #include <vector>
 

@@ -1,5 +1,22 @@
 #pragma once
-// Checkpoint 06: a picture in memory, a few ways to draw on it, and PNG output.
+// ======================================================================================
+// Assignment 06: Draw on a framebuffer
+// Problem: problems/06-canvas.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   A picture in memory, one colour per pixel, with three ways to draw on it (one pixel, a
+//   filled rectangle, a thick line) and a way to save it as a PNG. Every picture from
+//   assignment 08 on is drawn on it: outlines in 08 and 11, filled glyphs in 14, 16 and
+//   17, and a line of text in 18.
+//
+// Your job:
+//   In the Boilerplate this file is already written: the declarations, named as the author
+//   names them. Your work is in this assignment's other files, where it says TODO.
+//
+// How to start:
+//   This is the Boilerplate. To start from an empty file instead, press Blank in the
+//   book's editor (the blank files are in starters/blank/).
+// ======================================================================================
 
 #include <cstdint>
 #include <string>

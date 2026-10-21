@@ -1,6 +1,6 @@
 # 16 · Fill a polygon: non-zero rule
 
-**Difficulty:** Medium · **Checkpoint** 16 of 18 · **Check:** `.\check 16`
+**Difficulty:** Medium · **Assignment** 16 of 18 · **Check:** `.\check 16`
 
 **Tags**
 - *Language:* sorting pairs · signed counters
@@ -16,25 +16,15 @@ right after it.
 
 ## Where this fits
 
-Checkpoint 14 filled glyphs with the even-odd rule, which leaves a hole wherever two contours
-overlap. Fonts are designed for the non-zero rule, which doesn't. This checkpoint fills outlines
-made only of straight lines with the non-zero rule; checkpoint 17 adds curves.
+Assignment 14 filled glyphs with the even-odd rule, which leaves a hole wherever two contours
+overlap. Fonts are designed for the non-zero rule, which doesn't. This assignment adds a
+non-zero fill, `render/NonZero`, built on your `render/Scanline` from assignment 14, for outlines
+made only of straight lines; assignment 17 adds curves.
 
 ## The problem
 
-Write a program that fills polygon outlines on a black canvas with the non-zero rule and writes the
-picture as a PNG.
-
-Only the picture is checked, so you can structure the code however you like. This checkpoint's
-code goes in your project, in `render/NonZero.h` and `render/NonZero.cpp` under `src/`. It can
-build on `render/Scanline.h`. `checkpoints/p16_nonzero_lines.cpp` is the program the checker
-runs: it reads the test input, calls your code and writes the answer.
-
-Each new file starts blank, with a comment saying what belongs in it, and the program with an
-empty `main`, so the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, pick Boilerplate in the book's editor (or copy this
-checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
-the post has them, and what's left to write is `renderGlyphByNonZero`.
+Write a program that fills polygon outlines (straight edges only) on a black canvas with the
+non-zero rule and saves the picture as a PNG.
 
 ### Input
 
@@ -47,9 +37,10 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `color <r> <g> <b>` | The fill colour |
 | `outline` | Starts an outline; its `ends` and `points` lines follow |
 | `ends <e0> <e1> ...` | Index of the last point of each contour, counting from 0: contour k runs from the point after the previous end up to and including `e_k` |
-| `points <x> <y> on ...` | The outline's points. **In this checkpoint every point is on-curve**, so every edge is a straight line. |
+| `points <x> <y> on ...` | The outline's points. **In this assignment every point is on-curve**, so every edge is a straight line. |
 
-There can be several outlines. Fill each one on its own, one after another, in the same colour: the winding count is per outline, and a pixel ends up painted if any outline fills it.
+There can be several outlines. Fill each one on its own, one after another, in the same colour.
+The winding count (below) is per outline, and a pixel ends up painted if any outline fills it.
 
 ### Output
 
@@ -61,23 +52,27 @@ The checker forgives edges that move by one pixel, so sampling at the top of eac
 the centre, or rounding x differently, still passes. Missing or extra shapes and stray lines don't.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`third_party/stb_image_write.h` in your project is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
-`writePng`; the boilerplate calls it.
+the checker looks at the contents, so either of these works:
+
+- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
+  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
+  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
+  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
+  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
+  byte 10 as two bytes.
 
 ### The non-zero rule
 
 Each contour is closed (after its last point it continues to its first), and every edge has a
-direction: from a point to the next one. Draw a ray from the point to the right. Start a count at 0;
-for each edge the ray crosses, add 1 if the edge goes up the screen and subtract 1 if it goes down (either sign
-convention works, as long as it's the same for all edges). The point is inside when the final count
-is **not zero**.
+**direction**: from a point to the next one.
+
+Draw a ray from the point to the right and keep a **winding count**, starting at 0. For each edge
+the ray crosses, add 1 if the edge goes up the screen and subtract 1 if it goes down. (Either sign
+convention works, as long as it's the same for all edges.) The point is inside when the final
+count is **not zero**.
 
 - Two overlapping contours that go the same way give a count of 2 where they overlap: still
   inside, so there is no hole. (Even-odd would leave one.)
@@ -86,15 +81,23 @@ is **not zero**.
 - A contour that goes counter-clockwise on its own gives −1: inside. Test "not zero", not "greater
   than zero".
 
-With a scanline: collect each crossing as (x, direction), sort by x, walk left to right keeping a
-running count, and fill the stretches where the count isn't zero.
+With scanlines, for each row:
 
-**Vertices on the scanline.** As in checkpoint 14, treat each edge as half-open in y: it counts at
-scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured on the screen (pixels, growing
-downward), and horizontal edges never count. Clamp crossing x values to the canvas before converting
-them to integers. The provided `drawSpan(row, x0, x1)` fills x0 ... x1 inclusive and does nothing
-when x0 > x1. Then a vertex the
-outline passes through counts once, with the right direction.
+1. Collect each crossing as (x, direction).
+2. Sort them by x.
+3. Walk left to right keeping a running count, and fill the stretches where the count isn't zero.
+
+**Vertices on the scanline.** As in assignment 14, treat each edge as half-open in y:
+
+- An edge counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured on the screen
+  (pixels, growing downward).
+- Horizontal edges never count.
+
+Then a vertex the outline passes through counts once, with the right direction.
+
+**Clipping.** Clamp crossing x values to the canvas before converting them to integers. Your
+stretch fill from assignment 14 (the boilerplate's `fillSpan`) should already skip columns
+outside the canvas and do nothing when a stretch is empty.
 
 ## Requirements
 
@@ -119,7 +122,7 @@ input:   canvas 205 195
          points 50 100 on 79 9 on 2 65 on 98 65 on 21 9 on
 ```
 
-The same star as checkpoint 14. The pentagon in the middle is wound twice (count 2), so under the
+The same star as assignment 14. The pentagon in the middle is wound twice (count 2), so under the
 non-zero rule it is filled:
 
 ![expected picture for 16-R2-star](tests/16/expected/16-R2-star.png)
@@ -150,7 +153,7 @@ input:   canvas 234 238
          points 62 443 on 945 443 on 945 414 on 62 414 on 486 829 on 516 829 on 516 -70 on 486 -70 on
 ```
 
-U+5341 (十) from Noto Sans JP: two rectangles going the same way. Checkpoint 14's even-odd rule
+U+5341 (十) from Noto Sans JP: two rectangles going the same way. Assignment 14's even-odd rule
 left the crossing empty; non-zero fills it.
 
 ![expected picture for 16-R2-ten](tests/16/expected/16-R2-ten.png)
@@ -173,8 +176,8 @@ left the crossing empty; non-zero fills it.
 
 <details><summary>Hint 1: where to start</summary>
 
-Start from your checkpoint 14 scanline fill, if you have one. The edges and crossings are the same;
-only what you do with the sorted crossings changes.
+Start from your scanline fill of assignment 14 (`render/Scanline`). The edges and crossings are
+the same; only what you do with the sorted crossings changes.
 </details>
 
 <details><summary>Hint 2: the approach</summary>

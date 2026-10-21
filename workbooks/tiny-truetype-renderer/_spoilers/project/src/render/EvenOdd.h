@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 14: filling a glyph by the even-odd rule.
+// Assignment 14: filling a glyph by the even-odd rule.
 
 #include "FrameBufferCanvas.h"
 #include "GlyphComponent.h"

@@ -279,13 +279,26 @@ body.in-ide { overflow: hidden; }
   color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
 .callout svg { margin-top: 3px; color: var(--brand-ink); }
 .callout p { margin: 0; }
-.yourfiles { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px 12px; display: grid; gap: 8px; }
-.yourfiles h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--text); }
-.yourfiles dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; }
-.yourfiles dt { color: var(--text-3); }
-.yourfiles dd { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; min-width: 0; }
-.yourfiles .why { flex-basis: 100%; color: var(--text-2); font-size: 12.5px; }
-.yourfiles .from { color: var(--text-3); font-size: 12px; }
+.start { border: 1px solid var(--line-strong); border-left: 3px solid var(--brand); border-radius: 8px; padding: 12px 16px 14px; display: grid; gap: 10px; background: var(--layer); }
+.start h2 { margin: 0; font-size: 15px; font-weight: 600; color: var(--text); }
+.start p { margin: 0; font-size: 13px; color: var(--text-2); }
+.start b { color: var(--text); font-weight: 600; }
+.start code { font-size: 12px; }
+.start-files { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: sf; }
+.sf { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 2px 8px; counter-increment: sf; }
+.sf::before { content: counter(sf); grid-row: span 3; width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2); font: 600 11px/20px var(--font-ui); text-align: center; }
+.sf-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.sf-tag { font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 1px 7px; border-radius: 999px; background: var(--fill); color: var(--text-2); white-space: nowrap; }
+.sf-tag.new { color: var(--brand-ink); }
+.sf-tag.adds { color: var(--link); }
+.sf-job { color: var(--text) !important; }
+.sf-why { font-size: 12.5px !important; color: var(--text-3) !important; }
+.start-ways { display: grid; gap: 6px; }
+.ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.way { text-align: left; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--text-2); padding: 8px 10px; font: 12.5px/1.45 var(--font-ui); cursor: pointer; }
+.way b { display: block; margin-bottom: 2px; }
+.way:hover { border-color: var(--line-strong); }
+.way[aria-pressed="true"] { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .fpath { font: 12px var(--font-mono); background: var(--fill); color: var(--text); border: 0; border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
 button.fpath { cursor: pointer; } button.fpath:hover { background: var(--fill-hover); }
 .noproj { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 24px; background: var(--layer); text-align: center; }
@@ -396,7 +409,16 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .tree-item.on { background: var(--fill-hover); color: var(--text); }
 .tree-item .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tree-item .tm { width: 12px; flex: none; font-weight: 700; }
-.tree-item.blank .nm { color: var(--text-3); font-style: italic; }
+.tree-item.blank .nm { font-style: italic; }
+.tree-item.now { box-shadow: inset 3px 0 0 var(--brand); }
+.tree-item.now .nm { color: var(--text); font-weight: 600; }
+.tree-item.uses .nm { color: var(--link); }
+.tree-item.dim { opacity: .5; }
+.tree-item.dim:hover, .tree-item.dim.on { opacity: 1; }
+.tree-dir.now span { color: var(--brand-ink); }
+.tree-key { margin: 0 12px 4px 14px; display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 11px; color: var(--text-3); }
+.tree-key i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
+.tree-key .k-now { background: var(--brand); } .tree-key .k-uses { background: var(--link); }
 .tree-item .tm.ok { color: var(--ok); } .tree-item .tm.broke { color: var(--bad); }
 .tag-n { flex: none; min-width: 18px; height: 16px; padding: 0 5px; border-radius: 8px; background: var(--fill); color: var(--text-3); font: 600 10px/16px var(--font-ui); text-align: center; }
 .tree-empty { margin: 2px 12px 6px 14px; color: var(--text-3); font-size: 12px; line-height: 1.45; }
@@ -584,11 +606,11 @@ span.CodeMirror-selectedtext { background: none; }
   <div class="list-wrap gutter">
     <section class="hero" id="hero"></section>
     <aside class="side" id="side" aria-label="Progress"></aside>
-    <section class="plist" aria-label="Checkpoints">
+    <section class="plist" aria-label="Assignments">
       <div class="topics collapsed" id="topics" role="group" aria-label="Filter by topic"></div>
       <div class="filters">
         <label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="q" type="search" placeholder="Search checkpoints" aria-label="Search checkpoints"></label>
+          <input id="q" type="search" placeholder="Search assignments" aria-label="Search assignments"></label>
         <div class="seg" id="diff" role="group" aria-label="Difficulty"></div>
       </div>
       <div class="table-scroll"><table class="ptable">
@@ -605,8 +627,8 @@ span.CodeMirror-selectedtext { background: none; }
     <div class="tb-left">
       <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
       <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem List</span></a>
-      <button class="icon-btn" id="prev" type="button" aria-label="Previous checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
-      <button class="icon-btn" id="next" type="button" aria-label="Next checkpoint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="icon-btn" id="prev" type="button" aria-label="Previous assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+      <button class="icon-btn" id="next" type="button" aria-label="Next assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
     <div class="tb-mid">
       <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
@@ -630,7 +652,7 @@ span.CodeMirror-selectedtext { background: none; }
 
     <div class="right" id="right">
       <section class="panel code" aria-label="Code">
-        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: every file, and the checkpoint it belongs to"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
+        <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: every file, and the assignment it belongs to"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
         <div class="code-tools">
           <span class="lang" id="lang" title="Your project's language. To work in another one, ask Claude to set it up: it keeps this project and starts a new one."></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
@@ -693,8 +715,8 @@ span.CodeMirror-selectedtext { background: none; }
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  // Your project: the folder you build the post's program in, one checkpoint at a time. Each
-  // checkpoint's files (c.files) are its entry program, which the checker runs, the project files it
+  // Your project: the folder you build the post's program in, one assignment at a time. Each
+  // assignment's files (c.files) are its entry program, which the checker runs, the project files it
   // creates, and earlier files it adds to.
   const PROJECT = DATA.project;
   const PROJECT_DIR = PROJECT.dir + '/';
@@ -717,7 +739,7 @@ span.CodeMirror-selectedtext { background: none; }
     book: icon('<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>', 15),
   };
 
-  let current = null;          // checkpoint id on screen, or null for the list
+  let current = null;          // assignment id on screen, or null for the list
   let caseIndex = 0;           // selected test case in the bottom panel
   const peeked = new Set();    // editorials opened before solving, this visit only
   const lastAction = {};       // id -> { kind: 'run' | 'submit', test, copied }
@@ -734,7 +756,7 @@ span.CodeMirror-selectedtext { background: none; }
     $$('[data-logo]').forEach((el) => { el.textContent = DATA.title.trim().charAt(0).toUpperCase(); });
     $('#book-name').textContent = DATA.title;
     $('#nav-src').innerHTML = `Built on <a href="${esc(DATA.sourceUrl)}" target="_blank" rel="noopener">“${esc(DATA.sourceTitle)}”</a> by ${esc(DATA.author)}`;
-    $('#hero').innerHTML = `<span class="over">${CPS.length} checkpoints · any language</span><h1>${esc(DATA.headline)}</h1><p>${esc(DATA.lede)}</p>`;
+    $('#hero').innerHTML = `<span class="over">${CPS.length} assignments · any language</span><h1>${esc(DATA.headline)}</h1><p>${esc(DATA.lede)}</p>`;
     $('#credits').textContent = DATA.credits;
     $('#diff').innerHTML = ['All'].concat(DIFFS).map((d) =>
       `<button type="button" data-diff="${d === 'All' ? '' : esc(d)}" aria-pressed="${d === 'All'}">${esc(d)}</button>`).join('');
@@ -772,32 +794,32 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="bars">${bars}</div>
       </div>
       <div class="card how"><h2>How checking works</h2><ol>
-        <li><span><b>Build a project.</b> Each checkpoint adds properly named files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later ones include them. Go in order: when you're done it's a program of its own, ready to put on GitHub.</span></li>
-        <li><span><b>Write it</b> in the editor here, or in your own editor. A checkpoint's files start blank (a comment and an empty <code>main</code>); Boilerplate above the editor has the input and output done.</span></li>
-        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the checkpoint solved. Your files are saved as you type.</span></li>`
+        <li><span><b>Build a project.</b> Each assignment adds properly named files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later ones include them. Go in order: when you're done it's a program of its own, ready to put on GitHub.</span></li>
+        <li><span><b>Write it</b> in the editor here, or in your own editor. A assignment's files start blank (a comment and an empty <code>main</code>); Boilerplate above the editor has the input and output done.</span></li>
+        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the assignment solved. Your files are saved as you type.</span></li>`
           : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
-        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
-        <li><span><b>Tests stay fair.</b> Each test input carries what the earlier checkpoints would produce, so a checkpoint's tests only depend on the earlier files it uses. <b>Re-check solved</b> catches a change that broke something you'd passed.</span></li>
+        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the assignment solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
+        <li><span><b>Tests stay fair.</b> Each test input carries what the earlier assignments would produce, so a assignment's tests only depend on the earlier files it uses. <b>Re-check solved</b> catches a change that broke something you'd passed.</span></li>
         <li><span><b>A test looks wrong?</b> <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> sets it aside. Ask Claude to review your disputes.</span></li>
       </ol></div>`;
     if (CPS.length && done.length === CPS.length) renderFinish();
   }
 
-  // Every checkpoint passes: show the project the learner built next to the author's.
+  // Every assignment passes: show the project the learner built next to the author's.
   function renderFinish() {
     const card = document.createElement('div');
     card.className = 'card finish';
-    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} checkpoints pass. <code>${esc(PROJECT_DIR)}</code> is a ${esc(PROJECT.label)} project of its own: it builds anywhere with its own build file, so you can put it on GitHub as it is.</p><div id="finish-files"></div>`;
+    card.innerHTML = `<h2>You built it</h2><p class="note">All ${CPS.length} assignments pass. <code>${esc(PROJECT_DIR)}</code> is a ${esc(PROJECT.label)} project of its own: it builds anywhere with its own build file, so you can put it on GitHub as it is.</p><div id="finish-files"></div>`;
     $('#side').prepend(card);
     const show = (all) => {
-      // The checkpoint programs are test scaffolding: compare the project itself.
-      const mine = all.filter((f) => !f.startsWith('checkpoints/') && !f.startsWith('third_party/'));
+      // The assignment programs are test scaffolding: compare the project itself.
+      const mine = all.filter((f) => !f.startsWith('assignments/') && !f.startsWith('third_party/'));
       const scaffolding = all.length - mine.length;
       const authorFiles = PROJECT.author ? PROJECT.author.files : [];
       const matched = new Set(treeMatch(mine, authorFiles));
       const listing = (files, hit) => files.map((f) => (hit(f) ? `<span class="hit">${esc(f)}</span>` : esc(f))).join('\n');
       $('#finish-files').innerHTML = (authorFiles.length ? `<div class="trees">
-          <div><h3>Yours</h3><pre>${listing(mine, (f) => matched.has(f))}${scaffolding ? `\n<span class="muted">+ checkpoints/ and third_party/ (${scaffolding} files)</span>` : ''}</pre></div>
+          <div><h3>Yours</h3><pre>${listing(mine, (f) => matched.has(f))}${scaffolding ? `\n<span class="muted">+ assignments/ and third_party/ (${scaffolding} files)</span>` : ''}</pre></div>
           <div><h3><a href="${esc(PROJECT.author.url)}" target="_blank" rel="noopener">The author's</a></h3><pre>${listing(authorFiles, (f) => [...matched].some((m) => sameFile(m, f)))}</pre></div></div>
           <p class="note">${matched.size} of your files have a counterpart in ${esc(PROJECT.author.label)} (in green).</p>` : '')
         + (LOCAL ? `<p class="note">Run what you built:</p>${cmdRow(PROJECT.build)}${cmdRow(PROJECT.run)}` : '');
@@ -829,7 +851,7 @@ span.CodeMirror-selectedtext { background: none; }
         : drafted(c.id) ? `<span class="st-try" title="Attempted: a draft is saved">${I.tryIcon}</span>` : '';
       return `<tr data-id="${c.id}"><td class="st">${st}</td><td class="ti"><a href="#p${c.id}">${esc(c.num)}. ${esc(c.title)}</a></td>`
         + `<td class="te">${c.tests}</td><td class="di ${diffClass(c.difficulty)}">${esc(c.difficulty)}</td></tr>`;
-    }).join('') || '<tr><td></td><td class="muted" colspan="3">No checkpoints match.</td></tr>';
+    }).join('') || '<tr><td></td><td class="muted" colspan="3">No assignments match.</td></tr>';
     return shown;
   }
 
@@ -890,7 +912,7 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="chip" title="Only your program's output is checked, so any structure, language or library works.">Any language</span>
       </div>
       ${c.read ? `<div class="callout">${I.book}<div><b>Read in the blog first.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
-      ${filesBox(c)}
+      ${startCard(c)}
       <div class="flow">${c.body}</div>
       <div class="accs">
         ${c.tags.length ? acc('acc-topics', I.tag, 'Topics', tags) : ''}
@@ -898,27 +920,36 @@ span.CodeMirror-selectedtext { background: none; }
         ${c.context ? acc('', I.map, 'Where this fits', c.context) : ''}
         ${c.sources ? acc('', I.link, 'Source material', c.sources) : ''}
       </div>
-      <div class="d-foot"><button class="btn" type="button" id="solve-btn"></button><span>Checkpoint ${CPS.indexOf(c) + 1} of ${CPS.length} · problem page <code>${esc(c.problem)}</code></span></div>`;
+      <div class="d-foot"><button class="btn" type="button" id="solve-btn"></button><span>Assignment ${CPS.indexOf(c) + 1} of ${CPS.length} · problem page <code>${esc(c.problem)}</code></span></div>`;
 
     const host = $('[data-examples]', $('#desc'));
     if (host) host.innerHTML = c.examples.map(exampleHtml).join('');
     paintSolved();
   }
 
-  // What this checkpoint adds to the project, and what it can build on.
-  function filesBox(c) {
+  // Start here: the files to write in this assignment, your job in each, and how to begin.
+  const withCode = (t) => esc(t || '').replace(/`([^`]+)`/g, '<code>$1</code>');
+  function startCard(c) {
     const link = (f) => (LOCAL ? `<button type="button" class="fpath" data-open-file="${esc(f.path)}">${esc(shortName(f.path))}</button>`
       : `<code class="fpath">${esc(shortName(f.path))}</code>`);
-    const from = (f) => (f.owner && BY[f.owner] ? `<span class="from">(${esc(BY[f.owner].num)})</span>` : '');
-    const why = (list) => [...new Set(list.map((f) => f.purpose).filter(Boolean))].map((t) => `<span class="why">${esc(t)}</span>`).join('');
-    const made = c.files.filter((f) => f.role === 'new'), adds = c.files.filter((f) => f.role === 'adds');
-    const entry = c.files.find((f) => f.role === 'entry');
-    const rows = [];
-    if (made.length) rows.push(['Creates', made.map(link).join('') + why(made)]);
-    if (adds.length) rows.push(['Adds to', adds.map(link).join('') + from(adds[0]) + why(adds)]);
-    if (c.buildsOn.length) rows.push(['Builds on', c.buildsOn.map((f) => link(f) + from(f)).join('')]);
-    if (entry) rows.push(['The checker runs', link(entry) + '<span class="why">It reads a test input, calls your code and writes the answer.</span>']);
-    return `<div class="yourfiles"><h2>In your project</h2><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>`;
+    const from = (f) => (f.owner && BY[f.owner] ? ` ${esc(BY[f.owner].num)}` : '');
+    const tag = (f) => (f.role === 'entry' ? '<span class="sf-tag">The program the checker runs</span>'
+      : f.role === 'adds' ? `<span class="sf-tag adds">Add to it (from assignment${from(f)})</span>` : '<span class="sf-tag new">New file</span>');
+    const order = [...c.files.filter((f) => f.role !== 'entry'), ...c.files.filter((f) => f.role === 'entry')];
+    const files = order.map((f) => `<li class="sf"><div class="sf-head">${link(f)}${tag(f)}</div>`
+      + `<p class="sf-job"><b>Your job:</b> ${withCode(f.job || '')}</p>`
+      + (f.role === 'new' && f.purpose ? `<p class="sf-why">Why it's here: ${withCode(f.purpose)}</p>` : '')
+      + (f.role === 'entry' ? '<p class="sf-why">It reads a test input, calls your code and writes the answer. Only that output is checked.</p>' : '')
+      + '</li>').join('');
+    const uses = c.buildsOn.length
+      ? `<p><b>You can use</b> what you wrote earlier: ${c.buildsOn.map((f) => link(f) + `<span class="muted">${from(f)}</span>`).join(', ')}.</p>` : '';
+    const ways = c.files.some((f) => f.boilerplate != null) ? `<div class="start-ways"><p><b>Two ways to start</b> (switch any time; it asks before replacing your code)</p><div class="ways">
+        <button type="button" class="way" data-start-kind="blank"><b>From scratch</b>Each file starts with a comment saying why it exists and your job; the rest is yours.</button>
+        <button type="button" class="way" data-start-kind="boilerplate"><b>Boilerplate</b>The input/output and the declarations are written; you fill in what's marked TODO.</button></div></div>` : '';
+    return `<section class="start" aria-label="Start here"><h2>Start here</h2>
+      <p>Write ${order.length === 1 ? 'this file' : `these ${order.length} files`}, in this order. Only the program's output is checked, so you can design the code your own way.</p>
+      <ol class="start-files">${files}</ol>${uses}${ways}
+      <p><b>Done</b> when Submit says Accepted: all ${c.tests} tests pass. The Editorial then shows a solution that passes and how the author did it.</p></section>`;
   }
 
   function exampleHtml(ex) {
@@ -974,6 +1005,8 @@ span.CodeMirror-selectedtext { background: none; }
     if (e.target.closest('#solve-btn')) setSolved(current, !solved(current));
     const file = e.target.closest('[data-open-file]');
     if (file) openTab(file.dataset.openFile);
+    const way = e.target.closest('[data-start-kind]');
+    if (way) { const b = $(`#kind [data-kind="${way.dataset.startKind}"]`); if (b) b.click(); }
   });
 
   // The Editorial: a solution proven to pass every test (the reference, fingerprinted when it
@@ -1000,7 +1033,7 @@ span.CodeMirror-selectedtext { background: none; }
           <p class="note">Written from the problem page, not copied from the blog. Yours can look completely different and still be right: only the output is checked.</p>
           ${files}<div class="sol-head"><code>${esc(sol.files[solFile].path)}</code><button class="btn" type="button" id="sol-copy">Copy</button></div>
           <pre class="sol-code" id="sol-code"></pre>
-          ${sol.also.length ? `<p class="note">It also uses earlier checkpoints' files: ${sol.also.map((u) => `<code>${esc(u)}</code>`).join(', ')}. Their Editorials show them.</p>` : ''}</section>` : '')
+          ${sol.also.length ? `<p class="note">It also uses earlier assignments' files: ${sol.also.map((u) => `<code>${esc(u)}</code>`).join(', ')}. Their Editorials show them.</p>` : ''}</section>` : '')
       + (c.editorial ? `<section class="ed-sec"><h2>${esc(c.editorial.title)}</h2><div class="flow">${c.editorial.html}</div></section>` : '');
     if (sol) {
       const box = $('#sol-code'), text = sol.files[solFile].text;
@@ -1035,7 +1068,7 @@ span.CodeMirror-selectedtext { background: none; }
   function renderCases(c) {
     const list = casesOf(c);
     if (!list.length) {
-      $('#cases').innerHTML = `<p class="note">This checkpoint has no worked examples. <code>${esc(command(c.id))}</code> runs all ${c.tests} tests.</p>`;
+      $('#cases').innerHTML = `<p class="note">This assignment has no worked examples. <code>${esc(command(c.id))}</code> runs all ${c.tests} tests.</p>`;
       return;
     }
     caseIndex = Math.min(caseIndex, list.length - 1);
@@ -1060,12 +1093,12 @@ span.CodeMirror-selectedtext { background: none; }
   function looksLikeCode(t, c) {
     const s = t.trim();
     if ([code(), ...c.files.flatMap((f) => [f.blank, f.boilerplate])].some((x) => x && x.trim() === s)) return true;
-    return !/^Checkpoint \S+ - /m.test(s)
-      && /^\s*(#include\b|#!|import \S|from \S+ import|def \w+\(|(int|void|auto) main\s*\(|fn main\(|func main\(|function \w+\(|\/\/ Checkpoint \d)/m.test(s);
+    return !/^Assignment \S+ - /m.test(s)
+      && /^\s*(#include\b|#!|import \S|from \S+ import|def \w+\(|(int|void|auto) main\s*\(|fn main\(|func main\(|function \w+\(|\/\/ Assignment \d)/m.test(s);
   }
   function parseOutput(text, c) {
     const t = text.replace(/\r/g, '');
-    const head = t.match(/^Checkpoint (\S+) - /m);
+    const head = t.match(/^Assignment (\S+) - /m);
     const run = `<code>${esc(command(c.id))}</code>`;
     let v = null, m;
     if ((m = t.match(/Accepted: (\d+) \/ (\d+) tests passed(?: \((\d+) disputed\))?/))) {
@@ -1087,10 +1120,10 @@ span.CodeMirror-selectedtext { background: none; }
       v = { kind: 'warn', label: 'Not started yet' };
       v.help = /is empty\./.test(t)
         ? `<code>${esc(c.entry)}</code> is empty, so there was nothing to check. Write the program in it, save, and run ${run} again.`
-        : /Created this checkpoint's files/.test(t) ? `The checker created this checkpoint's files in your project. Write them, save, and run ${run} again.`
+        : /Created this assignment's files/.test(t) ? `The checker created this assignment's files in your project. Write them, save, and run ${run} again.`
         : `<code>${esc(c.entry)}</code> is still the blank starter, so there was nothing to check. Write your program, save, and run ${run} again.`;
     } else if (/^Passed\s*$/m.test(t)) {
-      v = { kind: 'ok', label: 'Passed', single: true, help: 'This one test passes. Run all of them to get a verdict for the checkpoint.' };
+      v = { kind: 'ok', label: 'Passed', single: true, help: 'This one test passes. Run all of them to get a verdict for the assignment.' };
     } else if ((m = t.match(/^Failed: (.*)$/m))) {
       v = { kind: 'bad', label: 'Failed', single: true, help: `This one test fails: ${esc(m[1])}` };
     } else if (!t.trim()) {
@@ -1103,7 +1136,7 @@ span.CodeMirror-selectedtext { background: none; }
         help: `This starts like the checker's output but has no verdict at the end. Copy everything it printed, down to the last line (it starts with Accepted, Wrong Answer, Compile Error, Not started yet or Not implemented yet).` };
     } else {
       v = { kind: 'unknown', label: "That isn't the checker's output",
-        help: `Paste what ${run} prints in the terminal. It starts with “Checkpoint ${esc(c.id)} - …” and ends with a verdict such as “Accepted: ${c.tests} / ${c.tests} tests passed.”` };
+        help: `Paste what ${run} prints in the terminal. It starts with “Assignment ${esc(c.id)} - …” and ends with a verdict such as “Accepted: ${c.tests} / ${c.tests} tests passed.”` };
     }
     v.raw = t;
     v.other = head && head[1] !== c.id ? head[1] : null;
@@ -1124,7 +1157,7 @@ span.CodeMirror-selectedtext { background: none; }
     let h = `<div class="verdict ${v.kind}"><h2>${esc(v.label)}</h2>`
       + (v.total ? `<span class="sub">${v.passed} / ${v.total} testcases passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
       + `<button class="btn" type="button" id="clear-result">Clear</button></div>`;
-    if (v.other) h += `<p class="note warn">This output is from checkpoint ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here. Open checkpoint ${esc(v.other)} and paste it there.</p>`;
+    if (v.other) h += `<p class="note warn">This output is from assignment ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here. Open assignment ${esc(v.other)} and paste it there.</p>`;
     else if (v.kind === 'ok' && !v.single) h += `<p class="note">Saved as solved. The Editorial tab is open now.</p>`;
     if (v.help) h += `<p class="note">${v.help}</p>`;
     if (v.reqs.length) {
@@ -1152,11 +1185,11 @@ span.CodeMirror-selectedtext { background: none; }
     $('#result').innerHTML = (notice ? `<p class="note warn">${notice}</p>` : '')
       + (act && act.warn ? `<p class="note warn">${act.warn}</p>` : '') + (v ? verdictHtml(v, c) : '') + `
       <ol class="steps">
-        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(act && act.path ? act.path : c.entry)}</code>, and the same for this checkpoint's other files you changed (the tabs above the editor). Skip this if you edit the files directly.</p>
+        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(act && act.path ? act.path : c.entry)}</code>, and the same for this assignment's other files you changed (the tabs above the editor). Skip this if you edit the files directly.</p>
           <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
         <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
         <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p><b>Copy what the checker prints</b> in the terminal and paste it here (the result, not your code).</p>
-          <textarea class="paste" id="paste" spellcheck="false" placeholder="Paste the checker's output here (Ctrl+V). It starts with “Checkpoint ${esc(c.id)} - …”"></textarea></div></li>
+          <textarea class="paste" id="paste" spellcheck="false" placeholder="Paste the checker's output here (Ctrl+V). It starts with “Assignment ${esc(c.id)} - …”"></textarea></div></li>
       </ol>
       <details class="more"><summary>More commands, and what a failure looks like</summary><div>
         ${cmdRow(command(c.id))}${cmdRow(command(c.id, '-Fresh'))}${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
@@ -1167,7 +1200,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (!current) return;
     const c = BY[current];
     if (!text.trim()) {
-      renderResult(c, 'The box was empty, so there was nothing to read. Copy what the checker printed in the terminal (everything from “Checkpoint ' + esc(c.id) + ' - …” to the last line), then paste it here.');
+      renderResult(c, 'The box was empty, so there was nothing to read. Copy what the checker printed in the terminal (everything from “Assignment ' + esc(c.id) + ' - …” to the last line), then paste it here.');
       return;
     }
     store.set(c.id + ':result', text);
@@ -1203,8 +1236,8 @@ span.CodeMirror-selectedtext { background: none; }
   }
 
   // ---- editor
-  // A checkpoint's files open as tabs, one CodeMirror document each: the project files it creates
-  // or adds to, then its entry program. Files of earlier checkpoints can be opened from the Files
+  // A assignment's files open as tabs, one CodeMirror document each: the project files it creates
+  // or adds to, then its entry program. Files of earlier assignments can be opened from the Files
   // panel. The published book keeps them in this browser; with study, they're your files on disk.
   let cm = null, plainEditor = null, saveTimer = 0;
   const docs = {};  // path -> CodeMirror.Doc
@@ -1251,7 +1284,7 @@ span.CodeMirror-selectedtext { background: none; }
   const textOf = (path) => (cm ? (docs[path] ? docs[path].getValue() : null) : path === live.active ? plainEditor.value : null);
   const fileIn = (c, path) => (c ? c.files.find((f) => f.path === path) || null : null);
 
-  // Blank or boilerplate: a checkpoint's own files (its entry program and the files it creates) start
+  // Blank or boilerplate: a assignment's own files (its entry program and the files it creates) start
   // from one of them. Earlier files it adds to are never replaced.
   const ownFiles = (c) => c.files.filter((f) => f.role !== 'adds');
   const kindOf = (c) => (store.get(c.id + ':kind') === 'boilerplate' && c.files.some((f) => f.boilerplate != null) ? 'boilerplate' : 'blank');
@@ -1285,6 +1318,7 @@ span.CodeMirror-selectedtext { background: none; }
   function paintKind(c) {
     $('#kind').hidden = !c.files.some((f) => f.boilerplate != null);
     $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
+    $$('[data-start-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.startKind === kindOf(c))));
   }
   // Changed from both starters: replacing it would lose work, so ask first.
   function ownChanged(c) {
@@ -1310,11 +1344,11 @@ span.CodeMirror-selectedtext { background: none; }
     const c = BY[current];
     if (!b || !c || b.dataset.kind === kindOf(c)) return;
     if (!ownChanged(c)) useStarter(c, b.dataset.kind);
-    else ask(`Replace this checkpoint's ${filesWord(c)} with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
+    else ask(`Replace this assignment's ${filesWord(c)} with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
   });
   $('#reset').addEventListener('click', () => {
     const c = BY[current];
-    ask(`Reset this checkpoint's ${filesWord(c)} to the ${kindName(kindOf(c)).toLowerCase()} starter?`, () => useStarter(c, kindOf(c)));
+    ask(`Reset this assignment's ${filesWord(c)} to the ${kindName(kindOf(c)).toLowerCase()} starter?`, () => useStarter(c, kindOf(c)));
   });
   $('#confirm-no').addEventListener('click', () => {
     $('#confirm').hidden = true;
@@ -1433,7 +1467,7 @@ span.CodeMirror-selectedtext { background: none; }
     const path = live.active, text = code(), f = fileIn(c, path);
     const entry = { kind, test, copied: false, empty: !text.trim(), path };
     // Say up front what the checker will answer, instead of letting it look like a failure later.
-    if (entry.empty) entry.warn = `<code>${esc(path)}</code> is empty. Write it first: the checker needs every file of this checkpoint.`;
+    if (entry.empty) entry.warn = `<code>${esc(path)}</code> is empty. Write it first: the checker needs every file of this assignment.`;
     else if (f && f.role === 'entry' && text.trim() === f.blank.trim()) entry.warn = 'This is still the blank starter (an empty <code>main</code>), so the checker will answer “Not started yet”. Write your program first, or pick Boilerplate above the editor for ready-made input/output code.';
     lastAction[c.id] = entry;
     if (entry.empty) {
@@ -1459,11 +1493,11 @@ span.CodeMirror-selectedtext { background: none; }
     else if (e.key === "'") { e.preventDefault(); act('run'); }
   }, true);
 
-  // ---- tabs: the checkpoint's files, plus any other file of the project you opened
+  // ---- tabs: the assignment's files, plus any other file of the project you opened
   const LOCAL = window.WORKBOOK_LOCAL || null;
   const live = { online: !!LOCAL, disk: {}, conflict: {}, conflictData: {}, report: {}, marks: {}, busy: false,
     quiet: false, tabs: [], active: null, project: [], showTree: false, tick: 0, noProject: false };
-  const ENTRY_OF = Object.fromEntries(CPS.map((c) => [c.entry, c]));  // an entry program -> its checkpoint
+  const ENTRY_OF = Object.fromEntries(CPS.map((c) => [c.entry, c]));  // an entry program -> its assignment
   const tabOrder = (c) => [...c.files.filter((f) => f.role !== 'entry'), ...c.files.filter((f) => f.role === 'entry')].map((f) => f.path);
   const isExtra = (path) => !fileIn(BY[current], path);
   const keepTabs = () => { if (current) store.set('tabs:' + current, JSON.stringify(live.tabs.filter(isExtra))); };
@@ -1475,7 +1509,7 @@ span.CodeMirror-selectedtext { background: none; }
     activate(live.tabs[0]);
     if (LOCAL) startCheckpoint(c);
   }
-  // Opening a checkpoint creates its files in your project (never over ones that exist).
+  // Opening a assignment creates its files in your project (never over ones that exist).
   async function startCheckpoint(c) {
     try {
       await api('/api/start', { method: 'POST', body: JSON.stringify({ checkpoint: c.id }) });
@@ -1490,7 +1524,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (live.showTree) refreshProject();
   }
   function openTab(path, line) {
-    const owner = ENTRY_OF[path];  // another checkpoint's entry program: go to that checkpoint
+    const owner = ENTRY_OF[path];  // another assignment's entry program: go to that assignment
     if (owner && owner.id !== current) { go('p' + owner.id); return; }
     if (!live.tabs.includes(path)) { live.tabs.push(path); keepTabs(); }
     activate(path, line);
@@ -1533,7 +1567,7 @@ span.CodeMirror-selectedtext { background: none; }
     const hint = (p) => {
       const f = fileIn(c, p);
       return !f ? 'Another file of your project' : f.role === 'entry' ? 'The program the checker runs'
-        : f.role === 'adds' ? `From checkpoint ${f.owner && BY[f.owner] ? BY[f.owner].num : ''}: this checkpoint adds to it` : 'New in this checkpoint';
+        : f.role === 'adds' ? `From assignment ${f.owner && BY[f.owner] ? BY[f.owner].num : ''}: this assignment adds to it` : 'New in this assignment';
     };
     bar.innerHTML = live.tabs.map((p) => `<span class="ftab${p === live.active ? ' on' : ''}${live.conflict[p] ? ' warn' : ''}" role="tab" aria-selected="${p === live.active}" title="${esc(hint(p))}">`
       + `<button type="button" data-tab="${esc(p)}">${esc(shortName(p))}</button>`
@@ -1717,18 +1751,24 @@ span.CodeMirror-selectedtext { background: none; }
       (folders[cut < 0 ? '' : rel.slice(0, cut + 1)] = folders[cut < 0 ? '' : rel.slice(0, cut + 1)] || []).push(f);
     });
     const order = Object.keys(folders).sort((a, b) => (a === '') - (b === '') || a.localeCompare(b));
+    // This assignment's files stand out, the earlier files it can use are marked, the rest fade.
+    const cur = current && BY[current];
+    const isNow = (path) => !!(cur && cur.files.some((x) => x.path === path));
+    const isUse = (path) => !!(cur && cur.buildsOn.some((x) => x.path === path));
     const item = (f) => {
       const c = f.checkpoint && BY[f.checkpoint];
+      const role = isNow(f.path) ? ' now' : isUse(f.path) ? ' uses' : cur ? ' dim' : '';
       const mark = !c ? '<span class="tm"></span>' : store.get(c.id + ':broke') ? '<span class="tm broke" title="Passed before, failing now">!</span>'
         : solved(c.id) ? '<span class="tm ok" title="Solved">✓</span>' : '<span class="tm"></span>';
-      const tip = `${shortName(f.path)} · ${f.lines} lines${c ? ` · checkpoint ${c.num}: ${c.title}` : ''}${f.state === 'blank' ? ' · not written yet' : ''}`;
-      return `<button type="button" class="tree-item${f.path === live.active ? ' on' : ''}${f.state === 'blank' ? ' blank' : ''}" data-open="${esc(f.path)}" title="${esc(tip)}">${mark}<span class="nm">${esc(f.path.split('/').pop())}</span>${c ? `<span class="tag-n">${esc(c.num)}</span>` : ''}</button>`;
+      const tip = `${shortName(f.path)} · ${f.lines} lines${c ? ` · assignment ${c.num}: ${c.title}` : ''}${f.state === 'blank' ? ' · not written yet' : ''}`;
+      return `<button type="button" class="tree-item${role}${f.path === live.active ? ' on' : ''}${f.state === 'blank' ? ' blank' : ''}" data-open="${esc(f.path)}" title="${esc(tip)}">${mark}<span class="nm">${esc(f.path.split('/').pop())}</span>${c ? `<span class="tag-n">${esc(c.num)}</span>` : ''}</button>`;
     };
     const solvedCount = CPS.filter((c) => solved(c.id)).length;
     tree.innerHTML = `<div class="tree-dir"><span>${esc(PROJECT_DIR)}</span><button type="button" class="tree-add" id="new-file" title="New file" aria-label="New file">+</button></div>
       <form class="new-file" id="new-file-form" hidden><input id="new-file-name" spellcheck="false" placeholder="src/utils/Bit.h" aria-label="New file, a path in your project"></form>
-      ${live.project.length ? order.map((d) => (d ? `<div class="tree-dir"><span>${esc(d)}</span></div>` : '') + folders[d].map(item).join('')).join('')
-        : '<p class="tree-empty">Nothing yet. Each checkpoint adds its files when you open it.</p>'}
+      ${cur ? `<p class="tree-key"><span><i class="k-now"></i>this assignment</span><span><i class="k-uses"></i>you can use</span></p>` : ''}
+      ${live.project.length ? order.map((d) => (d ? `<div class="tree-dir${folders[d].some((f) => isNow(f.path)) ? ' now' : ''}"><span>${esc(d)}</span></div>` : '') + folders[d].map(item).join('')).join('')
+        : '<p class="tree-empty">Nothing yet. Each assignment adds its files when you open it.</p>'}
       <div class="tree-foot"><button class="btn" type="button" id="recheck"${solvedCount ? '' : ' disabled'}>Re-check solved (${solvedCount})</button></div>`;
   }
   $('#tree-btn').addEventListener('click', () => {
@@ -1769,7 +1809,7 @@ span.CodeMirror-selectedtext { background: none; }
     setBottom('result');
     const rows = [];
     for (const [k, id] of ids.entries()) {
-      $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>Re-checking your solved checkpoints: ${k + 1} of ${ids.length} (${esc(BY[id].num)}. ${esc(BY[id].title)})…</div>` + recheckTable(rows);
+      $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>Re-checking your solved assignments: ${k + 1} of ${ids.length} (${esc(BY[id].num)}. ${esc(BY[id].title)})…</div>` + recheckTable(rows);
       let r;
       try { r = await api('/api/check/' + id, { method: 'POST', body: '{}' }); setOnline(true); } catch (e) { setOnline(false); r = { verdict: 'offline' }; }
       live.report[id] = r;
@@ -1779,8 +1819,8 @@ span.CodeMirror-selectedtext { background: none; }
     live.busy = false;
     $('#run').disabled = $('#submit').disabled = false;
     const broke = rows.filter((x) => x.r.verdict !== 'accepted');
-    $('#result').innerHTML = `<div class="verdict ${broke.length ? 'bad' : 'ok'}"><h2>${broke.length ? `${broke.length} broke` : 'All still pass'}</h2><span class="sub">${rows.length - broke.length} / ${rows.length} solved checkpoints pass</span></div>`
-      + `<p class="note">${broke.length ? 'These passed before and fail now, most likely because of a change to a file they use. Open one to see its failing tests.' : 'Every checkpoint you solved still passes with your project as it is now.'}</p>`
+    $('#result').innerHTML = `<div class="verdict ${broke.length ? 'bad' : 'ok'}"><h2>${broke.length ? `${broke.length} broke` : 'All still pass'}</h2><span class="sub">${rows.length - broke.length} / ${rows.length} solved assignments pass</span></div>`
+      + `<p class="note">${broke.length ? 'These passed before and fail now, most likely because of a change to a file they use. Open one to see its failing tests.' : 'Every assignment you solved still passes with your project as it is now.'}</p>`
       + recheckTable(rows);
     renderTree();
   }
@@ -1860,7 +1900,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (live.showTree) refreshProject();
   }
 
-  // Compile errors are marked in whichever project file they're in, this checkpoint's or an earlier one.
+  // Compile errors are marked in whichever project file they're in, this assignment's or an earlier one.
   function errorPath(c, file) {
     const f = String(file || '').replace(/\\/g, '/');
     return f.startsWith(PROJECT_DIR) ? f : live.tabs.find((p) => f.endsWith('/' + p)) || null;
@@ -1895,7 +1935,7 @@ span.CodeMirror-selectedtext { background: none; }
           + (r.mostLikely ? ` Most of them point to <b>${esc(r.mostLikely.id)}</b>: ${esc(r.mostLikely.text)}.` : '');
       case 'compile-error': return r.noMain
         ? `<code>${esc(c.entry)}</code> has no <code>main</code> function, so it can't be built into a program. Add a <code>main</code> that reads the input file and writes the output file.`
-        : r.blame ? `Your project didn't build, so no tests ran. The first error is in <code>${esc(shortName(r.blame.file))}</code>, ${r.blame.checkpoint && BY[r.blame.checkpoint] ? `checkpoint ${esc(BY[r.blame.checkpoint].num)}'s file` : 'another file of your project'}: the whole project is built together, so fix that first.`
+        : r.blame ? `Your project didn't build, so no tests ran. The first error is in <code>${esc(shortName(r.blame.file))}</code>, ${r.blame.checkpoint && BY[r.blame.checkpoint] ? `assignment ${esc(BY[r.blame.checkpoint].num)}'s file` : 'another file of your project'}: the whole project is built together, so fix that first.`
         : "Your code didn't build, so no tests ran. Lines with errors are marked in the editor; fix the first error first, since later ones often follow from it.";
       case 'not-started': return r.empty
         ? `<code>${esc(c.entry)}</code> is empty, so there was nothing to check. Write the program in it.`
@@ -1911,7 +1951,7 @@ span.CodeMirror-selectedtext { background: none; }
 
   // ---- Your output vs expected: lines are lined up, then the differing words are marked. Words and
   // numbers are compared the way the checker compares them (quoted strings are one word; numbers
-  // within the checkpoint's tolerance are equal), so only real differences light up.
+  // within the assignment's tolerance are equal), so only real differences light up.
   const words = (line) => line.match(/"[^"]*"|\S+/g) || [];
   const sameWord = (a, b, tol) => {
     if (a === b) return true;
@@ -2038,7 +2078,7 @@ span.CodeMirror-selectedtext { background: none; }
     const solvedCount = CPS.filter((x) => solved(x.id)).length;
     $('#result').innerHTML = (r ? reportHtml(r, c) : intro) + nudge
       + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`
-      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Run every checkpoint you've solved again, to catch anything a change to an earlier file broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
+      + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Run every assignment you've solved again, to catch anything a change to an earlier file broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
       + `<details class="more"><summary>Think a test is wrong?</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
         <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside, so it no longer counts. Then ask Claude to review your disputes.</p></div></details>`;
   }
@@ -2051,7 +2091,7 @@ span.CodeMirror-selectedtext { background: none; }
     });
   }
 
-  // ---- navigation between checkpoints
+  // ---- navigation between assignments
   function openCheckpoint(id) {
     const c = BY[id];
     const changed = current !== id;

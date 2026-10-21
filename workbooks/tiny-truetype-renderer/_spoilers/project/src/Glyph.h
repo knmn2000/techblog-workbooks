@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 07: a glyph as stored in the glyf table.
+// Assignment 07: a glyph as stored in the glyf table.
 
 #include <vector>
 
@@ -15,6 +15,6 @@ struct Glyph {
   int numberOfContours = 0;  // negative for a compound glyph
   BoundingRect bounds;
   // A simple glyph has one component. A compound glyph is made of other glyphs;
-  // resolveGlyph (checkpoint 09) turns it into one component per part.
+  // resolveGlyph (assignment 09) turns it into one component per part.
   std::vector<GlyphComponent> components;
 };

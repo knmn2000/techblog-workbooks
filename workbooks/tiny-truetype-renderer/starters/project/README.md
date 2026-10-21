@@ -30,5 +30,5 @@ cmake --build build
 | `src/FrameBufferCanvas.*` | The picture in memory, and PNG output |
 | `src/Glyph.h`, `src/GlyphComponent.h` | The glyph types |
 | `src/TextRenderer.*`, `src/main.cpp` | Putting it together: a line of text |
-| `checkpoints/` | One small program per step, each checking that step against test cases |
+| `assignments/` | One small program per step, each checking that step against test cases |
 | `third_party/` | [stb_image_write](https://github.com/nothings/stb) for writing PNG files (public domain) |

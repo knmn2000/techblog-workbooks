@@ -1,5 +1,21 @@
 #pragma once
-// Checkpoint 04: where each glyph's record is (the loca table).
+// ======================================================================================
+// Assignment 04: Locate glyph records (loca)
+// Problem: problems/04-loca.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   The `loca` table: where each glyph's record is in the file and how many bytes it
+//   takes, by glyph id. Assignment 09 uses it to find the parts of a compound glyph, and
+//   assignment 18 to find the glyph of every character.
+//
+// Your job:
+//   In the Boilerplate this file is already written: the declarations, named as the author
+//   names them. Your work is in this assignment's other files, where it says TODO.
+//
+// How to start:
+//   This is the Boilerplate. To start from an empty file instead, press Blank in the
+//   book's editor (the blank files are in starters/blank/).
+// ======================================================================================
 
 #include <cstdint>
 #include <vector>

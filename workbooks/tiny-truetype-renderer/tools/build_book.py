@@ -3,7 +3,7 @@
     py -P tools/build_book.py
 
 The page is tools/book_template.html filled with one JSON object: the book's metadata and the
-learner's project layout from workbook.json and, for each checkpoint, its problem page split into
+learner's project layout from workbook.json and, for each assignment, its problem page split into
 parts (statement, examples, hints, editorial, ...) and its files: the entry program the checker
 runs, the project files it creates and the earlier ones it adds to, with their starters. The
 template renders that as a problem list and a split-pane problem view with a code editor.
@@ -13,9 +13,9 @@ fenced code, images (embedded as data URIs), links, **bold**, *italic*, `code`, 
 blocks, and raw <figure>/<svg>/<div> blocks. Sections are recognised by their names (see
 ROLES); any other section is shown in the statement under its own heading.
 
-Starters: each of a checkpoint's own files has a blank starter (starters/blank/<path>, made by
+Starters: each of an assignment's own files has a blank starter (starters/blank/<path>, made by
 tools/blank_starters.py) and usually a boilerplate (starters/boilerplate/<path>). The Editorial
-shows the reference project as it stands after the checkpoint (see tools/project.py).
+shows the reference project as it stands after the assignment (see tools/project.py).
 """
 
 import base64
@@ -286,20 +286,21 @@ def indent_unit(code: str, default: int) -> int:
     return min(common[0], 8) if common else default
 
 
-# ---- One checkpoint ---------------------------------------------------------------
+# ---- One assignment ---------------------------------------------------------------
 
 def read(path: Path):
     return path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
 
 
 def checkpoint_files(cid: str, meta: dict, config: dict) -> list:
-    """The checkpoint's files, as paths in the workbook: its entry program and the project files
+    """The assignment's files, as paths in the workbook: its entry program and the project files
     it creates, each with its blank and boilerplate starters, then the earlier files it adds to
-    (with their own checkpoint's blank starter, for the published book)."""
+    (with their own assignment's blank starter, for the published book)."""
     folder, purposes = config["project"]["dir"], config["project"].get("purposes", {})
 
     def entry(path, role):
         found = {"path": f"{folder}/{path}", "role": role, "purpose": purposes.get(path),
+                 "job": meta.get("jobs", {}).get(path),
                  "blank": read(project.starter("blank", path)) or "", "boilerplate": None}
         if role == "adds":
             found["owner"] = project.owner(config, path)
@@ -312,7 +313,7 @@ def checkpoint_files(cid: str, meta: dict, config: dict) -> list:
 
 
 def solution_code(cid: str, config: dict) -> dict:
-    """For the Editorial: the reference project's files for this checkpoint as they stand after it,
+    """For the Editorial: the reference project's files for this assignment as they stand after it,
     with proof that exactly this code passes every test (recorded by `check NN -Ref` in
     _spoilers/verified.json), or no proof and a warning."""
     sources = reference_sources(config, cid)
@@ -395,7 +396,7 @@ def checkpoint(cid: str, meta: dict, config: dict) -> dict:
 
 def project_data(config: dict) -> dict:
     """The learner's project: where it is, its language, how to build and run the finished program,
-    every file the layout plans (with its checkpoint), and the author's files to compare with."""
+    every file the layout plans (with its assignment), and the author's files to compare with."""
     spec = config["project"]
     folder, purposes = spec["dir"], spec.get("purposes", {})
     layout = [{"path": f"{folder}/{path}", "owner": cid, "purpose": purposes.get(path)}
@@ -437,7 +438,7 @@ def main():
     out.parent.mkdir(exist_ok=True)
     out.write_text(page, encoding="utf-8")
     count = page.count('"difficulty":')
-    print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} checkpoints, {len(page) // 1024} KB")
+    print(f"wrote {out.relative_to(ROOT).as_posix()}: {count} assignments, {len(page) // 1024} KB")
     for warning in WARNINGS:
         print(f"WARNING {warning}")
     if WARNINGS:

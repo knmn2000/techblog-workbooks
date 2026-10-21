@@ -1,5 +1,21 @@
 #pragma once
-// Checkpoint 18: a font ready to draw lines of text, built from the earlier steps.
+// ======================================================================================
+// Assignment 18: Render a line of text
+// Problem: problems/18-render-text.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   The whole pipeline in one class: a font's tables loaded once, then each character of a
+//   line of text mapped to its glyph, filled by the non-zero rule and followed by its
+//   advance. The checker's program and `main.cpp` both draw through it.
+//
+// Your job:
+//   In the Boilerplate this file is already written: the declarations, named as the author
+//   names them. Your work is in this assignment's other files, where it says TODO.
+//
+// How to start:
+//   This is the Boilerplate. To start from an empty file instead, press Blank in the
+//   book's editor (the blank files are in starters/blank/).
+// ======================================================================================
 
 #include <cstdint>
 #include <map>

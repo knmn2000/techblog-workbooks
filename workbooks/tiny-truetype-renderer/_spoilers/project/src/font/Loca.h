@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 04: where each glyph's record is (the loca table).
+// Assignment 04: where each glyph's record is (the loca table).
 
 #include <cstdint>
 #include <vector>

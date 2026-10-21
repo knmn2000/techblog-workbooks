@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 05: how far each glyph moves the pen (the hhea and hmtx tables).
+// Assignment 05: how far each glyph moves the pen (the hhea and hmtx tables).
 
 #include <vector>
 

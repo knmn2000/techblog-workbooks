@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 16: filling by the non-zero rule, for straight edges; checkpoint 17: with curves.
+// Assignment 16: filling by the non-zero rule, for straight edges; assignment 17: with curves.
 
 #include "FrameBufferCanvas.h"
 #include "GlyphComponent.h"

@@ -1,6 +1,6 @@
 # 03 · Map characters to glyphs (cmap format 12)
 
-**Difficulty:** Medium · **Checkpoint** 3 of 18 · **Check:** `.\check 03`
+**Difficulty:** Medium · **Assignment** 3 of 18 · **Check:** `.\check 03`
 
 **Tags**
 - *Language:* 32-bit unsigned integers · hexadecimal · nested loops · exceptions
@@ -17,25 +17,20 @@ code comes right after it.
 ## Where this fits
 
 Text arrives as characters, but a font stores glyphs, numbered 0, 1, 2, ... The `cmap`
-table turns a character's code point into a glyph id. Checkpoint 4 then turns the glyph id
-into the byte offset of the glyph's outline, and checkpoint 7 decodes the outline there.
+table turns a character's code point into a glyph id. Assignment 04 then turns the glyph id
+into the byte offset of the glyph's outline, and assignment 07 decodes the outline there.
+Assignment 18 looks up every character of its text in the map you read here.
 
 ## The problem
 
-Write a program that reads a font's Unicode character map (the platform 0 / encoding 4
-subtable, in format 12) and answers questions about it: how many characters it maps, and
-which glyph a given character maps to.
+Write a program that reads a font's character map and answers two kinds of question: how many
+characters it maps, and which glyph a given character maps to.
 
-Only the program's output is checked, so you can structure the code however you like. This
-checkpoint's code goes in your project, in `font/Cmap.h` and `font/Cmap.cpp` under `src/`. It
-can build on `font/ByteReader.h` and `font/FontParser.h`. `checkpoints/p03_cmap.cpp` is the
-program the checker runs: it reads the test input, calls your code and writes the answer.
-
-Each new file starts blank, with a comment saying what belongs in it, and the program with an
-empty `main`, so the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, pick Boilerplate in the book's editor (or copy this
-checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
-the post has them, and what's left to write is `loadUnicodeToGlyphCodeMap`.
+A **code point** is a character's number in Unicode, written `U+` and hexadecimal digits: `A`
+is U+0041. A **glyph** is a shape the font can draw, and its **glyph id** is its number in the
+font, from 0 up. The **character map** (the `cmap` table) says which glyph id each code point
+uses. This assignment reads one part of it: the platform 0 / encoding 4 subtable in format 12,
+explained below.
 
 ### Input
 
@@ -45,11 +40,14 @@ The input file contains these lines, in this order:
 | Line | Meaning |
 |---|---|
 | `font <path>` | The font file. The path is relative to the workbook folder and contains no spaces. |
-| `table "cmap" <checkSum> <offset> <length>` | The `cmap` table's record from the table directory, written as checkpoint 2 writes it. You only need `offset`: where `cmap` starts, in bytes from the start of the file. |
+| `table "cmap" <checkSum> <offset> <length>` | The `cmap` table's record from the table directory, written as assignment 02 writes it. You only need `offset`: where `cmap` starts, in bytes from the start of the file. |
 | `count` | A question: how many code points does the subtable map? |
 | `lookup U+<hex>` | A question: which glyph does this code point map to? The code point is in hexadecimal, uppercase, with 4 to 6 digits (`U+0041`, `U+1F600`, `U+10FFFD`). |
 
 There are one or more `count` and `lookup` lines, in any mix.
+
+Your program can parse the `table` line into the table record your `FontParser` from
+assignment 02 declares, and read the font with your `ByteReader` from assignment 01.
 
 ### Output
 
@@ -79,17 +77,20 @@ All numbers are **big-endian**. Every offset in `cmap` is counted from the start
 | Field | Type | Meaning |
 |---|---|---|
 | `platformID` | uint16 | 0 = Unicode, 1 = Macintosh, 3 = Windows |
-| `encodingID` | uint16 | Meaning depends on the platform. For platform 0: 3 = Unicode, BMP only; 4 = Unicode, full repertoire; 5 = variation sequences |
+| `encodingID` | uint16 | Meaning depends on the platform. For platform 0: 3 = Unicode, BMP only (code points up to U+FFFF); 4 = Unicode, full repertoire; 5 = variation sequences |
 | `offset` | uint32 | Where this record's subtable starts, from the start of `cmap` |
 
-**Which subtable.** Use the subtable of the record with `platformID` 0 and `encodingID` 4,
-wherever it is in the list. Ignore every other record, even one that points to a format 12
-subtable. If there is no such record, the answer is `unsupported`.
+**Which subtable.** Every subtable starts with a uint16 `format`. Look for the **(0, 4)
+record**, the one with `platformID` 0 and `encodingID` 4:
 
-Every subtable starts with a uint16 `format`. If the (0, 4) subtable's format isn't 12, the
-answer is also `unsupported`. (Fonts also use format 4 for BMP-only maps, format 13 for
-"many codes, one glyph" maps, and format 14 for variation sequences. This checkpoint reads
-only format 12.)
+- If it exists and its subtable is format 12, use that subtable, wherever the record is in
+  the list.
+- If there is no such record, the answer is `unsupported`.
+- If its subtable's format isn't 12, the answer is also `unsupported`.
+- Ignore every other record, even one that points to a format 12 subtable.
+
+Fonts also use format 4 for BMP-only maps, format 13 for "many codes, one glyph" maps, and
+format 14 for variation sequences. This assignment reads only format 12.
 
 **Format 12 subtable** ("segmented coverage"):
 
@@ -313,7 +314,7 @@ A failing test looks like this:
           line 5: expected `lookup U+04FF 1024`, got `lookup U+04FF none`
           likely cause: R2 - Every group maps startCharCode..endCharCode (both included)
           expected values from: fontTools 4.67.0 cmap.getcmap(0, 4) and getGlyphID, cross-checked against a struct parse
-          reproduce: build/solutions/p03.exe build/cases/03/03-R2-long-runs.in build/cases/03/03-R2-long-runs.out
+          reproduce: build/solutions/assignment_03.exe build/cases/03/03-R2-long-runs.in build/cases/03/03-R2-long-runs.out
 ```
 
 ## After you pass: compare with the author's code

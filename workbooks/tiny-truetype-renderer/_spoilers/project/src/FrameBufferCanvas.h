@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 06: a picture in memory, a few ways to draw on it, and PNG output.
+// Assignment 06: a picture in memory, a few ways to draw on it, and PNG output.
 
 #include <cstdint>
 #include <string>

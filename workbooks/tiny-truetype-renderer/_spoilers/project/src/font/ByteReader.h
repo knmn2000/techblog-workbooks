@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 01: the numbers a font file is made of.
+// Assignment 01: the numbers a font file is made of.
 
 #include <cstdint>
 #include <fstream>

@@ -1,6 +1,6 @@
-# Authoring a checkpoint
+# Authoring an assignment
 
-How to turn one row of the checkpoint map into a finished checkpoint. Build the first one
+How to turn one row of the assignment map into a finished assignment. Build the first one
 completely and use it as the model for the rest: copy its shape exactly.
 
 ## Contents
@@ -9,13 +9,13 @@ completely and use it as the model for the rest: copy its shape exactly.
 3. The reference project
 4. The starters
 5. The generator and the case file
-6. Picture checkpoints
+6. Picture assignments
 7. Checking the checks (summary; details in test-trust.md)
 8. Writing style
 
 ## 1. Files
 
-A checkpoint is part of a project the learner builds (`references/mapping.md`, section 6). It has
+An assignment is part of a project the learner builds (`references/mapping.md`, section 6). It has
 an entry program the checker runs and the project files it creates or adds to. Paths of project
 files are relative to the project folder (`solutions/` for the learner, `_spoilers/project/` for the
 reference).
@@ -23,19 +23,19 @@ reference).
 | File | Path |
 |---|---|
 | Problem page | `problems/NN-slug.md` |
-| Entry program | `checkpoints/pNN_slug.<ext>` in the project |
+| Entry program | `assignments/assignment_NN_slug.<ext>` in the project |
 | Project files | where the layout puts them, e.g. `src/font/Cmap.h` |
 | Reference | the same paths under `_spoilers/project/` |
 | Starters | the same paths under `starters/blank/` and `starters/boilerplate/` |
 | Generator | `tools/gen_pNN.py` (uses `tools/wbcore.py`) |
 | Generated tests | `tests/NN/cases.txt`, plus `tests/NN/data/` and, for pictures, `tests/NN/expected/` |
 
-Every checkpoint is registered in `workbook.json` before work starts, with its place in the project:
+Every assignment is registered in `workbook.json` before work starts, with its place in the project:
 
 ```json
 "03": {
   "title": "Replay the log",
-  "solution": "solutions/checkpoints/p03_replay_log.cpp",
+  "solution": "solutions/assignments/assignment_03_replay_log.cpp",
   "files": ["src/log/Replay.h", "src/log/Replay.cpp"],
   "extends": [],
   "buildsOn": ["src/log/Record.h"],
@@ -45,19 +45,23 @@ Every checkpoint is registered in `workbook.json` before work starts, with its p
 }
 ```
 
-`files` are created by this checkpoint, `extends` are earlier files it adds to, and `buildsOn` are
+`files` are created by this assignment, `extends` are earlier files it adds to, and `buildsOn` are
 earlier files it's likely to use (the book shows them; nothing enforces them). Each project file
-also gets a one-line purpose in `project.purposes`, which becomes its blank starter's comment and
-the book's "In your project" box. Add `"generatorNeedsReference": true` only when the generator
-runs the reference program, e.g. to draw expected pictures. `assets/example-checkpoint/` shows a
-registered checkpoint.
+gets a purpose in `project.purposes` (why it exists: its role, and which later assignments use
+it), and each assignment gets `"jobs"`: for every file it touches, entry program included, one to
+three imperative sentences on what the learner writes there, for someone starting from an empty
+file (capabilities and data, not exact signatures or the algorithm). Purposes and jobs become each
+starter's header and the book's "Start here" card, so they're how the learner knows where to
+begin. Add `"generatorNeedsReference": true` only when the generator
+runs the reference program, e.g. to draw expected pictures. `assets/example-assignment/` shows a
+registered assignment.
 
 ## 2. The problem page
 
 Markdown, with exactly these sections and headings, in this order (the book builder parses them):
 
 1. `# NN · Title`
-2. `**Difficulty:** Easy|Medium|Hard · **Checkpoint** N of M · **Check:** \`.\check NN\``
+2. `**Difficulty:** Easy|Medium|Hard · **Assignment** N of M · **Check:** \`.\check NN\``
 3. `**Tags**` followed by three bullets: `- *Language:* a · b · c`, `- *Library:* ...`,
    `- *Concepts:* ...`. What the learner may need to know or look up.
 4. `## Read in the blog first`: which section of the post, linked with a text fragment
@@ -65,9 +69,9 @@ Markdown, with exactly these sections and headings, in this order (the book buil
    complete on its own.
 5. `## Where this fits`: two or three sentences: what came before, what this unlocks, and which
    files of the project it adds to.
-6. `## The problem`: one paragraph on what to build; one on where the code goes (the project files
-   it creates or adds to, the earlier files it can build on, and that `checkpoints/pNN_*` is what
-   the checker runs); one on the starters (blank, and what the boilerplate leaves to write). Then
+6. `## The problem`: one or two short sentences saying plainly what the program does. The files,
+   the jobs, the earlier files it can use and the two ways to start are on the book's "Start here"
+   card (from `workbook.json`), so the page doesn't repeat them. Then
    `### Input` (a table of line kinds), `### Output` (exact format, with a fenced block showing it),
    then `###` subsections with every rule, table, formula and edge case needed. Binary layouts as
    tables of field / type / meaning, in your own words. A learner must be able to pass using only
@@ -76,7 +80,7 @@ Markdown, with exactly these sections and headings, in this order (the book buil
 8. `## Examples`: two or three `### Example k: title (test \`id\`)` blocks, each with `input:` and
    `output:` in fenced blocks copied from real cases (say once in the README that line endings and
    runs of spaces don't matter; the checker compares words), and a walkthrough of the one
-   non-obvious step (a byte-by-byte table is ideal). Picture checkpoints embed the expected image:
+   non-obvious step (a byte-by-byte table is ideal). Picture assignments embed the expected image:
    `![expected picture for <id>](tests/NN/expected/<id>.png)`.
 9. `## Constraints`: input limits, what is guaranteed well-formed, number of tests and what they
    cover, the time limit.
@@ -104,44 +108,47 @@ picture, also becomes a test case in the book's bottom panel.
 
 ## 3. The reference project
 
-Write the reference first, in `_spoilers/project/`: the checkpoint's project files and its entry
+Write the reference first, in `_spoilers/project/`: the assignment's project files and its entry
 program, from the specification and your own understanding, never copied from the blog. Later
 references include earlier ones exactly as the learner's will, so the reference reads as the
 finished project and doubles as the proof that the layout works.
 
 - **The entry program** reads the input, calls the project, and writes the output in the exact
-  format. It holds no logic later checkpoints need.
+  format. It holds no logic later assignments need.
 - **Project files** use the author's names where the post has them (types, functions, files),
-  and carry a short header comment saying which checkpoint they belong to.
-- **A file later checkpoints add to** is split into sections: everything a later checkpoint adds
-  goes under a marker line, `// ---- Checkpoint 12: two segments ----` (`#` or `--` in languages
-  with those comments). Everything before the first marker belongs to the checkpoint that creates
+  and carry a short header comment saying which assignment they belong to.
+- **A file later assignments add to** is split into sections: everything a later assignment adds
+  goes under a marker line, `// ---- Assignment 12: two segments ----` (`#` or `--` in languages
+  with those comments). Everything before the first marker belongs to the assignment that creates
   the file. Includes a later section needs go in that section, even mid-file, so the file builds
   at every point in the series.
-- **Learners read it.** The Editorial shows the checkpoint's files as they stand after it (later
+- **Learners read it.** The Editorial shows the assignment's files as they stand after it (later
   sections left out), with the names of earlier files it uses. Write a model answer: clear names,
   a short comment wherever the reasoning isn't obvious, no dead code or debugging leftovers.
 
-`check NN -Ref` builds and checks the reference *as it stands after checkpoint NN*: the files of
-checkpoints 01 to NN, later sections left out (`tools/project.py`, `reference_as_of`). An Accepted
+`check NN -Ref` builds and checks the reference *as it stands after assignment NN*: the files of
+assignments 01 to NN, later sections left out (`tools/project.py`, `reference_as_of`). An Accepted
 run on the committed tests records the fingerprint of every file the program includes in
 `_spoilers/verified.json`, and the book only says "Passes all N tests" while they still match.
-After any change to a reference file, run `-Ref` again for every checkpoint that includes it.
+After any change to a reference file, run `-Ref` again for every assignment that includes it.
 `build_book.py` warns (and exits non-zero) for any reference that isn't proven.
 
 ## 4. The starters
 
-Each of a checkpoint's own files (its entry program and the files it creates) has two starters at
-the same path: `starters/blank/` and `starters/boilerplate/`. Opening a checkpoint copies its blank
+Each of an assignment's own files (its entry program and the files it creates) has two starters at
+the same path: `starters/blank/` and `starters/boilerplate/`. Opening an assignment copies its blank
 starters into the learner's project (`tools/project.py start`), never over an existing file; the
 book's Blank / Boilerplate switch replaces them after asking.
 
-**Blank** starters are written by `py -P tools/blank_starters.py` from `workbook.json`: an entry
-program with a header comment (the checkpoint, the problem page, how it's run, which files the
-checkpoint creates, adds to and can build on) and an empty `main`, and project files that are only
-a comment (the checkpoint and the file's purpose; `#pragma once` for C++ headers). The learner
-writes the imports, the API, the input parsing and the output. Rerun it with `--force` after
-changing titles, files or purposes.
+Every starter, blank or boilerplate, begins with the same header, written by
+`py -P tools/blank_starters.py` from `workbook.json`: the assignment and its problem page, **Why
+this file exists** (the purpose), **Your job** (the assignment's job for this file) and **How to
+start** (write it all yourself, or press Boilerplate). The entry program's header also says how
+the checker runs it and lists the assignment's other files, with the job in any earlier file it
+adds to. **Blank** starters are that header and nothing else (an empty `main` in the entry
+program; `#pragma once` for C++ headers): the learner writes the imports, the API, the input
+parsing and the output. Rerun the script with `--force` after changing titles, files, purposes or
+jobs; it only replaces the header of boilerplate files.
 
 **Boilerplate** starters are written by you, from the reference:
 - The entry program is the reference's, with a header comment saying what's left to write, and
@@ -149,7 +156,7 @@ changing titles, files or purposes.
   yet: <function>"); 1 plus a message on stderr for other errors.
 - Headers that only declare things are the reference's. Function bodies become a `TODO:` comment
   pointing at the page's section, then a "not implemented" error naming the function.
-- A file later checkpoints add to has stubs for their functions too (marked with the checkpoint),
+- A file later assignments add to has stubs for their functions too (marked with the assignment),
   so the boilerplate path keeps compiling.
 - Everything compiles cleanly: build every blank and every boilerplate starter into a scratch
   project and check that each boilerplate program reports its TODO.
@@ -184,10 +191,10 @@ reveals, real data, edge cases, and a random section that changes with `--seed`.
 
 Hand-made inputs are checked by the oracle before they're written (`assert`). Make generators
 deterministic for a seed (fix timestamps, e.g. `SOURCE_DATE_EPOCH`). Inputs carry what earlier
-checkpoints would produce (an offset, a parsed record), so a checkpoint's tests depend only on the
+assignments would produce (an offset, a parsed record), so an assignment's tests depend only on the
 earlier files it chooses to use.
 
-## 6. Picture checkpoints
+## 6. Picture assignments
 
 - The output path ends in `.png`; the program writes PNG or binary PPM of exactly the canvas size.
 - End the page's Output section with a "**Writing the picture.**" paragraph for learners without
@@ -207,7 +214,7 @@ earlier files it chooses to use.
 ## 7. Checking the checks
 
 Compile into your own build folder and use `-Run` while others work in parallel. All must hold
-(details in `test-trust.md`): the reference as it stands after the checkpoint is Accepted
+(details in `test-trust.md`): the reference as it stands after the assignment is Accepted
 (committed cases and two fresh seeds), which also proves the project builds at that point in the
 series; the boilerplate says "Not implemented yet"; the blank starter says "Not started yet";
 three or more planted bugs fail with useful messages and causes, including the blog's own bugs;

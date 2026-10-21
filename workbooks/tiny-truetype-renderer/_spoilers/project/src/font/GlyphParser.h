@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 07: decoding a glyph record from the glyf table.
+// Assignment 07: decoding a glyph record from the glyf table.
 
 #include <cstdint>
 

@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 18: text arrives as UTF-8 bytes; the font is looked up by code point.
+// Assignment 18: text arrives as UTF-8 bytes; the font is looked up by code point.
 
 #include <cstdint>
 #include <string>

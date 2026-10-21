@@ -1,5 +1,25 @@
 #pragma once
-// Checkpoint 01: the numbers a font file is made of.
+// ======================================================================================
+// Assignment 01: Read big-endian numbers
+// Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
+//
+// Why this file exists:
+//   Reading big-endian numbers from any position in a font file: unsigned and signed
+//   integers of 8, 16 and 32 bits, and F2Dot14 fixed point. Every later assignment that
+//   reads the font reads it through this: assignment 02 the table directory, 03 to 05 the
+//   `cmap`, `loca` and metrics tables, and 07 and 09 the glyph outlines.
+//
+// Your job:
+//   Declare a reader that opens a binary file and keeps a current position. It needs a way
+//   to jump to an absolute offset, skip forward, read each of the six integer types (`u8`
+//   to `i32`) big-endian, and read an F2Dot14 as a floating-point number, plus a way to
+//   report that a read ran out of bytes (an exception type, for example). The Boilerplate
+//   has the declarations written: fill in what's marked TODO.
+//
+// How to start:
+//   This is the Boilerplate. To start from an empty file instead, press Blank in the
+//   book's editor (the blank files are in starters/blank/).
+// ======================================================================================
 
 #include <cstdint>
 #include <fstream>

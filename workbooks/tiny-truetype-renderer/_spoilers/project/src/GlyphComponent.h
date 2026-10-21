@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 07: the outline of one simple glyph.
+// Assignment 07: the outline of one simple glyph.
 
 #include <vector>
 

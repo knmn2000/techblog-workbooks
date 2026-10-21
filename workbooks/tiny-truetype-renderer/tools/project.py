@@ -1,14 +1,14 @@
-"""Your project: the program the post builds, written by you one checkpoint at a time.
+"""Your project: the program the post builds, written by you one assignment at a time.
 
     py -P tools/project.py setup [language]   create the project folder (build file, README, .gitignore)
-    py -P tools/project.py start 07           create checkpoint 07's files (existing files are never touched)
-    py -P tools/project.py status             the project's files, and which checkpoint each belongs to
+    py -P tools/project.py start 07           create assignment 07's files (existing files are never touched)
+    py -P tools/project.py status             the project's files, and which assignment each belongs to
 
 The layout is set in workbook.json: "project" says where the project lives and what it starts
-with, and each checkpoint lists the files it creates ("files") and the earlier files it adds to
-("extends"). Each checkpoint also has an entry program ("solution", e.g.
-checkpoints/p07_simple_glyph.cpp) that reads a test input, calls the project and writes the
-output; the checker runs it. Starting a checkpoint copies its starters from starters/blank/.
+with, and each assignment lists the files it creates ("files") and the earlier files it adds to
+("extends"). Each assignment also has a program the checker runs ("solution", e.g.
+assignments/assignment_07_simple_glyph.cpp) that reads a test input, calls the project and writes the
+output. Starting an assignment copies its starters from starters/blank/.
 """
 
 import json
@@ -137,7 +137,7 @@ def use_starter(config: dict, cid: str, kind: str) -> list:
 # of later checkpoints and the files they create: that's what -Ref builds and proves for N,
 # and what the Editorial for N shows, so it never gives away a later checkpoint.
 
-SECTION = re.compile(r"^[ \t]*(?://|#|--)[ \t]*-{2,}[ \t]*Checkpoint[ \t]+(\d+)\b.*$", re.M)
+SECTION = re.compile(r"^[ \t]*(?://|#|--)[ \t]*-{2,}[ \t]*(?:Assignment|Checkpoint)[ \t]+(\d+)\b.*$", re.M)
 
 
 def as_of(text: str, upto: str) -> str:
@@ -234,19 +234,19 @@ def main(argv: list) -> int:
             return 2
         folder = config["project"]["dir"]
         print(f"Your project is in {folder}/." + (f" Created: {', '.join(created)}." if created else " (Nothing new to create.)"))
-        print("Each checkpoint's files appear when you start it, in the book or with .\\check NN.")
+        print("Each assignment's files appear when you start it, in the book or with .\\check NN.")
         return 0
     if command == "start" and len(argv) > 1:
         cid = f"{int(argv[1]):02d}"
         if cid not in config["checkpoints"]:
-            print(f"There is no checkpoint {cid}.")
+            print(f"There is no assignment {cid}.")
             return 2
         try:
             created = start(config, cid)
         except NoProject:
             print("Set up the project first:  py -P tools/project.py setup")
             return 2
-        print("Created: " + ", ".join(created) if created else f"Checkpoint {cid}'s files are already there.")
+        print("Created: " + ", ".join(created) if created else f"Assignment {cid}'s files are already there.")
         return 0
     if command == "status":
         if not exists(config):

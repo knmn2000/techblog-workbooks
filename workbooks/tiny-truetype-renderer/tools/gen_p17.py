@@ -1,6 +1,6 @@
 """Test cases for checkpoint 17 (fill a glyph with the non-zero rule, curves included).
 
-    py -P tools/gen_p17.py --ref build/ref/p17.exe                  # tests/17 (seed 1)
+    py -P tools/gen_p17.py --ref build/ref/assignment_17.exe                  # tests/17 (seed 1)
     py -P tools/gen_p17.py --seed 7 --out build/fresh/17 --ref ...
 """
 

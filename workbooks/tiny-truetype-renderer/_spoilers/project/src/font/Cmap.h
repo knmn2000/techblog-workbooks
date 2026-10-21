@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 03: which glyph draws each character (the cmap table, format 12).
+// Assignment 03: which glyph draws each character (the cmap table, format 12).
 
 #include <cstdint>
 #include <stdexcept>

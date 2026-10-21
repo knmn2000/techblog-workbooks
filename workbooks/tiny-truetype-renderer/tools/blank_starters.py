@@ -1,20 +1,22 @@
-"""Writes the blank starters for every checkpoint's files.
+"""Writes every assignment's starters: the blank ones, and the header of the boilerplate ones.
 
-    py -P tools/blank_starters.py            # write the blank starters that are missing
-    py -P tools/blank_starters.py --force    # rewrite every blank starter
+    py -P tools/blank_starters.py            # write missing blank starters, refresh every header
+    py -P tools/blank_starters.py --force    # rewrite every blank starter too
 
-A checkpoint's files (workbook.json) are its entry program ("solution") and the project files it
-creates ("files"). Each has two starters, at the same path under:
-  starters/blank/        a comment saying what belongs in the file (and an empty main in the
-                         entry program): the learner writes everything else
-  starters/boilerplate/  the entry program's input/output done, and the project files'
-                         declarations named as the author names them, with TODO bodies
-                         (authors write these; see docs/authoring-guide.md)
-The comment for a project file is its line in "purposes" (workbook.json's "project").
-Starting a checkpoint copies its blank starters into the project (tools/project.py).
+An assignment's files (workbook.json) are its program the checker runs ("solution") and the
+project files it creates ("files"). Each has two starters, at the same path under:
+  starters/blank/        the header below, then nothing (an empty main in a program): the
+                         learner writes everything else
+  starters/boilerplate/  the same header, then the declarations named as the author names them,
+                         TODO bodies, and the program's input/output done (authors write these;
+                         this script only replaces their header)
+Every header says which assignment the file belongs to, why the file exists (project.purposes),
+what the learner's job in it is (the assignment's "jobs"), and how to start: blank or Boilerplate.
+Starting an assignment copies its blank starters into the project (tools/project.py).
 """
 
 import argparse
+import re
 import sys
 import textwrap
 from pathlib import Path
@@ -36,67 +38,100 @@ SHAPES = {
     ".go": ("//", "package main\n\nfunc main() {\n}\n"),
     ".lua": ("--", ""),
 }
+RULE = "=" * 86
 
 
-def wrap(text: str) -> list:
-    return textwrap.wrap(text, 88, break_long_words=False, break_on_hyphens=False)
+def wrap(text: str, indent: str = "  ") -> list:
+    return textwrap.wrap(text, 88 - len(indent), break_long_words=False, break_on_hyphens=False) or [""]
 
 
 def listing(paths: list) -> str:
     return paths[0] if len(paths) == 1 else ", ".join(paths[:-1]) + " and " + paths[-1]
 
 
-def entry_starter(cid: str, meta: dict, config: dict) -> str:
-    path = project.entry(config, cid)
-    note, program = SHAPES.get(Path(path).suffix.lower(), ("//", ""))
-    run = (config["run"].replace("{id}", cid).replace("{input}", "<input-file>")
-           .replace("{output}", "<output-file>"))
-    check = config.get("book", {}).get("checkCommand", ".\\check {id}").replace("{id}", cid)
-    own, extends = meta.get("files", []), meta.get("extends", [])
-    work = []
-    if own:
-        work.append(f"This checkpoint's work goes in {listing(own)}.")
-    if extends:
-        started = sorted({project.owner(config, p) for p in extends} - {None})
-        work.append(f"{'It' if own else 'This checkpoint'} adds to {listing(extends)}, which you "
-                    f"started in checkpoint {listing(started)}.")
-    if meta.get("buildsOn"):
-        work.append(f"Earlier files you can build on: {listing(meta['buildsOn'])}.")
-    headers = [p for p in own + extends if p.endswith((".h", ".hpp"))]
-    if headers and path.endswith((".cpp", ".cc", ".c")):
-        work.append(f'Include project files by their path under src/, e.g. #include "{headers[0].removeprefix("src/")}".')
-    lines = [
-        f"Checkpoint {cid} ({meta['title']}): the program the checker runs.",
-        "",
-        f"Problem:  {meta['problem']} (also in the web problem book)",
-        f"Check:    {check}",
-        "",
-        "The checker runs this program from the workbook folder as",
-        "",
-        f"    {run}",
-        "",
-        *wrap("Read the input file, use your project to work out the answer, and write it to the "
-              "output file; only that file is checked. The includes, the parsing and the structure "
-              "are up to you."),
-        "",
-        *wrap(" ".join(work)),
-        "",
-        *wrap("For ready-made input/output code, use the book's Boilerplate button (the files are "
-              "in starters/boilerplate/)."),
-    ]
-    header = "\n".join(f"{note} {line}".rstrip() for line in lines)
-    return header + "\n" + ("\n" + program if program else "")
+def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool = True) -> str:
+    """The comment block at the top of one of an assignment's files."""
+    note = SHAPES.get(Path(path).suffix.lower(), ("//", ""))[0]
+    entry = project.entry(config, cid)
+    jobs = meta.get("jobs", {})
+    sections = [[f"Assignment {cid}: {meta['title']}",
+                 f"Problem: {meta['problem']} (and in the problem book, with its Start here card)"]]
+    if path == entry:
+        run = config["run"].replace("{id}", cid).replace("{input}", "<input-file>").replace("{output}", "<output-file>")
+        check = config.get("book", {}).get("checkCommand", ".\\check {id}").replace("{id}", cid)
+        why = (f"This is the program the checker runs for assignment {cid}, as `{run}`: it reads a test "
+               f"input, calls your code and writes the answer to the output file. Only that output is "
+               f"checked. Check it with `{check}`, or Run and Submit in the book.")
+    else:
+        why = config["project"].get("purposes", {}).get(path, "")
+        later = sorted(c for c, m in config["checkpoints"].items() if path in m.get("extends", []))
+        if later:
+            why += f" Later, assignment{'s' if len(later) > 1 else ''} {listing(later)} add{'' if len(later) > 1 else 's'} to this file."
+    sections.append(["Why this file exists:", *("  " + l for l in wrap(why))])
+    job = jobs.get(path) or "See this assignment's Start here card in the problem book."
+    if kind == "boilerplate" and path == entry:
+        job = ("In the Boilerplate this program is already written: it reads the input, calls your code "
+               "and writes the answer. Your work is in this assignment's other files, where it says TODO.")
+    elif kind == "boilerplate" and todo:
+        job += " The Boilerplate has the declarations written: fill in what's marked TODO."
+    elif kind == "boilerplate":
+        job = ("In the Boilerplate this file is already written: the declarations, named as the author "
+               "names them. Your work is in this assignment's other files, where it says TODO.")
+    sections.append(["Your job:", *("  " + l for l in wrap(job))])
+    if path == entry:
+        others = [p for p in meta.get("files", [])]
+        lines = []
+        if others:
+            lines += wrap(f"This assignment also has you write {listing(others)}; each says its job at the top.")
+        for p in meta.get("extends", []):
+            lines += wrap(f"It adds to {p}, which you started earlier: {jobs.get(p, 'see the Start here card.')}")
+        if meta.get("buildsOn"):
+            lines += wrap(f"Earlier files you can use: {listing(meta['buildsOn'])}.")
+        headers = [p for p in others + meta.get("extends", []) if p.endswith((".h", ".hpp"))]
+        if headers and path.endswith((".cpp", ".cc", ".c")):
+            lines += wrap(f'Include them by their path under src/, e.g. #include "{headers[0].removeprefix("src/")}".')
+        if lines:
+            sections.append(["The other files of this assignment:", *("  " + l for l in lines)])
+    how = ("This is the Boilerplate. To start from an empty file instead, press Blank in the book's "
+           "editor (the blank files are in starters/blank/)." if kind == "boilerplate" else
+           "Two ways: write it all yourself from here, or press Boilerplate in the book's editor for "
+           "ready-made input/output code and declarations named as the author names them (the same "
+           "files are in starters/boilerplate/).")
+    sections.append(["How to start:", *("  " + l for l in wrap(how))])
+    body = []
+    for k, section in enumerate(sections):
+        if k:
+            body.append("")
+        body += section
+    return "\n".join([f"{note} {RULE}", *(f"{note} {line}".rstrip() for line in body), f"{note} {RULE}"]) + "\n"
 
 
-def file_starter(path: str, cid: str, meta: dict, config: dict) -> str:
-    note, program = SHAPES.get(Path(path).suffix.lower(), ("//", ""))
-    purpose = config["project"].get("purposes", {}).get(path, "")
-    lines = [f"Checkpoint {cid} - {meta['title']}.", *wrap(purpose), f"Problem: {meta['problem']}"]
-    text = "\n".join(f"{note} {line}".rstrip() for line in lines) + "\n"
-    if path.endswith((".h", ".hpp")):
-        return "#pragma once\n" + text
-    is_main = Path(path).stem == "main" and program
-    return text + ("\n" + program if is_main else "")
+def blank_text(path: str, cid: str, meta: dict, config: dict) -> str:
+    _, program = SHAPES.get(Path(path).suffix.lower(), ("//", ""))
+    top = "#pragma once\n" if path.endswith((".h", ".hpp")) else ""
+    is_program = path == project.entry(config, cid) or Path(path).stem == "main"
+    return top + header(path, cid, meta, config, "blank") + ("\n" + program if is_program and program else "")
+
+
+def restamp(text: str, block: str, is_program: bool) -> str:
+    """The boilerplate's text with its header replaced by `block`."""
+    lines = text.split("\n")
+    top = []
+    if lines and lines[0].strip() == "#pragma once":
+        top, lines = [lines[0]], lines[1:]
+    if lines and lines[0].endswith(RULE):  # a header this script wrote before
+        end = next(i for i in range(1, len(lines)) if lines[i].endswith(RULE))
+        lines = lines[end + 1:]
+    elif is_program:  # an older header: the whole leading comment block
+        while lines and lines[0].lstrip().startswith(("//", "#", "--")):
+            lines = lines[1:]
+    elif lines and re.match(r"\s*(//|#|--)\s*(Assignment|Checkpoint) \d+", lines[0]):
+        lines = lines[1:]  # the one-line "Assignment NN: ..." comment
+        if lines and lines[0].strip() in ("//", "#", "--"):
+            lines = lines[1:]
+    while lines and not lines[0].strip():
+        lines = lines[1:]
+    return "\n".join(top) + ("\n" if top else "") + block + "\n" + "\n".join(lines)
 
 
 def main():
@@ -104,17 +139,23 @@ def main():
     ap.add_argument("--force", action="store_true", help="rewrite blank starters that already exist")
     args = ap.parse_args()
     config = project.load_config()
-    written = 0
+    written = stamped = 0
     for cid, meta in config["checkpoints"].items():
-        texts = {project.entry(config, cid): entry_starter(cid, meta, config)}
-        texts.update({p: file_starter(p, cid, meta, config) for p in meta.get("files", [])})
-        for path, text in texts.items():
+        for path in project.own_files(config, cid):
             target = project.starter("blank", path)
             if args.force or not target.exists():
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(text, encoding="utf-8", newline="\n")
+                target.write_text(blank_text(path, cid, meta, config), encoding="utf-8", newline="\n")
                 written += 1
-    print(f"blank starters written: {written}")
+            boiler = project.starter("boilerplate", path)
+            if boiler.exists():
+                old = boiler.read_text(encoding="utf-8")
+                block = header(path, cid, meta, config, "boilerplate", todo="TODO" in old.split(RULE)[-1])
+                new = restamp(old, block, path == project.entry(config, cid))
+                if new != old:
+                    boiler.write_text(new, encoding="utf-8", newline="\n")
+                    stamped += 1
+    print(f"blank starters written: {written}, boilerplate headers refreshed: {stamped}")
 
 
 if __name__ == "__main__":

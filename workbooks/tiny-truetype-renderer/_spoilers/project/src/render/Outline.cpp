@@ -32,7 +32,7 @@ void renderGlyphOutline(FrameBufferCanvas& canvas, const GlyphComponent& outline
   }
 }
 
-// ---- Checkpoint 11: curves --------------------------------------------------------
+// ---- Assignment 11: curves --------------------------------------------------------
 // These includes arrived with the curves.
 
 #include <algorithm>

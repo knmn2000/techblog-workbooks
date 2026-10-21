@@ -1,6 +1,6 @@
 # 14 · Fill a glyph: even-odd rule
 
-**Difficulty:** Hard · **Checkpoint** 14 of 18 · **Check:** `.\check 14`
+**Difficulty:** Hard · **Assignment** 14 of 18 · **Check:** `.\check 14`
 
 **Tags**
 - *Language:* sorting · floating-point comparisons · solving a quadratic equation
@@ -13,31 +13,19 @@ This page is complete on its own; the blog tells the story behind it. Read the b
 [Renderer: Filling Glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Renderer%3A%20Filling%20Glyph)
 section through [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors),
 skipping the code blocks if you want to work it out yourself. The blog builds this in two steps
-(a first version, then a fix for errors at vertices); here they are one checkpoint.
+(a first version, then a fix for errors at vertices); here they are one assignment.
 
 ## Where this fits
 
-A glyph is only an outline until it's filled. This checkpoint takes the outlines from checkpoints
-07 and 09 and paints the inside, using the even-odd rule. Checkpoints 16 and 17 do the same with
-the non-zero rule, and checkpoint 18 renders whole lines of text.
+A glyph is only an outline until it's filled. This assignment takes the outlines you decoded in
+assignments 07 and 09 (your `GlyphComponent`) and paints their inside by the even-odd rule. The
+row-by-row scanning goes in `render/Scanline`, which assignments 16 and 17 reuse for the non-zero
+rule; assignment 18 then renders whole lines of text.
 
 ## The problem
 
-Write a program that fills glyph outlines on a black canvas and writes the picture as a PNG.
-
-Only the picture is checked, so you can structure the code however you like. This checkpoint's
-code goes in your project, in `render/Scanline.h`, `render/Scanline.cpp`, `render/EvenOdd.h` and
-`render/EvenOdd.cpp` under `src/`. It can build on `FrameBufferCanvas.h`, `GlyphComponent.h`,
-`render/Placement.h` and `utils/Geometry.h`. `checkpoints/p14_even_odd_fill.cpp` is the program
-the checker runs: it reads the test input, calls your code and writes the answer.
-
-Each new file starts blank, with a comment saying what belongs in it, and the program with an
-empty `main`, so the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, pick Boilerplate in the book's editor (or copy this
-checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
-the post has them, and what's left to write is `edgePieces`, `forEachRow`, `fillSpan` and
-`renderGlyphByEvenOdd`. `Scanline` is the part both fill rules share: checkpoints 16 and 17 fill
-by another rule with it.
+Write a program that fills glyph outlines on a black canvas by the even-odd rule and saves the
+picture as a PNG.
 
 ### Input
 
@@ -66,19 +54,22 @@ of the centre, or round x differently, you still pass. Missing or extra shapes, 
 place, and stray lines don't pass.
 
 **Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so a PNG and a binary PPM both work. A binary PPM is the
-easiest to write by hand: the header `P6`, the width, the height and `255`, separated by spaces
-or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
-(red, green, blue), row by row from the top-left. Open the file in binary mode
-(`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes. For a real PNG,
-`third_party/stb_image_write.h` in your project is on the include path: `#define
-STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call `stbi_write_png(path,
-width, height, 3, pixels, width * 3)`. Your `FrameBufferCanvas` from checkpoint 06 does all of this in
-`writePng`; the boilerplate calls it.
+the checker looks at the contents, so either of these works:
+
+- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
+  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
+  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- **A binary PPM**, the easiest to write by hand. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
+  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
+  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
+  byte 10 as two bytes.
 
 ### From points to edges
 
-Each contour is closed: after its last point it continues to its first. Walk the points in order:
+Each contour is closed: after its last point it continues to its first. Walk the points in order,
+as your `render/Outline` did when it drew curves in assignment 11:
 
 - Two on-curve points in a row are joined by a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
@@ -91,28 +82,41 @@ Each contour is closed: after its last point it continues to its first. Walk the
 ### The even-odd rule
 
 Draw a ray from the point to the right and count how many times it crosses the outline. An odd count
-means inside, an even count means outside. With a scanline (a horizontal line through a row of pixel
-centres) this becomes: find every x where the line crosses an edge, sort them, and fill between the
-1st and 2nd, the 3rd and 4th, and so on.
+means inside, an even count means outside.
+
+A **scanline** is a horizontal line through a row of pixel centres. With scanlines the rule
+becomes, for each row:
+
+1. Find every x where the scanline crosses an edge.
+2. Sort them.
+3. Fill between the 1st and 2nd, the 3rd and 4th, and so on.
 
 **The trap: vertices on the scanline.** When a scanline passes exactly through a point where two
-edges meet, a naive count sees that point twice, and the rest of the row flips (a stray line), or
-it misses a crossing it should count. A clean rule is to treat each edge as **half-open in y**: an
-edge from y0 to y1 counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured on the
-screen (pixels, growing downward). Horizontal edges never count. Then a vertex the outline passes through counts once, and a pointed tip (both edges above, or
-both below) counts twice or not at all, which leaves the parity right either way.
+edges meet, a naive count sees that point twice and the rest of the row flips (a stray line), or it
+misses a crossing it should count. A clean fix is to treat each edge as **half-open in y**:
 
-A quadratic curve can cross one scanline twice. Splitting each curve where its y turns around gives
-pieces that each cross a scanline at most once, and the half-open rule then works for curves too.
-For a curve P0, P1, P2 that point is t = (P0.y − P1.y) / (P0.y − 2·P1.y + P2.y), when the denominator
-isn't 0 and t is strictly between 0 and 1 (otherwise the curve is already monotone). Use the same
-split point, with the same y, for both halves. To find where a piece crosses scanline y, solve
-y(t) = y as a quadratic in t (linear when P0.y − 2·P1.y + P2.y = 0) and keep the root in [0, 1].
+- An edge from y0 to y1 counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured
+  on the screen (pixels, growing downward).
+- Horizontal edges never count.
 
-**Clipping.** Crossings can lie far outside the canvas. Clamp x to the canvas before converting it to
-an integer, since converting a huge double to `int` is undefined behaviour in C++. The provided
-`drawSpan(row, x0, x1)` fills x0 ... x1 inclusive, skips columns outside the canvas, and does nothing
-when x0 > x1.
+Then a vertex the outline passes through counts once. A pointed tip (both edges above, or both
+below) counts twice or not at all, which leaves the parity right either way.
+
+**Curves.** A quadratic curve can cross one scanline twice. Split each curve where its y turns
+around: each piece then crosses a scanline at most once, and the half-open rule works for curves
+too.
+
+- For a curve P0, P1, P2 the turning point is at t = (P0.y − P1.y) / (P0.y − 2·P1.y + P2.y).
+  Split there only when the denominator isn't 0 and t is strictly between 0 and 1. Otherwise the
+  curve is already **monotone**: it only rises or only falls.
+- Use the same split point, with the same y, for both halves.
+- To find where a piece crosses scanline y, solve y(t) = y as a quadratic in t (linear when
+  P0.y − 2·P1.y + P2.y = 0) and keep the root in [0, 1].
+
+**Clipping.** Crossings can lie far outside the canvas. Clamp x to the canvas before converting it
+to an integer, since converting a huge double to `int` is undefined behaviour in C++. Whatever fills
+a stretch of a row (the boilerplate's `fillSpan`) should skip columns outside the canvas and do
+nothing when the stretch is empty.
 
 ## Requirements
 
@@ -174,7 +178,7 @@ input:   canvas 234 238
 ```
 
 U+5341 (十) from Noto Sans JP is two overlapping rectangles. Even-odd leaves the small square where
-they cross empty. Checkpoint 16 fills it with the non-zero rule.
+they cross empty. Assignment 16 fills it with the non-zero rule.
 
 ![expected picture for 14-R5-ten](tests/14/expected/14-R5-ten.png)
 
@@ -198,8 +202,8 @@ they cross empty. Checkpoint 16 fills it with the non-zero rule.
 <details><summary>Hint 1: where to start</summary>
 
 Turn the outline into a list of edges first (lines and quadratic curves, in pixel coordinates),
-then fill row by row. Getting the edges right is half the job, and checkpoint 11 (drawing curves)
-already did most of it.
+then fill row by row. Getting the edges right is half the job, and your `render/Outline` from
+assignment 11 (drawing curves) already does most of it.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -213,8 +217,9 @@ ranges.
 <details><summary>Hint 3: the traps</summary>
 
 - Use half-open intervals in y (min ≤ y < max) so a shared vertex counts once; skip horizontal edges.
-- Split each quadratic curve where its y turns around (t = (y0 − y1c) / (y0 − 2·y1c + y2), when that
-  is strictly between 0 and 1), so each piece crosses a row at most once.
+- Split each quadratic curve where its y turns around (t = (y0 − yc) / (y0 − 2·yc + y2), with yc
+  the control point's y, when that t is strictly between 0 and 1), so each piece crosses a row at
+  most once.
 - Implied on-curve points: between two off-curve points, add their midpoint.
 - A contour may start off-curve: start walking from an on-curve point (or an implied one).
 - Remember y flips: pixel y = baseline − scale·glyph y.
@@ -263,11 +268,11 @@ A failing picture comes with a diff image:
 
 The blog's [even-odd renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Glyph%20rendering%20with%20Even-odd%20rule)
 loops over every pixel row of the canvas and every point of the outline. It uses two helper
-functions from checkpoints 12 and 13 to intersect the row with each line or curve, truncates the
+functions from assignments 12 and 13 to intersect the row with each line or curve, truncates the
 crossing x to an integer, and draws horizontal lines between pairs. The scanline is the row's top
 edge (integer y), not its centre. Its fix for vertices counts an edge only when the edge's lowest y
 (on screen) is above the scanline, and handles curves that cross twice with a convexity check
-(checkpoint 15 finds the curve's lowest point).
+(assignment 15 finds the curve's lowest point).
 
 **Something to look for:** in the fixed version, the check for a curve's endpoint on the scanline
 compares the row y with the endpoints' **x** coordinates, so that branch rarely does what it

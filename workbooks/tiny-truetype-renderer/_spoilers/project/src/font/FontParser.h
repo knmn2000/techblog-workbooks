@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 02: the table directory, and the parser later steps read the font through.
+// Assignment 02: the table directory, and the parser later steps read the font through.
 
 #include <cstdint>
 #include <map>

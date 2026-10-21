@@ -1,6 +1,6 @@
 # 10 · Lerp and quadratic Bezier curves
 
-**Difficulty:** Easy · **Checkpoint** 10 of 18 · **Check:** `.\check 10`
+**Difficulty:** Easy · **Assignment** 10 of 18 · **Check:** `.\check 10`
 
 **Tags**
 - *Language:* floating-point arithmetic (`double`) · small structs with `+`, `-` and `*` operators
@@ -15,31 +15,21 @@ blog's **"Renderer: Curve Rendering"** section:
 and [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm).
 Stop at the sentence that introduces the code. The author's code (the listing "Lerp for a
 segment and a quadratic Bézier curve") comes right after it. "TrueType Bézier curves" belongs
-to checkpoint 11.
+to assignment 11.
 
 ## Where this fits
 
-Checkpoint 8 drew glyph outlines with straight lines only. Real glyphs are made of quadratic
-Bezier curves: an on-curve start point, an off-curve control point and an on-curve end point.
-This checkpoint computes points along such a curve. Checkpoint 11 draws each curve by joining
+Assignment 08 drew glyph outlines with straight lines only. Real glyphs are made of quadratic
+Bezier curves. Each curve has an on-curve start point, an off-curve **control point** that
+pulls the curve toward itself, and an on-curve end point.
+
+This assignment computes points along such a curve. Assignment 11 draws each curve by joining
 many of these points with short straight lines.
 
 ## The problem
 
-Write a program that reads a list of requests, one per line, and prints the point that each
-one asks for.
-
-Only the program's output is checked, so you can structure the code however you like. This
-checkpoint's code goes in your project, in `utils/Geometry.h` under `src/`.
-`checkpoints/p10_bezier.cpp` is the program the checker runs: it reads the test input, calls
-your code and writes the answer.
-
-Each new file starts blank, with a comment saying what belongs in it, and the program with an
-empty `main`, so the includes, reading the input and writing the output are yours. To start from
-working input/output code instead, pick Boilerplate in the book's editor (or copy this
-checkpoint's files from `starters/boilerplate/`): the declarations use the author's names where
-the post has them, and what's left to write is `lerp` and `bezierLerp`. Checkpoints 12, 13 and
-15 add more geometry to the same file.
+The program reads one request per line and prints the point it asks for: a point part of the
+way along a straight segment, or a point on a quadratic Bezier curve.
 
 ### Input
 
@@ -51,8 +41,10 @@ The input file contains two kinds of lines:
 | `lerp ax ay bx by t` | The point a fraction `t` of the way along the straight segment from a = (ax, ay) to b = (bx, by). |
 | `bezier ax ay bx by cx cy t` | The point at parameter `t` on the quadratic Bezier curve that starts at a = (ax, ay), ends at c = (cx, cy), and is pulled toward the control point b = (bx, by). |
 
-Every number is a decimal such as `12`, `-3.25` or `0.0625`. `t` is always between 0 and 1,
-inclusive. Note the order on a `bezier` line: start, **control point**, end.
+- Every number is a decimal such as `12`, `-3.25` or `0.0625`.
+- `t` is always between 0 and 1, inclusive.
+- Mind the order on a `bezier` line: start, **control point**, end. The control point is the
+  middle pair of numbers.
 
 ### Output
 
@@ -61,28 +53,31 @@ space.
 
 The checker accepts any number within 0.001 of the expected value, so `25`, `25.0` and
 `25.0000` all match `25`. When a value isn't whole, print enough decimals to be within 0.001
-(4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
+(4 is plenty). The boilerplate's `number()` does this: whole numbers plainly, others rounded
+to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
 
 ### Linear interpolation
 
-The point a fraction t of the way from a to b is
+**Linear interpolation** (lerp for short) gives the point a fraction t of the way from a to b:
 
 ```
 lerp(a, b, t) = a + (b − a) · t
 ```
 
-Work it out for x and y separately. t = 0 gives a, t = 1 gives b and t = 0.5 gives the
-midpoint. Because t is measured from a, `lerp(a, b, 0.25)` is close to a, and
-`lerp(b, a, 0.25)` is close to b.
+- Work it out for x and y separately.
+- t = 0 gives a, t = 1 gives b and t = 0.5 gives the midpoint.
+- t is measured from a, so `lerp(a, b, 0.25)` is close to a, and `lerp(b, a, 0.25)` is close
+  to b.
 
 ### A point on a quadratic Bezier curve
 
-A quadratic Bezier curve is defined by three points: the start a, the control point b and the
-end c. The curve leaves a heading toward b and arrives at c coming from the direction of b. It
-is pulled toward b but doesn't pass through it (unless all three points lie on one line).
+A **quadratic Bezier curve** is defined by three points: the start a, the control point b and
+the end c. The curve leaves a heading toward b and arrives at c coming from the direction of
+b. It is pulled toward b but doesn't pass through it (unless all three points lie on one
+line, with b between a and c).
 
-The point at parameter t takes three lerps, all with the same t. This is **de Casteljau's
-construction**:
+Each value of the **curve parameter** t picks one point on the curve. The point at t takes
+three lerps, all with the same t. This is **de Casteljau's construction**:
 
 1. p = lerp(a, b, t), a point on the leg from a to the control point
 2. q = lerp(b, c, t), a point on the leg from the control point to c
@@ -187,7 +182,7 @@ At t = 1 every weight except t² is 0, so the curve ends at c = (100, 100). The 
 <details><summary>Hint 1: where to start</summary>
 
 Write `lerp` first and test it on Example 1. A curve point can be built from three calls to
-`lerp`, so once `lerp` works, `bezier` is one line.
+`lerp`, so once `lerp` works, the curve function is one line.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -238,7 +233,7 @@ A failing test looks like this:
       x 10-R2-midpoint  an arch from (0,0) to (100,0) pulled toward (50,100): t = 0.5
           line 1: expected `50 50`, got `37.5 25`
           expected values from: exact arithmetic with Python fractions.Fraction
-          reproduce: build/solutions/p10.exe build/cases/10/10-R2-midpoint.in build/cases/10/10-R2-midpoint.out
+          reproduce: build/solutions/assignment_10.exe build/cases/10/10-R2-midpoint.in build/cases/10/10-R2-midpoint.out
 ```
 
 ## After you pass: compare with the author's code

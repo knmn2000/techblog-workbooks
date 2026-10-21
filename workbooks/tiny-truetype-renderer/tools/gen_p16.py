@@ -2,7 +2,7 @@
 
 Every outline here has only on-curve points (straight lines).
 
-    py -P tools/gen_p16.py --ref build/ref/p16.exe                  # tests/16 (seed 1)
+    py -P tools/gen_p16.py --ref build/ref/assignment_16.exe                  # tests/16 (seed 1)
     py -P tools/gen_p16.py --seed 7 --out build/fresh/16 --ref ...
 """
 

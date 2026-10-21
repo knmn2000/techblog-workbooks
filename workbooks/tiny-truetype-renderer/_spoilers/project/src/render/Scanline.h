@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 14: scanning an outline row by row, the part both fill rules share.
+// Assignment 14: scanning an outline row by row, the part both fill rules share.
 //
 // A pixel is filled when its centre is inside the outline. Each row is scanned along the
 // line through its pixel centres, and the outline's edges are split into pieces that never

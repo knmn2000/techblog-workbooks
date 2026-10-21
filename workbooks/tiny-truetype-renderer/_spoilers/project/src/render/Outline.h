@@ -1,5 +1,5 @@
 #pragma once
-// Checkpoint 08: drawing a glyph's outline with straight lines; checkpoint 11: with curves.
+// Assignment 08: drawing a glyph's outline with straight lines; assignment 11: with curves.
 
 #include "FrameBufferCanvas.h"
 #include "GlyphComponent.h"
@@ -15,7 +15,7 @@ struct OutlineStyle {
 void renderGlyphOutline(FrameBufferCanvas& canvas, const GlyphComponent& outline, const Placement& place,
                         const OutlineStyle& style, RGB color);
 
-// ---- Checkpoint 11: curves --------------------------------------------------------
+// ---- Assignment 11: curves --------------------------------------------------------
 
 // The real outline, quadratic curves included, then markers twice the line thickness:
 // red on-curve points, green off-curve points, blue implied on-curve points.

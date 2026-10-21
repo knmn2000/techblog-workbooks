@@ -1,6 +1,6 @@
 #pragma once
 // Points, curves and where they meet.
-// Checkpoint 10: lerp and quadratic Bezier curves. 12: two segments. 13: a line and a curve.
+// Assignment 10: lerp and quadratic Bezier curves. 12: two segments. 13: a line and a curve.
 // 15: the lowest point of a curve.
 
 #include <algorithm>
@@ -17,7 +17,7 @@ inline Vec2 operator+(const Vec2 a, const Vec2 b) { return {a.x + b.x, a.y + b.y
 inline Vec2 operator-(const Vec2 a, const Vec2 b) { return {a.x - b.x, a.y - b.y}; }
 inline Vec2 operator*(const Vec2 v, const double s) { return {v.x * s, v.y * s}; }
 
-// ---- Checkpoint 10 ------------------------------------------------------------------
+// ---- Assignment 10 ------------------------------------------------------------------
 
 // The point a fraction t of the way from a to b.
 inline Vec2 lerp(const Vec2 a, const Vec2 b, const double t) { return a + (b - a) * t; }
@@ -28,7 +28,7 @@ inline Vec2 bezierLerp(const Vec2 a, const Vec2 b, const Vec2 c, const double t)
   return lerp(lerp(a, b, t), lerp(b, c, t), t);
 }
 
-// ---- Checkpoint 12 ------------------------------------------------------------------
+// ---- Assignment 12 ------------------------------------------------------------------
 
 namespace geometry_detail {
 
@@ -53,7 +53,7 @@ inline std::optional<Vec2> segmentsIntersect(const Vec2 a1, const Vec2 a2, const
   return a1 + v1 * t;
 }
 
-// ---- Checkpoint 13 ------------------------------------------------------------------
+// ---- Assignment 13 ------------------------------------------------------------------
 
 namespace geometry_detail {
 
@@ -92,7 +92,7 @@ inline std::vector<Vec2> segmentQuadBezierIntersect(const Vec2 p1, const Vec2 p2
   return points;
 }
 
-// ---- Checkpoint 15 ------------------------------------------------------------------
+// ---- Assignment 15 ------------------------------------------------------------------
 
 // The smallest y on the curve p1 (start), p2 (control), p3 (end) for 0 <= t <= 1.
 inline double getBezierMinY(const Vec2 p1, const Vec2 p2, const Vec2 p3) {
