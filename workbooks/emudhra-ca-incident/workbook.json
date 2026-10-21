@@ -7,11 +7,11 @@
   },
   "timeoutSeconds": 10,
   "book": {
-    "title": "CA Key Incident Workbook",
+    "title": "Elliptic-Curve Keys, Certificates and Chains of Trust",
     "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
     "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
     "author": "eMudhra",
-    "headline": "Understand certificate security by breaking a weak CA key yourself",
+    "headline": "Learn how to not f*ck up like eMudhra",
     "lede": "Each checkpoint asks you to write the program that one part of the post builds. A checker feeds your program inputs and compares what it writes with answers worked out independently. How you structure the code is up to you.",
     "credits": "Expected outputs come from independent sources. Progress is saved in this browser only.",
     "checkCommand": "./check.sh {id}",
