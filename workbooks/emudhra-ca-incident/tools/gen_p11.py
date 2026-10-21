@@ -1,6 +1,6 @@
-"""Test cases for checkpoint 11 (sign a certificate with a recovered key).
+"""Test cases for assignment 11 (sign a certificate with a recovered key).
 
-This checkpoint stays entirely inside the workbook's own synthetic test keys: there is no real
+This assignment stays entirely inside the workbook's own synthetic test keys: there is no real
 certificate authority, domain or infrastructure involved anywhere here. Every private key is
 either a toy value or a key this workbook generated for itself.
 
@@ -164,7 +164,7 @@ def main():
             curve, rand_d(curve), rand_z(curve), rand_k(curve))
 
     # R4 - the private key can be any value, including the recovered incident value
-    add("11-R4-d4-p384", "R4", "P-384, d = 4: the value recovered for the real incident in checkpoint 10",
+    add("11-R4-d4-p384", "R4", "P-384, d = 4: the value recovered for the real incident in assignment 10",
         "P-384", 4, fixed_digest("P-384", "TBS bytes for a test leaf certificate issued inside this workbook"), rand_k("P-384"))
     for d in (1, 2, 56, 115):
         add(f"11-R4-d{d}-p384", "R4", f"P-384, d = {d}: another small recovered value", "P-384", d,

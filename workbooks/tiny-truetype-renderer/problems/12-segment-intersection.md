@@ -16,6 +16,13 @@ and then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype
 Stop after the formula for t. The author's code (the listing "Function to find a
 intersections of 2 segments") follows it.
 
+## Source material
+
+- cp-algorithms, [Check if two segments intersect](https://cp-algorithms.com/geometry/check-segments-intersection.html), the side test with endpoints and collinear cases
+- cp-algorithms, [Finding intersection of two segments](https://cp-algorithms.com/geometry/segments-intersection.html)
+- Wikipedia, [Line–line intersection: given two points on each line segment](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line_segment), the parameters t and u in closed form
+- The blog: [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments)
+
 ## Where this fits
 
 In assignment 14 you fill a glyph with the even-odd rule. For each row of pixels, your program
@@ -196,13 +203,6 @@ Every side value is 0, so the side test passes. cross(v1, v2) is 0, so the answe
   across every edge of 'K' and 'Z' from JetBrains Mono Bold, once between corners and once
   through a corner.
 - Each case has a 10-second limit. A correct solution takes milliseconds.
-
-## Source material
-
-- cp-algorithms, [Check if two segments intersect](https://cp-algorithms.com/geometry/check-segments-intersection.html), the side test with endpoints and collinear cases
-- cp-algorithms, [Finding intersection of two segments](https://cp-algorithms.com/geometry/segments-intersection.html)
-- Wikipedia, [Line–line intersection: given two points on each line segment](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line_segment), the parameters t and u in closed form
-- The blog: [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments)
 
 ## Hints
 

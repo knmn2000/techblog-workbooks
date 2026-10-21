@@ -14,6 +14,13 @@ You can pass using this page alone. For the background, read the blog's
 section to the end, including the two cases where a scanline crosses one curve twice. Skip the
 code blocks if you want to work it out yourself.
 
+## Source material
+
+- Wikipedia, [Nonzero-rule](https://en.wikipedia.org/wiki/Nonzero-rule)
+- Pomax, [A Primer on Bézier Curves](https://pomax.github.io/bezierinfo/): extremities and splitting curves
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html)
+- The blog: [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
+
 ## Where this fits
 
 In assignment 16 you filled straight-line outlines with the non-zero rule. Real glyphs have
@@ -174,13 +181,6 @@ outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full inpu
 - There are 24 tests: hand-made curved shapes for each rule, letters from JetBrains Mono Bold,
   characters from Noto Sans JP, and 7 random glyphs (new ones with `-Fresh`). Each case has 10
   seconds.
-
-## Source material
-
-- Wikipedia, [Nonzero-rule](https://en.wikipedia.org/wiki/Nonzero-rule)
-- Pomax, [A Primer on Bézier Curves](https://pomax.github.io/bezierinfo/): extremities and splitting curves
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html)
-- The blog: [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
 
 ## Hints
 

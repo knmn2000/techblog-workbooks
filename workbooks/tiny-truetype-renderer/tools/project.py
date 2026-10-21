@@ -159,10 +159,16 @@ def as_of(text: str, upto: str) -> str:
 
 def reference_as_of(config: dict, upto: str) -> dict:
     """{path: text} of the reference project after checkpoint `upto`: the files created by it and
-    the checkpoints before it, each without later sections, plus the build file and the
-    third-party files the learner's project gets too ("copy")."""
+    the checkpoints before it, each without later sections, plus the files no checkpoint owns
+    (the build file, a Python package's __init__.py files) and the third-party files the
+    learner's project gets too ("copy")."""
     base = ROOT / config["project"]["reference"]
-    files = {p.name: p.read_text(encoding="utf-8") for p in base.iterdir() if p.is_file()}  # CMakeLists.txt
+    owned = {p for cid in config["checkpoints"] for p in own_files(config, cid)}
+    files = {}
+    for p in sorted(base.rglob("*")):
+        path = p.relative_to(base).as_posix()
+        if p.is_file() and path not in owned and "__pycache__" not in p.parts:
+            files[path] = p.read_text(encoding="utf-8")  # CMakeLists.txt, pyproject.toml, __init__.py
     files.update({dest: (ROOT / src).read_text(encoding="utf-8")
                   for dest, src in config["project"].get("copy", {}).items()})
     for cid in config["checkpoints"]:
@@ -191,12 +197,61 @@ def write_tree(files: dict, dest: Path):
 
 
 LOCAL_INCLUDE = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.M)
+PY_IMPORT = re.compile(r"^[ \t]*(?:from[ \t]+(\.*)([\w.]*)[ \t]+import[ \t]+(?:\(([^)]*)\)|([\w ,*]+))"
+                       r"|import[ \t]+([\w., ]+))", re.M)
+
+
+def py_module(files: dict, dotted: str, include_dirs) -> list:
+    """The files that importing `dotted` (e.g. pkiaudit.ecc.curve) runs: each package's
+    __init__.py on the way, and the module itself, found under an include folder."""
+    parts = [p for p in dotted.split(".") if p]
+    for base in include_dirs:
+        prefix = f"{base}/" if base else ""
+        found = [f"{prefix}{'/'.join(parts[:i])}/__init__.py" for i in range(1, len(parts) + 1)]
+        found = [f for f in found if f in files]
+        module = f"{prefix}{'/'.join(parts)}.py"
+        if module in files:
+            return found + [module]
+        if found and found[-1] == f"{prefix}{'/'.join(parts)}/__init__.py":
+            return found
+    return []
+
+
+def py_imports(files: dict, path: str, include_dirs) -> list:
+    """The project files a Python file imports, relative imports included."""
+    out = []
+    # The file's own package, as a dotted name under its include folder (for relative imports).
+    package = None
+    for base in include_dirs:
+        prefix = f"{base}/" if base else ""
+        if path.startswith(prefix):
+            package = path[len(prefix):].rpartition("/")[0].replace("/", ".")
+            break
+    for dots, module, grouped, names, plain in PY_IMPORT.findall(files[path]):
+        names = grouped or names
+        if plain:
+            for name in plain.split(","):
+                out += py_module(files, name.split()[0] if name.split() else "", include_dirs)
+            continue
+        if dots:
+            if package is None:
+                continue
+            up = package.split(".") if package else []
+            up = up[:len(up) - (len(dots) - 1)] if len(dots) > 1 else up
+            module = ".".join([*up, module] if module else up)
+        out += py_module(files, module, include_dirs)
+        for name in re.sub(r"#.*", "", names).split(","):
+            name = name.split()[0] if name.split() else ""
+            if name and name != "*":  # `from pkg import module` imports a submodule
+                out += py_module(files, f"{module}.{name}", include_dirs)
+    return out
 
 
 def closure(files: dict, first: str, include_dirs=("src",)) -> list:
-    """The files a program is built from, out of {path: text}: `first`, every file it includes
-    with #include "..." (found next to the including file or in an include folder), and the
-    .cpp next to each header."""
+    """The files a program is built from, out of {path: text}: `first` and everything it uses.
+    C and C++: every file it includes with #include "..." (found next to the including file or
+    in an include folder), and the .cpp next to each header. Python: every project module it
+    imports, with the packages' __init__.py files."""
     found, queue = [], [first]
     while queue:
         path = queue.pop(0)
@@ -204,6 +259,9 @@ def closure(files: dict, first: str, include_dirs=("src",)) -> list:
             continue
         found.append(path)
         stem, _, ext = path.rpartition(".")
+        if ext == "py":
+            queue += py_imports(files, path, include_dirs)
+            continue
         if ext in ("h", "hpp"):
             queue += [f"{stem}.cpp", f"{stem}.cc"]
         folder = path.rpartition("/")[0]

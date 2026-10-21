@@ -16,6 +16,13 @@ up to the formula for the t where the curve turns. The author's code (the listin
 minimum curve of a quad Bézier curve") comes right after it. Assignment 10 covers the curve
 itself.
 
+## Source material
+
+- Pomax, *A Primer on Bézier Curves*, [Component functions](https://pomax.github.io/bezierinfo/#components) and [Finding extremities: root finding](https://pomax.github.io/bezierinfo/#extremities), on treating x and y as separate functions of t and finding where the derivative is 0
+- Wikipedia, [Quadratic function: vertex](https://en.wikipedia.org/wiki/Quadratic_function#Vertex)
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), on the quadratic curves in TrueType outlines
+- The blog: [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
+
 ## Where this fits
 
 The blog's even-odd fill can count a row's crossings twice, or miss them, where an edge touches
@@ -155,13 +162,6 @@ is the top of the curve. The lowest point is the lower end: min(0, 4) = 0.
   and 'S' (JetBrains Mono Bold) and 'あ' (Noto Sans JP), plus 'S' scaled and flipped into
   screen coordinates.
 - Each case has a 10-second limit. A correct solution takes milliseconds.
-
-## Source material
-
-- Pomax, *A Primer on Bézier Curves*, [Component functions](https://pomax.github.io/bezierinfo/#components) and [Finding extremities: root finding](https://pomax.github.io/bezierinfo/#extremities), on treating x and y as separate functions of t and finding where the derivative is 0
-- Wikipedia, [Quadratic function: vertex](https://en.wikipedia.org/wiki/Quadratic_function#Vertex)
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), on the quadratic curves in TrueType outlines
-- The blog: [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
 
 ## Hints
 

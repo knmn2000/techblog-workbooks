@@ -1,10 +1,10 @@
 # 14 · Check a key ceremony
 
-**Difficulty:** Medium · **Checkpoint** 14 of 16 · **Check:** `./check.sh 14`
+**Difficulty:** Medium · **Assignment** 14 of 16 · **Check:** `.\check 14`
 
 **Tags**
-- *Language:* parsing a small log format · dictionaries · sha256 (`hashlib` in Python)
-- *Library:* `hashlib` for sha256 (or print the fingerprints directly; no crypto library needed)
+- *Language:* parsing a small log format · dictionaries · sets
+- *Library:* none needed (the log gives every fingerprint as hex, so you compare text and compute no hash)
 - *Concepts:* chain of custody · key wrap/unwrap · attested fingerprints · process auditing
 
 ## Read in the blog first
@@ -16,29 +16,35 @@ FIPS 140-2 Level 3 hardware security modules, and "a flaw in one step of that pr
 a second, weak set of keys alongside the original strong keys." The post also mentions "similar
 labels" among the materials handled.
 
-**eMudhra has not confirmed the exact root cause.** This checkpoint is **not** a reconstruction
-of their actual ceremony software; nobody outside eMudhra has described it in public. What
-follows is a plausible shape that matches their own vague description: a step that wraps a key
-for transport and later unwraps it could, if it has a bug, hand back different key material than
-it was given, and a mix-up between similarly-named artifacts is exactly the kind of thing that
-would let that go unnoticed. Treat the log format below as a teaching model built for this
-workbook, not as eMudhra's real file format or process.
+**eMudhra has not confirmed the exact root cause.** This assignment is **not** a reconstruction
+of their ceremony software, which nobody outside eMudhra has described in public. It models a
+plausible shape that fits their own description. A step that wraps a key for transport and later
+unwraps it could, with a bug, hand back different key material than it received, and a mix-up
+between artifacts with similar names is the kind of slip that would let that go unnoticed. Treat
+the log format below as a teaching model built for this workbook, not as eMudhra's file format or
+process.
+
+## Source material
+
+- eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3 ("How it happened", and the statement that the root cause is not yet confirmed)
+- Assignment 12 (`problems/12-generate-key.md`): the step that should go right every time, before any ceremony log starts
 
 ## Where this fits
 
-Checkpoint 12 showed the one step that should always go right: turning random bytes into a
-key. This checkpoint is about a different, later step: making sure a key that started out fine is
-still the same key by the time it gets published. A linter like checkpoint 13 can only catch a
-bad key if it's given the chance to look at it; this checkpoint is about catching the moment the
-key stopped being the one that was really generated.
+Assignment 12's `ecc/keys.py` turned random bytes into a key, the step that should go right every
+time. This assignment checks a later step: that a key which started out fine is still the same key
+when the ceremony publishes it. Your linter from assignment 13 can only catch a bad key it gets to
+look at, and this checker finds the moment the key stopped being the one the ceremony generated.
+
+Your new `pki/ceremony.py` needs none of your earlier modules, and no later assignment uses it.
 
 ## The problem
 
-A ceremony log is a list of steps, one per line, recording what happened to a set of keys as
-they moved through a Key Generation Ceremony. Each step names one or two **labels**: words used
-to refer to a key artifact at some point in the ceremony. Write a program that reads the log and
-reports two kinds of problem: a label that's ambiguous because it was generated twice, and a
-published key whose material doesn't match what was attested when it was generated.
+A **ceremony log** is a list of steps, one per line, recording what happened to a set of keys as
+they moved through a Key Generation Ceremony. Each step names one or two **labels**: words that
+refer to a key artifact at some point in the ceremony. Write a program that reads the log and
+reports two kinds of problem: a label that's ambiguous because two `generate` steps used it, and a
+published key whose material doesn't match the fingerprint attested when it was generated.
 
 ### Input
 
@@ -47,26 +53,26 @@ Each line is one ceremony step:
 
 | Line | Meaning |
 |---|---|
-| `generate <label> <curve>` | A brand new key is generated and given the name `label`. This always starts a new key, even if `label` was used by an earlier `generate` (see R3). `curve` is `P-256` or `P-384`; it has no effect on this checkpoint's logic. |
-| `wrap <label> <wrapped-label>` | The key currently called `label` is wrapped (encrypted for transport or backup); the result is given the name `wrapped-label`. A correct wrap always carries the same key material forward. |
-| `unwrap <wrapped-label> <label>` | The artifact called `wrapped-label` is unwrapped back into a usable key, given the name `label`. **This is the step eMudhra's account points to**: a flawed unwrap can hand back different key material than what was wrapped. |
-| `fingerprint <label> <hex>` | Right after `label` was just created (by `generate`, `wrap`, or `unwrap`), the ceremony software records its fingerprint: a hash of the actual key bytes, as 64 lowercase hex characters. This line always immediately follows the step that created `label`. |
-| `publish <label>` | The key currently called `label` is the one that gets published. |
+| `generate <label> <curve>` | The ceremony generates a new key and names it `label`. This starts a new key every time, even if an earlier `generate` used the same `label` (see R3). `curve` is `P-256` or `P-384`; it has no effect on this assignment's logic. |
+| `wrap <label> <wrapped-label>` | The ceremony wraps (encrypts for transport or backup) the key that `label` names now, and names the result `wrapped-label`. A correct wrap carries the same key material forward. |
+| `unwrap <wrapped-label> <label>` | The ceremony unwraps the artifact that `wrapped-label` names back into a usable key, named `label`. **This is the step eMudhra's account points to**: a flawed unwrap can hand back different key material from what went in. |
+| `fingerprint <label> <hex>` | The ceremony software records the fingerprint of `label`, a hash of the key bytes, as 64 lowercase hex characters. This line comes straight after the step (`generate`, `wrap` or `unwrap`) that created `label`. |
+| `publish <label>` | The ceremony publishes the key that `label` names now. |
 
-A label is just a name: once it's been used by `generate`, `wrap`, or `unwrap`, it refers to
-whatever key material that step produced, until the log uses it again. `wrap` and `unwrap` always
-carry forward whatever key is currently under their source label; only `unwrap` can be defective.
+A label is a name. Once a `generate`, `wrap` or `unwrap` step has used it, it refers to whatever key
+material that step produced, until the log uses it again. `wrap` and `unwrap` carry forward the key
+their source label names at that moment, and only `unwrap` can be defective.
 
 ### Output
 
 For each `generate` step whose label was already used by an **earlier** `generate` step, in the
-order it's seen:
+order you meet it:
 
 ```
 duplicate <label>
 ```
 
-For each `publish` step, in the order it appears, write exactly one line:
+For each `publish` step, in the order it appears, write one line:
 
 ```
 publish <label> ok                    the key currently under <label> matches what was attested when it was generated
@@ -74,44 +80,47 @@ publish <label> MISMATCH <origin>     it doesn't; <origin> is the label it was o
 publish <label> undefined             <label> was never generated, wrapped, or unwrapped
 ```
 
-Both kinds of output line are written interleaved, in the order their triggering step appears in
-the log (a `duplicate` line appears at its `generate` step; a `publish` line appears at its
-`publish` step). The checker ignores extra whitespace.
+Write both kinds of line interleaved, in the order their triggering steps appear in the log: a
+`duplicate` line at its `generate` step, a `publish` line at its `publish` step. The checker
+ignores extra whitespace.
 
-### What "matches what was attested" means
+### Chains of custody
 
-Every `generate` step starts a key's **chain of custody**. The very first `fingerprint` line
-recorded for a freshly generated label is that chain's attested ground truth: the fingerprint of
-the key as it was actually created. `wrap` and `unwrap` carry a key's chain of custody forward to
-their target label, whatever that label's text is. At `publish`, look up the chain of custody for
-the label being published, and compare its current fingerprint (the most recent `fingerprint`
-line recorded for that exact label) with the ground truth recorded at the start of its chain. If
-they're equal: `ok`. If not: `MISMATCH`, naming the label the chain started at.
+Every `generate` step starts a key's **chain of custody**, the record of where that key goes. The
+first `fingerprint` line recorded for the new key is the chain's **attested fingerprint**: the
+fingerprint of the key as the ceremony created it. `wrap` and `unwrap` carry a
+key's chain of custody forward to their target label, whatever that label's text is.
 
-**A reused label does not retroactively disturb an earlier chain.** If `generate` creates a key
-under a label, that key is wrapped away, and only *afterward* the same label is reused by another
-`generate` step, the key that was already wrapped away still traces back to the *first*
-`generate`, unaffected by the second one reusing the name. The second `generate` starts its own,
-completely separate chain of custody. The duplicate label is still flagged (it's exactly the kind
-of mix-up that makes a ceremony harder to audit), but it doesn't corrupt a key that was already
-somewhere else by the time the label was reused.
+At `publish`, find the chain of custody for the label being published. Compare the label's current
+fingerprint (the latest `fingerprint` line recorded for that exact label) with the attested
+fingerprint at the start of its chain:
+
+- If they're equal, the key is `ok`.
+- If they differ, report `MISMATCH`, naming the label the chain started at.
+
+**A reused label leaves an earlier chain alone.** Suppose `generate` creates a key under a label, a
+`wrap` moves that key away, and only *afterward* another `generate` reuses the label. The key that
+was wrapped away still traces back to the *first* `generate`, and the second `generate` starts its
+own, separate chain of custody. Your program still flags the duplicate label, because that kind of
+mix-up makes a ceremony harder to audit, but the reuse doesn't corrupt a key that had already moved
+elsewhere.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** A clean ceremony (`generate`, `wrap`, a correct `unwrap`, `publish`) reports `ok`. So
-  does publishing a key straight from `generate` with no wrap/unwrap round trip at all.
-- **R2** A defective `unwrap` that hands back different key material is caught at `publish`:
-  `MISMATCH`, naming the label the key was originally generated under.
-- **R3** A label reused by a second `generate` step is flagged `duplicate <label>`, whether or
-  not anything downstream of it actually breaks. A chain already wrapped away under the label's
-  earlier identity still resolves correctly: the duplicate doesn't disturb it.
-- **R4** A `publish` of a label that was never generated, wrapped, or unwrapped is flagged
-  `undefined`.
-- **R5** Several keys in one ceremony, only one of them defective: every `publish` line reflects
-  its own key correctly, not a blanket `MISMATCH` or a blanket `ok`.
+  does publishing a key straight from `generate`, with no wrap/unwrap round trip.
+- **R2** A defective `unwrap` that hands back different key material shows up at `publish`:
+  `MISMATCH`, naming the label the key was first generated under.
+- **R3** A label that a second `generate` step reuses gets a `duplicate <label>` line, whether or
+  not anything downstream of it breaks. A chain already wrapped away under the label's earlier
+  identity still resolves to that identity: the duplicate doesn't disturb it.
+- **R4** A `publish` of a label that no step generated, wrapped or unwrapped reports `undefined`.
+- **R5** With several keys in one ceremony and only one of them defective, every `publish` line
+  judges its own key, so only the defective key's line says `MISMATCH`.
 
 ## Examples
 
@@ -129,9 +138,9 @@ input:   generate k1 P-384
 output:  publish k1b MISMATCH k1
 ```
 
-The key was fine right up through the wrap. The unwrap step produced something with a different
-fingerprint than what went in, and that's exactly what gets published. `k1` is named because
-that's where this chain of custody started.
+The key stayed the same through the wrap. The unwrap produced something with a different
+fingerprint from what went in, and that's the key the ceremony publishes. The output names `k1`
+because this chain of custody started there.
 
 ### Example 2: a duplicate label that doesn't disturb an earlier chain (test `14-R3-duplicate-does-not-disturb-earlier-wrap`)
 
@@ -150,59 +159,52 @@ output:  duplicate first-use
          publish recovered ok
 ```
 
-`stashed` was wrapped away from the *first* `first-use`, before the label was ever reused. Even
-though `first-use` later gets reassigned to a second, different key (flagged as a duplicate),
-`recovered` (unwrapped from `stashed`) still traces back to the *first* key, and its fingerprint
-(hash A) still matches what was attested for it. The duplicate is reported, but `recovered` is
-still `ok`.
+The `wrap` moved the *first* `first-use` key to `stashed` before the label was reused. The second
+`generate` points `first-use` at a different key, and your program flags it as a duplicate.
+`recovered`, unwrapped from `stashed`, still traces back to the *first* key, and its fingerprint
+(hash A) matches the one attested for that key. The output reports the duplicate, and `recovered`
+is `ok`.
 
 ## Constraints
 
 - Every line is one of the five step kinds above; there are no blank lines.
-- Every label that's fingerprinted was just created by the immediately preceding `generate`,
-  `wrap`, or `unwrap` step for that same label.
-- An input has at most 20 steps and at most 6 `publish` lines.
-- Each case has a 10-second limit; this checkpoint does no heavy computation at all.
+- A `fingerprint` line names the label that the step right before it (`generate`, `wrap` or
+  `unwrap`) created.
+- An input has at most 50 steps and at most 8 `publish` lines.
+- Each case has a 10-second limit; this assignment does no heavy computation.
 - There are 10 tests: 2 for R1, 2 for R2, 2 for R3, 1 for R4, 2 for R5 and 1 end-to-end case
   mixing several keys, a duplicate label, a defective unwrap and an undefined reference in one
   ceremony. Part of the set is random and changes with `-Fresh`.
-
-## Source material
-
-- eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3 ("How it happened", and the statement that the root cause is not yet confirmed)
-- Checkpoint 12 (`problems/12-generate-key.md`): the step that should always go right, before any ceremony log even starts
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Work through the log top to bottom, keeping track, for every label you've seen, which key it
-currently refers to. "Which key" is the hard part: don't track it by label text alone, since a
-label can be reused.
+Work through the log from top to bottom and keep track, for every label you've seen, of the key it
+names now. A second `generate` can reuse a label, so the label's text alone doesn't tell you which
+key it is: give each key something of its own to track it by.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Give every `generate` step its own identity (a counter works well: 1, 2, 3, ...), even if it
-reuses a label. Keep a dictionary from label to "the identity it currently points to," updated by
-`generate` (a brand new identity), `wrap` and `unwrap` (whatever identity the source label
-currently points to). Keep a second dictionary from identity to its attested ground-truth
-fingerprint (set once, by the very first `fingerprint` line for a freshly generated label), and a
-third from label to its most recently recorded fingerprint. At `publish`, look up the label's
-current identity and compare.
+Give every `generate` step its own identity (a counter works: 1, 2, 3, ...), even when it reuses a
+label. In `Ceremony`, the dictionary `points_at` maps a label to the identity it names now:
+`generate` sets it to a new identity, and `wrap` and `unwrap` copy the identity of their source
+label. A second dictionary, `attested`, maps an identity to its attested fingerprint, set once by
+the first `fingerprint` line after the key's generation. A third, `latest`, maps a label to the last
+fingerprint recorded for it. At `publish`, look up the label's identity and compare.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- A label used twice by `generate` needs its own fresh identity the second time; don't let the
-  second `generate` overwrite the ground truth of the first one's identity.
-- `wrap` and `unwrap` look up whatever identity their *source* label currently points to, at the
-  moment they run, not at some later point.
-- `publish` of an unknown label never had an identity at all: check for that before doing
-  anything else with it.
-- The MISMATCH message names the label the chain started at (the `generate` step), not the
-  `wrap`/`unwrap` step that corrupted it, and not the label being published.
-- `duplicate` lines and `publish` lines are interleaved in log order, not grouped separately.
+- A label used by a second `generate` needs a new identity. Don't let the second `generate`
+  overwrite the attested fingerprint of the first one's identity.
+- `wrap` and `unwrap` look up the identity their *source* label names at the moment they run, not
+  at some later point.
+- A `publish` of an unknown label has no identity to look up: check for that before anything else.
+- The `MISMATCH` line names the label the chain started at (the `generate` step), not the `wrap`
+  or `unwrap` step that corrupted it, and not the label being published.
+- `duplicate` lines and `publish` lines go out interleaved in log order, not grouped by kind.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -210,8 +212,8 @@ current identity and compare.
 ```
 points_at = {}        # label -> identity id
 generated_as = {}      # identity id -> label it was generated under
-ground_truth = {}      # identity id -> fingerprint attested at generation
-current_fp = {}        # label -> most recent fingerprint recorded for it
+attested = {}          # identity id -> fingerprint attested at generation
+latest = {}            # label -> most recent fingerprint recorded for it
 next_id = 0
 
 for step in log:
@@ -223,13 +225,13 @@ for step in log:
     if step is wrap(label, wrapped_label) or unwrap(wrapped_label=label, target):
         points_at[target] = points_at[source]
     if step is fingerprint(label, hex):
-        current_fp[label] = hex
+        latest[label] = hex
         id = points_at[label]
-        if id not yet in ground_truth: ground_truth[id] = hex
+        if id not yet in attested: attested[id] = hex
     if step is publish(label):
         if label not in points_at: emit "publish " + label + " undefined"; continue
         id = points_at[label]
-        if current_fp[label] == ground_truth[id]: emit "publish " + label + " ok"
+        if latest[label] == attested[id]: emit "publish " + label + " ok"
         else: emit "publish " + label + " MISMATCH " + generated_as[id]
 ```
 </details>
@@ -237,10 +239,10 @@ for step in log:
 ## Checking your solution
 
 ```
-./check.sh 14                                     run every test
-./check.sh 14 -Case 14-R2-bad-unwrap               one test, showing its full input, expected output and your output
-./check.sh 14 -Fresh                               a new set of tests (new random seed), to confirm on data you haven't seen
-./check.sh 14 -Dispute <id> "why"                  set aside a test you believe is wrong; you won't be blocked
+.\check 14                                  run every test
+.\check 14 -Case 14-R2-bad-unwrap           one test, showing its full input, expected output and your output
+.\check 14 -Fresh                           a new set of tests (new random seed), to confirm on data you haven't seen
+.\check 14 -Dispute <id> "why"              set aside a test you believe is wrong; you won't be blocked
 ```
 
 A failing test looks like this:
@@ -251,17 +253,16 @@ A failing test looks like this:
           line 1: expected `publish k1b MISMATCH k1`, got `publish k1b ok`
           likely cause: R2 - A defective unwrap that substitutes a different token is caught at publish: `MISMATCH <origin>`
           expected values from: definitional: fingerprint = sha256(token) in hex, computed by hashlib in this generator
-          reproduce: python3 -P tools/run_py.py solutions 14 build/cases/14/14-R2-bad-unwrap.in build/cases/14/14-R2-bad-unwrap.out
+          reproduce: py -P tools/run_py.py solutions 14 build/cases/14/14-R2-bad-unwrap.in build/cases/14/14-R2-bad-unwrap.out
 ```
 
 ## After you pass: compare with the post
 
-The post describes the outcome of a ceremony gone wrong, in the vaguest possible terms, and says
-plainly that the root cause isn't confirmed; there's no author's code to compare against here.
-What you built is one way a ceremony-log checker could have caught something shaped like what
-they described, without claiming to know what their software actually does.
+The post describes the outcome of a ceremony gone wrong in vague terms and says that the root
+cause isn't confirmed, so there's no author's code to compare with here. You built one way a
+ceremony-log checker could have caught a failure of the shape they described, with no claim about
+what their software does.
 
-**Something to look for:** the post's mention of "similar labels" is doing real work in this
-checkpoint. A ceremony that lets the same name mean two different things at different times is a
-process hazard worth flagging on its own, R3's point, separate from whether a key's material
-actually got corrupted along the way.
+**Something to look for:** the post's mention of "similar labels" matters in this assignment. A
+ceremony that lets one name mean two different things at different times is a process hazard worth
+flagging on its own (R3's point), whether or not a key's material changed along the way.

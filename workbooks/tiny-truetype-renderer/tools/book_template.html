@@ -381,6 +381,10 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .md-details summary { cursor: pointer; font-weight: 500; }
 
 .accs { margin-top: 30px; border-top: 1px solid var(--line); }
+.accs-top { margin: -6px 0 0; border-top: 0; }  /* Source material, right under "Read in the blog first" */
+.accs-top .acc { border-bottom: 0; }
+.accs-top .acc-btn { padding: 4px 2px 6px; font-size: 13px; color: var(--text-2); }
+.accs-top .acc-body { padding-top: 4px; font-size: 13px; }
 .acc { border-bottom: 1px solid var(--line); }
 .acc-btn { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 2px; background: none; border: 0; cursor: pointer; color: var(--text); text-align: left; font-weight: 500; }
 .acc-btn:disabled { cursor: not-allowed; color: var(--text-3); }
@@ -934,14 +938,14 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="chip">${c.tests} tests</span>
         <span class="chip" title="The checker compares only what your program writes, so you can use any structure, language or library.">Any language</span>
       </div>
-      ${c.read ? `<div class="callout">${I.book}<div><b>Read in the blog first.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
+      ${c.read ? `<div class="callout">${I.book}<div><b>${esc(c.readTitle || 'Read in the blog first')}.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
+      ${c.sources ? `<div class="accs accs-top">${acc('acc-sources', I.link, 'Source material', c.sources)}</div>` : ''}
       ${startCard(c)}
       <div class="flow">${c.body}</div>
       <div class="accs">
         ${c.tags.length ? acc('acc-topics', I.tag, 'Topics', tags) : ''}
         ${hintHtml}
         ${c.context ? acc('', I.map, 'Where this fits', c.context) : ''}
-        ${c.sources ? acc('', I.link, 'Source material', c.sources) : ''}
       </div>
       <div class="d-foot"><button class="btn" type="button" id="solve-btn"></button><span>Assignment ${CPS.indexOf(c) + 1} of ${CPS.length} · problem page <code>${esc(c.problem)}</code></span></div>`;
 

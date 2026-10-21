@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 05 (read DER).
+"""Test cases for assignment 05 (read DER).
 
 Every case is hand-built: this file's own tiny encoders turn Python values (an int, a bool, an
 OID string, ...) into DER bytes, and the SAME Python values become the expected output lines
@@ -111,7 +111,7 @@ def der_context(tag_num: int, constructed: bool, content: bytes):
 
 
 def der_printable_string(text: str):
-    # Not one of checkpoint 05's required types; used only to build realistic Name fields for
+    # Not one of assignment 05's required types; used only to build realistic Name fields for
     # the E2E case. Its value is printed as hex, the same fallback as OCTET STRING.
     content = text.encode("ascii")
     return tlv(0x13, content), content.hex()

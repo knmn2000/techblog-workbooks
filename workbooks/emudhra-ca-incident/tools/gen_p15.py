@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 15 (block and distrust).
+"""Test cases for assignment 15 (block and distrust).
 
 Expected values are mechanically derivable from the blocklist/distrust-set definitions: for every
 case, this generator computes the expected verdict TWO ways, structurally differently, and

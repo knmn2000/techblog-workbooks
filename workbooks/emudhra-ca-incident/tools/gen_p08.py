@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 08 (check a certificate's signature).
+"""Test cases for assignment 08 (check a certificate's signature).
 
 Every certificate is built with `cryptography`'s CertificateBuilder, signed by a key this file
 generates. The independent oracle is the `cryptography` library's own signature verification -

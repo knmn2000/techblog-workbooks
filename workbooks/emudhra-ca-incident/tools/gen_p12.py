@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 12 (generate a key correctly).
+"""Test cases for assignment 12 (generate a key correctly).
 
 Every case supplies the exact sequence of candidate byte-blocks a key generator would have
 drawn from its random source, so the test is reproducible without calling a real RNG. The
@@ -69,7 +69,7 @@ def add_case(cases, case_id, req, title, label, curve, rejects, accept):
 
 
 def strong(rng, curve):
-    """A plausible real private key: nowhere near the small or boundary values this checkpoint
+    """A plausible real private key: nowhere near the small or boundary values this assignment
     is built around, so these cases don't accidentally double as weak-key cases."""
     n = curves.CURVES[curve]["n"]
     return rng.randrange(2 ** 64, n - 2 ** 64)

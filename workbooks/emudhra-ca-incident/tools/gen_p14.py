@@ -1,6 +1,6 @@
-"""Test cases for checkpoint 14 (check a key ceremony).
+"""Test cases for assignment 14 (check a key ceremony).
 
-This checkpoint models, in simplified form, the shape eMudhra's own account suggests for its
+This assignment models, in simplified form, the shape eMudhra's own account suggests for its
 incident: a key generation step, then a wrap/unwrap round trip, then publication - with the
 possibility that an unwrap step silently substitutes different key material. eMudhra has not
 confirmed its root cause; this is a teaching model of a plausible failure shape, not a factual

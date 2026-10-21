@@ -2,35 +2,23 @@
 
 *Learn how to not f*ck up like eMudhra.*
 
-LeetCode-style checkpoints built around [eMudhra Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident): eight of eMudhra's intermediate
-certificate authority keys turned out to be weak (one had the private key value 4), and anyone
-could have recovered them in under a second. You build the maths that makes a key pair work,
-parse and validate certificates by hand, recover that weak key yourself, sign with it, and then
-build the checks (correct key generation, a key linter, a ceremony checker, SPKI blocklisting)
-that would have caught it. Your program is checked by its output only, so you can structure it
-your own way, in any language, with any library.
+LeetCode-style assignments built around
+[eMudhra's statement on a certificate security incident](https://emudhra.com/en/post/certificate-security-incident).
+Eight of eMudhra's intermediate certificate authority keys turned out to be weak (one had the
+private key value 4), and anyone could have recovered them in under a second. You build the maths
+that makes a key pair work, parse and validate certificates by hand, recover a weak key yourself,
+sign with it, and then build the checks that would have caught it: correct key generation, a key
+linter, a ceremony checker and SPKI blocklisting. Each assignment adds modules to a Python project
+of your own. After the last one, `solutions/` holds `pkiaudit`, a working PKI auditor you can put
+on GitHub as it is.
 
 The problems are in `problems/` and, nicer to read, in the web problem book
-(`book/problem-book.html`). The book has a problem list with your progress, and for each
-checkpoint the statement, hints that open in order, an Editorial with a solution proven to pass
-every test, an editor preloaded with the starter, and the example test cases.
+(`book/problem-book.html`: open it in a browser). The book has a problem list with your progress,
+and for each assignment the statement, what it adds to your project, hints that open in order, an
+Editorial with a solution proven to pass every test, an editor with the assignment's files, and
+the example test cases.
 
-## Start here
-
-Open the book with Run and Submit working: double-click `study.cmd` on Windows or
-`study.command` on macOS, or run `.\study` (PowerShell) or `./study.sh` from this folder. It
-opens in your browser; what you type is saved to `solutions/`, and the verdict appears right in
-the page, with the failing tests (and pictures, where there are any). Leave its window open while
-you work; close it to stop. The first start sets up the build. If a tool is missing, it tells you
-which, or ask Claude to set the workbook up.
-
-The **Files** panel in the editor shows the project growing: `solutions/common/` (code shared by checkpoints) and every checkpoint's file. Shared files open in tabs and can be created there. After an Accepted Submit, the book suggests moving the reusable parts into `common/` so later checkpoints, and the last one most of all, can call them. **Re-check solved** runs every solved checkpoint again, so a change to shared code that breaks an earlier checkpoint shows up at once (it's marked with a red `!`). Inputs still carry what earlier checkpoints would produce, so a bug in one checkpoint never blocks another unless you share the code. When everything passes, the problem list shows what you built: each shared file and the checkpoints that use it.
-
-You can also work in your own editor and check from a terminal, as below; the book picks up
-changes you save to the solution files. (A copy of the book opened without `study`, such as a
-published page, can't run your code: its Submit copies your code and shows the command to run.)
-
-| # | Checkpoint | # | Checkpoint |
+| # | Assignment | # | Assignment |
 |---|---|---|---|
 | 01 | Modular arithmetic | 09 | Validate a certificate chain |
 | 02 | Add points on a toy curve | 10 | Find a weak private key |
@@ -39,69 +27,117 @@ published page, can't run your code: its Submit copies your code and shows the c
 | 05 | Read DER | 13 | Lint a public key |
 | 06 | Read a certificate | 14 | Check a key ceremony |
 | 07 | Hash the public key (SPKI) | 15 | Block and distrust |
-| 08 | Check a certificate's signature | 16 | Audit a PKI (capstone) |
+| 08 | Check a certificate's signature | 16 | Audit a PKI |
 
-Checkpoints don't depend on each other: each input carries what earlier checkpoints would
-produce. The last checkpoint is where your own pieces come together; keep the parts you'll reuse
-in `solutions/common/` and it can call them directly.
+## Start here
 
-## Doing a checkpoint
+Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
+workbook's project is Python), creates the project and opens the book. Or double-click
+`study.cmd` (or run `.\study` in PowerShell, `./study.sh` on macOS or Linux): the book opens with
+Run and Submit working, and offers to create the project if there isn't one yet. Leave its window
+open while you work, or use the book's **Exit** button when you're done.
 
-1. Read the problem (book or `problems/NN-*.md`).
-2. Write your solution in `solutions/pNN_*`. It starts as a comment and an empty `main`: the
-   imports, reading the input and writing the output are yours. If you'd rather start from
-   ready-made input/output code, copy `starters/boilerplate/pNN_*` over it (or pick Boilerplate
-   in the book's editor) and fill in the functions marked `TODO`. Code you want to reuse in later
-   checkpoints can go in `solutions/common/` (in C++, every `.cpp` there is compiled into every
-   checkpoint; in Python or JavaScript, import it from there).
-3. Check it from this folder (`./check.sh` instead of `.\check` on macOS or Linux):
+## Your project
 
 ```
-.\check 01                         run every test
-.\check 01 -Case <test-id>         one test in full: input, expected output, your output
-.\check 01 -Fresh                  a newly generated set of tests (new random seed)
-.\check 01 -Dispute <test-id> "why"    set aside a test you believe is wrong
+solutions/
+  pyproject.toml, README.md, .gitignore
+  src/pkiaudit/ecc/     modmath (01), curve and curves (02, 03), ecdsa (04, 11), keys (12)
+  src/pkiaudit/asn1/    der (05)
+  src/pkiaudit/x509/    certificate (06), spki (07), signature (08)
+  src/pkiaudit/pki/     chain (09), lint (13), ceremony (14), trust (15), audit (16)
+  src/pkiaudit/attack/  weak_key (10)
+  src/pkiaudit/__main__.py   the pkiaudit command (16)
+  examples/sample.pki   a small PKI to audit
+  assignments/          assignment_01_modular_arithmetic.py ... assignment_16_audit_pki.py: one
+                        program per assignment, which the checker runs; you write these too
 ```
 
-The verdict is `Accepted`, `Wrong Answer`, `Compile Error`, `Runtime Error` or
-`Time Limit Exceeded`. Text output is compared word by word, so line endings and extra spaces
-don't matter, except inside quoted strings. Every failure shows the requirement it most likely
-comes from, where the expected value came from, and the command to reproduce it. Picture
-checkpoints also write a diff image (red: extra pixels, blue: missing, yellow: forgiven), and edges
-may move by one pixel.
+Do the assignments in order. Opening an assignment (in the book, or with `.\check NN`) creates
+its files, each with a comment saying why the file exists and what your job in it is. It doesn't
+overwrite anything you've written. You write an assignment's real work in `src/pkiaudit/`, and
+later assignments import it: ECDSA uses your curve arithmetic, the chain validator uses your
+certificate reader, and the audit uses most of the package. The assignment's program in
+`assignments/` reads a test input, calls your code and writes the answer.
+
+Each test input carries what earlier assignments would produce, so an assignment's tests depend
+only on the earlier modules it imports. **Re-check solved** in the book runs every solved
+assignment again, so you see at once when a change breaks an earlier one (the book marks it with a
+red `!`).
+
+The **Files** panel in the book's editor shows the project as it grows, with each file's
+assignment. Run the finished program:
+
+```
+py -P tools/run_py.py solutions -m pkiaudit audit solutions/examples/sample.pki
+```
+
+On its own (for example after you've pushed it to GitHub), `pip install -e .` in `solutions/`
+installs the `pkiaudit` command.
+
+## Doing an assignment
+
+1. Read the problem (book or `problems/NN-*.md`). In the book, its **Start here** card lists the
+   files to write, your job in each, the earlier modules you can use, and the two ways to start.
+2. Write the files. Each one starts as the Boilerplate, which gives you the input/output code, the
+   constants and the function signatures, and you fill in the bodies marked `TODO`. To write all
+   of it yourself, choose **From scratch** on the Start here card: each file then starts empty
+   apart from its comment.
+3. Check it from this folder in PowerShell (`./check.sh` on macOS or Linux), or with Run and
+   Submit in the book:
+
+```
+.\check 06                         run every test
+.\check 06 -Case <test-id>         one test in full: input, expected output, your output
+.\check 06 -Fresh                  a newly generated set of tests (new random seed)
+.\check 06 -Dispute <test-id> "why"    set aside a test you believe is wrong
+```
+
+The verdict is `Accepted`, `Wrong Answer`, `Compile Error` (a syntax error anywhere in your
+project), `Runtime Error`, `Time Limit Exceeded` or `Not implemented yet` (a function still raises
+`NotImplementedError`). The checker compares text output word by word, so line endings and extra
+spaces don't matter, except inside quoted strings. For each failure it shows its best guess at the
+requirement behind it, where the expected value came from, and the command that reproduces it.
 
 ## If you think a test is wrong
 
-Run `.\check 01 -Dispute <test-id> "your reason"`. That test stops counting and you can carry on;
+Run `.\check 06 -Dispute <test-id> "your reason"`. That test stops counting and you can carry on;
 the verdict reads `Accepted (1 disputed)`. Then ask Claude to "review my disputes". Claude
 rechecks the expected value against its independent source and either fixes the test or shows
-you why it's right. Disputes are kept in `disputes.json`.
+you why it's right. The checker keeps disputes in `disputes.json`.
 
-## Using another language or library
+## Another language
 
-The checker runs `<run> <input-file> <output-file>` from this folder and compares the output file.
-Change `build` and `run` in `workbook.json`; `{id}` becomes the checkpoint number. To check a
-one-off program without changing the config: `.\check 01 -Run "path/to/program {input} {output}"`.
+The checker reads only your program's output, so you can write the project in any language. This
+workbook's project, its starters and its reference are Python.
+
+To work in another language, ask Claude. It shows which languages you have installed
+(`py -P tools/langs.py` lists them) and how to install the others, keeps your Python project in a
+folder of its own, and sets up a project in the new language with the same layout in that
+language's style. It creates nothing for languages you don't choose.
+
+To check a one-off program without changing anything, run
+`.\check 06 -Run "path/to/program {input} {output}"`.
 
 ## What's in here
 
 | Path | What it is |
 |---|---|
-| `problems/` | Problem statements (the book is built from these) |
-| `solutions/` | Your code: one file per checkpoint, blank to begin with |
-| `solutions/common/` | Code shared by your checkpoints |
-| `starters/blank/` | The blank starters. Copy one over `solutions/` to start again. |
-| `starters/boilerplate/` | Starters with the input/output code done, if you want them |
-| `tools/blank_starters.py` | Writes the blank starters and puts them in `solutions/` (never over your own code) |
+| `problems/` | Problem statements (`tools/build_book.py` makes the book from these) |
+| `solutions/` | Your project, created when you set the workbook up (see above) |
+| `starters/project/` | What your project starts with: `pyproject.toml`, README, `.gitignore`, the package folders and the sample PKI |
+| `starters/blank/`, `starters/boilerplate/` | Each assignment's files, blank and with the input/output and signatures done |
 | `tests/NN/` | Test inputs and expected outputs |
 | `study.cmd`, `study.command`, `study.ps1`, `study.sh` | Open the book with Run and Submit working (they start `tools/serve.py`) |
-| `tools/serve.py` | The study server: only reachable from this computer; loads and saves solution files and runs the checker |
+| `tools/serve.py` | The study server: only reachable from this computer; loads and saves your project's files and runs the checker |
 | `tools/check.py` | The checker (`check.ps1`, `check.cmd` and `check.sh` call it) |
-| `tools/gen_pNN.py` | Each checkpoint's test generator (used by `-Fresh`) |
-| `tools/build_book.py` | Builds `book/problem-book.html` from `problems/` and `starters/` (the page design is `tools/book_template.html`) |
-| `docs/authoring-guide.md` | How the checkpoints and their tests are made |
-| `_spoilers/` | Reference solutions. Don't open these until you've passed. |
+| `tools/run_py.py` | Runs an assignment's program with your package on the import path |
+| `tools/project.py` | Sets up your project and starts assignments (`setup`, `start NN`, `status`) |
+| `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
+| `tools/gen_pNN.py` | Each assignment's test generator (used by `-Fresh`) |
+| `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
+| `docs/authoring-guide.md` | How to write the assignments and their tests |
+| `_spoilers/` | The reference project. Don't open it until you've passed. |
 
-Needs: Python 3.11 or newer, `openssl` on your PATH, and the `cryptography` package
-(`pip install cryptography`) - used by the test generators and the study server, not by your own
-solutions.
+Needs: Python 3.11 or newer. For `-Fresh`, the test generators also need `openssl` on your PATH
+and the `cryptography` package (`pip install cryptography`); your own project needs neither.

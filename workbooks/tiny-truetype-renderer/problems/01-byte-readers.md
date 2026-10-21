@@ -14,6 +14,16 @@ You can pass using this page alone. For the background, read the blog's
 [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files).
 That section has one paragraph, and the author's code follows it, below a link card.
 
+## Source material
+
+- Microsoft, *OpenType specification*, [Data types](https://learn.microsoft.com/en-us/typography/opentype/spec/otff#data-types).
+  It lists every type and has the F2Dot14 table above.
+- Apple, *TrueType Reference Manual*, [Data types](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html)
+  (the table near the top of "Font files")
+- cppreference: [`std::basic_istream::get`](https://en.cppreference.com/w/cpp/io/basic_istream/get)
+  and [`seekg`](https://en.cppreference.com/w/cpp/io/basic_istream/seekg)
+- The blog: [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files)
+
 ## Where this fits
 
 A TrueType font stores every number big-endian. Your `ByteReader` is the first piece of your
@@ -210,16 +220,6 @@ writes `eof` and stops. It doesn't run the last `u8`, even though one byte remai
   table, jumps and skips, every way to run out of bytes), header fields of both fonts,
   F2Dot14 values from Noto Sans JP's `avar` table, and 4 random files with random
   operations.
-
-## Source material
-
-- Microsoft, *OpenType specification*, [Data types](https://learn.microsoft.com/en-us/typography/opentype/spec/otff#data-types).
-  It lists every type and has the F2Dot14 table above.
-- Apple, *TrueType Reference Manual*, [Data types](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html)
-  (the table near the top of "Font files")
-- cppreference: [`std::basic_istream::get`](https://en.cppreference.com/w/cpp/io/basic_istream/get)
-  and [`seekg`](https://en.cppreference.com/w/cpp/io/basic_istream/seekg)
-- The blog: [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files)
 
 ## Hints
 

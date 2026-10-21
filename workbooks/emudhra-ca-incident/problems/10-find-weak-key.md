@@ -1,6 +1,6 @@
 # 10 · Find a weak private key
 
-**Difficulty:** Medium · **Checkpoint** 10 of 16 · **Check:** `./check.sh 10`
+**Difficulty:** Medium · **Assignment** 10 of 16 · **Check:** `.\check 10`
 
 **Tags**
 - *Language:* big integers · modular arithmetic (`pow(a, -1, p)` in Python) · parsing hex · a counting loop
@@ -9,48 +9,51 @@
 
 ## Read in the blog first
 
-This page is complete on its own; the post tells the story behind it. Read eMudhra's
+You can pass using this page alone; the post tells the story behind it. Read eMudhra's
 [Update 3](https://emudhra.com/en/post/certificate-security-incident#:~:text=An%20Update%20on%20Our%20Global%20TLS%20Intermediate%20CA%20Incident),
 from "What happened" through "How it happened". It says the keys were "cryptographically weak"
-and that a researcher "was able to reverse-engineer" them. It doesn't say how that works. This
-checkpoint is how.
+and that a researcher "was able to reverse-engineer" them, without saying how. In this
+assignment you do it.
+
+## Source material
+
+- eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
+- BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/): the keys were P-384 private keys with values smaller than 256
+- The Register, [Indian certification authority eMudhra's private keys compromised](https://www.theregister.com/security/2026/10/20/indian-certification-authority-emudhras-private-keys-compromised-one-of-them-was-the-number-4/5304312): the recovered values 4, 56 and 115, found in under a second
+- SECG, [SEC 2: Recommended Elliptic Curve Domain Parameters](https://www.secg.org/sec2-v2.pdf), for `secp256r1` and `secp384r1`
+- NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for P-256 and P-384
 
 ## Where this fits
 
-Checkpoints 1 to 3 build the arithmetic that turns a private number into a public key. This
-checkpoint runs it the other way for keys that were generated badly. Checkpoint 11 uses a key
-you recover here to sign a certificate, and checkpoint 13 turns this search into a check that a
-certificate authority could run before it publishes a key.
+Your `ecc/modmath.py`, `ecc/curve.py` and `ecc/curves.py` from assignments 01 to 03 turn a
+private number into a public key. In `attack/weak_key.py` you run that arithmetic the other way,
+for keys whose private number is small. Assignment 11 signs a certificate with a key you recover
+here, and assignment 13's `pki/lint.py` calls your search to flag a weak key before a certificate
+authority publishes it.
 
 ## The problem
 
 Write a program that reads public keys and, for each one, finds out whether its private key is a
 small number.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p10_find_weak_key.py` is a comment and an empty
-program: reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p10_find_weak_key.py` over it, or pick Boilerplate in
-the book's editor. The boilerplate reads the input and writes the output; you fill in
-`find_private_key()`.
-
 ### How a public key relates to its private key
 
 An elliptic curve is a set of points (x, y) with arithmetic mod a prime `p`. Each curve comes
-with a fixed point `G`, the generator. A private key is a whole number `d`. The matching public
-key is the point
+with a fixed point `G`, the **generator**. A **private key** is a whole number `d`, and the
+matching **public key** is the point
 
 ```
 Q = d * G = G + G + ... + G        (d copies of G)
 ```
 
-Going from `d` to `Q` is cheap. Going from `Q` back to `d` is believed to be infeasible when
-`d` is a random number of 256 or 384 bits, because there are about 2^256 or 2^384 candidates.
-If `d` is small, there are few candidates, and an attacker can try them in order: compute `1*G`,
-`2*G`, `3*G` and so on until one equals `Q`. That is the whole attack, and this checkpoint asks
-you to carry it out.
+Going from `d` to `Q` is cheap. Cryptographers believe that going from `Q` back to `d` is
+infeasible when `d` is a random number of 256 or 384 bits, because there are about 2^256 or
+2^384 candidates. If `d` is small, there are few candidates, and an attacker can try them in
+order: compute `1*G`, `2*G`, `3*G` and so on until one equals `Q`. That is the whole attack, and
+in this assignment you carry it out.
 
-A tiny example, on the curve `y² = x³ + 2x + 2` mod 17 with `G = (5, 1)`:
+A tiny example, on the curve `y² = x³ + 2x + 2` mod 17 with `G = (5, 1)` (the `TOY` curve in your
+`ecc/curves.py`):
 
 | d | d·G |
 |---|---|
@@ -64,9 +67,11 @@ Given the public key `Q = (3, 1)`, you walk down the table and stop at the row w
 
 ### The arithmetic you need
 
-All curves here have the form `y² = x³ + a·x + b (mod p)` with `a = p - 3`. Every operation
-below is mod `p`. To divide by `k`, multiply by `k` to the power -1 mod `p` (the modular
-inverse; Python has `pow(k, -1, p)`).
+Your `add_points` from assignment 02 already does the steps below.
+
+Both curves in the tests have the form `y² = x³ + a·x + b (mod p)` with `a = p - 3`. Every
+operation below is mod `p`. To divide by `k`, multiply by `k` to the power -1 mod `p`, the
+**modular inverse** (your `modinv` from assignment 01; Python also has `pow(k, -1, p)`).
 
 To add two different points `P = (x1, y1)` and `R = (x2, y2)`:
 
@@ -76,7 +81,7 @@ x3    = slope² - x1 - x2
 y3    = slope * (x1 - x3) - y1
 ```
 
-To add a point to itself (`P + P`, called doubling), the slope comes from the curve's tangent:
+To add a point to itself (`P + P`, called **doubling**), the slope comes from the curve's tangent:
 
 ```
 slope = (3·x1² + a) / (2·y1)
@@ -84,13 +89,13 @@ x3    = slope² - 2·x1
 y3    = slope * (x1 - x3) - y1
 ```
 
-`d*G` is `(d-1)*G + G`, so stepping from one multiple to the next is one addition of `G`. The
-first step from `1*G` to `2*G` is a doubling, because both points are `G`. The ordinary formula
-would divide by `x2 - x1 = 0` there.
+`d*G` is `(d-1)*G + G`, so each step from one multiple to the next is one addition of `G`. The
+first step, from `1*G` to `2*G`, is a doubling, because both points are `G`. The ordinary
+formula would divide by `x2 - x1 = 0` there.
 
-The point `(x, p - y)` is the **negation** of `(x, y)`. It has the same x and the other y. If
+The point `(x, p - y)` is the **negation** of `(x, y)`: the same x and the other y. If
 `Q = d*G`, then `(x, p - y)` equals `(n - d)*G`, where `n` is the number of points in the
-group generated by `G` (about 2^256 or 2^384). Such a key is not small.
+group generated by `G` (about 2^256 or 2^384). That private key is far from small.
 
 ### The curves
 
@@ -102,8 +107,9 @@ group generated by `G` (about 2^256 or 2^384). Such a key is not small.
 | `Gx` | `6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296` | `aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7` |
 | `Gy` | `4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5` | `3617de4a96262c6f5d9e98bf9292dc29f8f41dbd289a147ce9da3113b5f0b8c00a60b1ce1d7e819d7a431d7c90ea0e5f` |
 
-All numbers are in hexadecimal. (`b` is only listed for completeness; the formulas above don't
-use it.)
+All numbers are in hexadecimal. The formulas above don't use `b`; the table lists it for
+completeness. Your `ecc/curves.py` from assignment 03 holds these curves as `P256` and `P384`,
+and `CURVES` finds them by the names the input uses.
 
 ### Input
 
@@ -113,7 +119,7 @@ The input file contains two kinds of lines:
 | Line | Meaning |
 |---|---|
 | `bound <N>` | The largest private key to try. It applies to every `key` line after it, until the next `bound` line. |
-| `key <label> <curve> <x> <y>` | A public key. `label` is a word with no spaces. `curve` is `P-256` or `P-384`. `x` and `y` are hexadecimal, lowercase, with no `0x` prefix. |
+| `key <label> <curve> <x> <y>` | A public key. `label` is a word with no spaces. `curve` is `P-256` or `P-384`. `x` and `y` are lowercase hexadecimal with no `0x` prefix. |
 
 Every key is a valid point on its curve.
 
@@ -126,23 +132,24 @@ weak <label> <d>      the key equals d*G for a whole number d from 1 to the boun
 none <label>          no d from 1 to the bound gives this key
 ```
 
-`<label>` is copied from the input unchanged. The checker ignores extra whitespace.
+Copy `<label>` from the input unchanged. The checker ignores extra whitespace.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** One output line per `key` line, in input order, in the format above. A later `bound`
   line replaces the earlier one for the keys after it.
-- **R2** A key whose `d` is between 1 and the bound is reported with that `d`. This includes
-  `d = 1` (the key is `G`), `d = 2` (the first step is a doubling), and `d` equal to the bound.
-- **R3** Only an exact match is weak. The bound is inclusive, so `d = bound + 1` is `none`. Both
-  coordinates must match, so a key with the right x and the other y (the negation of a weak key)
-  is `none`.
+- **R2** A key whose `d` lies between 1 and the bound gives `weak` with that `d`. This includes
+  `d = 1` (`Q` is `G`), `d = 2` (the first step is a doubling) and `d` equal to the bound.
+- **R3** Only an exact match is weak. The bound is inclusive, so `d = bound + 1` gives `none`.
+  Both coordinates must match, so a key with the right x and the other y (the negation of a weak
+  key) gives `none`.
 - **R4** Both curves work. P-256 and P-384 have their own `p` and `G`.
-- **R5** A bound of 1000 with several keys finishes inside the time limit, including keys that are
-  not weak, where every step up to the bound runs.
+- **R5** A bound of 1000 with several keys finishes inside the time limit, including keys that
+  are not weak, for which every step up to the bound runs.
 
 ## Examples
 
@@ -155,8 +162,8 @@ input:   bound 255
 output:  weak two 2
 ```
 
-`1*G` is `G` itself, which has x = `6b17d1f2…`. Your loop compares it with the key (no match),
-then adds `G` to get `2*G`. That addition is `G + G`, so use the doubling formula. The result
+`1*G` is `G` itself, with x = `6b17d1f2…`. Your loop compares it with the key (no match), then
+adds `G` to get `2*G`. That addition is `G + G`, so it takes the doubling formula. The result
 has x = `7cf27b18…`, which matches the key, so `d = 2`.
 
 ### Example 2: the same x with the other y (test `10-R3-neg-and-plain`)
@@ -184,8 +191,8 @@ output:  weak intermediate-1 4
 ```
 
 This is the public key for private key 4 on P-384, made for this workbook. Press reports say one
-of the eight eMudhra intermediate keys had exactly this private key. Your loop reaches it on the
-fourth step.
+of the eight eMudhra intermediate keys had this private key. Your loop reaches it on the fourth
+step.
 
 ## Constraints
 
@@ -200,38 +207,31 @@ fourth step.
   make every step run, and the eight small values reported for the incident mixed with random
   keys. Part of the set is random and changes with `-Fresh`.
 
-## Source material
-
-- eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
-- BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/): the keys were P-384 private keys with values smaller than 256
-- The Register, [Indian certification authority eMudhra's private keys compromised](https://www.theregister.com/security/2026/10/20/indian-certification-authority-emudhras-private-keys-compromised-one-of-them-was-the-number-4/5304312): the recovered values 4, 56 and 115, found in under a second
-- SECG, [SEC 2: Recommended Elliptic Curve Domain Parameters](https://www.secg.org/sec2-v2.pdf), for `secp256r1` and `secp384r1`
-- NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for P-256 and P-384
-
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-You don't need to solve any hard problem. A public key is `d` copies of `G` added together, so
-if you are told `d` is at most the bound, you can try `d = 1, 2, 3, ...` and stop when the point
-matches. The work is in writing the point addition.
+There is no hard problem to solve. A public key is `d` copies of `G` added together, so when `d`
+is at most the bound you can try `d = 1, 2, 3, ...` and stop when the point matches. Your
+`add_points` from assignment 02 does the point arithmetic.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Keep one variable for the current point, starting at `G` (which is `1*G`). In each step, compare
-it with the key; if it matches, you know `d`. Otherwise add `G` to it and move to the next `d`.
-Adding `G` once per step is much cheaper than computing every `d*G` from scratch. Write one
-function for "add two points" that picks the doubling formula when both points are the same.
+it with the key; if it matches, you know `d`. Otherwise add `G` to it and move on to the next
+`d`. One addition per step costs far less than computing each `d*G` from scratch with
+`scalar_multiply`. Your `add_points` picks the doubling formula when both points are the same.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- `G + G` needs the doubling formula. The ordinary formula divides by zero.
+- `G + G` needs the doubling formula; the ordinary formula divides by zero. An `add_points` that
+  passed assignment 02 handles this.
 - Compare both x and y. The negation of a key has the same x.
-- The bound is inclusive: `d = bound` is found, `d = bound + 1` is not.
+- The bound is inclusive: the search finds `d = bound`, and not `d = bound + 1`.
 - Count from 1. `d = 0` is not a key.
-- Each key line uses its own curve's `p` and `G`. Keep both in a table.
+- Each `key` line uses its own curve's `p` and `G`, which `CURVES` finds by the curve's name.
 - A `bound` line applies to the `key` lines after it, and a later one replaces it.
 - Coordinates are hex text. Parse them as base 16, and print `d` in decimal.
 </details>
@@ -258,32 +258,33 @@ find_private_key(curve, Q, bound):
 ## Checking your solution
 
 ```
-./check.sh 10                         run every test
-./check.sh 10 -Case 10-R2-d2-p256     one test, showing its full input, expected output and your output
-./check.sh 10 -Fresh                  a new set of tests (new random seed), to confirm on data you haven't seen
-./check.sh 10 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
+.\check 10                         run every test
+.\check 10 -Case 10-R2-d2-p256     one test, showing its full input, expected output and your output
+.\check 10 -Fresh                  a new set of tests (new random seed), to confirm on data you haven't seen
+.\check 10 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
 A failing test looks like this:
 
 ```
-  R3  Only an exact match is weak: the bound is inclusive (d = bound + ... .    0 / 7   FAILED
+  R3  Only an exact match is weak: the bound is inclusive (d = bound + ... .    4 / 7   FAILED
       x 10-R3-neg-p256  P-256: keys with the sign of y flipped, for d = 1, 4, 56 and 255
           line 1: expected `none n1`, got `weak n1 1`
           likely cause: R3 - Only an exact match is weak: the bound is inclusive (d = bound + 1 is `none`), and both coordinates must match, so the negated key (x, p - y) is `none`
           expected values from: cryptography 41.0.7 (OpenSSL): the public key is computed from the chosen private value d
-          reproduce: python3 -P tools/run_py.py solutions 10 build/cases/10/10-R3-neg-p256.in build/cases/10/10-R3-neg-p256.out
+          reproduce: py -P tools/run_py.py solutions 10 build/cases/10/10-R3-neg-p256.in build/cases/10/10-R3-neg-p256.out
 ```
 
 ## After you pass: compare with the post
 
 The post contains no code, so there is no author's version to compare. It describes the outcome:
-a researcher reverse-engineered the weak keys, reportedly with AI-assisted tooling. What you wrote
-is the plain version of that: a loop of at most 255 point additions.
+a researcher reverse-engineered the weak keys, reportedly with AI-assisted tooling. You wrote the
+plain version of that: a loop of at most 255 point additions. The reference
+`attack/weak_key.py` is the same loop, built on `add_points` from `ecc/curve.py`.
 
 **Something to look for:** the post says only that the keys were "cryptographically weak". The
 size of the values comes from press reports, which say the keys were P-384 private keys below
 256, and The Register lists the recovered values 4, 56, 115, 66, 155, 156, 230 and 237. Those
 reports don't say which value belongs to which of the eight certificates, so the labels in the
 E2E tests are only numbers. eMudhra says it hasn't confirmed the root cause, and it says none of
-the eight issued a certificate; this checkpoint says nothing about either.
+the eight issued a certificate; this assignment says nothing about either.

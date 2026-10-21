@@ -14,6 +14,14 @@ You can pass using this page alone. For the background, read the blog's
 section up to the paragraph that starts "In the implementation, simply loop". The author's code
 follows that paragraph.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, ['cmap' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cmap.html)
+  (the header, the subtable list and "Format 12")
+- Microsoft, *OpenType specification*, [cmap: Character to Glyph Index Mapping Table](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap)
+  (platform and encoding IDs, "Format 12: Segmented coverage", "Format 13: Many-to-one range mappings")
+- The blog: [cmap table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=cmap%20table)
+
 ## Where this fits
 
 A font stores glyphs, numbered 0, 1, 2, ..., and its `cmap` table maps each character's code
@@ -238,14 +246,6 @@ give wrong answers, so your program has to check the format.
   codes, gaps, and four kinds of unsupported `cmap`: no (0, 4) record at all, a (0, 4) record
   pointing to a format 4 or a format 13 subtable, and a format 12 subtable listed only under
   (3, 10)), and random character maps.
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, ['cmap' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cmap.html)
-  (the header, the subtable list and "Format 12")
-- Microsoft, *OpenType specification*, [cmap: Character to Glyph Index Mapping Table](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap)
-  (platform and encoding IDs, "Format 12: Segmented coverage", "Format 13: Many-to-one range mappings")
-- The blog: [cmap table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=cmap%20table)
 
 ## Hints
 

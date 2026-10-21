@@ -1,7 +1,7 @@
-"""Test cases for checkpoint 07 (hash the public key / SPKI).
+"""Test cases for assignment 07 (hash the public key / SPKI).
 
 Every certificate is built with `cryptography`'s CertificateBuilder. The expected hash comes
-from the exact OpenSSL pipeline this checkpoint's output has to match bit for bit:
+from the exact OpenSSL pipeline this assignment's output has to match bit for bit:
 
     openssl x509 -pubkey -noout -inform DER -in cert.der
         | openssl pkey -pubin -outform DER

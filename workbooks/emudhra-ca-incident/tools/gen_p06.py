@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 06 (read a certificate).
+"""Test cases for assignment 06 (read a certificate).
 
 Every certificate is built with `cryptography`'s CertificateBuilder from values this file
 chooses itself (the common name strings, the validity datetimes, the key pair, whether it's a
@@ -208,7 +208,7 @@ def main():
     items = [random_cert(i, args.seed) for i in range(5)]
     add(f"06-E2E-random-mix-s{args.seed}", "E2E", f"five random certificates mixing curves, CA status and path lengths (seed {args.seed})", items)
 
-    # E2E - a small realistic set: root, intermediate, leaf (shape of what checkpoint 09 chains)
+    # E2E - a small realistic set: root, intermediate, leaf (shape of what assignment 09 chains)
     add("06-E2E-chain-shaped", "E2E", "a root (CA, no pathlen), an intermediate (CA, pathlen 0) and a leaf (not a CA), as a real chain would look", [
         ("root", dict(subject_cn="Workbook-Root", issuer_cn="Workbook-Root", curve="P-384",
                        not_before=before, not_after=after, ca=True)),

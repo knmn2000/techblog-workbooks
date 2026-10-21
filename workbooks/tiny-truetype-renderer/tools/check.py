@@ -250,10 +250,20 @@ def likely_causes(where: list, explain: dict) -> list:
 
 # ---- Running programs -------------------------------------------------------------
 
+def typed_here(command: str) -> str:
+    """A command as you'd type it on this computer, for the "reproduce" lines: Windows runs
+    Python as `py` (to_args runs either with the checker's own Python)."""
+    if os.name == "nt" and re.match(r"python3?\s", command):
+        return "py " + command.split(None, 1)[1]
+    return command
+
+
 def to_args(command: str) -> list:
     args = shlex.split(command, posix=(os.name != "nt"))
     args = [a[1:-1] if len(a) > 1 and a[0] == a[-1] == '"' else a for a in args]
-    if args and ("/" in args[0] or "\\" in args[0]):
+    if args and args[0].lower() in ("python", "python3", "py"):
+        args[0] = sys.executable  # the Python running the checker, whatever it's called on this computer
+    elif args and ("/" in args[0] or "\\" in args[0]):
         args[0] = str((ROOT / args[0]).resolve())
     return args
 
@@ -297,7 +307,7 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
     out_path.unlink(missing_ok=True)
     rel_in = in_path.relative_to(ROOT).as_posix()
     rel_out = out_path.relative_to(ROOT).as_posix()
-    command = run_template.format(input=rel_in, output=rel_out)
+    command = typed_here(run_template.format(input=rel_in, output=rel_out))
     try:
         proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired:

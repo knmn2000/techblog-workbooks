@@ -14,6 +14,12 @@ You can pass using this page alone. For the background, read the blog's
 section up to the transformation matrix. Stop at the paragraph that starts "Implementation.
 As compound glyphs are nested", before the author's code.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, ['glyf' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html): compound glyph flags and the transformation
+- Microsoft, *OpenType specification*, [glyf: composite glyph description](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf#composite-glyph-description)
+- The blog: [Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph)
+
 ## Where this fits
 
 Your `GlyphParser` from assignment 07 decodes simple glyphs and only reports compound ones. A
@@ -210,12 +216,6 @@ output:  glyph 8 components 3
 - There are 36 tests: hand-made glyphs for each rule in a small test font, accented letters from
   JetBrains Mono Bold such as `é` and `Ü`, and 6 random compound glyphs (new ones with
   `-Fresh`).
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, ['glyf' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html): compound glyph flags and the transformation
-- Microsoft, *OpenType specification*, [glyf: composite glyph description](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf#composite-glyph-description)
-- The blog: [Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph)
 
 ## Hints
 

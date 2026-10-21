@@ -4,9 +4,9 @@
     py -P tools/serve.py [--port 8787] [--no-browser]
 
 Starts a small web server that only this computer can reach (127.0.0.1), does the first-time
-build setup if it's needed, and opens the problem book. The page can load and save your
-solution files and run the checker on them, and nothing else. Leave the window open while you
-work; close it or press Ctrl+C to stop.
+build setup if it's needed, and opens the problem book. The page can load and save the files of
+your project (solutions/ by default), start an assignment, and run the checker, and nothing else.
+Leave the window open while you work; close it or press Ctrl+C to stop.
 """
 
 import argparse
@@ -27,6 +27,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_book  # noqa: E402
+import project  # noqa: E402
 from check import to_args  # noqa: E402
 from imageio import ImageError, png_bytes, read_image  # noqa: E402
 
@@ -35,14 +36,10 @@ CHECK = ROOT / "tools" / "check.py"
 IMAGE_ROOTS = ("build/cases/", "build/fresh/", "tests/")  # the only folders /files/ will read from
 MAX_BODY = 4 * 1024 * 1024
 CASE_ID = re.compile(r"^[\w.+-]+$")
-# Files the learner may create and edit in solutions/common/ from the page.
-SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go",
-               ".java", ".kt", ".cs", ".md", ".txt", ".json"}
-# How a checkpoint file pulls in shared code, per language: C/C++ includes, Python imports, JS imports.
-USES = [re.compile(r'^\s*#\s*include\s+"(common/[^"]+)"', re.M),
-        re.compile(r"^\s*from\s+(common(?:\.\w+)+)\s+import", re.M),
-        re.compile(r"^\s*import\s+(common(?:\.\w+)+)", re.M),
-        re.compile(r"""(?:require\(|from\s+)['"]\./(common/[^'"]+)['"]""", re.M)]
+# Files of the project the page may create and edit.
+SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go", ".lua",
+               ".java", ".kt", ".cs", ".md", ".txt", ".json", ".toml", ".cmake"}
+SKIP_DIRS = {"build", ".git", "node_modules", "target", "__pycache__", ".cache"}  # never listed or served
 
 
 class Workbook:
@@ -52,44 +49,35 @@ class Workbook:
         self.token = secrets.token_urlsafe(24)
         self.lock = threading.Lock()  # one checker run at a time: they share the build folder
         self.setup_error = None
-        self.solutions = {(ROOT / meta["solution"]).resolve(): cid for cid, meta in self.config["checkpoints"].items()}
-
-    def solution(self, cid: str):
-        meta = self.config["checkpoints"].get(cid)
-        return ROOT / meta["solution"] if meta else None
+        self.home = project.home(self.config).resolve()
 
     def learner_file(self, rel: str):
-        """A path the page may read or write: a checkpoint's solution file, or a source file
-        anywhere under solutions/common/. Everything else is refused."""
+        """A path the page may read or write: a source or text file inside the project, outside its
+        build folders. Everything else is refused."""
         target = (ROOT / rel.replace("\\", "/").lstrip("/")).resolve()
-        common = (ROOT / "solutions" / "common").resolve()
-        if target in self.solutions:
-            return target
-        if common in target.parents and target.suffix.lower() in SOURCE_EXTS:
+        if self.home not in target.parents:
+            return None
+        inside = target.relative_to(self.home).parts
+        if any(part in SKIP_DIRS or part.startswith(".") for part in inside[:-1]):
+            return None
+        if target.suffix.lower() in SOURCE_EXTS or target.name in ("CMakeLists.txt", ".gitignore"):
             return target
         return None
 
     def files(self) -> list:
-        """The learner's project: every checkpoint file (with the shared files it uses), then
-        everything in solutions/common/."""
-        def lines(p):
-            return p.read_text(encoding="utf-8", errors="replace").count("\n") + 1 if p.exists() else 0
-
+        """Every file of the project, with the assignment it belongs to and whether it's still blank."""
         out = []
-        for path, cid in sorted(self.solutions.items(), key=lambda kv: kv[1]):
-            text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
-            uses = []
-            for pattern in USES:
-                for name in pattern.findall(text):
-                    rel = name if "/" in name else name.replace(".", "/") + ".py"
-                    uses.append("solutions/" + rel)
-            out.append({"path": path.relative_to(ROOT.resolve()).as_posix(), "checkpoint": cid,
-                        "lines": lines(path), "uses": sorted(set(uses))})
-        common = ROOT / "solutions" / "common"
-        if common.is_dir():
-            for p in sorted(common.rglob("*")):
-                if p.is_file() and p.suffix.lower() in SOURCE_EXTS:
-                    out.append({"path": p.relative_to(ROOT).as_posix(), "checkpoint": None, "lines": lines(p)})
+        if not self.home.is_dir():
+            return out
+        for p in sorted(self.home.rglob("*")):
+            parts = p.relative_to(self.home).parts
+            if not p.is_file() or any(part in SKIP_DIRS for part in parts[:-1]):
+                continue
+            path = "/".join(parts)
+            text = p.read_text(encoding="utf-8", errors="replace") if p.stat().st_size < 1_000_000 else ""
+            out.append({"path": p.relative_to(ROOT.resolve()).as_posix(), "checkpoint": project.owner(self.config, path),
+                        "state": "blank" if project.still_blank(self.config, path) else "written",
+                        "lines": text.count("\n") + 1 if text else 0})
         return out
 
 
@@ -107,13 +95,14 @@ def missing_tools(config: dict) -> list:
 
 
 def first_time_setup(wb: Workbook):
-    """Runs the workbook's setup step once (e.g. CMake configure). Returns a problem, or None."""
+    """Runs the workbook's setup step once (e.g. CMake configure). Returns a problem, or None.
+    Before the project exists there's nothing to set up yet: the book offers to make it."""
     missing = missing_tools(wb.config)
     if missing:
-        return (f"Your code can't be built yet: {', '.join(missing)} isn't installed (or isn't on PATH). "
+        return (f"The book can't build your code yet: {', '.join(missing)} isn't installed (or isn't on PATH). "
                 "Ask Claude to set this workbook up, or see the README's Needs line.")
     setup = wb.config.get("setup")
-    if not setup or (ROOT / setup["creates"]).exists():
+    if not setup or not project.exists(wb.config) or (ROOT / setup["creates"]).exists():
         return None
     print("First run: preparing the build. This takes a few seconds...")
     proc = subprocess.run(to_args(setup["command"]), cwd=ROOT, capture_output=True, text=True)
@@ -190,13 +179,9 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(403, {"error": "forbidden"})
         if path == "/api/status":
             return self.reply(200, {"ready": self.server.wb.setup_error is None, "problem": self.server.wb.setup_error})
-        if m := re.match(r"^/api/solution/(\w+)$", path):
-            target = self.server.wb.solution(m.group(1))
-            if target is None:
-                return self.reply(404, {"error": "no such checkpoint"})
-            return self.reply(200, file_state(target))
         if path == "/api/files":
-            return self.reply(200, {"files": self.server.wb.files()})
+            wb = self.server.wb
+            return self.reply(200, {"exists": project.exists(wb.config), "files": wb.files()})
         if path == "/api/file":
             target = self.server.wb.learner_file(query.get("path", [""])[0])
             if target is None:
@@ -212,11 +197,7 @@ class Handler(BaseHTTPRequestHandler):
             body = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
-        if path == "/api/file":
-            target = self.server.wb.learner_file(str(body.get("path", "")))
-        else:
-            m = re.match(r"^/api/solution/(\w+)$", path)
-            target = self.server.wb.solution(m.group(1)) if m else None
+        target = self.server.wb.learner_file(str(body.get("path", ""))) if path == "/api/file" else None
         if target is None:
             return self.reply(404, {"error": "not a file you can save here"})
         text, base = body.get("text"), body.get("base")
@@ -235,13 +216,35 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         if not self.allowed():
             return self.reply(403, {"error": "forbidden"})
-        m = re.match(r"^/api/check/(\w+)$", path)
-        if not m or m.group(1) not in self.server.wb.config["checkpoints"]:
-            return self.reply(404, {"error": "no such checkpoint"})
+        if path == "/api/exit":  # the book's Exit button: answer, then stop serving
+            self.reply(200, {"bye": True})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return None
+        wb = self.server.wb
         try:
             options = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
+        if path == "/api/setup":  # the book's "Set up the project" button
+            created = project.setup(wb.config)
+            wb.setup_error = first_time_setup(wb)
+            return self.reply(200, {"created": created, "problem": wb.setup_error})
+        if path in ("/api/start", "/api/starter"):
+            cid = str(options.get("checkpoint", ""))
+            if cid not in wb.config["checkpoints"]:
+                return self.reply(404, {"error": "no such assignment"})
+            if not project.exists(wb.config):
+                return self.reply(409, {"error": "no-project"})
+            kind = str(options.get("kind", ""))
+            if path == "/api/start":  # opening an assignment creates its files (never over existing ones)
+                return self.reply(200, {"created": project.start(wb.config, cid, kind if kind in ("blank", "boilerplate") else "")})
+            if kind not in ("blank", "boilerplate"):
+                return self.reply(400, {"error": "kind must be blank or boilerplate"})
+            written = project.use_starter(wb.config, cid, kind)
+            return self.reply(200, {"files": [file_state(project.home(wb.config) / p) for p in written]})
+        m = re.match(r"^/api/check/(\w+)$", path)
+        if not m or m.group(1) not in wb.config["checkpoints"]:
+            return self.reply(404, {"error": "no such assignment"})
         args = [sys.executable, "-P", str(CHECK), m.group(1), "-Json"]
         if options.get("case"):
             if not CASE_ID.match(str(options["case"])):
@@ -343,6 +346,7 @@ def main() -> int:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+    print(f"{wb.title} has stopped. See you again!")
     return 0
 
 

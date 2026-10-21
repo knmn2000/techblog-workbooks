@@ -1,4 +1,4 @@
-"""Builds your program for one checkpoint, runs it on every test case, and
+"""Builds your program for one assignment, runs it on every test case, and
 compares what it writes with the expected output.
 
     .\\check 07                        check your solution
@@ -10,8 +10,10 @@ compares what it writes with the expected output.
                                        are replaced with file paths
     .\\check 07 -Json                  print the result as JSON (used by .\\study)
 
-Your program is started from the workbook folder as `<run> <input-file> <output-file>`.
-How it is built and run is set in workbook.json, so any language or library works.
+Each assignment has a program in your project (e.g. solutions/assignments/assignment_07_simple_glyph.cpp)
+that reads a test input, calls your code and writes the output. It is built with your project and
+started from the workbook folder as `<run> <input-file> <output-file>`; workbook.json says how.
+Checking an assignment you haven't started creates its files first (see tools/project.py).
 For checkpoints whose answer is a picture, the output file name ends in .png and your
 program writes a PNG (or binary PPM) there.
 """
@@ -32,6 +34,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from imageio import ImageError, compare_images  # noqa: E402
+import langs  # noqa: E402
+import project  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 NOT_IMPLEMENTED_EXIT = 99
@@ -246,10 +250,20 @@ def likely_causes(where: list, explain: dict) -> list:
 
 # ---- Running programs -------------------------------------------------------------
 
+def typed_here(command: str) -> str:
+    """A command as you'd type it on this computer, for the "reproduce" lines: Windows runs
+    Python as `py` (to_args runs either with the checker's own Python)."""
+    if os.name == "nt" and re.match(r"python3?\s", command):
+        return "py " + command.split(None, 1)[1]
+    return command
+
+
 def to_args(command: str) -> list:
     args = shlex.split(command, posix=(os.name != "nt"))
     args = [a[1:-1] if len(a) > 1 and a[0] == a[-1] == '"' else a for a in args]
-    if args and ("/" in args[0] or "\\" in args[0]):
+    if args and args[0].lower() in ("python", "python3", "py"):
+        args[0] = sys.executable  # the Python running the checker, whatever it's called on this computer
+    elif args and ("/" in args[0] or "\\" in args[0]):
         args[0] = str((ROOT / args[0]).resolve())
     return args
 
@@ -293,13 +307,13 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
     out_path.unlink(missing_ok=True)
     rel_in = in_path.relative_to(ROOT).as_posix()
     rel_out = out_path.relative_to(ROOT).as_posix()
-    command = run_template.format(input=rel_in, output=rel_out)
+    command = typed_here(run_template.format(input=rel_in, output=rel_out))
     try:
         proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired:
         return Result(case, "timeout", f"Time Limit Exceeded (over {timeout} s)", reproduce=command)
     except FileNotFoundError:
-        return Result(case, "error", f"could not start `{command}` - is it built?", reproduce=command)
+        return Result(case, "error", f"could not start `{command}`; check that it built", reproduce=command)
     actual = []
     if how.mode != "image" and out_path.exists():
         actual = out_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -313,7 +327,7 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
                       + (f": {clip(detail)}" if detail else ""), actual, command)
     if not out_path.exists():
         return Result(case, "no-output", f"no output file: your program finished without writing {rel_out} "
-                      "(the second argument it was given)", reproduce=command)
+                      "(the second argument the checker passed it)", reproduce=command)
     if how.mode == "image":
         diff_path = work / f"{case.id}.diff.png"
         diff_path.unlink(missing_ok=True)
@@ -354,56 +368,39 @@ def load_disputes() -> list:
 
 def dispute(checkpoint: str, case_file: CaseFile, test_id: str, reason: str) -> int:
     if test_id not in {c.id for c in case_file.cases}:
-        print(f"There is no test {test_id} in checkpoint {checkpoint}.")
+        print(f"There is no test {test_id} in assignment {checkpoint}.")
         return 1
     disputes = load_disputes()
     disputes.append({"checkpoint": checkpoint, "test": test_id, "reason": reason,
                      "opened": date.today().isoformat(), "status": "open"})
     (ROOT / "disputes.json").write_text(json.dumps(disputes, indent=2) + "\n", encoding="utf-8")
-    print(f"Set aside {test_id}: it won't count until the dispute is closed.\n"
-          f"Ask Claude to \"review my disputes\" to have it checked and either fixed or explained.")
+    print(f"Set aside {test_id}: it won't count while the dispute is open.\n"
+          f"Ask Claude to \"review my disputes\": Claude checks the test, then fixes it or shows you why it's right.")
     return 0
 
 
 VERIFIED = ROOT / "_spoilers" / "verified.json"
-LOCAL_IMPORT = re.compile(r"""^\s*#\s*include\s+"([^"]+)"|require\(\s*['"](\.[^'"]+)['"]\s*\)|from\s+['"](\.[^'"]+)['"]""", re.M)
 
 
-def reference_sources(meta: dict) -> list:
-    """The reference solution's own source files: its main file, then every file under _spoilers/
-    it includes (recursively). Headers from include/ or third_party/ are the workbook's, not listed."""
-    main_file = ROOT / meta.get("referenceSource", f"_spoilers/reference/{Path(meta['solution']).name}")
-    found, queue = [], [main_file]
-    spoilers = (ROOT / "_spoilers").resolve()
-    while queue:
-        path = queue.pop(0).resolve()
-        if path in found or not path.is_file() or spoilers not in path.parents:
-            continue
-        found.append(path)
-        text = path.read_text(encoding="utf-8", errors="replace")
-        for m in LOCAL_IMPORT.finditer(text):
-            name = next(g for g in m.groups() if g)
-            candidates = [path.parent / name] + ([path.parent / (name + ext) for ext in (".js", ".ts", ".py")]
-                                                 if not Path(name).suffix else [])
-            queue += [c for c in candidates if c.is_file()]
-        if path.suffix == ".py":
-            for m in re.finditer(r"^\s*(?:from|import)\s+([\w.]+)", text, re.M):
-                queue.append(path.parent / (m.group(1).replace(".", "/") + ".py"))
-    return found
+def reference_sources(config: dict, checkpoint: str) -> dict:
+    """The reference program's own source files as they stand after this checkpoint: its entry
+    program, then every project file it includes (recursively, with the .cpp next to each header),
+    as {path in the workbook: text}. Third-party headers aren't listed."""
+    files = project.reference_as_of(config, checkpoint)
+    base = config["project"]["reference"]
+    return {f"{base}/{p}": files[p] for p in project.closure(files, project.entry(config, checkpoint))}
 
 
-def fingerprint(paths: list) -> dict:
+def fingerprint(sources: dict) -> dict:
     """sha256 of each file's text (line endings ignored), keyed by its path in the workbook."""
     import hashlib
-    return {p.relative_to(ROOT).as_posix():
-            hashlib.sha256(p.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").encode()).hexdigest()
-            for p in paths}
+    return {path: hashlib.sha256(text.replace("\r\n", "\n").encode()).hexdigest() for path, text in sources.items()}
 
 
-def record_verified(checkpoint: str, meta: dict, passed: int, total: int):
+def record_verified(checkpoint: str, config: dict, passed: int, total: int):
     """Remembers that the reference, exactly as it is now, passes every committed test.
     build_book.py shows the reference in the Editorial only with this proof attached."""
-    sources = reference_sources(meta)
+    sources = reference_sources(config, checkpoint)
     if not sources:
         return
     data = json.loads(VERIFIED.read_text(encoding="utf-8")) if VERIFIED.exists() else {}
@@ -412,27 +409,48 @@ def record_verified(checkpoint: str, meta: dict, passed: int, total: int):
     VERIFIED.write_text(json.dumps(dict(sorted(data.items())), indent=2) + "\n", encoding="utf-8")
 
 
-def still_blank(solution: str) -> bool:
-    """True while the learner's file is unchanged from starters/blank/ (ignoring line endings)."""
-    blank, mine = ROOT / "starters" / "blank" / Path(solution).name, ROOT / solution
-    if not blank.exists() or not mine.exists():
-        return False
-    text = lambda p: [line.rstrip() for line in p.read_text(encoding="utf-8", errors="replace").splitlines()]
-    return text(blank) == text(mine)
+def not_started(checkpoint: str, meta: dict, config: dict):
+    """The exit code and message when the learner hasn't started this checkpoint yet (creating
+    its files if they're missing), or None when there's something to check."""
+    folder = config["project"]["dir"]
+    if not project.exists(config):
+        print(f"There's no project yet: {folder}/ doesn't exist.\n"
+              "Ask Claude to set up your workbook, or run:  py -P tools/project.py setup")
+        return finish(2, verdict="no-project")
+    created = project.start(config, checkpoint)
+    entry = project.entry(config, checkpoint)
+    if created:
+        listed = "\n  ".join(f"{folder}/{p}" for p in created)
+        print(f"Not started yet. Created this assignment's files:\n  {listed}\n"
+              f"The problem is in {meta['problem']}. Run .\\check {checkpoint} again when you've written them.")
+        return finish(2, verdict="not-started", empty=False, created=[f"{folder}/{p}" for p in created])
+    if not (ROOT / meta["solution"]).read_text(encoding="utf-8", errors="replace").strip():
+        print(f"Not started yet: {meta['solution']} is empty.\n"
+              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.\n"
+              f"To start again from the blank starter, copy starters/blank/{entry} over it.")
+        return finish(2, verdict="not-started", empty=True)
+    if project.still_blank(config, entry):
+        print(f"Not started yet: {meta['solution']} is still the blank starter.\n"
+              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.")
+        if project.starter("boilerplate", entry).exists():
+            print(f"For ready-made input/output code instead, copy the files under starters/boilerplate/ "
+                  f"for this assignment into {folder}/ (the book's Boilerplate button does this).")
+        return finish(2, verdict="not-started", empty=False)
+    return None
 
 
 def main(argv: list) -> int:
     args = [a.lower() if a.startswith("-") else a for a in argv]
     if not args or args[0].startswith("-"):
         print(__doc__)
-        return finish(2, verdict="error", message="no checkpoint number given")
+        return finish(2, verdict="error", message="no assignment number given")
     checkpoint = f"{int(args[0]):02d}"
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
     meta = config["checkpoints"].get(checkpoint)
     REPORT.update(checkpoint=checkpoint, title=meta["title"] if meta else "")
     if meta is None:
-        print(f"Checkpoint {checkpoint} isn't in workbook.json yet.")
-        return finish(2, verdict="error", message=f"checkpoint {checkpoint} isn't in workbook.json")
+        print(f"Assignment {checkpoint} isn't in workbook.json yet.")
+        return finish(2, verdict="error", message=f"assignment {checkpoint} isn't in workbook.json")
 
     def option(name, count=1):
         if name not in args:
@@ -442,15 +460,18 @@ def main(argv: list) -> int:
         return values or [""]
 
     def build(step_config) -> bool:
-        setup = config.get("setup")
-        if setup and not (ROOT / setup["creates"]).exists() and not run_step("Setup", setup["command"]):
+        if step_config.get("snapshot"):  # the reference as it stands after this checkpoint
+            project.write_tree(project.reference_as_of(config, checkpoint), ROOT / step_config["snapshot"])
+        setup = step_config.get("setup", config.get("setup"))
+        setup_command = setup["command"].replace("{root}", ROOT.as_posix()) if setup else ""
+        if setup and not (ROOT / setup["creates"]).exists() and not run_step("Setup", setup_command):
             return False
         command = step_config.get("build", "").format(id=checkpoint)
         if not command:
             return True
         proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True)
         if proc.returncode != 0 and setup and "unknown target" in (proc.stdout + proc.stderr):
-            run_step("Setup", setup["command"])  # a checkpoint was added since the last setup
+            run_step("Setup", setup_command)  # a checkpoint was added since the last setup
         return run_step("Build", command)
 
     cases_path = ROOT / meta["cases"]
@@ -482,36 +503,53 @@ def main(argv: list) -> int:
     run_template = custom[0] if custom else steps["run"]
     run_template = run_template.replace("{id}", checkpoint)
 
-    solution = ROOT / meta["solution"]
-    if not use_ref and not custom and solution.exists() and not solution.read_text(encoding="utf-8", errors="replace").strip():
-        print(f"Not started yet: {meta['solution']} is empty.\n"
-              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.\n"
-              f"To start again from the blank starter, copy starters/blank/{solution.name} over it.")
-        return finish(2, verdict="not-started", empty=True)
-
-    if not use_ref and not custom and still_blank(meta["solution"]):
-        boilerplate = f"starters/boilerplate/{Path(meta['solution']).name}"
-        print(f"Not started yet: {meta['solution']} is still the blank starter.\n"
-              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.")
-        if (ROOT / boilerplate).exists():
-            print(f"To start from ready-made input/output code instead, copy {boilerplate} over it.")
-        return finish(2, verdict="not-started", empty=False)
+    REPORT["language"] = config["project"]["language"]
+    if not use_ref and not custom and (code := not_started(checkpoint, meta, config)) is not None:
+        return code
 
     if not custom and not build(steps):
-        output = getattr(run_step, "output", "")
-        no_main = bool(re.search(r"undefined reference to `(WinMain|main)'|entry point must be defined|_main.*referenced from", output))
-        if no_main:
-            print("Your program has no main() function. The checker runs it as a program, so it needs one.")
-        print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
-        return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=compiler_errors(output))
+        return compile_error(checkpoint, getattr(run_step, "output", ""), config, use_ref)
+    return run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_template,
+                          "reference solution" if use_ref else ("custom command" if custom else meta["solution"]),
+                          use_ref and not custom)
 
+
+NO_MAIN = re.compile(r"undefined reference to `(WinMain|main)'|entry point must be defined|_main.*referenced from"
+                     r"|function main is undeclared|`main` function not found")
+
+
+def compile_error(checkpoint: str, output: str, config: dict, use_ref: bool = False) -> int:
+    no_main = bool(NO_MAIN.search(output))
+    if no_main:
+        print("Your program has no main() function. The checker runs it as a program, so it needs one.")
+    errors = compiler_errors(output)
+    # The whole project is built together, so the error may be in another checkpoint's file.
+    blame = None
+    folder = config["project"]["dir"] + "/"
+    mine = set(project.touched_files(config, checkpoint))
+    for e in errors:
+        path = e["file"][len(folder):] if e["file"].startswith(folder) else None
+        if e["kind"] == "error" and path and path not in mine:
+            blame = {"file": e["file"], "checkpoint": project.owner(config, path)}
+            break
+    if blame and not use_ref:
+        whose = f"assignment {blame['checkpoint']}'s file" if blame["checkpoint"] else "a file in your project"
+        print(f"The build stopped in {blame['file']}, which is {whose}, not one of this assignment's.\n"
+              "The build compiles your whole project at once, so fix that file first.")
+    print(f"Compile Error: fix the errors above and run .\\check {checkpoint} again.")
+    return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=errors, blame=blame)
+
+
+def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_template, who, verify) -> int:
+    """Runs every case and prints the verdict (text, and REPORT for -Json)."""
+    fresh = option("-fresh")
     only = option("-case")
     cases = case_file.cases
     if only is not None:
         cases = [c for c in cases if c.id == only[0]]
         if not cases:
-            print(f"There is no test {only[0]} in checkpoint {checkpoint}.")
-            return finish(2, verdict="error", message=f"there is no test {only[0]} in checkpoint {checkpoint}")
+            print(f"There is no test {only[0]} in assignment {checkpoint}.")
+            return finish(2, verdict="error", message=f"there is no test {only[0]} in assignment {checkpoint}")
     disputed = {d["test"] for d in load_disputes() if d["checkpoint"] == checkpoint and d["status"] == "open"}
     set_aside = [c.id for c in cases if c.id in disputed and only is None]
     cases = [c for c in cases if c.id not in set_aside]
@@ -525,14 +563,13 @@ def main(argv: list) -> int:
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
         results = list(pool.map(lambda c: run_case(c, run_template, work, how, explain, timeout), cases))
 
-    who = "reference solution" if use_ref else ("custom command" if custom else meta["solution"])
-    print(f"Checkpoint {checkpoint} - {meta['title']}")
+    print(f"Assignment {checkpoint} - {meta['title']}")
     print(f"Program:  {run_template}   ({who})")
     print(f"Cases:    {cases_path.relative_to(ROOT).as_posix()} (seed {case_file.header.get('seed', '?')})\n")
 
     missing = next((r for r in results if r.status == "not-implemented"), None)
     if missing:
-        print(f"Not implemented yet: {missing.message}\nWrite it in {meta['solution']}, "
+        print(f"Not implemented yet: {missing.message}\nIt's still a TODO in your project. Write it, "
               f"then run .\\check {checkpoint} again.")
         return finish(2, verdict="not-implemented", function=missing.message)
 
@@ -588,8 +625,8 @@ def main(argv: list) -> int:
     if passed == len(results):
         note = f" ({len(set_aside)} disputed)" if set_aside else ""
         print(f"\nAccepted: {passed} / {len(results)} tests passed{note}.")
-        if use_ref and not custom and fresh is None and cases_path == ROOT / meta["cases"] and not set_aside:
-            record_verified(checkpoint, meta, passed, len(results))
+        if verify and fresh is None and cases_path == ROOT / meta["cases"] and not set_aside:
+            record_verified(checkpoint, config, passed, len(results))
             print(f"Recorded in {VERIFIED.relative_to(ROOT).as_posix()}: the Editorial can show this solution.")
         return finish(0, verdict="accepted")
     tally = {}
@@ -600,15 +637,15 @@ def main(argv: list) -> int:
     if silent:
         # Nothing was written anywhere: that's the problem to fix, not any one requirement.
         example = run_template.replace("{input}", "<input-file>").replace("{output}", "<output-file>")
-        print(f"\n  Your program wrote nothing in any failing test. It is run as\n      {example}\n"
-              f"  and must write its answer to <output-file>, the second argument.")
+        print(f"\n  Your program wrote nothing in any failing test. The checker runs it as\n      {example}\n"
+              f"  and it must write its answer to <output-file>, the second argument.")
     elif tally:
         top, count = max(tally.items(), key=lambda kv: kv[1])
         print(f"\n  Most failures ({count}) point to {top} - {texts.get(top, '')}")
         REPORT["mostLikely"] = {"id": top, "text": texts.get(top, ""), "count": count}
     print(f"\nWrong Answer: {passed} / {len(results)} tests passed.\n"
           f"  See one case in full:     .\\check {checkpoint} -Case <test-id>\n"
-          f"  Think a test is wrong?    .\\check {checkpoint} -Dispute <test-id> \"why\"")
+          f"  If a test looks wrong:    .\\check {checkpoint} -Dispute <test-id> \"why\"")
     return finish(1, verdict="wrong-answer", wroteNothing=silent)
 
 
@@ -631,13 +668,8 @@ def case_json(r: Result, texts: dict, full: bool) -> dict:
 
 
 def compiler_errors(output: str) -> list:
-    """file:line:col: error: message lines from the build output, for marking the editor."""
-    found = []
-    for m in re.finditer(r"^(.*?\.(?:c|cc|cpp|cxx|h|hpp)):(\d+):(\d+): (fatal error|error|warning): (.*)$",
-                         output, re.M):
-        found.append({"file": m.group(1).replace("\\", "/"), "line": int(m.group(2)), "column": int(m.group(3)),
-                      "kind": "warning" if m.group(4) == "warning" else "error", "message": m.group(5)})
-    return found[:50]
+    """file, line and message of each error in the build output (any language), for marking the editor."""
+    return langs.parse_errors(output)
 
 
 def main_json(argv: list) -> int:

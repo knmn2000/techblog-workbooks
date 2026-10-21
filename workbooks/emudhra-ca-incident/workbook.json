@@ -1,9 +1,44 @@
 {
-  "build": "",
-  "run": "python3 -P tools/run_py.py solutions {id} {input} {output}",
-  "reference": {
+  "project": {
+    "dir": "solutions",
+    "language": "python",
+    "languageLabel": "Python",
+    "aliases": [
+      "py",
+      "python3"
+    ],
+    "name": "pkiaudit",
+    "reference": "_spoilers/project",
+    "starter": "boilerplate",
+    "copy": {},
     "build": "",
-    "run": "python3 -P tools/run_py.py reference {id} {input} {output}"
+    "run": "python -P tools/run_py.py solutions -m pkiaudit audit solutions/examples/sample.pki",
+    "author": null,
+    "purposes": {
+      "src/pkiaudit/ecc/modmath.py": "This module holds the project's arithmetic mod a number: powers by square-and-multiply, and inverses by the extended Euclidean algorithm. Your `ecc/curve.py` from assignment 02 divides mod p with the inverse, and your `ecc/ecdsa.py` divides mod n with it in assignments 04 and 11.",
+      "src/pkiaudit/ecc/curve.py": "This module holds the elliptic-curve group law: the curve type, points, the point at infinity and the rule that adds two points. Assignment 03 adds scalar multiplication to it, and your ECDSA code from assignment 04 and the weak-key search in assignment 10 run on its point addition.",
+      "src/pkiaudit/ecc/curves.py": "This module holds the constants of every curve the project uses: the toy curve now, and P-256 and P-384, which assignment 03 adds. Later assignments look up P-256 and P-384 here, from the certificate reader in assignment 06 to the PKI audit in assignment 16.",
+      "src/pkiaudit/ecc/ecdsa.py": "This module holds ECDSA: checking a signature now, and making one in assignment 11. Your certificate-signature check in assignment 08 calls this verification, and through it so do the chain validation in assignment 09 and the PKI audit in assignment 16.",
+      "src/pkiaudit/asn1/der.py": "This module reads DER, the tag-length-value encoding that holds every certificate in the project, into a tree of nodes, and decodes INTEGER, OBJECT IDENTIFIER and BIT STRING values. Your `x509/certificate.py` (assignment 06), `x509/spki.py` (07) and `x509/signature.py` (08) read certificates through it.",
+      "src/pkiaudit/x509/certificate.py": "This module reads the fields of an X.509 certificate that the project needs: the subject and issuer names, the validity window, the elliptic-curve public key and whether the certificate is a CA. Assignment 07 finds the public key field through it, 08 the signed bytes, and 09 and 16 validate chains with the fields it reads.",
+      "src/pkiaudit/x509/spki.py": "This module computes a key's SPKI hash, the SHA-256 of a certificate's subjectPublicKeyInfo bytes, which is how browsers name a key they block. The hash stays the same in every certificate that carries the key, and assignment 15 blocks whole chains by hashes like these.",
+      "src/pkiaudit/x509/signature.py": "This module checks that an issuer's public key signed a certificate: it reads the signed tbsCertificate bytes and the signature, hashes the bytes with SHA-384 and runs your ECDSA verify. Assignment 09 checks every link of a chain with it, and assignment 16 does the same across a whole PKI.",
+      "src/pkiaudit/pki/chain.py": "This module decides whether a verifier should trust a chain of certificates, leaf first, that ends at one of its trust anchors, and names the first check that fails if not. Assignment 16 runs it over every chain in a PKI to find the chains a bad key breaks.",
+      "src/pkiaudit/attack/weak_key.py": "This module recovers a private key from its public key when the private key is small, by trying every value up to a bound. Assignment 13's linter calls it to flag a weak key before a CA trusts or publishes it.",
+      "src/pkiaudit/ecc/keys.py": "This module turns random bytes into a private key the way FIPS 186-5 and SEC 1 describe, so that every key from 1 to n - 1 is equally likely. It takes the random source as an argument, so the tests can replay recorded draws through it.",
+      "src/pkiaudit/pki/lint.py": "It decides whether a public key is safe to trust: the point is on its curve, it is not on a blocklist of known-compromised keys, and its private key is not small enough to find by search. Assignment 16 lints every key in a PKI with it.",
+      "src/pkiaudit/pki/ceremony.py": "It replays the log of a key generation ceremony and follows each key from the step that made it to the step that publishes it, so a reused label or a key that changed on the way gets flagged. It needs none of your earlier modules, and no later assignment uses it.",
+      "src/pkiaudit/pki/trust.py": "It decides whether a browser still trusts a certificate chain once some keys are blocked by their SPKI hash and some roots are distrusted, the two ways a browser withdraws trust after an incident. It needs none of your earlier modules, and no later assignment uses it.",
+      "src/pkiaudit/pki/audit.py": "It audits a whole PKI file: a lint finding for every key, a verdict for every chain, and the chains each signing key would break if it leaked. The checker's program and the `pkiaudit audit` command both print its report.",
+      "src/pkiaudit/__main__.py": "This is the finished command-line program. `pkiaudit audit <pki-file>`, or `python -m pkiaudit audit <pki-file>`, prints the audit report for a PKI file, using your `pki/audit.py`."
+    }
+  },
+  "build": "python -P tools/run_py.py --compile solutions",
+  "run": "python -P tools/run_py.py solutions {id} {input} {output}",
+  "reference": {
+    "snapshot": "build/ref-src",
+    "build": "python -P tools/run_py.py --compile build/ref-src",
+    "run": "python -P tools/run_py.py build/ref-src {id} {input} {output}"
   },
   "timeoutSeconds": 10,
   "book": {
@@ -11,124 +46,297 @@
     "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
     "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
     "author": "eMudhra",
-    "headline": "Learn how to not f*ck up like eMudhra",
-    "lede": "Each checkpoint asks you to write the program that one part of the post builds. A checker feeds your program inputs and compares what it writes with answers worked out independently. How you structure the code is up to you.",
-    "credits": "Expected outputs come from independent sources. Progress is saved in this browser only.",
-    "checkCommand": "./check.sh {id}",
-    "shell": "a terminal"
+    "headline": "Build a PKI auditor yourself",
+    "lede": "Each assignment has you write what one part of the incident calls for, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, then the checks that would have caught the weak key. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
+    "credits": "Expected outputs come from independent sources. The book keeps your progress in this browser only.",
+    "checkCommand": ".\\check {id}",
+    "shell": "PowerShell"
   },
   "checkpoints": {
     "01": {
       "title": "Modular arithmetic",
-      "solution": "solutions/p01_modular_arithmetic.py",
+      "solution": "solutions/assignments/assignment_01_modular_arithmetic.py",
+      "files": [
+        "src/pkiaudit/ecc/modmath.py"
+      ],
       "problem": "problems/01-modular-arithmetic.md",
       "cases": "tests/01/cases.txt",
-      "generator": "python3 -P tools/gen_p01.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p01.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_01_modular_arithmetic.py": "Read each `modexp` and `modinv` line of the input and answer it with your functions from `ecc/modmath.py`. Write one line per input line, in input order, in the formats the Output section gives, including `modinv none` when there is no inverse.",
+        "src/pkiaudit/ecc/modmath.py": "Write modular exponentiation and the modular inverse in `ecc/modmath.py`. Raise a number to a power mod `mod` by square-and-multiply, and find an inverse with the extended Euclidean algorithm, returning a value that means \"no inverse\" when `gcd(a, mod)` isn't 1. Handle `mod = 1` and `exp = 0` as \"Special cases\" describes."
+      }
     },
     "02": {
       "title": "Add points on a toy curve",
-      "solution": "solutions/p02_toy_curve.py",
+      "solution": "solutions/assignments/assignment_02_toy_curve.py",
+      "files": [
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/modmath.py"
+      ],
       "problem": "problems/02-toy-curve.md",
       "cases": "tests/02/cases.txt",
-      "generator": "python3 -P tools/gen_p02.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p02.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_02_toy_curve.py": "Read each `add <P1> <P2>` line, where each point is `inf` or two numbers, and add the two points on the toy curve with your `ecc/curve.py`. Write one sum per line, `inf` or `x y`, as the Output section shows.",
+        "src/pkiaudit/ecc/curve.py": "Declare a curve type and a point type in `ecc/curve.py`, and write the function that adds two points on a curve. A curve holds `p`, `a`, `b`, a generator `G` and its order `n`; a point is an `(x, y)` pair or the point at infinity. Follow \"The point at infinity\", \"Inverse points\", \"Adding two different points\" and \"Doubling a point\", and divide with your inverse from `ecc/modmath.py`.",
+        "src/pkiaudit/ecc/curves.py": "Define the toy curve `y^2 = x^3 + 2x + 2 mod 17` in `ecc/curves.py` as a value of your curve type, with generator `G = (5, 1)` of order 19. Assignment 03 adds P-256 and P-384 to this file."
+      }
     },
     "03": {
       "title": "Multiply a point by a number",
-      "solution": "solutions/p03_scalar_multiplication.py",
+      "solution": "solutions/assignments/assignment_03_scalar_multiplication.py",
+      "extends": [
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/03-scalar-multiplication.md",
       "cases": "tests/03/cases.txt",
-      "generator": "python3 -P tools/gen_p03.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p03.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_03_scalar_multiplication.py": "Read each `mul <curve> <d>` line, look up the curve by name in your `ecc/curves.py` and compute `d*G` with your scalar multiplication from `ecc/curve.py`. Write the two coordinates in lowercase hex, each zero-padded to the curve's width, as the Output section gives.",
+        "src/pkiaudit/ecc/curve.py": "Add scalar multiplication to `ecc/curve.py`: a function that returns `k` times a point by double-and-add, built on your point addition from assignment 02. It must finish in well under the time limit for a `k` hundreds of bits long, as \"Double-and-add\" describes. The Boilerplate's `ecc/curve.py` from assignment 02 already declares it as `scalar_multiply`; if you wrote the file your own way, add the function now.",
+        "src/pkiaudit/ecc/curves.py": "Add the NIST curves P-256 and P-384 to `ecc/curves.py`, with the constants from \"The curves\", and a way to look each one up by the name the input uses (`P-256` or `P-384`). The Boilerplate's `ecc/curves.py` from assignment 02 already defines both under its assignment 03 marker."
+      }
     },
     "04": {
       "title": "Verify an ECDSA signature",
-      "solution": "solutions/p04_ecdsa_verify.py",
+      "solution": "solutions/assignments/assignment_04_ecdsa_verify.py",
+      "files": [
+        "src/pkiaudit/ecc/ecdsa.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/modmath.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/04-ecdsa-verify.md",
       "cases": "tests/04/cases.txt",
-      "generator": "python3 -P tools/gen_p04.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p04.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_04_ecdsa_verify.py": "Read each `verify <pubx> <puby> <hash> <r> <s>` line, parse all five values as hex numbers, and check the signature on P-384 with your verification from `ecc/ecdsa.py`. Write `valid` or `invalid` for each line, in input order, as the Output section shows.",
+        "src/pkiaudit/ecc/ecdsa.py": "Write ECDSA signature verification in `ecc/ecdsa.py`: given a curve, a public key point, a hash read as a number and a signature `(r, s)`, decide whether the signature is valid. Follow the four steps of \"The verification equation\", with your inverse from `ecc/modmath.py` and your scalar multiplication and point addition from `ecc/curve.py`."
+      }
     },
     "05": {
       "title": "Read DER",
-      "solution": "solutions/p05_der_reader.py",
+      "solution": "solutions/assignments/assignment_05_der_reader.py",
+      "files": [
+        "src/pkiaudit/asn1/der.py"
+      ],
       "problem": "problems/05-der-reader.md",
       "cases": "tests/05/cases.txt",
-      "generator": "python3 -P tools/gen_p05.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p05.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_05_der_reader.py": "Read each `der` line of the input (see Input) and parse its bytes with your DER reader from `asn1/der.py`. Walk every node depth first and write one `node` line for each, with its value decoded by type, as Output and \"Decoding each type's content\" describe.",
+        "src/pkiaudit/asn1/der.py": "Write a DER reader in `asn1/der.py` that turns bytes into a tree of tag-length-value nodes, each with its class, constructed bit, tag number, length, content bytes, children and depth. Read both length forms, and have each node record where it starts in the buffer and how many bytes it takes with its header, for assignments 07 and 08. Add decoders for INTEGER, OBJECT IDENTIFIER and BIT STRING content, as \"Decoding each type's content\" describes."
+      }
     },
     "06": {
       "title": "Read a certificate",
-      "solution": "solutions/p06_read_certificate.py",
+      "solution": "solutions/assignments/assignment_06_read_certificate.py",
+      "files": [
+        "src/pkiaudit/x509/certificate.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/asn1/der.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/06-read-certificate.md",
       "cases": "tests/06/cases.txt",
-      "generator": "python3 -P tools/gen_p06.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p06.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_06_read_certificate.py": "Read each `cert` line of the input (see Input) and read the certificate's fields with your `x509/certificate.py`. Write the four lines Output shows for each certificate, with the key coordinates in lowercase hex padded to the curve's width.",
+        "src/pkiaudit/x509/certificate.py": "In `x509/certificate.py`, read the fields of a DER certificate's tbsCertificate with your DER reader from assignment 05: the serial number, the issuer's and subject's common names, the two validity times, the curve and public key point, and the BasicConstraints values. Give the curve as your `P256` or `P384` from `ecc/curves.py`, and read a certificate without BasicConstraints as not a CA, with no path length. Keep finding the top-level SEQUENCE and listing tbsCertificate's fields as steps of their own: assignments 07 and 08 reuse them."
+      }
     },
     "07": {
       "title": "Hash the public key (SPKI)",
-      "solution": "solutions/p07_spki_hash.py",
+      "solution": "solutions/assignments/assignment_07_spki_hash.py",
+      "files": [
+        "src/pkiaudit/x509/spki.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/asn1/der.py",
+        "src/pkiaudit/x509/certificate.py"
+      ],
       "problem": "problems/07-spki-hash.md",
       "cases": "tests/07/cases.txt",
-      "generator": "python3 -P tools/gen_p07.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p07.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_07_spki_hash.py": "Read each `cert` line of the input (see Input) and compute the certificate's SPKI hash with your `x509/spki.py`. Write one `spki` line per certificate, as Output shows.",
+        "src/pkiaudit/x509/spki.py": "In `x509/spki.py`, find a certificate's subjectPublicKeyInfo field with your `x509/certificate.py` and return the SHA-256 of its original bytes, header included, as lowercase hex. Slice the bytes out of the certificate as they are, as \"What gets hashed\" describes, without re-encoding the field."
+      }
     },
     "08": {
       "title": "Check a certificate's signature",
-      "solution": "solutions/p08_certificate_signature.py",
+      "solution": "solutions/assignments/assignment_08_certificate_signature.py",
+      "files": [
+        "src/pkiaudit/x509/signature.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/asn1/der.py",
+        "src/pkiaudit/x509/certificate.py",
+        "src/pkiaudit/ecc/ecdsa.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/08-certificate-signature.md",
       "cases": "tests/08/cases.txt",
-      "generator": "python3 -P tools/gen_p08.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p08.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_08_certificate_signature.py": "Read the input's `cert` and `issuer_pubkey` line pairs (see Input) and check each certificate's signature against the issuer key with your `x509/signature.py`. Write one `signature <label> valid` or `invalid` line per pair, as Output shows.",
+        "src/pkiaudit/x509/signature.py": "In `x509/signature.py`, read a certificate's signed bytes (tbsCertificate's original DER, header included) and its signature values `r` and `s` from the signatureValue BIT STRING. Hash the signed bytes with SHA-384 into ECDSA's `z`, and check the signature against an issuer's curve and public key with your verify from `ecc/ecdsa.py` (assignment 04)."
+      }
     },
     "09": {
       "title": "Validate a certificate chain",
-      "solution": "solutions/p09_validate_chain.py",
+      "solution": "solutions/assignments/assignment_09_validate_chain.py",
+      "files": [
+        "src/pkiaudit/pki/chain.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/x509/certificate.py",
+        "src/pkiaudit/x509/signature.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/09-validate-chain.md",
       "cases": "tests/09/cases.txt",
-      "generator": "python3 -P tools/gen_p09.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p09.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_09_validate_chain.py": "Write the assignment 09 program, which reads the input's `chain` blocks and writes one verdict line for each. It collects each block's `now`, `anchor` and `cert` lines as the Input section describes, validates the chain with your `pki/chain.py`, and writes `trusted` or `untrusted <reason>` in the Output format.",
+        "src/pkiaudit/pki/chain.py": "Implement chain validation in `pki/chain.py`: given DER certificates, leaf first, and a list of trust anchors, run the four checks in the page's order and report the first one that fails. Define the trust anchor and the verdict the program uses, and read each certificate and its signature with your code from assignments 06 and 08."
+      }
     },
     "10": {
       "title": "Find a weak private key",
-      "solution": "solutions/p10_find_weak_key.py",
+      "solution": "solutions/assignments/assignment_10_find_weak_key.py",
+      "files": [
+        "src/pkiaudit/attack/weak_key.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/10-find-weak-key.md",
       "cases": "tests/10/cases.txt",
-      "generator": "python3 -P tools/gen_p10.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p10.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_10_find_weak_key.py": "Write the assignment 10 program, which reads `bound` and `key` lines and writes one verdict per key. It searches each key with the latest bound and the curve named on its line, as the Input section describes, and writes `weak <label> <d>` or `none <label>` in the Output format.",
+        "src/pkiaudit/attack/weak_key.py": "Implement the small-key search in `attack/weak_key.py`: given a curve, a public key and a bound, find the private key from 1 to the bound whose multiple of the generator equals the key, or report that there is none. Step through the multiples with your point addition from `ecc/curve.py`, one addition per step."
+      }
     },
     "11": {
       "title": "Sign a certificate with a recovered key",
-      "solution": "solutions/p11_sign_with_weak_key.py",
+      "solution": "solutions/assignments/assignment_11_sign_with_weak_key.py",
+      "extends": [
+        "src/pkiaudit/ecc/ecdsa.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/modmath.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/11-sign-with-weak-key.md",
       "cases": "tests/11/cases.txt",
-      "generator": "python3 -P tools/gen_p11.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p11.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_11_sign_with_weak_key.py": "Write the assignment 11 program, which reads `sign` lines and writes one `signature` line for each. It reads the curve name and the hex values of d, z and k as the Input section describes, signs with your `ecc/ecdsa.py`, and writes r and s in zero-padded lowercase hex in the Output format.",
+        "src/pkiaudit/ecc/ecdsa.py": "Add ECDSA signing to `ecc/ecdsa.py`, next to the verification you wrote in assignment 04: given a curve, a private key, a message hash and a nonce, compute the signature pair (r, s). Build it from your scalar multiplication in `ecc/curve.py` and your modular inverse in `ecc/modmath.py`. The Boilerplate's `ecc/ecdsa.py` from assignment 04 already declares it as `sign` under its assignment 11 marker; if you wrote the file your own way, add the function now."
+      }
     },
     "12": {
       "title": "Generate a key correctly",
-      "solution": "solutions/p12_generate_key.py",
+      "solution": "solutions/assignments/assignment_12_generate_key.py",
+      "files": [
+        "src/pkiaudit/ecc/keys.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/12-generate-key.md",
       "cases": "tests/12/cases.txt",
-      "generator": "python3 -P tools/gen_p12.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p12.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_12_generate_key.py": "Write the assignment 12 program, which reads `draw` lines and writes one `key` line for each. For each line it gives your generator a random source that hands out the line's recorded blocks in order, as the Input section describes, and writes the accepted key in zero-padded lowercase hex in the Output format.",
+        "src/pkiaudit/ecc/keys.py": "Implement private-key generation by rejection sampling in `ecc/keys.py`: draw candidates from the random source you are given until one lies in the valid range for the curve's order, and return it. Ask for as many bytes as the order needs, and use the operating system's random source when the caller passes none."
+      }
     },
     "13": {
       "title": "Lint a public key",
-      "solution": "solutions/p13_key_linter.py",
+      "solution": "solutions/assignments/assignment_13_key_linter.py",
+      "files": [
+        "src/pkiaudit/pki/lint.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/attack/weak_key.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/13-key-linter.md",
       "cases": "tests/13/cases.txt",
-      "generator": "python3 -P tools/gen_p13.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p13.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_13_key_linter.py": "Read the input line by line (see Input): add each `blocklist` line's curve and point to a blocklist that grows as you read, and lint each `key` line's point, on its curve, against the blocklist so far. Write `ok <label>` or `fail <label> <finding>` for each key, in input order (see Output).",
+        "src/pkiaudit/pki/lint.py": "Write the key linter in `pki/lint.py`: a test that a point satisfies its curve's equation, and a function that runs the three checks in their order and returns the first finding, or None for a good key. For the weak check, call your weak-key search from assignment 10 with the bound of 4096 (see The three checks)."
+      }
     },
     "14": {
       "title": "Check a key ceremony",
-      "solution": "solutions/p14_ceremony_checker.py",
+      "solution": "solutions/assignments/assignment_14_ceremony_checker.py",
+      "files": [
+        "src/pkiaudit/pki/ceremony.py"
+      ],
       "problem": "problems/14-ceremony-checker.md",
       "cases": "tests/14/cases.txt",
-      "generator": "python3 -P tools/gen_p14.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p14.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_14_ceremony_checker.py": "Read the ceremony log line by line (see Input) and replay each step on one ceremony state from `pki/ceremony.py`. Write a `duplicate` line when a generate step reuses a label and a `publish` line for each publish step, interleaved in log order (see Output).",
+        "src/pkiaudit/pki/ceremony.py": "Write the ceremony state in `pki/ceremony.py`, which replays a key ceremony log one step at a time: generate, wrap, unwrap, fingerprint and publish. Give every generate step a new key identity, even when it reuses a label, and let wrap and unwrap pass the identity a label names on to another label. A publish reports `ok`, `undefined`, or a mismatch with the label the key was generated under (see Chains of custody)."
+      }
     },
     "15": {
       "title": "Block and distrust",
-      "solution": "solutions/p15_blocklist_distrust.py",
+      "solution": "solutions/assignments/assignment_15_blocklist_distrust.py",
+      "files": [
+        "src/pkiaudit/pki/trust.py"
+      ],
       "problem": "problems/15-blocklist-distrust.md",
       "cases": "tests/15/cases.txt",
-      "generator": "python3 -P tools/gen_p15.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p15.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_15_blocklist_distrust.py": "Read the input line by line (see Input): add `blocked-spki` and `distrusted-root` lines to two growing sets, and gather the `cert` lines of each `chain` block. Check each chain against the two sets with your `check_chain` and write one `chain` line per chain, in input order (see Output).",
+        "src/pkiaudit/pki/trust.py": "Write the browser's verdict on one chain in `pki/trust.py`: given the chain's certificates (role, SPKI hash and root id, leaf first), the blocked SPKI hashes and the distrusted root ids, return what blocks the chain, or None when the browser trusts it. Check the SPKI blocks first, leaf to root, and the root distrust only when no SPKI block matches (see Two ways to block a chain)."
+      }
     },
     "16": {
       "title": "Audit a PKI",
-      "solution": "solutions/p16_audit_pki.py",
+      "solution": "solutions/assignments/assignment_16_audit_pki.py",
+      "files": [
+        "src/pkiaudit/pki/audit.py",
+        "src/pkiaudit/__main__.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/pki/lint.py",
+        "src/pkiaudit/pki/chain.py",
+        "src/pkiaudit/x509/certificate.py",
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
       "problem": "problems/16-audit-pki.md",
       "cases": "tests/16/cases.txt",
-      "generator": "python3 -P tools/gen_p16.py --seed {seed} --out {out}"
+      "generator": "python3 -P tools/gen_p16.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_16_audit_pki.py": "Open the input file, which holds a whole PKI file (see Input), and audit it with your `read_pki` and `audit` from `pki/audit.py`. Write the report's lines to the output file (see Output).",
+        "src/pkiaudit/pki/audit.py": "Write the PKI audit in `pki/audit.py`, from reading a PKI file to the lines of its report. Read the `blocklist`, `anchor`, `cert` and `chain` lines (see Input), then lint every key with your `lint_key` from assignment 13 against the whole blocklist, wherever its lines appear in the file, and validate every chain against all the anchors with your `validate_chain` from assignment 09, with no current time. Work out which chains depend on each signing key (see The three things you report), then write the report's `key`, `chain` and `exposed` lines (see Output).",
+        "src/pkiaudit/__main__.py": "Write the `pkiaudit audit <pki-file>` command: read the command line with `argparse`, audit the file with your `pki/audit.py` and print the report, one line at a time. The checker doesn't run it, and the Boilerplate already contains it. Try it on the sample PKI with `py -P tools/run_py.py solutions -m pkiaudit audit solutions/examples/sample.pki`."
+      }
     }
   }
 }

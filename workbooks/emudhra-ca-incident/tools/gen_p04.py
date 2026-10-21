@@ -1,9 +1,9 @@
-"""Test cases for checkpoint 04 (verify an ECDSA signature, P-384 + SHA-384 only).
+"""Test cases for assignment 04 (verify an ECDSA signature, P-384 + SHA-384 only).
 
 Expected verdicts come from the `cryptography` library's own ECDSA verification (OpenSSL), with
 `ec.ECDSA(utils.Prehashed(hashes.SHA384()))` so the exact 48-byte digest is under our control -
 independent of the reference solution, which must implement the verification equation itself
-(modular inverse and point add/double, in the same style as checkpoint 10's reference) rather than
+(modular inverse and point add/double, in the same style as assignment 10's reference) rather than
 calling the library.
 
 Two boundary cases (r == n-1 and s == n-1, both as genuinely valid signatures) can't be reached by

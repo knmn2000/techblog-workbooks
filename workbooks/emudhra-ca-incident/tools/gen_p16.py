@@ -1,10 +1,10 @@
-"""Test cases for checkpoint 16 (audit a PKI), the capstone.
+"""Test cases for assignment 16 (audit a PKI), the capstone.
 
-Three independent checks feed this checkpoint's three kinds of output line:
+Three independent checks feed this assignment's three kinds of output line:
 - `key`: on-curve via curves.on_curve (OpenSSL), weak-key existence via curves.public_point
   (OpenSSL) confirming the planted small d really is the key, known-compromised is definitional
   (exact match against the blocklist this generator wrote).
-- `chain`: `openssl verify`, exactly as checkpoint 9's oracle does (a self-signed cert stands in
+- `chain`: `openssl verify`, exactly as assignment 09's oracle does (a self-signed cert stands in
   for each bare anchor key).
 - `exposed`: a second, differently-shaped computation of the same graph fact (a dict built by
   one pass per chain here, cross-checked against the main nested-loop style the reference uses),
@@ -34,13 +34,13 @@ import curves  # noqa: E402
 import wbcore  # noqa: E402
 
 LIB = (f"cryptography {cryptography.__version__} / OpenSSL (key checks and openssl verify): "
-       "independent of this checkpoint's own lint, chain and blast-radius logic")
+       "independent of this assignment's own lint, chain and blast-radius logic")
 
 REQUIREMENTS = [
     ("R1", "Every key is linted (anchors included), in input order: off-curve, known-compromised, "
-           "weak or ok, in that priority - same rules as checkpoint 13"),
+           "weak or ok, in that priority - same rules as assignment 13"),
     ("R2", "Every chain is validated in input order: trusted, or untrusted with a reason - same "
-           "rules as checkpoint 9"),
+           "rules as assignment 09"),
     ("R3", "Every key that signs at least one other certificate gets an `exposed` line listing "
            "every chain that depends on it; a key that only ever appears as a leaf gets none"),
     ("R4", "A key shared by two chains (the same intermediate signs both) is exposed by both - "
@@ -93,8 +93,8 @@ def pubnum(key):
 def oracle_chain_trusted(anchor_items, cert_pool, chain_certs):
     """anchor_items: list of (id, private key) for EVERY anchor declared in this PKI (not just
     one), named with the SAME id string a cert's issuer CN would use (so OpenSSL's own name
-    chaining lines up with what this checkpoint's input says). Any of them verifying the topmost
-    cert is enough, exactly like checkpoint 9's "try each" rule, just applied PKI-wide here
+    chaining lines up with what this assignment's input says). Any of them verifying the topmost
+    cert is enough, exactly like assignment 09's "try each" rule, just applied PKI-wide here
     instead of one chain at a time.
     cert_pool: every non-leaf cert in the chain (openssl just needs the pool).
     chain_certs: the actual leaf-to-topmost certs, leaf first."""
@@ -308,7 +308,7 @@ def main():
     p.chain("c1", ["leafC", "okC"])
     add("16-R1-all-ok", "R1", "a clean 3-level chain: every key lints ok", p)
 
-    # R2 - every chain-9-style reason, through this checkpoint's own input shape
+    # R2 - every chain-9-style reason, through this assignment's own input shape
     p = PKI()
     p.anchor("rootD")
     p.cert("leafD", "rootD")  # leafD is not a CA; make a chain pretend it's an intermediate
@@ -351,9 +351,9 @@ def main():
     p.chain("c1", ["leafH"])
     add("16-R3-leaf-not-exposed", "R3", "a 2-level chain: the leaf itself gets no exposed line", p)
 
-    # R5 - both curves, for linting (chain validation in this checkpoint is P-384 only, matching
-    # checkpoints 6-9's own scope: a P-256 certificate would need SHA-256 instead of SHA-384,
-    # which this checkpoint's reused signature check doesn't cover - a P-256 key is linted here,
+    # R5 - both curves, for linting (chain validation in this assignment is P-384 only, matching
+    # assignments 06-09's own scope: a P-256 certificate would need SHA-256 instead of SHA-384,
+    # which this assignment's reused signature check doesn't cover - a P-256 key is linted here,
     # but not put in any chain)
     p = PKI()
     p.anchor("rootI", curve="P-256")

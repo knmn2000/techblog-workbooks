@@ -14,6 +14,14 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "This is the structure of the". The author's code
 follows that paragraph.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, [The font directory](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html)
+  (the "offset subtable" and "table directory" tables)
+- Microsoft, *OpenType specification*, [Organization of an OpenType font](https://learn.microsoft.com/en-us/typography/opentype/spec/otff#organization-of-an-opentype-font)
+  (TableDirectory and TableRecord)
+- The blog: [Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table)
+
 ## Where this fits
 
 A TrueType font is a set of **tables** (`cmap`, `glyf`, `head`, ...) packed into one file. The
@@ -188,14 +196,6 @@ comes first in the file (offset 300) but has the eleventh record.
 - There are 13 tests: hand-made directories for each rule, three small fonts built with
   fontTools (with and without the hinting tables, and with three tables removed), both real
   fonts, and 3 random directories.
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, [The font directory](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html)
-  (the "offset subtable" and "table directory" tables)
-- Microsoft, *OpenType specification*, [Organization of an OpenType font](https://learn.microsoft.com/en-us/typography/opentype/spec/otff#organization-of-an-opentype-font)
-  (TableDirectory and TableRecord)
-- The blog: [Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table)
 
 ## Hints
 

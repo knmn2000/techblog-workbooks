@@ -14,6 +14,12 @@ You can pass using this page alone. For the background, read the blog's
 section up to and including the paragraph that starts "The glyph coordinates are", and stop
 before the author's code that follows it.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): contours, points and font units
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf): how `endPtsOfContours` splits the points into contours
+- The blog: [Render outlines as straight lines](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
+
 ## Where this fits
 
 In assignment 07 you decoded a glyph into contours of points (the types in your
@@ -211,12 +217,6 @@ The second outline uses the second `place`, `style` and `color`. `B` has three c
 - Each case has a 10-second limit. A correct solution takes milliseconds.
 - There are 22 tests: glyphs from JetBrains Mono Bold (`-`, `A`, `B`, `D`, `S`, `a`, `g`,
   `o`), U+5341 十 and U+3042 あ from Noto Sans JP, hand-made outlines and 3 random outlines.
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): contours, points and font units
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf): how `endPtsOfContours` splits the points into contours
-- The blog: [Render outlines as straight lines](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
 
 ## Hints
 

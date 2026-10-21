@@ -1,15 +1,15 @@
-"""Test cases for checkpoint 09 (validate a certificate chain).
+"""Test cases for assignment 09 (validate a certificate chain).
 
 Every chain is built with `cryptography`'s CertificateBuilder. The independent oracle is
 `openssl verify`: each chain is also written out as a small PEM trust store (a self-signed root
 certificate wrapping the same key the test exposes only as a bare public key, since this
-checkpoint's input never gives a root certificate, only its key) plus an "untrusted" bundle of
+assignment's input never gives a root certificate, only its key) plus an "untrusted" bundle of
 intermediates and the leaf, and
 
     openssl verify -attime <epoch> -CAfile root.pem -untrusted untrusted.pem leaf.pem
 
 is run exactly as a real verifier would. OpenSSL's own numbered verify errors map onto this
-checkpoint's reason vocabulary: 7 (signature failure) -> bad-signature, 20 (unable to get local
+assignment's reason vocabulary: 7 (signature failure) -> bad-signature, 20 (unable to get local
 issuer certificate) -> unknown-anchor, 79 (invalid CA certificate) -> not-a-ca, 25 (path length
 constraint exceeded) -> path-too-long, 9/10 (not yet valid / expired) -> expired.
 
@@ -50,7 +50,7 @@ REQUIREMENTS = [
 ]
 EXPLAIN = "_lines=R1 trusted=R3 untrusted=R3"
 
-EPOCH = datetime.datetime(2025, 6, 1)  # "now" for every chain in this checkpoint, unless R7 overrides it
+EPOCH = datetime.datetime(2025, 6, 1)  # "now" for every chain in this assignment, unless R7 overrides it
 ATTIME = int(EPOCH.timestamp())
 
 

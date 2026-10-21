@@ -1,7 +1,7 @@
-"""Test cases for checkpoint 02 (point addition on a toy curve).
+"""Test cases for assignment 02 (point addition on a toy curve).
 
 The curve is y^2 = x^3 + 2x + 2 mod 17, with generator G = (5, 1) - the same tiny example used
-in checkpoint 10's page. The group it generates has 19 elements (18 affine points plus the point
+in assignment 10's page. The group it generates has 19 elements (18 affine points plus the point
 at infinity); none of them has y = 0, so doubling never produces infinity on this curve.
 
 Independence of the oracle (see `oracle_add` below): the reference solution computes a sum

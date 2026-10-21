@@ -1,8 +1,8 @@
-"""Test cases for checkpoint 03 (scalar multiplication by double-and-add).
+"""Test cases for assignment 03 (scalar multiplication by double-and-add).
 
 Expected public keys come from `curves.public_point`, which computes d*G through the
 `cryptography` library (OpenSSL) - independent of the reference solution, which must implement
-its own point doubling and addition (in the same style as checkpoint 10's reference) and its own
+its own point doubling and addition (in the same style as assignment 10's reference) and its own
 double-and-add loop, not call the library.
 
     python3 -P tools/gen_p03.py                                  # tests/03 (seed 1)
@@ -85,7 +85,7 @@ def main():
         mul_line("P-256", rng.randrange(1000, 2 ** 64)), mul_line("P-384", rng.randrange(1000, 2 ** 96)),
         mul_line("P-256", rng.randrange(2 ** 64, 2 ** 128)), mul_line("P-384", rng.randrange(2 ** 96, 2 ** 192))])
 
-    # R5 - large random d, timed: an O(d) loop (checkpoint 10's approach) could never finish on a
+    # R5 - large random d, timed: an O(d) loop (assignment 10's approach) could never finish on a
     # d this size, while double-and-add (O(log d)) needs only a few hundred doublings
     for curve in curves.CURVES:
         tag = curve.lower().replace("-", "")

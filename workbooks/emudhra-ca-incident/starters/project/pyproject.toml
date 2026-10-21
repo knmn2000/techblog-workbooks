@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pkiaudit"
+version = "0.1.0"
+description = "Built with the Elliptic-Curve Keys, Certificates and Chains of Trust"
+requires-python = ">=3.10"
+
+[project.scripts]
+pkiaudit = "pkiaudit.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

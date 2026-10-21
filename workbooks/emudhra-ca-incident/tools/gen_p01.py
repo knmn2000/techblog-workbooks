@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 01 (modular arithmetic).
+"""Test cases for assignment 01 (modular arithmetic).
 
 Expected values come from Python's own built-in `pow(base, exp, mod)` and `pow(a, -1, mod)`,
 which is CPython's C-level bignum routine - independent of the reference solution, which must

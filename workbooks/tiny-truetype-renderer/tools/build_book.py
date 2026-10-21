@@ -45,7 +45,8 @@ MODE_FILES = {
 }
 # Section name (lower case) -> where the page shows it.
 ROLES = {
-    "read in the blog first": "read", "where this fits": "context", "the problem": "problem",
+    "read in the blog first": "read", "prerequisite material": "read", "read first": "read",
+    "where this fits": "context", "the problem": "problem",
     "requirements": "requirements", "examples": "examples", "source material": "sources",
     "hints": "hints", "checking your solution": "checking",
 }
@@ -175,16 +176,19 @@ def blocks(lines) -> str:
 
 # ---- Parts of a problem page --------------------------------------------------------
 
+REQUIREMENT = re.compile(r"- \*\*(R\d+|E2E)\*\*\s*(.*)")
+
+
 def requirements(body) -> str:
     joined = []
     for line in body:
-        if line.startswith("- **R"):
+        if REQUIREMENT.match(line):
             joined.append(line)
-        elif line.strip() and joined and not line.startswith("- "):
+        elif line.strip() and joined and line.startswith("  "):  # a requirement's wrapped line
             joined[-1] += " " + line.strip()
     items = []
     for item in joined:
-        m = re.match(r"- \*\*(R\d+)\*\*\s*(.*)", item)
+        m = REQUIREMENT.match(item)
         items.append(f'<li><span class="rid">{m.group(1)}</span><span>{inline(m.group(2))}</span></li>')
     intro = [l for l in body if l.strip() and not l.startswith("- ") and not l.startswith("  ")]
     return (blocks(intro) if intro else "") + '<ul class="reqs">' + "".join(items) + "</ul>"
@@ -356,14 +360,16 @@ def checkpoint(cid: str, meta: dict, config: dict) -> dict:
         elif sections:
             sections[-1][1].append(line)
 
-    data = {"read": "", "context": "", "sources": "", "checking": "", "hints": [], "examples": [],
-            "editorial": None}
+    data = {"read": "", "readTitle": "", "context": "", "sources": "", "checking": "", "hints": [],
+            "examples": [], "editorial": None}
     body = []
     for name, lines in sections:
         low = name.lower()
         role = "editorial" if low.startswith("after you pass") else ROLES.get(low, "other")
         if role in ("read", "context", "sources", "checking"):
             data[role] = blocks(lines)
+            if role == "read":
+                data["readTitle"] = name  # "Read in the blog first", or "Prerequisite material"
         elif role == "hints":
             data["hints"] = hints(lines)
         elif role == "editorial":

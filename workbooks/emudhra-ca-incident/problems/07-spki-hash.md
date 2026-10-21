@@ -1,6 +1,6 @@
 # 07 · Hash the public key (SPKI)
 
-**Difficulty:** Easy · **Checkpoint** 7 of 16 · **Check:** `./check.sh 07`
+**Difficulty:** Easy · **Assignment** 7 of 16 · **Check:** `.\check 07`
 
 **Tags**
 - *Language:* byte slicing · `hashlib.sha256` (or your language's SHA-256)
@@ -11,50 +11,56 @@
 
 Read Google's security blog post, ["Protecting Chrome and Android Users from Compromised
 eMudhra Intermediate CA Certificates"](https://security.googleblog.com/), for how Chrome blocked
-the compromised intermediates: not by their serial number or their exact bytes, but by the
-SHA-256 hash of their SubjectPublicKeyInfo, pushed to every Chrome install through CRLSet. This
-page is complete on its own; the post explains why this mechanism exists, not how to compute the
-hash - that's this checkpoint.
+the compromised intermediates: by the SHA-256 hash of their SubjectPublicKeyInfo, pushed to every
+Chrome install through CRLSet, instead of by their serial numbers or their exact bytes. The post
+explains why the mechanism exists; this assignment computes the hash. You can pass using this
+page alone.
+
+## Source material
+
+- Google Security Blog, "Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates"
+- RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 4.1.2.7 (SubjectPublicKeyInfo)
 
 ## Where this fits
 
-Checkpoint 06 taught you to find a certificate's subjectPublicKeyInfo field. This checkpoint
-hashes it, the exact mechanism that let Chrome block the compromised eMudhra intermediates by
-their key, even across reissuance. Checkpoint 13 later uses the same idea to check a new key
-against a blocklist before it's ever published.
+Your `x509/certificate.py` from assignment 06 finds a certificate's subjectPublicKeyInfo field,
+and your `asn1/der.py` (assignment 05) records where each node's bytes start and end. Here, in
+`x509/spki.py`, you hash that field. Chrome used this hash to block the compromised eMudhra
+intermediates by their key, and the hash stays the same when a CA reissues a certificate for the
+same key. Assignment 13 checks a new key against a blocklist of known-compromised keys, and
+assignment 15 blocks whole chains by SPKI hashes like these.
 
 ## The problem
 
-Write a program that computes the SPKI hash of one or more certificates: SHA-256 of the exact
+Write a program that computes the SPKI hash of each certificate it reads: the SHA-256 of the
 original bytes of the certificate's `subjectPublicKeyInfo` field.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p07_spki_hash.py` is a comment and an empty program:
-reading the input and writing the output are yours. To start from working input/output code
-instead, copy `starters/boilerplate/p07_spki_hash.py` over it, or pick Boilerplate in the book's
-editor. The boilerplate reads the input and writes the output; you fill in `spki_hash()`.
-
-### What exactly gets hashed
+### What gets hashed
 
 `subjectPublicKeyInfo` is the whole `SEQUENCE { algorithm AlgorithmIdentifier, subjectPublicKey
-BIT STRING }` - checkpoint 06's "key" line came from the same field, at the same position: the
-6th child of `tbsCertificate` (version, serialNumber, signature, issuer, validity, subject, then
-`subjectPublicKeyInfo`), exactly as checkpoint 06's walk reaches it. The hash is SHA-256 of
-**that entire SEQUENCE's original DER bytes**, tag and length included, not just the raw point
-bytes inside the BIT STRING, and not the algorithm identifier alone either. This matters: two
-certificates with the same key but a different curve OID encoding, or the same key hashed with
-and without its SEQUENCE wrapper, would NOT match under a correct implementation if you hashed
-the wrong slice - the whole point of this checkpoint is to hash exactly the bytes that OpenSSL's
-own pipeline hashes, so compare your output against the examples closely.
+BIT STRING }`. Assignment 06's `key` line came from the same field: the 7th child of
+`tbsCertificate`, counting the version (version, serialNumber, signature, issuer, validity,
+subject, then `subjectPublicKeyInfo`).
 
-This matches what
+The hash is the SHA-256 of that whole SEQUENCE's original DER bytes, which include:
+
+- the SEQUENCE's own tag and length bytes;
+- the AlgorithmIdentifier, which names the key type and the curve;
+- the BIT STRING, with its tag, its length and its unused-bits byte.
+
+Hashing only the point inside the BIT STRING, or only the algorithm identifier, gives a different
+hash. Slice the bytes out of the certificate as they are, from the field's first header byte to
+its last content byte, and compare your output with the examples: the checker expects the bytes
+OpenSSL's own pipeline hashes.
+
+These OpenSSL commands compute the same hash:
 
 ```
 openssl x509 -pubkey -noout -inform DER -in cert.der | openssl pkey -pubin -outform DER | openssl dgst -sha256
 ```
 
-computes: the first command extracts the public key as a PEM SubjectPublicKeyInfo block, the
-second re-encodes it as DER, and the third hashes those bytes.
+The first command extracts the public key as a PEM SubjectPublicKeyInfo block, the second
+re-encodes it as DER, and the third hashes those bytes.
 
 ### Input
 
@@ -63,7 +69,7 @@ The input file contains one kind of line:
 
 | Line | Meaning |
 |---|---|
-| `cert <label> <hex>` | A full DER-encoded certificate (the same shape as checkpoint 06's input, and standalone here too - you don't need checkpoint 06's output). `label` is a word with no spaces. |
+| `cert <label> <hex>` | A full DER-encoded certificate, the same shape as assignment 06's input. Each input stands alone: you don't need assignment 06's output. `label` is a word with no spaces. |
 
 ### Output
 
@@ -78,15 +84,15 @@ whitespace.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** The SPKI hash is correct for several P-256 certificates.
 - **R2** The SPKI hash is correct for several P-384 certificates.
-- **R3** Two different certificates - different subject name, different validity period, even a
-  different serial number - that happen to carry the same public key produce the **same** hash.
-  This is the actual mechanism: the hash survives reissuance, which is why it's what Chrome
-  blocked on instead of the certificate's own serial number or fingerprint.
+- **R3** Two certificates that carry the same public key give the **same** hash, even when their
+  subject names, validity periods and serial numbers differ. The hash survives reissuance, which
+  is why Chrome blocked on it instead of on a certificate's serial number or fingerprint.
 
 ## Examples
 
@@ -102,7 +108,7 @@ output:  spki c0 aa07b611245aa91ac5e6ffbb5a5bd5f0c31fa21edfca50e09ccc44757137093
          spki c2 06501fbecdfc4a2d42b5c156b9dbee39bb4fec752df7ecbb3d4bef94360430ef
 ```
 
-Three unrelated keys, three different hashes.
+Three unrelated keys give three different hashes.
 
 ### Example 2: reissued key, same hash (test `07-R3-same-key-reissued`)
 
@@ -114,59 +120,55 @@ output:  spki original 119d012a158acc40f0a6790aa182b23f5cdb5e6be3ce0773cf69d3486
          spki reissued 119d012a158acc40f0a6790aa182b23f5cdb5e6be3ce0773cf69d3486b7b18e7
 ```
 
-`original` and `reissued` have different subject names, different serial numbers and different
-validity windows - but the same key, so the same SPKI hash. A certificate authority reissuing a
-certificate for the same key (or an attacker who reuses a compromised key across several mis-issued
-certificates) can't escape this by changing anything else.
+`original` and `reissued` have different subject names, serial numbers and validity windows, and
+the same key, so they have the same SPKI hash. A certificate authority that reissues a
+certificate for the same key, or an attacker who reuses a compromised key across several
+mis-issued certificates, can't change the hash by changing anything else.
 
 ## Constraints
 
-- Every certificate is well-formed DER, the same shape checkpoint 06 reads.
+- Every certificate is well-formed DER, the same shape assignment 06 reads.
+- Each case has a 10-second limit.
 - There are 6 tests: 1 each for R1 and R2 (three certificates each), 2 for R3, and 2 end-to-end
-  cases mixing curves and reissuance in one input. Part of the set is random and changes with
-  `-Fresh`.
-
-## Source material
-
-- Google Security Blog, "Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates"
-- RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 4.1.2.7 (SubjectPublicKeyInfo)
+  cases that mix both curves and reissued keys in one input. Part of the set is random and
+  changes with `-Fresh`.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-You already know how to find `subjectPublicKeyInfo` from checkpoint 06 - it's a fixed-position
-child of `tbsCertificate`. This checkpoint doesn't need any of the other fields, just that one
-node's exact original bytes.
+Your `x509/certificate.py` from assignment 06 already finds `subjectPublicKeyInfo`: it's a
+fixed-position child of `tbsCertificate`. This assignment needs that one node's original bytes
+and none of the other fields.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Once you have the node, slice `cert_bytes` from its first header byte through its last content
-byte (tag + length + content, all of it) and hash that slice directly. Don't re-encode the
-SEQUENCE yourself - DER is canonical, so the bytes you sliced are already exactly what gets
-hashed.
+Once you have the node, slice the certificate's bytes from the node's first header byte through
+its last content byte (tag, length and content) and hash that slice. In the Boilerplate,
+`Node.encoding` in `asn1/der.py` returns it. Don't re-encode the SEQUENCE yourself: DER is
+canonical, so the bytes you sliced are already the ones to hash.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Hash the whole SEQUENCE (tag, length, and content), not just the BIT STRING inside it, and not
-  just the raw key bytes inside the BIT STRING.
-- Don't drop the BIT STRING's unused-bits byte when slicing - you're not decoding this field at
-  all for this checkpoint, just hashing its exact bytes untouched.
-- Print lowercase hex. The checker compares text exactly.
-- Two certificates sharing a key should give identical output. If your test of that fails, you're
-  probably including something cert-specific (the serial number, the validity dates) in what you
-  hash.
+- Hash the whole SEQUENCE (tag, length and content). The BIT STRING inside it, or the raw key
+  bytes inside that, give a different hash.
+- Keep the BIT STRING's unused-bits byte: you hash this field's bytes untouched, without decoding
+  them.
+- Print lowercase hex. The checker compares the text.
+- Two certificates that share a key give identical output. If yours differ, your slice includes
+  something specific to the certificate, such as the serial number or the validity dates.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
+find_spki(cert_bytes):
+    return tbs_fields(cert_bytes)[PUBLIC_KEY_INFO]   # as in assignment 06
+
 spki_hash(cert_bytes):
-    cert = parse_top_level_sequence(cert_bytes)
-    tbs = cert.children[0]
-    spki_node = find_subject_public_key_info(tbs)   # as in checkpoint 06
+    spki_node = find_spki(cert_bytes)
     raw = cert_bytes[spki_node.start : spki_node.start + spki_node.total_len]
     return sha256(raw) as lowercase hex
 ```
@@ -175,10 +177,10 @@ spki_hash(cert_bytes):
 ## Checking your solution
 
 ```
-./check.sh 07                                 run every test
-./check.sh 07 -Case 07-R3-same-key-reissued   one test, showing its full input, expected output and your output
-./check.sh 07 -Fresh                          a new set of tests (new random seed), to confirm on data you haven't seen
-./check.sh 07 -Dispute <id> "why"             set aside a test you believe is wrong; you won't be blocked
+.\check 07                                 run every test
+.\check 07 -Case 07-R3-same-key-reissued   one test, showing its full input, expected output and your output
+.\check 07 -Fresh                          a new set of tests (new random seed), to confirm on data you haven't seen
+.\check 07 -Dispute <id> "why"             set aside a test you believe is wrong; you won't be blocked
 ```
 
 A failing test looks like this:
@@ -189,17 +191,17 @@ A failing test looks like this:
           spki[1]: expected (hash=119d012a158acc40f0a6790aa182b23f5cdb5e6be3ce0773cf69d3486b7b18e7), got (hash=<a different hash>) - differs in hash
           likely cause: R3 - Two different certificates (different subject, different validity) that share the same public key hash the same - the hash survives reissuance
           expected values from: openssl x509 -pubkey | openssl pkey -pubin -outform DER | openssl dgst -sha256 (three independent OpenSSL commands)
-          reproduce: python3 -P tools/run_py.py solutions 07 build/cases/07/07-R3-same-key-reissued.in build/cases/07/07-R3-same-key-reissued.out
+          reproduce: py -P tools/run_py.py solutions 07 build/cases/07/07-R3-same-key-reissued.in build/cases/07/07-R3-same-key-reissued.out
 ```
 
 ## After you pass: compare with the post
 
-Google's post describes the outcome (blocking by SPKI hash via CRLSet) without publishing code
-for computing one. The reference solution is in `_spoilers/reference/`: it reuses
-`common/certlib.py`'s `find_spki` (the same field-finding logic as checkpoint 06) and hashes the
-slice directly with `hashlib.sha256`.
+Google's post describes the outcome, blocking by SPKI hash through CRLSet, and publishes no code
+for computing the hash. The reference `x509/spki.py` reuses `tbs_fields` from
+`x509/certificate.py`, the same field-finding code as assignment 06, and hashes the node's
+`encoding` with `hashlib.sha256`.
 
-**Something to look for:** the reference finds the SPKI node by the same fixed-position walk
-checkpoint 06 uses. A different, equally valid approach is to look for a SEQUENCE shaped like
-SubjectPublicKeyInfo (a SEQUENCE followed by a BIT STRING) among `tbsCertificate`'s children,
-without counting positions at all - both find the same bytes.
+**Something to look for:** the reference finds the SPKI node by the same fixed-position walk as
+assignment 06. Another valid approach looks among `tbsCertificate`'s children for a SEQUENCE
+shaped like SubjectPublicKeyInfo (a SEQUENCE followed by a BIT STRING), without counting
+positions. Both find the same bytes.

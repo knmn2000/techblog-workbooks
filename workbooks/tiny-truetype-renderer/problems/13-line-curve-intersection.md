@@ -16,6 +16,13 @@ up to the quadratic equation in t. The author's code (the listing "Function to f
 intersections of a segment and a quadratic Bezier curve") follows it. Assignment 10 covers
 the curve itself.
 
+## Source material
+
+- Pomax, *A Primer on Bézier Curves*, [Intersections](https://pomax.github.io/bezierinfo/#intersections) (line-curve intersection) and [Bézier curvatures as matrix operations](https://pomax.github.io/bezierinfo/#matrix) (the polynomial form)
+- Wikipedia, [Quadratic formula](https://en.wikipedia.org/wiki/Quadratic_formula), including the discriminant and a version that avoids cancellation
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), on the quadratic curves in TrueType outlines
+- The blog: [Intersection detection for Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Intersection%20detection%20for%20B%C3%A9zier%20curves)
+
 ## Where this fits
 
 In assignment 14 you fill a glyph row by row. For every row of pixels, your program lays a
@@ -195,13 +202,6 @@ top of the arch, where the line touches it, and your program prints that point o
   horizontal line against every curve of 'o' and 'S' (JetBrains Mono Bold) and 'あ' (Noto
   Sans JP).
 - Each case has a 10-second limit. A correct solution takes milliseconds.
-
-## Source material
-
-- Pomax, *A Primer on Bézier Curves*, [Intersections](https://pomax.github.io/bezierinfo/#intersections) (line-curve intersection) and [Bézier curvatures as matrix operations](https://pomax.github.io/bezierinfo/#matrix) (the polynomial form)
-- Wikipedia, [Quadratic formula](https://en.wikipedia.org/wiki/Quadratic_formula), including the discriminant and a version that avoids cancellation
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), on the quadratic curves in TrueType outlines
-- The blog: [Intersection detection for Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Intersection%20detection%20for%20B%C3%A9zier%20curves)
 
 ## Hints
 

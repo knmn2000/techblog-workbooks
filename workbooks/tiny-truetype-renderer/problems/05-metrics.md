@@ -14,6 +14,16 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "The hmtx table contains information for". The
 author's code follows that paragraph.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, ['hhea' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hhea.html)
+  and ['hmtx' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html)
+- Microsoft, *OpenType specification*, [hhea: Horizontal Header Table](https://learn.microsoft.com/en-us/typography/opentype/spec/hhea)
+  and [hmtx: Horizontal Metrics Table](https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx)
+- Apple, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html),
+  for pictures of advance width and left side bearing
+- The blog: [hhea, hmtx tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=hhea%2C%20hmtx%20tables)
+
 ## Where this fits
 
 Outlines give the shape of each glyph. To set a line of text, a renderer also needs the
@@ -211,16 +221,6 @@ advance of 0.
   random glyphs) and small fonts built with fontTools (the int16 limits, negative side
   bearings, trailing glyphs that share an advance, a font where `numberOfHMetrics` is 1, and
   random fonts).
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, ['hhea' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hhea.html)
-  and ['hmtx' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html)
-- Microsoft, *OpenType specification*, [hhea: Horizontal Header Table](https://learn.microsoft.com/en-us/typography/opentype/spec/hhea)
-  and [hmtx: Horizontal Metrics Table](https://learn.microsoft.com/en-us/typography/opentype/spec/hmtx)
-- Apple, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html),
-  for pictures of advance width and left side bearing
-- The blog: [hhea, hmtx tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=hhea%2C%20hmtx%20tables)
 
 ## Hints
 

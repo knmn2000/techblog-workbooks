@@ -14,6 +14,12 @@ You can pass using this page alone. For the background, read the blog's
 section up to the sentence about considering only line segments for now. The author's code comes
 right after it.
 
+## Source material
+
+- Wikipedia, [Nonzero-rule](https://en.wikipedia.org/wiki/Nonzero-rule)
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): contour direction
+- The blog: [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
+
 ## Where this fits
 
 In assignment 14 you filled glyphs with the even-odd rule, which leaves a hole wherever two
@@ -173,12 +179,6 @@ assignment 14 left the crossing empty, and the non-zero rule fills it.
 - There are 24 tests: hand-made polygons for each rule, straight-line letters from JetBrains Mono
   Bold, and straight-line characters from Noto Sans JP (random picks change with `-Fresh`). Each
   case has 10 seconds.
-
-## Source material
-
-- Wikipedia, [Nonzero-rule](https://en.wikipedia.org/wiki/Nonzero-rule)
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): contour direction
-- The blog: [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
 
 ## Hints
 

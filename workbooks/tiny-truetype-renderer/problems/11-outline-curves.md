@@ -14,6 +14,13 @@ You can pass using this page alone. For the background, read the blog's
 [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
 and stop at the sentence that introduces the code. The author's code follows it.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): quadratic curves, on-curve and off-curve points, and the implied point between two off-curve points
+- FreeType, [Glyph Conventions: outlines](https://freetype.org/freetype2/docs/glyphs/glyphs-6.html): the same rules, with pictures
+- Wikipedia, [Bézier curve: quadratic curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B%C3%A9zier_curves)
+- The blog: [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
+
 ## Where this fits
 
 In assignment 08 you joined every point of an outline with a straight line. TrueType outlines
@@ -279,13 +286,6 @@ is then the control point of one curve, and the 4 curves meet at 4 implied point
   `o`), Nerd Font icons from the same file whose contours start off-curve or have no
   on-curve point (U+F111, U+F10C, U+E3A2, U+F00C, U+F042), `a` and U+5341 十 from Noto Sans JP,
   hand-made outlines and 3 random outlines.
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): quadratic curves, on-curve and off-curve points, and the implied point between two off-curve points
-- FreeType, [Glyph Conventions: outlines](https://freetype.org/freetype2/docs/glyphs/glyphs-6.html): the same rules, with pictures
-- Wikipedia, [Bézier curve: quadratic curves](https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B%C3%A9zier_curves)
-- The blog: [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
 
 ## Hints
 

@@ -14,6 +14,12 @@ loads a Unicode font, draws any string with it and saves the result as a PNG. Sk
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
 pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
 
+## Source material
+
+- Wikipedia, [UTF-8](https://en.wikipedia.org/wiki/UTF-8): the byte patterns
+- Apple, *TrueType Reference Manual*: ['cmap'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cmap.html), ['loca'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6loca.html), ['hmtx'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html), ['glyf'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html)
+- The blog: [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal)
+
 ## Where this fits
 
 In assignments 01 to 17 you built the pieces one at a time. Here you put them together, going from
@@ -165,12 +171,6 @@ advance width.
 - The text contains no control characters, and no character needs more than one glyph.
 - There are 18 tests: one or more per requirement with JetBrains Mono Bold and Noto Sans JP, plus
   phrases and random words (new ones with `-Fresh`). Each case has 10 seconds.
-
-## Source material
-
-- Wikipedia, [UTF-8](https://en.wikipedia.org/wiki/UTF-8): the byte patterns
-- Apple, *TrueType Reference Manual*: ['cmap'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cmap.html), ['loca'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6loca.html), ['hmtx'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html), ['glyf'](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html)
-- The blog: [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal)
 
 ## Hints
 

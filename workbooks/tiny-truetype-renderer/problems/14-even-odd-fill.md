@@ -15,6 +15,13 @@ section through [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype
 skipping the code blocks if you want to work it out yourself. The blog builds this in two steps,
 a first version and then a fix for errors at vertices; this assignment covers both.
 
+## Source material
+
+- Wikipedia, [Even–odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule)
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): on-curve and off-curve points
+- Pomax, [A Primer on Bézier Curves](https://pomax.github.io/bezierinfo/): finding extremities and intersections
+- The blog: [Even-odd Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Even-odd%20Rule) and [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
+
 ## Where this fits
 
 In this assignment you take the outlines you decoded in assignments 07 and 09 (your
@@ -194,13 +201,6 @@ they cross empty. Assignment 16 fills it with the non-zero rule.
 - There are 28 tests: hand-made shapes for each rule, letters from JetBrains Mono Bold at several
   scales, U+5341 from Noto Sans JP, and 6 random letters (new ones with `-Fresh`). Each case has 10
   seconds.
-
-## Source material
-
-- Wikipedia, [Even–odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule)
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html): on-curve and off-curve points
-- Pomax, [A Primer on Bézier Curves](https://pomax.github.io/bezierinfo/): finding extremities and intersections
-- The blog: [Even-odd Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Even-odd%20Rule) and [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
 
 ## Hints
 

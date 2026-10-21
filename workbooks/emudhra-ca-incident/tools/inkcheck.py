@@ -1,4 +1,4 @@
-"""Independent checks for pictures drawn by a reference program (drawing checkpoints).
+"""Independent checks for pictures drawn by a reference program (checkpoints 06, 08, 11).
 
 A picture generator draws each expected image with the reference program, then checks
 it against the ideal geometry with these helpers before writing it: ink must lie near

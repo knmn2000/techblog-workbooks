@@ -70,24 +70,24 @@ book builder parses them):
 4. `## Read in the blog first`: which section of the post, linked with a text fragment
    (`url#:~:text=Heading%20words`), and where to stop before the author's code. Say that the page
    is complete on its own.
-5. `## Where this fits`: two or three sentences: what came before, what this unlocks, and which
+5. `## Source material`: specification links, references the post cites, the post's section.
+6. `## Where this fits`: two or three sentences: what came before, what this unlocks, and which
    files of the project it adds to.
-6. `## The problem`: one or two short, plain sentences saying what the program does. The files,
+7. `## The problem`: one or two short, plain sentences saying what the program does. The files,
    the jobs, the earlier files it can use and the two ways to start are on the book's "Start here"
    card (from `workbook.json`), so the page doesn't repeat them. Then
    `### Input` (a table of line kinds), `### Output` (exact format, with a fenced block showing it),
    then `###` subsections with every rule, table, formula and edge case needed. Write binary
    layouts as tables of field / type / meaning, in your own words. A learner must be able to pass
    using only this page; the independent solver proves it.
-7. `## Requirements`: `- **R1** ...`, one testable behaviour each. Every case targets one.
-8. `## Examples`: two or three `### Example k: title (test \`id\`)` blocks, each with `input:` and
+8. `## Requirements`: `- **R1** ...`, one testable behaviour each. Every case targets one.
+9. `## Examples`: two or three `### Example k: title (test \`id\`)` blocks, each with `input:` and
    `output:` in fenced blocks copied from real cases (say once in the README that line endings and
    runs of spaces don't matter; the checker compares words), and a walkthrough of the one
    non-obvious step (a byte-by-byte table is ideal). Picture assignments embed the expected image:
    `![expected picture for <id>](tests/NN/expected/<id>.png)`.
-9. `## Constraints`: input limits, the guarantees about well-formed input, the number of tests and
+10. `## Constraints`: input limits, the guarantees about well-formed input, the number of tests and
    what they cover, the time limit.
-10. `## Source material`: specification links, references the post cites, the post's section.
 11. `## Hints`: four blocks, each
     `<details><summary>Hint k: title</summary>` ... `</details>`:
     1. a nudge (where to start, what to think about),
@@ -103,8 +103,8 @@ book builder parses them):
 
 The web book (`tools/build_book.py`) finds these sections by their heading text, so keep it
 exact. "The problem", Requirements, Examples and Constraints form the statement; "Read in the blog
-first" becomes a note at the top; Hints open in order; "Where this fits" and "Source material" fold
-away under the statement; "Checking your solution" sits with the test results; "After you pass"
+first" becomes a note at the top, with "Source material" folded away right under it; Hints open in
+order; "Where this fits" folds away under the statement; "Checking your solution" sits with the test results; "After you pass"
 becomes the Editorial tab, locked until the learner passes. Any other `##` section appears in the
 statement under its own heading. Each example's `input:` block, and its `output:` block or expected
 picture, also becomes a test case in the book's bottom panel.

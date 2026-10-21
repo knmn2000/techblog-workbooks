@@ -14,6 +14,16 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "Additionally, a minor point is". The author's
 code follows that paragraph.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, ['loca' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6loca.html),
+  ['head' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6head.html),
+  ['maxp' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6maxp.html)
+- Microsoft, *OpenType specification*, [loca: Index to Location](https://learn.microsoft.com/en-us/typography/opentype/spec/loca),
+  [head: Font Header Table](https://learn.microsoft.com/en-us/typography/opentype/spec/head),
+  [maxp: Maximum Profile](https://learn.microsoft.com/en-us/typography/opentype/spec/maxp)
+- The blog: [loca table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=loca%20table)
+
 ## Where this fits
 
 Assignment 03 turns a character into a glyph id. Here you turn the glyph id into the location
@@ -227,16 +237,6 @@ wrong length here (4). Use `loca`'s extra entry for the end of the last glyph.
   random glyphs) and small fonts built with fontTools (short and long formats, a short
   `loca` whose offsets pass 65535, empty glyphs at the start, middle and end, and spare
   bytes after the last glyph).
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, ['loca' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6loca.html),
-  ['head' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6head.html),
-  ['maxp' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6maxp.html)
-- Microsoft, *OpenType specification*, [loca: Index to Location](https://learn.microsoft.com/en-us/typography/opentype/spec/loca),
-  [head: Font Header Table](https://learn.microsoft.com/en-us/typography/opentype/spec/head),
-  [maxp: Maximum Profile](https://learn.microsoft.com/en-us/typography/opentype/spec/maxp)
-- The blog: [loca table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=loca%20table)
 
 ## Hints
 

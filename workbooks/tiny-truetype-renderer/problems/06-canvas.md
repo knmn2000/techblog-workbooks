@@ -14,6 +14,13 @@ You can pass using this page alone. For the background, read the blog's
 section up to and including the paragraph that starts "The line drawing algorithm", and stop
 before the author's code that follows it.
 
+## Source material
+
+- Wikipedia, [Digital differential analyzer (graphics algorithm)](https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)): the line method used here
+- Wikipedia, [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm): the same idea with integers only
+- stb, [stb_image_write.h](https://github.com/nothings/stb/blob/master/stb_image_write.h): the PNG writer (`third_party/stb`)
+- The blog: [Preparation of a renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
+
 ## Where this fits
 
 In assignments 01 to 05 you read numbers out of the font file. Six later assignments draw
@@ -220,13 +227,6 @@ Without the swap you would step x from 50 to 52 and paint only 3 pixels, leaving
 - Each case has a 10-second limit. A correct solution takes milliseconds.
 - There are 30 tests: the blog's demo, hand-made scenes for each requirement and 5 random
   scenes.
-
-## Source material
-
-- Wikipedia, [Digital differential analyzer (graphics algorithm)](https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)): the line method used here
-- Wikipedia, [Bresenham's line algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm): the same idea with integers only
-- stb, [stb_image_write.h](https://github.com/nothings/stb/blob/master/stb_image_write.h): the PNG writer (`third_party/stb`)
-- The blog: [Preparation of a renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
 
 ## Hints
 

@@ -1,6 +1,6 @@
 # 05 · Read DER
 
-**Difficulty:** Medium · **Checkpoint** 5 of 16 · **Check:** `./check.sh 05`
+**Difficulty:** Medium · **Assignment** 5 of 16 · **Check:** `.\check 05`
 
 **Tags**
 - *Language:* bit manipulation · hex strings · recursion
@@ -9,57 +9,59 @@
 
 ## Read in the blog first
 
-This checkpoint is prerequisite material, not drawn from eMudhra's post: every certificate in
-this workbook is a DER-encoded byte string, and checkpoints 06 to 09 all start by walking that
-encoding the way this one does. Read ITU-T X.690, section 8 ("Basic encoding rules"), in
-particular 8.1 (the tag-length-value structure), 8.3 (INTEGER), 8.6 (BIT STRING) and 8.19
-(OBJECT IDENTIFIER) - the Source material section below links the document. This page is
-complete on its own after that.
+eMudhra's post doesn't cover this assignment: it's background for the rest of the workbook. Every
+certificate here is a DER-encoded byte string, and assignments 06 to 09 all start by walking that
+encoding the way this one does. For the full rules, read ITU-T X.690 section 8 ("Basic encoding
+rules"), in particular 8.1 (the tag-length-value structure), 8.3 (INTEGER), 8.6 (BIT STRING) and
+8.19 (OBJECT IDENTIFIER). The Source material section below links the document. You can pass
+using this page alone.
+
+## Source material
+
+- ITU-T X.690, [Information technology - ASN.1 encoding rules: BER, CER and DER](https://www.itu.int/rec/T-REC-X.690), section 8 (the encoding this assignment reads)
+- RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 4.1 (where assignment 06 uses this TLV structure to read a real certificate)
 
 ## Where this fits
 
-Nothing earlier in this workbook reads bytes this way. Every certificate checkpoint from here on
-(06 reads certificate fields, 07 hashes a certificate's public key, 08 checks a signature, 09
-validates a whole chain) starts by walking a certificate's bytes exactly as you will here. Get
-the walk right once, and the rest of the DER details in the workbook stop being a format problem.
+This is the first assignment that reads bytes, so it uses none of your earlier modules. Your
+`asn1/der.py` turns bytes into a tree of nodes, and the certificate assignments read through it:
+`x509/certificate.py` (assignment 06) reads a certificate's fields, `x509/spki.py` (07) hashes its
+public key and `x509/signature.py` (08) checks its signature. Assignments 07 and 08 hash a node's
+original bytes, so store in each node its start offset and its total size, header included.
 
 ## The problem
 
-Write a program that reads one or more DER-encoded byte strings and, for each one, prints every
-node it contains: every tag-length-value (TLV) structure, in the order it appears in the file,
-with its nesting depth, so the shape of the encoding is visible from the output alone.
-
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p05_der_reader.py` is a comment and an empty
-program: reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p05_der_reader.py` over it, or pick Boilerplate in the
-book's editor. The boilerplate reads the input and writes the output; you fill in
-`der_to_lines()`.
+Write a program that reads DER-encoded bytes and prints every tag-length-value (TLV) node in them,
+in the order each one starts, with its nesting depth, so that the output shows the shape of the
+encoding.
 
 ### The tag-length-value structure
 
-Every DER-encoded value is three parts back to back: a **tag** (what kind of value this is), a
-**length** (how many bytes of content follow), and the **content** itself (which, for a
-constructed value, is itself a sequence of complete tag-length-value nodes).
+Every DER-encoded value is three parts, back to back:
 
-**The tag** is the first byte (every tag used in this checkpoint fits in one byte; DER also has a
-multi-byte "high tag number" form for tag numbers 31 and above, which does not appear in this
-workbook and is out of scope here). Its bits mean:
+- a **tag**: what kind of value this is;
+- a **length**: how many bytes of content follow;
+- the **content**: the value itself or, for a constructed value, more complete TLV nodes.
+
+**The tag** is the first byte. Its bits mean:
 
 | Bits | Meaning |
 |---|---|
 | 8-7 | tag class: `00` universal, `01` application, `10` context-specific, `11` private |
-| 6 | `0` primitive (the content is the actual value), `1` constructed (the content is more TLV nodes) |
+| 6 | `0` primitive (the content is the value), `1` constructed (the content is more TLV nodes) |
 | 5-1 | tag number |
 
-**Universal** tags are ASN.1's built-in types and always mean the same thing. This checkpoint
-needs these tag numbers:
+DER also has a multi-byte "high tag number" form for tag numbers 31 and above. No test uses it, so
+every tag in this assignment fits in one byte.
 
-| Tag number | Type | Always |
+**Universal** tags are ASN.1's built-in types: each number means the same type wherever it
+appears. You need these:
+
+| Tag number | Type | Form |
 |---|---|---|
 | 1 | BOOLEAN | primitive |
 | 2 | INTEGER | primitive |
-| 3 | BIT STRING | primitive (this checkpoint never nests one) |
+| 3 | BIT STRING | primitive (no test nests one) |
 | 4 | OCTET STRING | primitive |
 | 5 | NULL | primitive |
 | 6 | OBJECT IDENTIFIER | primitive |
@@ -69,71 +71,99 @@ needs these tag numbers:
 | 24 | GeneralizedTime | primitive |
 
 A **context-specific** tag ([0], [1], [2], [3], ...) means something different in each structure
-that uses it - a certificate uses [0] for its version field and [3] for its extensions, both
-wrapping another value (so both are constructed in this workbook). The tag number is still bits
-5-1 of the same byte; only the class bits differ from universal.
+that uses it. A certificate uses [0] for its version field and [3] for its extensions. Both wrap
+another value, so both are constructed in this workbook. The tag number sits in the same bits 5-1
+as a universal tag's; only the class bits differ.
 
 **The length** follows the tag byte, in one of two forms:
 
-- **Short form**: if the length byte's high bit is 0, the rest of that byte (0-127) is the
-  length, and that's the whole length field (one byte).
-- **Long form**: if the length byte's high bit is 1, the low 7 bits say how many more bytes
-  follow, and those bytes, read as one big-endian number, are the length. For example `0x81 0xC8`
-  means "1 more byte follows: 0xC8", so the length is 200. `0x82 0x01 0x2C` means "2 more bytes:
-  0x01 0x2C", so the length is 300.
+- **Short form**: if the length byte's high bit is 0, the rest of that byte (0 to 127) is the
+  length, and the length field is that one byte.
+- **Long form**: if the length byte's high bit is 1, its low 7 bits say how many more bytes
+  follow, and those bytes, read as one big-endian number, are the length. `0x81 0xC8` means "1
+  more byte: 0xC8", a length of 200. `0x82 0x01 0x2C` means "2 more bytes: 0x01 0x2C", a length
+  of 300.
 
-(DER also has an indefinite-length form, `0x80` with no length at all, ended by two zero bytes.
-It is illegal in DER - every length here is definite - so you don't need to handle it; if you see
-it, something upstream of you produced BER, not DER.)
+A length of 127 is the largest short form, and 128 is the first length that needs the long form.
 
-**The content** is exactly that many bytes. For a primitive node, those bytes are the value,
-decoded by type (below). For a constructed node, those bytes are more complete TLV nodes, one
-after another, each one level deeper than its parent.
+BER, the looser encoding that DER restricts, also allows an **indefinite length**: `0x80` with no
+length at all, ended by two zero bytes. DER forbids it and no test uses it, so you don't need to
+handle it.
+
+**The content** is the next `length` bytes. For a primitive node, those bytes are the value,
+decoded by type (below). For a constructed node, they are more complete TLV nodes, one after
+another, each one level deeper than its parent.
 
 ### Decoding each type's content
 
-- **BOOLEAN**: one content byte. DER's canonical form is `0x00` for false and `0xFF` for true;
-  print `true` or `false`.
-- **NULL**: zero content bytes. Print `null`.
-- **OCTET STRING**: the content bytes themselves. Print them as lowercase hex.
-- **BIT STRING**: the **first** content byte is the number of unused bits (0-7) in the *last*
-  byte of what follows; the rest of the content is the actual bit data. A BIT STRING with 0
-  unused bits and payload `0xF0` means all 8 bits of that one byte are used. Print
-  `<unused-bits>:<hex of the rest>`, e.g. `0:f0`.
-- **OBJECT IDENTIFIER**: a sequence of "arcs" (numbers), base-128 encoded. The *first* two arcs
-  are combined into one encoded value, `40 * arc1 + arc2` (arc1 is 0, 1 or 2); every other arc is
-  encoded on its own. Each encoded value is one or more bytes: 7 bits of the value per byte, most
-  significant group first, with the top bit of every byte but the last one of that value set to 1
-  (meaning "more bytes follow for this value"). To decode: read bytes, accumulating 7 bits at a
-  time into the current value, until you hit a byte whose top bit is 0 - that ends the value.
-  The very first decoded value `v` splits back into `arc1, arc2` as: `v < 40` means `arc1 = 0,
-  arc2 = v`; `v < 80` means `arc1 = 1, arc2 = v - 40`; otherwise `arc1 = 2, arc2 = v - 80`. Print
-  the dotted form, e.g. `1.2.840.10045.2.1`.
+A primitive node's value depends on its type:
 
-  Worked example: bytes `2a 86 48 ce 3d 04 03 03`. `0x2a = 42`, which is `40*1 + 2`, so the first
-  two arcs are `1, 2`. Next byte `0x86 = 1000_0110`: top bit set, so more bytes follow; value so
-  far (low 7 bits) is `0000110 = 6`. Next byte `0x48 = 0100_1000`: top bit clear, so this ends the
-  value: shift the running value left 7 and OR in `1001000 = 72`, giving `6*128 + 72 = 840`. Then
-  `0xce 0x3d` the same way give `10045`, and the lone bytes `0x04`, `0x03`, `0x03` each give `4`,
-  `3`, `3`. Full OID: `1.2.840.10045.4.3.3`.
-- **UTCTime / GeneralizedTime**: print the content bytes as ASCII text, unchanged (this isn't a
-  date-parsing checkpoint - just show the raw string, e.g. `251020120000Z`).
-- **INTEGER**: the content bytes are the value in two's complement, most significant byte first.
-  If the top bit of the first byte is 1, the value is negative: subtract `2^(8 * number of
-  bytes)` from the unsigned reading of those bytes. A positive value whose own top bit would
-  otherwise be set gets an extra `0x00` byte in front so it can't be mistaken for a negative one
-  - that pad byte is not a sign marker to strip, it's part of making the encoding correct. Print
-  the decimal value (this checkpoint's decoded integers always fit in a normal integer type; your
-  language may need a big-integer type for the larger ones, since DER places no size limit on an
-  INTEGER's content).
+| Type | Content bytes | Print |
+|---|---|---|
+| BOOLEAN | one byte: DER writes false as `0x00` and true as `0xFF` | `true` or `false` |
+| NULL | none | `null` |
+| OCTET STRING | the value | the bytes as lowercase hex |
+| BIT STRING | the number of unused bits (0 to 7) at the end of the last byte, then the bytes that hold the bits | `<unused-bits>:<hex of the rest>`, e.g. `0:f0` |
+| UTCTime, GeneralizedTime | ASCII text | the text unchanged, e.g. `251020120000Z` |
+| INTEGER | a signed number (below) | the value in decimal |
+| OBJECT IDENTIFIER | a list of numbers (below) | the dotted form, e.g. `1.2.840.10045.2.1` |
+| any other type | | the bytes as lowercase hex, like OCTET STRING |
 
-  Worked example: content `00 80` is two bytes, top byte `0x00`, so this is positive:
-  `0x0080 = 128`. Content `80` alone (one byte, top bit set) is negative: unsigned reading is
-  `128`, minus `2^8 = 256`, giving `-128`.
-- **Any other type** (for example PrintableString or UTF8String, tag numbers you may see in real
-  certificates but that this checkpoint does not ask you to decode, or a context-specific tag
-  used for *implicit* tagging rather than wrapping another TLV) is printed as hex, the same as
-  OCTET STRING.
+A BIT STRING with 0 unused bits and payload `0xF0` uses all 8 bits of that byte. With 4 unused
+bits, only the top 4 count. You print the bytes the same way in both cases.
+
+"Any other type" covers the string types you meet in real certificates, such as PrintableString
+and UTF8String, which this assignment doesn't decode. It also covers a context-specific tag used
+for **implicit tagging**: the tag replaces a value's own tag instead of wrapping another TLV, so
+the node is primitive.
+
+#### INTEGER
+
+The content bytes are a **two's complement** number, most significant byte first:
+
+- If the top bit of the first byte is 0, the value is the bytes read as an unsigned number.
+- If that bit is 1, the value is negative: subtract `2^(8 * number of bytes)` from the unsigned
+  reading.
+
+DER puts an extra `0x00` byte in front of a positive value whose top bit would otherwise be set,
+so that it doesn't read as negative. Keep that pad byte when you decode: it's what makes the value
+positive.
+
+Content `00 80` is two bytes with top byte `0x00`, so the value is positive: `0x0080 = 128`.
+Content `80` alone has its top bit set, so the value is negative: 128 unsigned, minus `2^8 = 256`,
+gives `-128`.
+
+DER sets no size limit on an INTEGER, and one test has a 20-byte value, the size of a certificate
+serial number. Python's `int` holds it; in another language, use a big-integer type.
+
+#### OBJECT IDENTIFIER
+
+An object identifier is a list of numbers called **arcs**, printed with dots between them, such as
+`1.2.840.10045.2.1`. The encoding packs the first two arcs into one value, `40 * arc1 + arc2` (arc1
+is 0, 1 or 2), and gives each later arc a value of its own.
+
+Each value takes one or more bytes in **base 128**: 7 bits per byte, most significant group first,
+with the top bit set on every byte of the value except its last. To decode:
+
+1. Start the current value at 0. For each byte, shift the value left 7 bits and OR in the byte's
+   low 7 bits.
+2. A byte whose top bit is 0 ends the value. The next byte starts a new one.
+3. Split the first value `v` into two arcs: `v < 40` gives `0, v`; `v < 80` gives `1, v - 40`;
+   a larger `v` gives `2, v - 80`.
+
+The first value follows the same base-128 rule as the others, so it can take more than one byte
+too.
+
+Worked example: bytes `2a 86 48 ce 3d 04 03 03`.
+
+| Bytes | Value | Arcs |
+|---|---|---|
+| `2a` | 42, which is `40*1 + 2` | `1.2` |
+| `86 48` | `0x86` has its top bit set, so the value goes on: 6 so far. `0x48` (top bit clear) ends it: `6*128 + 72 = 840` | `840` |
+| `ce 3d` | the same way: 10045 | `10045` |
+| `04`, `03`, `03` | one byte each: 4, 3, 3 | `4`, `3`, `3` |
+
+The full OID is `1.2.840.10045.4.3.3`.
 
 ### Input
 
@@ -142,44 +172,46 @@ The input file contains one kind of line:
 
 | Line | Meaning |
 |---|---|
-| `der <hex>` | DER bytes, as lowercase hex with no spaces. May hold more than one complete top-level TLV node back to back (not wrapped in anything) - walk all of them. |
+| `der <hex>` | DER bytes, as lowercase hex with no spaces. A line can hold several complete top-level TLV nodes back to back, with nothing wrapping them: walk all of them. |
 
 ### Output
 
-For every TLV node encountered, across all `der` lines, in the order each one starts (a
-depth-first, document-order walk: a constructed node's own line comes before its children's
-lines, and a node's children come before its next sibling), write one line:
+Walk every node of every `der` line depth first, in document order: a constructed node's line comes
+before its children's lines, and a node's children come before its next sibling. Write one line per
+node:
 
 ```
 node <depth> <class> <primitive-or-constructed> <tag> <length> <value>
 ```
 
-- `<depth>`: `0` for a top-level node, `1` for its direct children, and so on.
+- `<depth>`: `0` for a top-level node, `1` for its children, and so on.
 - `<class>`: `universal`, `application`, `context` or `private`.
-- `<primitive-or-constructed>`: the literal word `primitive` or `constructed`.
+- `<primitive-or-constructed>`: the word `primitive` or `constructed`.
 - `<tag>`: the tag number, in decimal.
-- `<length>`: the number of content bytes, in decimal (not counting the tag or length field).
-- `<value>`: decoded per the rules above for a primitive node, or the three characters `...` for
-  a constructed node (its children are the lines that follow, so it carries no value of its own).
+- `<length>`: the number of content bytes, in decimal, not counting the tag and length fields.
+- `<value>`: for a primitive node, its value as "Decoding each type's content" prints it, or `-`
+  when a value printed as hex has no bytes (an empty OCTET STRING, for example). For a
+  constructed node, the three characters `...`: its children follow on their own lines.
 
 The checker ignores extra whitespace.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
-- **R1** BOOLEAN, NULL, OCTET STRING and BIT STRING decode correctly, including a BIT STRING's
-  unused-bits byte, and multiple top-level nodes in one input are all walked, in order.
-- **R2** INTEGER is two's complement: a value whose encoding needs a leading `0x00` pad byte
-  still decodes to the right positive number, and a genuinely negative value decodes correctly
-  too.
-- **R3** OBJECT IDENTIFIER decodes its base-128 arcs to dotted notation, including arcs (or the
-  combined first value) that need more than one byte.
-- **R4** SEQUENCE, SET and context-specific tags are constructed: their content is more TLV
-  nodes, each one depth deeper than its parent, continuing correctly through several levels.
-- **R5** Both length forms work: short form, and long form with one or more length bytes,
-  including the two lengths (127 and 128) right at the boundary between them.
+- **R1** BOOLEAN, NULL, OCTET STRING and BIT STRING values print as the table says, including a
+  BIT STRING's unused-bits byte, and an input with several top-level nodes gets lines for all of
+  them, in order.
+- **R2** INTEGER is two's complement: a value with a leading `0x00` pad byte decodes to the right
+  positive number, and a negative value decodes to the right negative number.
+- **R3** OBJECT IDENTIFIER decodes from base-128 values to dotted arcs, including arcs (and the
+  combined first value) that take more than one byte.
+- **R4** SEQUENCE, SET and context-specific tags are constructed: their content is more TLV nodes,
+  each one level deeper than its parent, through several levels.
+- **R5** Both length forms work: the short form, and the long form with one or more length bytes,
+  including 127 and 128, the lengths on either side of the boundary.
 
 ## Examples
 
@@ -192,8 +224,8 @@ output:  node 0 universal primitive 3 2 5:a0
 ```
 
 Tag byte `0x03`: class bits `00` (universal), constructed bit `0` (primitive), tag number `3`
-(BIT STRING). Length byte `0x02`: short form, 2 content bytes. Content `03 a0`: first byte `0x03`
-is the unused-bit count; the rest, `a0`, is the bit data. Output value: `5:a0`.
+(BIT STRING). Length byte `0x02`: short form, 2 content bytes. Content `05 a0`: the first byte,
+`0x05`, is the unused-bit count, and the rest, `a0`, holds the bits. Output value: `5:a0`.
 
 ### Example 2: INTEGER needing a pad byte, next to one that doesn't (test `05-R2-int-side-by-side`)
 
@@ -204,10 +236,10 @@ output:  node 0 universal primitive 2 2 128
          node 0 universal primitive 2 1 -128
 ```
 
-The first value: tag `02` (INTEGER), length `02`, content `00 80`. The leading `00` says this is
-positive: `0x0080 = 128`. The second value: tag `02`, length `01`, content `80` alone. Its top bit
-is set and there's no pad byte, so it's negative: `0x80 = 128` unsigned, minus `256`, giving
-`-128`. Two different one-byte-vs-two-byte encodings, two different numbers.
+The first value has tag `02` (INTEGER), length `02` and content `00 80`. The leading `00` makes it
+positive: `0x0080 = 128`. The second value has tag `02`, length `01` and content `80`. Its top bit
+is set and no pad byte comes first, so it's negative: 128 unsigned, minus 256, gives `-128`. The
+same byte `80` reads as 128 with a pad byte in front and as -128 without one.
 
 ### Example 3: nesting with a context-specific tag (test `05-R4-context-explicit`)
 
@@ -219,61 +251,53 @@ output:  node 0 context constructed 0 3 ...
 ```
 
 Tag byte `0xa0` is `1010_0000`: class bits `10` (context-specific), constructed bit `1`, tag
-number `0`. This is exactly how a certificate wraps its version field: `[0]` constructed,
-containing one INTEGER. The outer node's value is `...` because its content is itself a TLV node
-(the INTEGER `2`), which appears as the next line, one level deeper.
+number `0`. A certificate wraps its version field this way: `[0]` constructed, holding one
+INTEGER. The outer node's value is `...` because its content is a TLV node (the INTEGER `2`),
+which appears on the next line, one level deeper.
 
 ## Constraints
 
-- Every `der` line holds complete, well-formed DER: no truncated nodes, no indefinite length, no
-  tag number of 31 or above.
-- Depths in the test data go no deeper than 4.
-- There are 47 tests: 9 for R1 (plus two multi-top-level-node cases), 13 for R2, 8 for R3, 8 for
-  R4 (plus two random mixes), 6 for R5, and 3 end-to-end cases that combine several node types
-  and several levels of nesting in one structure shaped like a slice of a real certificate. Part
-  of the set is random and changes with `-Fresh`.
-
-## Source material
-
-- ITU-T X.690, [Information technology - ASN.1 encoding rules: BER, CER and DER](https://www.itu.int/rec/T-REC-X.690), section 8 (the encoding this checkpoint reads)
-- RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 4.1 (where checkpoint 06 uses this TLV structure to read a real certificate)
+- Every `der` line holds complete, well-formed DER: no truncated nodes, no indefinite lengths and
+  no tag number of 31 or above.
+- Depths in the tests go no deeper than 4.
+- Each case has a 10-second limit.
+- There are 47 tests: 9 for R1 (two of them with several top-level nodes), 13 for R2, 8 for R3,
+  8 for R4 (two of them random), 6 for R5, and 3 end-to-end cases that combine several node types
+  and levels of nesting in one structure shaped like a slice of a real certificate. Part of the
+  set is random and changes with `-Fresh`.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Write one function that reads a single TLV node starting at some byte offset and returns the
-node (its tag info, length and content) plus the offset just past it. Everything else - the
-depth-first walk, the value formatting - is built around calling that function.
+Write one function that reads a single TLV node starting at a byte offset and returns the node
+(its tag fields, length and content) and the offset after it: `read_tlv` in your `asn1/der.py`.
+Build the depth-first walk and the value formatting around calls to it.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-The tag byte alone tells you the class, whether it's constructed, and the tag number - all with
-simple bit masking (`>> 6`, `& 0x20`, `& 0x1F`). The length byte tells you whether to read 1 byte
-(short form) or N more bytes (long form) for the actual length. Once you have the content bytes,
-a primitive node's value comes from decoding those bytes by type; a constructed node's "value" is
-just the next TLV node, recursively, starting at the beginning of its content and continuing
-until you've consumed exactly its length.
+The tag byte gives the class, the constructed bit and the tag number by bit masking (`>> 6`,
+`& 0x20`, `& 0x1F`). The length byte tells you whether the length is that byte (short form) or
+the next N bytes (long form). A primitive node's value comes from decoding its content bytes by
+type. A constructed node's content is more TLV nodes: read them one after another with the same
+function, from the start of its content, until you have used up its length.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- An INTEGER's leading `0x00` byte is not junk to strip - it's what makes a value with a high bit
-  set read as positive instead of negative. Only remove it if you're re-encoding (you're not,
-  here); for decoding, just apply the two's-complement rule to the bytes as given.
-- An OBJECT IDENTIFIER's first encoded value can itself be more than one byte if `40*arc1 + arc2`
-  is large (this isn't just for every *other* arc - the combined first value follows the exact
-  same base-128 rule as the rest).
-- A constructed node's children are each one depth deeper than their parent, not all at depth 0
-  or all at the same depth as each other's siblings two levels up.
-- The length's long form can take one, two, or more bytes; the short/long boundary is 128 (a
-  length of 127 is short form, 128 is the first one needing long form).
-- A context-specific tag's number lives in the same five low bits as a universal tag's - only the
-  two class bits differ. Don't assume tag number 0 means BOOLEAN just because that's universal
-  tag 1 and context tag 0 looks similar in the byte.
-- Multiple top-level nodes can appear back to back in one `der` line, with no wrapper around
-  them. Keep reading until you run out of bytes, not just once.
+- An INTEGER's leading `0x00` byte belongs to the value: it makes a number whose high bit is set
+  read as positive. Apply the two's complement rule to the bytes as given, pad byte included.
+- An OBJECT IDENTIFIER's first value, `40*arc1 + arc2`, follows the same base-128 rule as the
+  later arcs, so it takes more than one byte when it's large.
+- A child is one level deeper than its parent. Pass the depth down as you recurse.
+- The long form can take one, two or more length bytes. A length of 127 is the last short form,
+  and 128 is the first long form.
+- A context-specific tag keeps its number in the same five low bits as a universal tag; only the
+  two class bits differ. Check the class before you decode by tag number: context-specific [1]
+  isn't a BOOLEAN, though universal tag 1 is.
+- One `der` line can hold several top-level nodes with nothing around them. Keep reading until
+  the bytes run out.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -295,7 +319,8 @@ read_tlv(data, i, depth):
         content_start = i + 2 + n
 
     content = data[content_start : content_start + length]
-    node = {cls, constructed, tag, length, content, depth, children: []}
+    node = {cls, constructed, tag, length, content, depth, children: [],
+            start: i, total_len: content_start + length - i}
     if constructed:
         k = content_start
         while k < content_start + length:
@@ -303,20 +328,20 @@ read_tlv(data, i, depth):
             node.children.append(child)
     return node, content_start + length
 
-walk(node):
+visit(node):
     print one line for node (value "..." if constructed, else decoded by type)
     for child in node.children:
-        walk(child)
+        visit(child)
 ```
 </details>
 
 ## Checking your solution
 
 ```
-./check.sh 05                          run every test
-./check.sh 05 -Case 05-R2-int-side-by-side   one test, showing its full input, expected output and your output
-./check.sh 05 -Fresh                   a new set of tests (new random seed), to confirm on data you haven't seen
-./check.sh 05 -Dispute <id> "why"      set aside a test you believe is wrong; you won't be blocked
+.\check 05                                 run every test
+.\check 05 -Case 05-R2-int-side-by-side    one test, showing its full input, expected output and your output
+.\check 05 -Fresh                          a new set of tests (new random seed), to confirm on data you haven't seen
+.\check 05 -Dispute <id> "why"             set aside a test you believe is wrong; you won't be blocked
 ```
 
 A failing test looks like this:
@@ -327,17 +352,16 @@ A failing test looks like this:
           node[0]: expected (depth=0, cls=universal, pc=primitive, tag=2, length=1, value=-128), got (depth=0, cls=universal, pc=primitive, tag=2, length=1, value=128) - differs in value
           likely cause: R2 - INTEGER is two's complement: a value needing a leading 0x00 pad byte is still read correctly, and so is a negative value
           expected values from: openssl asn1parse (OpenSSL 3.x): independently decodes tag class, constructed/primitive, depth and length from the same bytes
-          reproduce: python3 -P tools/run_py.py solutions 05 build/cases/05/05-R2-int-neg-128.in build/cases/05/05-R2-int-neg-128.out
+          reproduce: py -P tools/run_py.py solutions 05 build/cases/05/05-R2-int-neg-128.in build/cases/05/05-R2-int-neg-128.out
 ```
 
 ## After you pass: compare with the post
 
-The post contains no code for this (it's prerequisite material, not drawn from the post), so
-there is no author's version to compare. The reference solution is in `_spoilers/reference/`:
-one small function, `read_tlv`, called recursively, plus a `format_value` function with one
+eMudhra's post has no code for this, so there is no author's version to compare. The reference
+`asn1/der.py` has one small function, `read_tlv`, that calls itself for each child, and one
+decoder each for INTEGER, OBJECT IDENTIFIER and BIT STRING. The program's `format_value` has one
 branch per type.
 
-**Something to look for:** the reference decodes an OBJECT IDENTIFIER's first value with the
-general base-128 loop, not a special-cased single byte - look at how it handles an arc pair whose
-combined value is itself large, and compare it with whatever you wrote for the "every other arc"
-case.
+**Something to look for:** the reference decodes an OBJECT IDENTIFIER's first value with the same
+base-128 loop as the other arcs, with no special case for a single byte. Compare how it handles an
+arc pair whose combined value is large with the code you wrote for the later arcs.

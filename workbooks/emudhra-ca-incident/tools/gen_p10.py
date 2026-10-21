@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 10 (find a weak private key).
+"""Test cases for assignment 10 (find a weak private key).
 
 Every case starts from a private value d that the generator chooses, so it knows the right
 answer. The public key written into the input is computed from d by OpenSSL (through the

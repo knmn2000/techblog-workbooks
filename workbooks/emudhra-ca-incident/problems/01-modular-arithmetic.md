@@ -1,6 +1,6 @@
 # 01 · Modular arithmetic
 
-**Difficulty:** Easy · **Checkpoint** 1 of 16 · **Check:** `./check.sh 01`
+**Difficulty:** Easy · **Assignment** 1 of 16 · **Check:** `.\check 01`
 
 **Tags**
 - *Language:* big integers · bit shifting · a loop
@@ -9,56 +9,65 @@
 
 ## Prerequisite material
 
-This checkpoint is prerequisite material for the later checkpoints about the eMudhra incident; it
-isn't drawn from a specific blog post. Every later checkpoint that touches elliptic-curve points
-needs the two operations built here. See "Source material" below for where this arithmetic comes
-from.
+This assignment is background for the later assignments about the eMudhra incident; it doesn't
+come from a blog post. Every later assignment that works with elliptic-curve points needs the two
+operations you build here. "Source material" below lists where this arithmetic comes from.
+
+## Source material
+
+- NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for the P-256 and P-384 primes this arithmetic runs on from assignment 03 on
+- Handbook of Applied Cryptography (Menezes, van Oorschot, Vanstone), chapter 2 ("Mathematical
+  Background"), for square-and-multiply (there called the "repeated square-and-multiply
+  algorithm") and the extended Euclidean algorithm
 
 ## Where this fits
 
-This is the first checkpoint. It builds the two pieces of arithmetic that checkpoints 2 and 3 use
-to turn a private number into a public key, and that checkpoint 4 uses to check a signature: doing
-a huge exponent mod a prime quickly, and dividing mod a prime (which only makes sense through a
-modular inverse, since there's no fraction).
+This is the first assignment. In `ecc/modmath.py` you write two pieces of arithmetic mod a
+number:
+
+- **modular exponentiation**: a number raised to an exponent hundreds of bits long, mod a prime,
+  in about `log2(exp)` steps;
+- **the modular inverse**: the way to divide mod a prime, since there are no fractions.
+
+Your `ecc/curve.py` divides with the inverse when it adds points in assignment 02, and your
+`ecc/ecdsa.py` divides with it when it checks a signature in assignment 04. Assignment 03
+multiplies a point by a number with the same bit-by-bit loop as square-and-multiply.
 
 ## The problem
 
 Write a program that reads lines asking for a modular exponentiation or a modular inverse, and
 writes the answer to each, in order.
 
-Only the program's output is checked, so you can structure it however you like and use any
-language or library. The starter `solutions/p01_modular_arithmetic.py` is a comment and an empty
-program: reading the input and writing the output are yours. To start from working input/output
-code instead, copy `starters/boilerplate/p01_modular_arithmetic.py` over it, or pick Boilerplate in
-the book's editor. The boilerplate reads the input and writes the output; you fill in `modexp()`
-and `modinv()`.
-
 ### Modular exponentiation
 
-`base ** exp mod mod` the ordinary way means multiplying `base` by itself `exp` times. For the
-exponents here, hundreds of bits long, that is far too slow. **Square-and-multiply** gets the same
-answer in about `log2(exp)` multiplications: look at `exp` one bit at a time, squaring a running
-value every step, and multiplying it by `base` whenever that bit is 1.
+Computing `base ** exp mod mod` the ordinary way multiplies `base` by itself `exp` times. The
+exponents here are hundreds of bits long, so that loop would run for longer than the universe has
+existed. **Square-and-multiply** gets the same answer in about `log2(exp)` multiplications:
+
+- look at `exp` one bit at a time, starting from the lowest;
+- keep a running power of `base` and square it at every step (`base`, `base^2`, `base^4`, ...);
+- whenever the current bit is 1, multiply that power into the result.
 
 ### Modular inverse
 
-There's no division mod a number. Instead, `a`'s **modular inverse** mod `mod` is a number `b`
-such that `a * b mod mod == 1` - multiplying by it acts like dividing by `a`. It exists exactly
-when `gcd(a, mod) == 1`. The **extended Euclidean algorithm** finds it: it runs the same steps as
-computing `gcd(a, mod)` (repeatedly replacing the larger of two numbers with its remainder when
-divided by the smaller), while also tracking, at each step, how to write the current remainder as
-some multiple of `a` plus some multiple of `mod`. When the remainder reaches 1, the multiple of
-`a` is the inverse (reduced mod `mod` so it comes out in range).
+Arithmetic mod a number has no division. Instead, the **modular inverse** of `a` mod `mod` is the
+number `b` with `a * b mod mod == 1`, and multiplying by `b` acts like dividing by `a`. The inverse
+exists when `gcd(a, mod) == 1`, and only then.
+
+The **extended Euclidean algorithm** finds it. It runs the steps of computing `gcd(a, mod)`, which
+replace the larger of two numbers with the remainder of dividing it by the smaller. Along the way
+it also writes each remainder as some multiple of `a` plus some multiple of `mod`. The multiple of
+`a` written for the remainder 1 is the inverse; reduce it mod `mod` to bring it into range.
 
 ### Input
 
 | Line | Meaning |
 |---|---|
-| `modexp <base> <exp> <mod>` | Compute `base ** exp mod mod`. `mod >= 2`, `exp >= 0`, `base >= 0`. |
-| `modinv <a> <mod>` | Compute `a`'s inverse mod `mod`. `mod >= 2`, `a >= 0`. |
+| `modexp <base> <exp> <mod>` | Compute `base ** exp mod mod`. `mod >= 1`, `exp >= 0`, `base >= 0`. |
+| `modinv <a> <mod>` | Compute `a`'s inverse mod `mod`. `mod >= 1`, `a >= 0`. |
 
-All three numbers on a line are plain decimal integers, with no sign and no separators. `base` can
-be equal to or larger than `mod`; `a` can be equal to or larger than `mod` too.
+Every number is a plain decimal integer, with no sign and no separators. `base` can be equal to or
+larger than `mod`, and so can `a`.
 
 ### Output
 
@@ -72,32 +81,33 @@ modinv none          when gcd(a, mod) != 1: a has no inverse mod mod
 
 ### Special cases
 
-- `base ** 0` is 1, for every base, including `base = 0`. (This is the ordinary mathematical
-  convention, not specific to modular arithmetic.)
-- `mod = 1` is a valid modulus. Every number is congruent to 0 mod 1, so `modexp` always answers
-  `0` there, whatever `base` and `exp` are. By the same reasoning `modinv ... 1` answers `0` too:
-  the one value mod 1 is trivially its own "inverse" since `0 * 0 mod 1 == 0 == 1 mod 1`. This
-  matches what Python's own `pow(a, -1, 1)` returns, if you want a second source for this
-  convention.
+- `base ** 0` is 1 for every base, including `base = 0`. This is the ordinary mathematical
+  convention, and modular arithmetic keeps it.
+- `mod = 1` is a valid modulus. Every number is congruent to 0 mod 1, so `modexp` answers `0` there
+  for every `base` and `exp`. By the same reasoning `modinv ... 1` answers `0` too: the one value
+  mod 1 is its own "inverse", since `0 * 0 mod 1 == 0 == 1 mod 1`. Python's own `pow(a, -1, 1)`
+  returns the same, if you want a second source for this convention.
 
 ## Requirements
 
-Each test case is designed around one of these. A failing test also prints the requirement the
-difference most likely comes from.
+Each test checks one of these requirements. If tests fail, the checker's report shows how many
+pass for each requirement, and it may add a `likely cause` line that names the requirement the
+difference points to.
 
 - **R1** One output line per input line, in order: `modexp <result>` or `modinv <result>` /
   `modinv none`.
-- **R2** `exp = 0` gives `1 mod m` (even when `base = 0`), except `mod = 1`, which always gives
-  `0`.
+- **R2** `exp = 0` gives `1 mod m` (even when `base = 0`), except `mod = 1`, which gives `0`.
 - **R3** `exp = 1` gives `base mod m`.
-- **R4** Exponents hundreds of bits long finish well under the time limit. This rules out a loop
-  that multiplies `exp` times; square-and-multiply does it in about `log2(exp)` multiplications.
-- **R5** `base >= mod` is reduced mod `mod` before exponentiating (not treated as an error, and
-  not left unreduced in the arithmetic).
+- **R4** Exponents hundreds of bits long finish well under the time limit. A loop that multiplies
+  `exp` times can't; square-and-multiply needs about `log2(exp)` multiplications.
+- **R5** `base >= mod` is reduced mod `mod` before exponentiating. It isn't an error, and it
+  doesn't stay unreduced in the arithmetic.
 - **R6** `modinv` returns the correct inverse when `gcd(a, mod) == 1`.
 - **R7** `modinv` returns `none` when `gcd(a, mod) != 1`. This includes `a = 0` (with `mod > 1`,
   since `gcd(0, mod) == mod`), and `a` sharing a prime factor with a composite `mod`.
-- **R8** `mod = 1`: `modexp` always answers `0`, and `modinv` answers `0` by the convention above.
+- **R8** `mod = 1`: `modexp` answers `0` for every input, and `modinv` answers `0` by the
+  convention above.
+- **E2E** A real curve prime, P-384's `p`, used for one `modexp` and one `modinv`.
 
 ## Examples
 
@@ -115,10 +125,12 @@ output:  modexp 3
          modexp 15
 ```
 
-`2 ** 3 mod 5`: `exp = 3` is `11` in binary. Start with `result = 1`, `base = 2`. Bit 0 (the low
-bit) is 1, so `result = 1 * 2 mod 5 = 2`; square `base` to `4`. Bit 1 is 1, so
-`result = 2 * 4 mod 5 = 8 mod 5 = 3`; that's the last bit, so the answer is `3`. Check:
-`2**3 = 8`, and `8 mod 5 = 3`.
+Take `2 ** 3 mod 5`. `exp = 3` is `11` in binary. Start with `result = 1` and `base = 2`:
+
+1. Bit 0 (the low bit) is 1, so `result = 1 * 2 mod 5 = 2`. Square `base` to `4`.
+2. Bit 1 is 1, so `result = 2 * 4 mod 5 = 8 mod 5 = 3`.
+
+That was the last bit, so the answer is `3`. Check: `2**3 = 8`, and `8 mod 5 = 3`.
 
 ### Example 2: a modular inverse (test `01-R6-small-prime-mod`)
 
@@ -139,44 +151,37 @@ output:  modinv none
 ```
 
 `35 = 5 * 7`, and `21 = 3 * 7` shares the factor `7` with `35`, so `gcd(21, 35) = 7`, not `1`.
-There is no number you can multiply `21` by to get something congruent to `1` mod `35`.
+No number multiplied by `21` gives something congruent to `1` mod `35`.
 
 ## Constraints
 
-- Every line is well formed: exactly `modexp <base> <exp> <mod>` or `modinv <a> <mod>`, decimal,
-  no sign, no blank lines.
-- `mod >= 1` in every line (the examples above use `mod >= 2`; a few cases use `mod = 1`
-  specifically to test that edge).
-- Numbers can be as large as a few hundred bits - as large as the primes used by P-256 and P-384
-  in later checkpoints.
+- Every line is well formed: `modexp <base> <exp> <mod>` or `modinv <a> <mod>`, in decimal, with
+  no sign and no blank lines.
+- `mod >= 1` on every line. The examples above use `mod >= 2`; a few cases use `mod = 1` to test
+  that edge.
+- Numbers can be a few hundred bits long, as large as the P-256 and P-384 primes in later
+  assignments.
 - Each case has a 10-second limit. The R4 cases use exponents and moduli several hundred bits
-  long; square-and-multiply finishes in well under a millisecond, but a loop of `exp` plain
+  long. Square-and-multiply finishes them in well under a millisecond, but a loop of `exp` plain
   multiplications would still be running long after the universe ends.
-- There are 24 tests: 3 for R1, 3 for R2, 3 for R3, 4 for R4, 3 for R5, 3 for R6, 4 for R7, 2 for
+- There are 27 tests: 3 for R1, 3 for R2, 3 for R3, 4 for R4, 3 for R5, 3 for R6, 4 for R7, 2 for
   R8, and 2 end-to-end cases using the real P-384 field prime. Part of the set is random and
   changes with `-Fresh`.
-
-## Source material
-
-- NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for the P-256 and P-384 primes this arithmetic will run on from checkpoint 3 onward
-- Handbook of Applied Cryptography (Menezes, van Oorschot, Vanstone), chapter 2 ("Mathematical
-  Background"), for square-and-multiply (there called the "repeated square-and-multiply
-  algorithm") and the extended Euclidean algorithm
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Both functions are short, well-known algorithms. Don't try to derive them from scratch: write
-`modexp` as a loop over the bits of `exp`, and `modinv` as a loop that mimics computing
-`gcd(a, mod)` but tracks one extra pair of numbers along the way.
+Both functions are short, well-known algorithms, so look them up instead of deriving them. Write
+`modexp` as a loop over the bits of `exp`, and `modinv` as a loop that computes `gcd(a, mod)` and
+tracks one extra pair of numbers along the way.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 For `modexp`: keep `result = 1` and a running `base` (already reduced mod `mod`). While `exp > 0`:
-if the lowest bit of `exp` is 1, multiply it into `result`; always square `base` and mod it; then
-shift `exp` right by one bit. Stop when `exp` is 0.
+if the lowest bit of `exp` is 1, multiply `base` into `result`; square `base` and mod it on every
+pass; then shift `exp` right by one bit. Stop when `exp` is 0.
 
 For `modinv`: keep two pairs, `(old_r, old_s) = (a mod mod, 1)` and `(r, s) = (mod, 0)`. Repeat:
 let `q = old_r // r`; replace `(old_r, r)` with `(r, old_r - q*r)` and `(old_s, s)` with
@@ -186,14 +191,14 @@ Otherwise the inverse is `old_s mod mod` (it may have gone negative along the wa
 
 <details><summary>Hint 3: the traps</summary>
 
-- `mod = 1` first: handle it before anything else, in both functions, by returning `0`.
-- Reduce `base` (and `a`) mod `mod` before using them; a loop that doesn't will still often get
-  the right modexp answer but can get `modinv` wrong, and will run slower than it needs to.
+- Handle `mod = 1` first, in both functions, by returning `0`.
+- Reduce `base` (and `a`) mod `mod` before using them. A loop that doesn't will often still get
+  the right `modexp` answer, but it can get `modinv` wrong and it runs slower than it needs to.
 - `exp = 0` must give `1`, not `0`, for any `base` (except through the `mod = 1` rule above).
-- The extended Euclid coefficients can go negative partway through. Take `% mod` only at the very
-  end, or you'll reduce a negative number incorrectly in some languages.
-- Check `gcd(a, mod) == 1` (equivalently: the final `old_r == 1`) before trusting any computed
-  inverse - don't just always print a number.
+- The extended Euclid coefficients can go negative partway through. Take `% mod` only at the
+  end: in some languages `%` of a negative number gives a negative result.
+- Check `gcd(a, mod) == 1` (the final `old_r == 1`) before you trust a computed inverse, and
+  print `none` when it fails.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -225,10 +230,10 @@ modinv(a, mod):
 ## Checking your solution
 
 ```
-./check.sh 01                         run every test
-./check.sh 01 -Case 01-R7-prime-factor  one test, showing its full input, expected output and your output
-./check.sh 01 -Fresh                  a new set of tests (new random seed), to confirm on data you haven't seen
-./check.sh 01 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
+.\check 01                              run every test
+.\check 01 -Case 01-R7-prime-factor     one test, showing its full input, expected output and your output
+.\check 01 -Fresh                       a new set of tests (new random seed), to confirm on data you haven't seen
+.\check 01 -Dispute <id> "why"          set aside a test you believe is wrong; you won't be blocked
 ```
 
 A failing test looks like this:
@@ -239,12 +244,12 @@ A failing test looks like this:
           line 1: expected `modinv none`, got `modinv 0`
           likely cause: R7 - modinv returns `none` when gcd(a, mod) != 1, including a = 0 and a sharing a prime factor with mod
           expected values from: Python's built-in pow(base, exp, mod) and pow(a, -1, mod), cross-checked with math.gcd
-          reproduce: python3 -P tools/run_py.py solutions 01 build/cases/01/01-R7-zero.in build/cases/01/01-R7-zero.out
+          reproduce: py -P tools/run_py.py solutions 01 build/cases/01/01-R7-zero.in build/cases/01/01-R7-zero.out
 ```
 
 ## After you pass: nothing to compare
 
-There is no blog code for this checkpoint to compare against: it's the arithmetic every later
-checkpoint builds on, not something the post describes. What you wrote - square-and-multiply and
-extended Euclid - is the same pair of algorithms used inside every general-purpose cryptography
-library, including the one later checkpoints use as an independent oracle.
+This assignment has no blog code to compare with: the post doesn't describe this arithmetic, and
+every later assignment builds on it. Cryptography libraries build on the two algorithms you wrote,
+square-and-multiply and extended Euclid, often in faster variants. That includes the library the
+later assignments' tests use as an independent source of expected answers.

@@ -69,6 +69,8 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
         if later and not all(re.search(rf"\b0?{int(c)}\b", why) for c in later):
             why += f" Later, assignment{'s' if len(later) > 1 else ''} {listing(later)} add{'' if len(later) > 1 else 's'} to this file."
     sections.append(["Why this file exists:", *("  " + l for l in wrap(why))])
+    # A post with code: the Boilerplate keeps its author's names for things.
+    names = ", with the author's names" if config["project"].get("author") else ""
     job = jobs.get(path) or "See this assignment's Start here card in the problem book."
     if kind == "boilerplate" and path == entry:
         job = ("The Boilerplate gives you this program finished: it reads the input, calls your code and "
@@ -76,7 +78,7 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
     elif kind == "boilerplate" and todo:
         job += " The Boilerplate gives you the declarations; fill in each TODO."
     elif kind == "boilerplate":
-        job = ("The Boilerplate gives you this file finished: the declarations, with the author's names. "
+        job = (f"The Boilerplate gives you this file finished: the declarations{names}. "
                "You fill in the TODOs in this assignment's other files.")
     sections.append(["Your job:", *("  " + l for l in wrap(job))])
     if path == entry:
@@ -91,12 +93,17 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
         headers = [p for p in others + meta.get("extends", []) if p.endswith((".h", ".hpp"))]
         if headers and path.endswith((".cpp", ".cc", ".c")):
             lines += wrap(f'Include them by their path under src/, e.g. #include "{headers[0].removeprefix("src/")}".')
+        modules = [p for p in others + meta.get("extends", []) if p.endswith(".py") and p.startswith("src/")]
+        if modules and path.endswith(".py"):
+            dotted = modules[0].removeprefix("src/").removesuffix(".py").replace("/", ".")
+            package, _, name = dotted.rpartition(".")
+            lines += wrap(f"Import them as modules of your package, e.g. `from {package} import {name}`.")
         if lines:
             sections.append(["The other files of this assignment:", *("  " + l for l in lines)])
     how = ("This is the Boilerplate. To start from an empty file instead, choose From scratch in the "
            "book (the empty files are in starters/blank/)." if kind == "boilerplate" else
            "Write it yourself from here, or press Boilerplate in the book's editor to get the "
-           "input/output code and the declarations, with the author's names (the same files are in "
+           f"input/output code and the declarations{names} (the same files are in "
            "starters/boilerplate/).")
     sections.append(["How to start:", *("  " + l for l in wrap(how))])
     body = []

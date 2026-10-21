@@ -1,7 +1,10 @@
 {
   "01": {
     "files": {
-      "_spoilers/reference/p01_modular_arithmetic.py": "e11a42dbd7b3ce9f7a87cbb3f0983689b8ca402735efebffabd3d1be03adb909"
+      "_spoilers/project/assignments/assignment_01_modular_arithmetic.py": "e10a25ec757dc000610516864e04ebb7ad23875ea4ca1c33c781919fb2dba0ea",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 27,
     "total": 27,
@@ -9,7 +12,12 @@
   },
   "02": {
     "files": {
-      "_spoilers/reference/p02_toy_curve.py": "25f046e34c785280069173eef63fdecfdb9aaa7d13adfb3d8d3118ba03cef431"
+      "_spoilers/project/assignments/assignment_02_toy_curve.py": "f67a50e12d39604bb880de91c32c89832158c6e7bb742a3cf25c1bbc85909565",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "67ad66e05f758a83370589e1fffd91816f0baf62bfd934488da338dfc764fd6a",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "1397a96c1f06d1ae76b416dbcd3c1bd395dddb10b6fe1a4da703f1f683419b84",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 15,
     "total": 15,
@@ -17,7 +25,12 @@
   },
   "03": {
     "files": {
-      "_spoilers/reference/p03_scalar_multiplication.py": "c455959cc08d5155b5efc15438e76fa58460ac71fd32bfded36ce767aaa1c03b"
+      "_spoilers/project/assignments/assignment_03_scalar_multiplication.py": "53ec00c4bb1a4c9f9206feb4e343d4a556d15e3e538c9393b3126920bd2a9366",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 9,
     "total": 9,
@@ -25,7 +38,13 @@
   },
   "04": {
     "files": {
-      "_spoilers/reference/p04_ecdsa_verify.py": "c9c93fe0c3e67cdf62b91546c0b00e0d1f5c969070abfa84eef4edf3e6656487"
+      "_spoilers/project/assignments/assignment_04_ecdsa_verify.py": "fc7d684d3801964d6de9ad25da421b7a6bb0195f9c1d343fc5b1514fe9b65a49",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "84701cafa05fcd7c4ad01363abb76d253bd79f2b192f9e9e10b545f3c9614e7b",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 13,
     "total": 13,
@@ -33,8 +52,10 @@
   },
   "05": {
     "files": {
-      "_spoilers/reference/p05_der_reader.py": "0a42da9b4f5d0ead735698a7baa58083d650f7d5956acef8a73de8d5c10f4c1a",
-      "_spoilers/reference/common/der.py": "320fdaefd34aff60e5ce6824892b6f92841f65c042a0ac3d55a2326c42357c68"
+      "_spoilers/project/assignments/assignment_05_der_reader.py": "1df32985c064cbacd1b826801b3faef6962de0f935c1c678902b508b9c2a5438",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679"
     },
     "passed": 47,
     "total": 47,
@@ -42,8 +63,16 @@
   },
   "06": {
     "files": {
-      "_spoilers/reference/p06_read_certificate.py": "a77bdab909a79a698f0da60a48e922e7023ac37d3f12746ba31e068f3c03e5de",
-      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+      "_spoilers/project/assignments/assignment_06_read_certificate.py": "71170c3c9f6b8c7854bf660bfe70d07970280fbf069a3591820c002330eb0b53",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 17,
     "total": 17,
@@ -51,8 +80,17 @@
   },
   "07": {
     "files": {
-      "_spoilers/reference/p07_spki_hash.py": "5d79cb25469f48e1977e945be2cec5fd871df9b8191adc5ecf6f1b38f34da036",
-      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+      "_spoilers/project/assignments/assignment_07_spki_hash.py": "d838a664f6fae74c08a99b3c27c84038d3f1c36d6fc900b5fdd5a898a93504d1",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/spki.py": "967bfd2727b442e3f00f3c2b9ba7d3a2b341b60b7b36eefd9c3fc5c33a08e580",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 6,
     "total": 6,
@@ -60,8 +98,18 @@
   },
   "08": {
     "files": {
-      "_spoilers/reference/p08_certificate_signature.py": "21c45f52ec64045261af02c10e47d977eb081bbffceb65ac827d7f7526529b9a",
-      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+      "_spoilers/project/assignments/assignment_08_certificate_signature.py": "b1a5bffdd4816842e7c7506e84f26c709675d3ff8a0b683b8f45051368143471",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "84701cafa05fcd7c4ad01363abb76d253bd79f2b192f9e9e10b545f3c9614e7b",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 10,
     "total": 10,
@@ -69,8 +117,20 @@
   },
   "09": {
     "files": {
-      "_spoilers/reference/p09_validate_chain.py": "1d2e74e88dd6fb939dea0c5ec10e9970f7cfa081b5587fd5ec201efcad32dcbc",
-      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+      "_spoilers/project/assignments/assignment_09_validate_chain.py": "529ac857e52968ac2e2cd286d096b6b16eb63104966110046536f378c841a908",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/chain.py": "5fc2af6ec52a05979df0c7d8044d723a9783f6c953e0f4857aba14bc5853303a",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "84701cafa05fcd7c4ad01363abb76d253bd79f2b192f9e9e10b545f3c9614e7b"
     },
     "passed": 13,
     "total": 13,
@@ -78,7 +138,14 @@
   },
   "10": {
     "files": {
-      "_spoilers/reference/p10_find_weak_key.py": "1940eab8c124007cff9091b13729e1d8a12774c083795f78463d6fe676b5e4f7"
+      "_spoilers/project/assignments/assignment_10_find_weak_key.py": "4eb44374ada43e9ed0a389ea8de54bfa7e66403ffc5ba740aa7e8c55e4e469ef",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 36,
     "total": 36,
@@ -86,7 +153,13 @@
   },
   "11": {
     "files": {
-      "_spoilers/reference/p11_sign_with_weak_key.py": "5995a3aea2edeb8a96b4c6a7da2982c379d8427b622a5cd9c1060880d284b60c"
+      "_spoilers/project/assignments/assignment_11_sign_with_weak_key.py": "2b2ddfd8976c3b50cab591d99fdbafacaaee587190a11dde5af3b689e04d5054",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "46b67089cea551a3b1700a333a257ba317d48225ed530431da0d99178b48d0e9",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 21,
     "total": 21,
@@ -94,7 +167,13 @@
   },
   "12": {
     "files": {
-      "_spoilers/reference/p12_generate_key.py": "a3094c4c123f54db47751c48fb2c17de0d32e5fd187354d337d5caacaef2ad94"
+      "_spoilers/project/assignments/assignment_12_generate_key.py": "aad635767d8d06ed8aaf511fe58264074c284f929f7a6cdc65e52017f7089802",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/keys.py": "7632309c6ecfffe7442766d5a98447b20f160faf656eac2dc41ec6a78fdeab86",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 14,
     "total": 14,
@@ -102,7 +181,16 @@
   },
   "13": {
     "files": {
-      "_spoilers/reference/p13_key_linter.py": "d3e9cf621a00141f63abf19c70ccfcb9ebbd9697ec2b1faa5076e167b6e3e137"
+      "_spoilers/project/assignments/assignment_13_key_linter.py": "54542e0009b9e2576ee877aa5db554addf59f9023b293d7c585c15b3ca8e3d53",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/lint.py": "c6ab9b53b841b9d6076b4ebeed9d95873490e768ec51245adfad42d1c08f1fe8",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
     "passed": 24,
     "total": 24,
@@ -110,7 +198,10 @@
   },
   "14": {
     "files": {
-      "_spoilers/reference/p14_ceremony_checker.py": "7a15b07a8a65515ed0dabc1f6a3290cbd3f79ff4db68d2e63b40b2d5b403225b"
+      "_spoilers/project/assignments/assignment_14_ceremony_checker.py": "08319e409620aa71385cc549ffa868af35bff1ed412e9961c97f57d4d1a5b24e",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/ceremony.py": "1e61dbffde847cedb168102a4d82304094f46e5775a13e8f0bf0c23b012a5922"
     },
     "passed": 10,
     "total": 10,
@@ -118,7 +209,10 @@
   },
   "15": {
     "files": {
-      "_spoilers/reference/p15_blocklist_distrust.py": "5965777ebb50e5052af8f78d70fcbd4c9e473bc519578d719bf5f100a0cdfbec"
+      "_spoilers/project/assignments/assignment_15_blocklist_distrust.py": "a0ce4063b1fafe7daef8c2025e5fbb61cc5f246e5833bc63ec2fe62c97351633",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/trust.py": "14ce05e8ae7fa0f3fdd991d437ecce3b428b44dadf644141747a398e2ebd01dc"
     },
     "passed": 8,
     "total": 8,
@@ -126,8 +220,24 @@
   },
   "16": {
     "files": {
-      "_spoilers/reference/p16_audit_pki.py": "0cd649581ecc8cb8a6e2bd0abb306f66f4d0141688261bdcdcac9b28e571e87f",
-      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+      "_spoilers/project/assignments/assignment_16_audit_pki.py": "fe05949ca4be13492a7f1b64bdcd21cf2d55a5d8b16dc55f02b6b6ec87908331",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/audit.py": "1f89b69f4093d1d3026eaf0ce84630b516de602b7dfdb06725932841abab2586",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/pki/chain.py": "5fc2af6ec52a05979df0c7d8044d723a9783f6c953e0f4857aba14bc5853303a",
+      "_spoilers/project/src/pkiaudit/pki/lint.py": "c6ab9b53b841b9d6076b4ebeed9d95873490e768ec51245adfad42d1c08f1fe8",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417",
+      "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
+      "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "46b67089cea551a3b1700a333a257ba317d48225ed530431da0d99178b48d0e9"
     },
     "passed": 12,
     "total": 12,

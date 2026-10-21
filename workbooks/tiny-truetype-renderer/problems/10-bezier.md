@@ -17,6 +17,13 @@ Stop at the sentence that introduces the code. The author's code (the listing "L
 segment and a quadratic Bézier curve") follows it. "TrueType Bézier curves" belongs to
 assignment 11.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html), on quadratic curves in TrueType outlines
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), which defines on-curve and off-curve points
+- Pomax, *A Primer on Bézier Curves*, [de Casteljau's algorithm](https://pomax.github.io/bezierinfo/#decasteljau), with interactive drawings
+- The blog: [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm)
+
 ## Where this fits
 
 In assignment 08 you drew glyph outlines with straight lines. TrueType outlines also use
@@ -171,13 +178,6 @@ At t = 1 every weight except t² is 0, so the curve ends at c = (100, 100). The 
 - Each case has a 10-second limit. A correct solution takes milliseconds.
 - 32-bit `float` is accurate enough for these tests. The point type in `Geometry.h` uses
   `double`.
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html), on quadratic curves in TrueType outlines
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf), which defines on-curve and off-curve points
-- Pomax, *A Primer on Bézier Curves*, [de Casteljau's algorithm](https://pomax.github.io/bezierinfo/#decasteljau), with interactive drawings
-- The blog: [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm)
 
 ## Hints
 

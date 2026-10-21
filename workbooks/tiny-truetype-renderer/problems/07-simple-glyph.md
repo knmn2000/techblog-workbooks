@@ -15,6 +15,13 @@ You can pass using this page alone. For the background, read the blog's
 through the list of flag rules under **Simple glyph**. Stop at the paragraph that starts
 "Implementation.", before the author's code.
 
+## Source material
+
+- Apple, *TrueType Reference Manual*, ['glyf' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html)
+- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf). Its simple-glyph flags table is the clearest.
+- Apple, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html), on on-curve and off-curve points
+- The blog: [Simple glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Simple%20glyph)
+
 ## Where this fits
 
 Your `Cmap` (assignment 03) and `Loca` (assignment 04) take you from a character to a byte
@@ -236,13 +243,6 @@ output:  glyph 17 contours 1 bbox 140 272 460 388
 - There are 151 tests: the examples above, hand-made records for each rule, every simple ASCII
   glyph in the font, and 40 other glyphs (Nerd Font icons with hundreds of points, glyphs that
   repeat on-curve flags, and random picks).
-
-## Source material
-
-- Apple, *TrueType Reference Manual*, ['glyf' table](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html)
-- Microsoft, *OpenType specification*, [glyf: Glyph Data](https://learn.microsoft.com/en-us/typography/opentype/spec/glyf). Its simple-glyph flags table is the clearest.
-- Apple, [Digitizing Letterform Designs](https://developer.apple.com/fonts/TrueType-Reference-Manual/RM01/Chap1.html), on on-curve and off-curve points
-- The blog: [Simple glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Simple%20glyph)
 
 ## Hints
 

@@ -1,4 +1,4 @@
-"""Test cases for checkpoint 13 (lint a public key).
+"""Test cases for assignment 13 (lint a public key).
 
 Expected reasons come straight from how each test key is built, not from any search the
 reference solution performs:
@@ -9,7 +9,7 @@ reference solution performs:
   - known-compromised keys are exact copies of coordinates the test itself puts on the
     blocklist, so the match is definitional: string/tuple equality, not a computation.
 A key's final expected reason, when more than one could apply, follows the priority this
-checkpoint documents: off-curve, then known-compromised, then weak.
+assignment documents: off-curve, then known-compromised, then weak.
 
     python3 -P tools/gen_p13.py                                  # tests/13 (seed 1)
     python3 -P tools/gen_p13.py --seed 777 --out build/fresh/13  # what `check 13 -Fresh` runs
