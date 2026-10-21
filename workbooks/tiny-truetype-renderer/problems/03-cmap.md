@@ -255,8 +255,8 @@ so the subtable is at (`cmap` offset + record offset) in the file.
 <details><summary>Hint 2: the approach</summary>
 
 Read every encoding record and remember the offset of the one with platform 0 and encoding
-4. Jump to it and read the format; if there is no such record or the format isn't 12, throw
-`UnsupportedCmap`. Otherwise skip the 10 bytes of `reserved`, `length` and `language`, read
+4. Jump to it and read the format; if there is no such record or the format isn't 12, report
+that the font is unsupported (the Boilerplate throws `UnsupportedCmap`). Otherwise skip the 10 bytes of `reserved`, `length` and `language`, read
 `numGroups`, and for each group put every code point from start to end into a hash map with
 its glyph id. `count` is then the size of the map.
 </details>
@@ -279,18 +279,18 @@ its glyph id. `count` is then the size of the map.
 ```
 cmap = tables["cmap"].offset
 seek(cmap); skip(2)                        # version
-n = readUint16()
+n = read_u16()
 subtable = none
 repeat n times:
-    platform = readUint16(); encoding = readUint16(); offset = readUint32()
+    platform = read_u16(); encoding = read_u16(); offset = read_u32()
     if platform == 0 and encoding == 4 and subtable is none: subtable = offset
-if subtable is none: throw Unsupported
+if subtable is none: report unsupported
 seek(cmap + subtable)
-if readUint16() != 12: throw Unsupported
+if read_u16() != 12: report unsupported
 skip(10)                                   # reserved, length, language
 map = {}
-repeat readUint32() times:                 # numGroups
-    start = readUint32(); end = readUint32(); glyph = readUint32()
+repeat read_u32() times:                   # numGroups
+    start = read_u32(); end = read_u32(); glyph = read_u32()
     for c from start to end, both included:
         map[c] = glyph + (c - start)
 return map

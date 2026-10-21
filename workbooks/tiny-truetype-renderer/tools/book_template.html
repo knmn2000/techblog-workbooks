@@ -279,38 +279,49 @@ body.in-ide { overflow: hidden; }
   color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
 .callout svg { margin-top: 3px; color: var(--brand-ink); }
 .callout p { margin: 0; }
-.start { border: 1px solid var(--line-strong); border-left: 3px solid var(--brand); border-radius: 8px; background: var(--layer); }
-.start > summary, .sf > summary { list-style: none; cursor: pointer; }
-.start > summary::-webkit-details-marker, .sf > summary::-webkit-details-marker { display: none; }
-.start > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; padding: 10px 14px; border-radius: 8px; }
-.start > summary:hover, .sf > summary:hover { background: var(--fill); }
-.st-title { font-size: 15px; font-weight: 600; color: var(--text); }
-.st-meta { font-size: 12.5px; color: var(--text-3); }
-.st-chev { margin-left: auto; display: inline-flex; color: var(--text-3); transition: transform .15s; }
-details[open] > summary .st-chev { transform: rotate(180deg); }
-.start-body { padding: 0 14px 14px; display: grid; gap: 10px; }
-.start p { margin: 0; font-size: 13px; color: var(--text-2); }
-.start b { color: var(--text); font-weight: 600; }
-.start code { font-size: 12px; }
-.start-files { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.sf { border: 1px solid var(--line); border-radius: 8px; }
-.sf[open] { border-color: var(--line-strong); }
-.sf > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 7px 10px; border-radius: 8px; }
-.sf-n { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--fill); color: var(--text-2); font: 600 11px/20px var(--font-ui); text-align: center; }
-.sf-path { font: 12px var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
-.sf-body { padding: 0 10px 10px 38px; display: grid; gap: 6px; justify-items: start; }
-.sf-tag { font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 1px 7px; border-radius: 999px; background: var(--fill); color: var(--text-2); white-space: nowrap; }
-.sf-tag.new { color: var(--brand-ink); }
-.sf-tag.adds { color: var(--link); }
-.sf-job { color: var(--text) !important; }
-.sf-why { font-size: 12.5px !important; color: var(--text-3) !important; }
-.sf-open { height: 26px; font-size: 12px; }
-.start-ways { display: grid; gap: 6px; }
-.ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
-.way { text-align: left; border: 1px solid var(--line); border-radius: 8px; background: none; color: var(--text-2); padding: 8px 10px; font: 12.5px/1.45 var(--font-ui); cursor: pointer; }
-.way b { display: block; margin-bottom: 2px; }
-.way:hover { border-color: var(--line-strong); }
-.way[aria-pressed="true"] { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.start { margin: 22px 0 30px; padding: 20px 20px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--layer); display: grid; gap: 18px; }
+.start-top { display: grid; gap: 4px; }
+.start-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-ink); }
+.start-top h2 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.35; color: var(--text); }
+.start-sub { margin: 0; font-size: 13px; color: var(--text-3); }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; }
+.step { position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 14px; padding-bottom: 20px; }
+.step:last-child { padding-bottom: 0; }
+.step:not(:last-child)::before { content: ""; position: absolute; left: 12px; top: 32px; bottom: 6px; width: 2px; border-radius: 1px; background: var(--line-strong); }
+.start.start :not(pre) > code { font: 12.5px var(--font-mono); color: var(--text); background: none; border: 0; padding: 0; }
+.step-n { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-strong); color: var(--text-2); font: 600 12px/23px var(--font-ui); text-align: center; background: var(--layer); }
+.step-main { min-width: 0; padding-top: 2px; }
+.step-file { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.step-name { font: 600 13.5px var(--font-mono); color: var(--text); background: none; border: 0; padding: 0; overflow-wrap: anywhere; text-align: left; }
+button.step-name { cursor: pointer; }
+button.step-name:hover { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.step-dir { font: 12px var(--font-mono); color: var(--text-3); }
+.step-tag { align-self: center; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; background: var(--fill); color: var(--text-3); white-space: nowrap; }
+.step-tag.new { color: var(--brand-ink); }
+.step-tag.adds { color: var(--link); }
+.step-job { margin: 6px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-2); }
+.step-more { margin-top: 6px; }
+.step-more > summary { list-style: none; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; font-size: 12.5px; color: var(--link); border-radius: 4px; }
+.step-more > summary::-webkit-details-marker { display: none; }
+.step-more > summary:hover { text-decoration: underline; text-underline-offset: 3px; }
+.step-more > summary svg { width: 14px; height: 14px; transition: transform .15s; }
+.step-more[open] > summary svg { transform: rotate(180deg); }
+.step-more .when-open, .step-more[open] .when-closed { display: none; }
+.step-more[open] .when-open { display: inline; }
+.step-more-body { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: var(--fill); display: grid; gap: 10px; font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.step-more-body p { margin: 0; }
+.lbl { display: block; margin-bottom: 2px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.start-facts { margin: 0; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 14px; }
+.fact { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 14px; align-items: baseline; }
+.fact dt { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.fact dd { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-2); display: grid; gap: 8px; justify-items: start; min-width: 0; }
+.fact dd b { color: var(--text); font-weight: 600; }
+.ways { display: inline-flex; padding: 2px; gap: 2px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg); }
+.way { height: 28px; padding: 0 12px; border: 0; border-radius: 6px; background: none; color: var(--text-2); font: 500 12.5px var(--font-ui); cursor: pointer; }
+.way:hover { color: var(--text); }
+.way[aria-pressed="true"] { background: var(--fill-hover); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.way-note { font-size: 12.5px; color: var(--text-3); }
+@media (max-width: 520px) { .fact { grid-template-columns: minmax(0, 1fr); } }
 .fpath { font: 12px var(--font-mono); background: var(--fill); color: var(--text); border: 0; border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
 button.fpath { cursor: pointer; } button.fpath:hover { background: var(--fill-hover); }
 .noproj { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 24px; background: var(--layer); text-align: center; }
@@ -668,8 +679,8 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="code-tools">
           <span class="lang" id="lang" title="Your project's language. To work in another one, ask Claude to set it up: it keeps this project and starts a new one."></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
-            <button type="button" data-kind="blank" aria-pressed="true" title="A comment and an empty main: the includes, input and output are yours">Blank</button>
-            <button type="button" data-kind="boilerplate" aria-pressed="false" title="Input/output code done; you fill in the functions marked TODO">Boilerplate</button>
+            <button type="button" data-kind="boilerplate" aria-pressed="true" title="Input/output and declarations written; you fill in what's marked TODO">Boilerplate</button>
+            <button type="button" data-kind="blank" aria-pressed="false" title="Empty files apart from a comment saying your job: the includes, input and output are yours">From scratch</button>
           </div>
           <span class="file" id="file"></span>
           <div class="tools-right">
@@ -941,42 +952,54 @@ span.CodeMirror-selectedtext { background: none; }
 
   // Start here: the files to write in this assignment, your job in each, and how to begin.
   const withCode = (t) => esc(t || '').replace(/`([^`]+)`/g, '<code>$1</code>');
+  // The first sentence of a job is the line under the file; the rest waits behind "Expand for more info".
+  const splitJob = (t) => {
+    const m = /^(.+?[.!?])\s+(?=[A-Z`(])/.exec(t || '');
+    return m ? [m[1], t.slice(m[0].length)] : [t || '', ''];
+  };
+  const WAY_NOTES = {
+    boilerplate: "The input and output and the declarations are written; you fill in what's marked TODO.",
+    blank: 'Each file is empty apart from a comment saying why it exists and your job in it.',
+  };
   function startCard(c) {
-    const from = (f) => (f.owner && BY[f.owner] ? ` ${esc(BY[f.owner].num)}` : '');
-    const tag = (f) => (f.role === 'entry' ? '<span class="sf-tag">The program the checker runs</span>'
-      : f.role === 'adds' ? `<span class="sf-tag adds">Add to it (from assignment${from(f)})</span>` : '<span class="sf-tag new">New file</span>');
     const order = [...c.files.filter((f) => f.role !== 'entry'), ...c.files.filter((f) => f.role === 'entry')];
-    // Each file is a toggle: its name and role at a glance, the job and the reason inside.
-    const files = order.map((f, k) => `<li><details class="sf"${k === 0 ? ' open' : ''}><summary><span class="sf-n">${k + 1}</span>`
-      + `<span class="sf-path">${esc(shortName(f.path))}</span>${tag(f)}<span class="st-chev">${I.down}</span></summary><div class="sf-body">`
-      + `<p class="sf-job"><b>Your job:</b> ${withCode(f.job || '')}</p>`
-      + (f.role === 'new' && f.purpose ? `<p class="sf-why">Why it's here: ${withCode(f.purpose)}</p>` : '')
-      + (f.role === 'entry' ? '<p class="sf-why">It reads a test input, calls your code and writes the answer. Only that output is checked.</p>' : '')
-      + (LOCAL ? `<button type="button" class="btn sf-open" data-open-file="${esc(f.path)}">Open in editor</button>` : '')
-      + '</div></details></li>').join('');
+    const from = (f) => (f.owner && BY[f.owner] ? esc(BY[f.owner].num) : '');
+    const tag = (f) => (f.role === 'entry' ? '<span class="step-tag">The checker runs it</span>'
+      : f.role === 'adds' ? `<span class="step-tag adds">Add to it · from ${from(f)}</span>` : '<span class="step-tag new">New</span>');
+    const nameOf = (f) => {
+      const rel = shortName(f.path), cut = rel.lastIndexOf('/');
+      const name = esc(rel.slice(cut + 1)), dir = cut < 0 ? '' : `<span class="step-dir">${esc(rel.slice(0, cut + 1))}</span>`;
+      return (LOCAL ? `<button type="button" class="step-name" data-open-file="${esc(f.path)}" title="Open in the editor">${name}</button>` : `<span class="step-name">${name}</span>`) + dir;
+    };
+    const steps = order.map((f, k) => {
+      const [lead, rest] = splitJob(f.job);
+      const why = f.role === 'entry' ? 'It reads a test input, calls your code and writes the answer. Only that output is checked.'
+        : f.role === 'new' ? f.purpose : '';
+      const more = rest || why ? `<details class="step-more"><summary><span class="when-closed">Expand for more info</span><span class="when-open">Show less</span>${I.down}</summary>
+          <div class="step-more-body">${rest ? `<p><span class="lbl">In more detail</span>${withCode(rest)}</p>` : ''}${why ? `<p><span class="lbl">Why this file</span>${withCode(why)}</p>` : ''}</div></details>` : '';
+      return `<li class="step"><span class="step-n">${k + 1}</span><div class="step-main">
+        <div class="step-file">${nameOf(f)}${tag(f)}</div>
+        <p class="step-job">${withCode(lead)}</p>${more}</div></li>`;
+    }).join('');
     const link = (f) => (LOCAL ? `<button type="button" class="fpath" data-open-file="${esc(f.path)}">${esc(shortName(f.path))}</button>`
       : `<code class="fpath">${esc(shortName(f.path))}</code>`);
-    const uses = c.buildsOn.length
-      ? `<p><b>You can use</b> what you wrote earlier: ${c.buildsOn.map((f) => link(f) + `<span class="muted">${from(f)}</span>`).join(', ')}.</p>` : '';
-    const ways = c.files.some((f) => f.boilerplate != null) ? `<div class="start-ways"><p><b>Two ways to start</b> (switch any time; it asks before replacing your code)</p><div class="ways">
-        <button type="button" class="way" data-start-kind="blank"><b>From scratch</b>Each file starts with a comment saying why it exists and your job; the rest is yours.</button>
-        <button type="button" class="way" data-start-kind="boilerplate"><b>Boilerplate</b>The input/output and the declarations are written; you fill in what's marked TODO.</button></div></div>` : '';
-    // Open until the assignment is solved, unless the learner opened or closed it themselves.
-    const kept = store.get(c.id + ':start');
-    const open = kept ? kept === 'open' : !solved(c.id);
-    const meta = `${order.length} file${order.length === 1 ? '' : 's'} · ${solved(c.id) ? 'solved' : 'from scratch or Boilerplate'}`;
-    return `<details class="start" data-start${open ? ' open' : ''}><summary><span class="st-title">Start here</span>`
-      + `<span class="st-meta">${meta}</span><span class="st-chev">${I.down}</span></summary><div class="start-body">
-      <p>Write ${order.length === 1 ? 'this file' : `these ${order.length} files`}, in this order. Open each one to see your job in it. Only the program's output is checked, so you can design the code your own way.</p>
-      <ol class="start-files">${files}</ol>${uses}${ways}
-      <p><b>Done</b> when Submit says Accepted: all ${c.tests} tests pass. The Editorial then shows a solution that passes and how the author did it.</p></div></details>`;
+    const facts = [];
+    if (c.files.some((f) => f.boilerplate != null)) {
+      facts.push(['Start from', `<div class="ways" role="group" aria-label="Start from">
+        <button type="button" class="way" data-start-kind="boilerplate">Boilerplate</button>
+        <button type="button" class="way" data-start-kind="blank">From scratch</button></div>
+        <span class="way-note">${WAY_NOTES[kindOf(c)]}</span>`]);
+    }
+    if (c.buildsOn.length) facts.push(['You can use', `<span>${c.buildsOn.map((f) => `${link(f)} <span class="muted">${from(f)}</span>`).join(' &nbsp;')}</span>`]);
+    facts.push(['Done when', `<span>Submit says <b>Accepted</b> on all ${c.tests} tests.</span>`]);
+    return `<section class="start" aria-labelledby="start-title">
+      <div class="start-top"><span class="start-eyebrow">Start here</span>
+        <h2 id="start-title">Write ${order.length === 1 ? 'this file' : `${order.length} files, in this order`}</h2>
+        <p class="start-sub">Only the program's output is checked, so the design is yours.</p></div>
+      <ol class="steps">${steps}</ol>
+      <dl class="start-facts">${facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+    </section>`;
   }
-  // Remember the learner's own choice to open or close Start here. A click on the summary (Enter and
-  // Space count) is a choice; the toggle event also fires when the card is drawn already open.
-  $('#desc').addEventListener('click', (e) => {
-    const summary = e.target.closest('[data-start] > summary');
-    if (summary && current) store.set(current + ':start', summary.parentElement.open ? 'closed' : 'open');
-  });
 
   function exampleHtml(ex) {
     const title = `<p class="ex-title"><strong>${esc(ex.label)}:</strong> <span>${ex.name}</span></p>`;
@@ -1313,16 +1336,18 @@ span.CodeMirror-selectedtext { background: none; }
   // Blank or boilerplate: a assignment's own files (its entry program and the files it creates) start
   // from one of them. Earlier files it adds to are never replaced.
   const ownFiles = (c) => c.files.filter((f) => f.role !== 'adds');
-  const kindOf = (c) => (store.get(c.id + ':kind') === 'boilerplate' && c.files.some((f) => f.boilerplate != null) ? 'boilerplate' : 'blank');
+  // Boilerplate unless the learner chose to start from scratch (or there's no boilerplate).
+  const kindOf = (c) => (store.get(c.id + ':kind') !== 'blank' && c.files.some((f) => f.boilerplate != null) ? 'boilerplate' : 'blank');
   const starterOf = (f, kind) => (kind === 'boilerplate' && f.boilerplate != null ? f.boilerplate : f.blank);
-  const kindName = (kind) => (kind === 'boilerplate' ? 'Boilerplate' : 'Blank');
+  const kindName = (kind) => (kind === 'boilerplate' ? 'Boilerplate' : 'From scratch');
+  const kindPhrase = (kind) => (kind === 'boilerplate' ? 'the Boilerplate' : 'empty files (from scratch)');
   // The published book: what a file shows before you've typed in it.
   function startText(c, path) {
     const draft = store.get(draftKey(path)), f = fileIn(c, path);
     return draft !== null ? draft : f ? starterOf(f, f.role === 'adds' ? 'blank' : kindOf(c)) : '';
   }
   function useStarter(c, kind) {
-    if (kind === 'boilerplate') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
+    if (kind === 'blank') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
     paintKind(c);
     if (LOCAL) {
       api('/api/starter', { method: 'POST', body: JSON.stringify({ checkpoint: c.id, kind }) }).then((r) => {
@@ -1345,6 +1370,7 @@ span.CodeMirror-selectedtext { background: none; }
     $('#kind').hidden = !c.files.some((f) => f.boilerplate != null);
     $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
     $$('[data-start-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.startKind === kindOf(c))));
+    $$('.way-note').forEach((n) => { n.textContent = WAY_NOTES[kindOf(c)]; });
   }
   // Changed from both starters: replacing it would lose work, so ask first.
   function ownChanged(c) {
@@ -1370,11 +1396,11 @@ span.CodeMirror-selectedtext { background: none; }
     const c = BY[current];
     if (!b || !c || b.dataset.kind === kindOf(c)) return;
     if (!ownChanged(c)) useStarter(c, b.dataset.kind);
-    else ask(`Replace this assignment's ${filesWord(c)} with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
+    else ask(`Replace this assignment's ${filesWord(c)} with ${kindPhrase(b.dataset.kind)}?`, () => useStarter(c, b.dataset.kind));
   });
   $('#reset').addEventListener('click', () => {
     const c = BY[current];
-    ask(`Reset this assignment's ${filesWord(c)} to the ${kindName(kindOf(c)).toLowerCase()} starter?`, () => useStarter(c, kindOf(c)));
+    ask(`Reset this assignment's ${filesWord(c)} to ${kindPhrase(kindOf(c))}?`, () => useStarter(c, kindOf(c)));
   });
   $('#confirm-no').addEventListener('click', () => {
     $('#confirm').hidden = true;
@@ -1419,7 +1445,7 @@ span.CodeMirror-selectedtext { background: none; }
         : known && known.text === textOf(path) ? `Saved to ${path}` : 'Saving…';
       return;
     }
-    $('#saved').textContent = path && store.get(draftKey(path)) !== null ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
+    $('#saved').textContent = path && store.get(draftKey(path)) !== null ? 'Saved in this browser' : kindOf(BY[current]) === 'boilerplate' ? 'The Boilerplate' : 'Empty, from scratch';
   }
   function showPos() {
     if (!cm) { $('#pos').textContent = ''; return; }
@@ -1538,7 +1564,7 @@ span.CodeMirror-selectedtext { background: none; }
   // Opening a assignment creates its files in your project (never over ones that exist).
   async function startCheckpoint(c) {
     try {
-      await api('/api/start', { method: 'POST', body: JSON.stringify({ checkpoint: c.id }) });
+      await api('/api/start', { method: 'POST', body: JSON.stringify({ checkpoint: c.id, kind: kindOf(c) }) });
       setOnline(true);
       live.noProject = false;
     } catch (e) {

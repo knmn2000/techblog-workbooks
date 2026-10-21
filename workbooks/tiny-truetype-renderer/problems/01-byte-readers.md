@@ -232,11 +232,15 @@ each byte shift what you have 8 bits left and OR the byte in.
 
 <details><summary>Hint 2: the approach</summary>
 
-One function template can serve all six integer types. Loop `sizeof(T)` times, building the
-value in a wide unsigned variable such as `uint64_t`, and throw `UnexpectedEof` as soon as
-`get()` reports the end. For a signed `T`, apply the two's complement rule to the finished
-value. Then `readF2Dot14` is `readInt16() / 16384.0`, `jumpTo` is
-`seekg(offset, std::ios::beg)` and `skipBytes` is `seekg(count, std::ios::cur)`.
+One function can serve all six integer types (a function template, in C++). Loop once per
+byte of the type, building the value in a wide unsigned variable such as `uint64_t`, and report
+the end of the file (by throwing an exception, for example) as soon as `get()` reports it. For a
+signed type, apply the two's complement rule to the finished value.
+
+The rest is short: an F2Dot14 is a 16-bit signed read divided by 16384.0, a jump is
+`seekg(offset, std::ios::beg)`, and a skip is `seekg(count, std::ios::cur)`. (In the
+Boilerplate these are `readBigEndian`, `readF2Dot14`, `jumpTo` and `skipBytes`, and the end of
+the file is the `UnexpectedEof` exception.)
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -250,27 +254,27 @@ value. Then `readF2Dot14` is `readInt16() / 16384.0`, `jumpTo` is
 - Check for the end on every byte, not just the first. `file.eof()` is no help before a
   read: it only turns true after a read has failed.
 - A stream that has failed ignores `seekg` until you call `clear()`. Calling `clear()` at the
-  start of `jumpTo` keeps your reader usable after an error.
+  start of your jump keeps your reader usable after an error.
 - Printing a `uint8_t` with `<<` prints a character. Put `+` in front of it, or cast it to `int`, to print the number.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
-readBigEndian<T>():
+read_big_endian(T):
     value = 0                               # wide and unsigned, e.g. uint64
-    repeat sizeof(T) times:
+    repeat size_of(T) times:
         c = file.get()
-        if c is EOF: throw UnexpectedEof
+        if c is EOF: report "end of file"   # e.g. throw an exception
         value = (value << 8) | c
-    n = 8 * sizeof(T)
+    n = 8 * size_of(T)
     if T is signed and value >= 2^(n-1):
         return value - 2^n                  # as a signed number
     return value
 
-readF2Dot14():  return readInt16() / 16384.0
-jumpTo(offset): file.clear(); file.seekg(offset, from the start)
-skipBytes(n):   file.seekg(n, from the current position)
+read_f2dot14():  return read_big_endian(int16) / 16384.0
+jump_to(offset): file.clear(); file.seekg(offset, from the start)
+skip(n):         file.seekg(n, from the current position)
 ```
 </details>
 

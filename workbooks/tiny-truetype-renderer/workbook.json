@@ -9,6 +9,7 @@
     ],
     "name": "tiny_ttf",
     "reference": "_spoilers/project",
+    "starter": "boilerplate",
     "copy": {
       "third_party/stb_image_write.h": "third_party/stb/stb_image_write.h"
     },

@@ -15,8 +15,8 @@
 //   fill in what's marked TODO.
 //
 // How to start:
-//   This is the Boilerplate. To start from an empty file instead, press Blank in the
-//   book's editor (the blank files are in starters/blank/).
+//   This is the Boilerplate. To start from an empty file instead, choose From scratch in
+//   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
 #include "font/GlyphParser.h"

@@ -77,10 +77,10 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
 
 1. Read the problem (book or `problems/NN-*.md`). In the book, its **Start here** card lists the
    files to write, your job in each, the earlier files you can use, and the two ways to start.
-2. Write them. They start blank: the includes, reading the input and writing the output are
-   yours. If you'd rather start from ready-made input/output code, pick Boilerplate in the book's
-   editor (or copy the assignment's files from `starters/boilerplate/`) and fill in what's marked
-   `TODO`. The boilerplate uses the author's names where the post has them.
+2. Write them. They start as the Boilerplate: the input/output and the declarations are written
+   (with the author's names where the post has them), and you fill in what's marked `TODO`. To
+   write everything yourself, including the includes, the parsing and the output, choose **From
+   scratch** on the Start here card: each file is then empty apart from its comment.
 3. Check it from this folder in PowerShell, or with Run and Submit in the book:
 
 ```

@@ -8,7 +8,8 @@ The layout is set in workbook.json: "project" says where the project lives and w
 with, and each assignment lists the files it creates ("files") and the earlier files it adds to
 ("extends"). Each assignment also has a program the checker runs ("solution", e.g.
 assignments/assignment_07_simple_glyph.cpp) that reads a test input, calls the project and writes the
-output. Starting an assignment copies its starters from starters/blank/.
+output. Starting an assignment copies its starters: the boilerplate by default
+(project.starter in workbook.json), or the blank ones.
 """
 
 import json
@@ -100,14 +101,18 @@ def setup(config: dict, language: str = "") -> list:
     return created
 
 
-def start(config: dict, cid: str) -> list:
-    """Creates the checkpoint's files from their blank starters, and any earlier file it adds to
-    that's missing (from that file's own checkpoint). Never touches an existing file."""
+def start(config: dict, cid: str, kind: str = "") -> list:
+    """Creates the assignment's files, and any earlier file it adds to that's missing, from their
+    starters: `kind` ("boilerplate" or "blank"), else workbook.json's project.starter, else the
+    boilerplate. A file without that starter gets its blank one. Never touches an existing file."""
     if not exists(config):
         raise NoProject(config["project"]["dir"])
+    kind = kind or config["project"].get("starter", "boilerplate")
     created = []
     for path in touched_files(config, cid):
-        target, source = home(config) / path, starter("blank", path)
+        target, source = home(config) / path, starter(kind, path)
+        if not source.exists():
+            source = starter("blank", path)
         if not target.exists() and source.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)

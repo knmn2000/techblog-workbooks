@@ -235,9 +235,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(404, {"error": "no such assignment"})
             if not project.exists(wb.config):
                 return self.reply(409, {"error": "no-project"})
-            if path == "/api/start":  # opening an assignment creates its files (never over existing ones)
-                return self.reply(200, {"created": project.start(wb.config, cid)})
             kind = str(options.get("kind", ""))
+            if path == "/api/start":  # opening an assignment creates its files (never over existing ones)
+                return self.reply(200, {"created": project.start(wb.config, cid, kind if kind in ("blank", "boilerplate") else "")})
             if kind not in ("blank", "boilerplate"):
                 return self.reply(400, {"error": "kind must be blank or boilerplate"})
             written = project.use_starter(wb.config, cid, kind)

@@ -136,9 +136,10 @@ After any change to a reference file, run `-Ref` again for every assignment that
 ## 4. The starters
 
 Each of an assignment's own files (its entry program and the files it creates) has two starters at
-the same path: `starters/blank/` and `starters/boilerplate/`. Opening an assignment copies its blank
-starters into the learner's project (`tools/project.py start`), never over an existing file; the
-book's Blank / Boilerplate switch replaces them after asking.
+the same path: `starters/blank/` and `starters/boilerplate/`. Opening an assignment copies its
+starters into the learner's project (`tools/project.py start`), never over an existing file: the
+boilerplate by default (`project.starter` in `workbook.json`), or the blank ones when the learner
+chose From scratch; the book's switch replaces them after asking.
 
 Every starter, blank or boilerplate, begins with the same header, written by
 `py -P tools/blank_starters.py` from `workbook.json`: the assignment and its problem page, **Why

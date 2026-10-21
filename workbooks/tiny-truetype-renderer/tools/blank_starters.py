@@ -92,8 +92,8 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
             lines += wrap(f'Include them by their path under src/, e.g. #include "{headers[0].removeprefix("src/")}".')
         if lines:
             sections.append(["The other files of this assignment:", *("  " + l for l in lines)])
-    how = ("This is the Boilerplate. To start from an empty file instead, press Blank in the book's "
-           "editor (the blank files are in starters/blank/)." if kind == "boilerplate" else
+    how = ("This is the Boilerplate. To start from an empty file instead, choose From scratch in the "
+           "book (the empty files are in starters/blank/)." if kind == "boilerplate" else
            "Two ways: write it all yourself from here, or press Boilerplate in the book's editor for "
            "ready-made input/output code and declarations named as the author names them (the same "
            "files are in starters/boilerplate/).")
