@@ -77,9 +77,24 @@ you why it's right. Disputes are kept in `disputes.json`.
 
 ## Using another language or library
 
-The checker runs `<run> <input-file> <output-file>` from this folder and compares the output file
-(for pictures: a PNG, or a binary PPM, at the output path). Change `build` and `run` in
-`workbook.json`, for example:
+The checker runs your program as `<program> <input-file> <output-file>` and compares the output
+file, so any language works. Eight are built in: C, C++, Go, Rust, Python, JavaScript, TypeScript
+and Lua. Pick one in the book's editor, or add `-Lang` on the command line:
+
+```
+.\check 07 -Lang python      checks solutions/p07_simple_glyph.py
+.\check 07 -Lang go          checks solutions/p07_simple_glyph.go
+```
+
+The file sits next to the C++ one, with its own extension, and the first run creates a blank
+starter for it. If the language's tools aren't installed, the checker says how to install them.
+Shared code works the same way in every language: it goes in `solutions/common/`, and each blank
+starter says how its language picks it up. The boilerplate starters and the reference solutions
+are C++ only.
+
+For any other language or setup, the checker runs `<run> <input-file> <output-file>` from
+this folder and compares the output file (for pictures: a PNG, or a binary PPM, at the output
+path). Change `build` and `run` in `workbook.json`, for example:
 
 ```json
 "build": "",

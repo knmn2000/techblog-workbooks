@@ -32,6 +32,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from imageio import ImageError, compare_images  # noqa: E402
+import langs  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 NOT_IMPLEMENTED_EXIT = 99
@@ -482,6 +483,16 @@ def main(argv: list) -> int:
     run_template = custom[0] if custom else steps["run"]
     run_template = run_template.replace("{id}", checkpoint)
 
+    # Another language than the workbook's own: built and run by tools/langs.py.
+    chosen = option("-lang")
+    lang = LANG_ALIASES.get((chosen[0] if chosen else "").lower(), (chosen[0] if chosen else "").lower()) or langs.native(config)
+    if lang not in langs.LANGUAGES:
+        print(f"Unknown language {lang!r}. Choose one of: {', '.join(langs.LANGUAGES)}")
+        return finish(2, verdict="error", message=f"unknown language {lang}")
+    REPORT["language"] = lang
+    if lang != langs.native(config) and not use_ref and not custom:
+        return check_other_language(checkpoint, meta, config, lang, case_file, cases_path, option)
+
     solution = ROOT / meta["solution"]
     if not use_ref and not custom and solution.exists() and not solution.read_text(encoding="utf-8", errors="replace").strip():
         print(f"Not started yet: {meta['solution']} is empty.\n"
@@ -498,13 +509,60 @@ def main(argv: list) -> int:
         return finish(2, verdict="not-started", empty=False)
 
     if not custom and not build(steps):
-        output = getattr(run_step, "output", "")
-        no_main = bool(re.search(r"undefined reference to `(WinMain|main)'|entry point must be defined|_main.*referenced from", output))
-        if no_main:
-            print("Your program has no main() function. The checker runs it as a program, so it needs one.")
-        print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
-        return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=compiler_errors(output))
+        return compile_error(checkpoint, getattr(run_step, "output", ""))
+    return run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_template,
+                          "reference solution" if use_ref else ("custom command" if custom else meta["solution"]),
+                          use_ref and not custom)
 
+
+LANG_ALIASES = {"c++": "cpp", "cxx": "cpp", "js": "javascript", "node": "javascript", "ts": "typescript",
+                "py": "python", "python3": "python", "rs": "rust", "golang": "go"}
+NO_MAIN = re.compile(r"undefined reference to `(WinMain|main)'|entry point must be defined|_main.*referenced from"
+                     r"|function main is undeclared|`main` function not found")
+
+
+def compile_error(checkpoint: str, output: str) -> int:
+    no_main = bool(NO_MAIN.search(output))
+    if no_main:
+        print("Your program has no main() function. The checker runs it as a program, so it needs one.")
+    print(f"Compile Error - fix the errors above and run .\\check {checkpoint} again.")
+    return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=compiler_errors(output))
+
+
+def check_other_language(checkpoint, meta, config, lang, case_file, cases_path, option) -> int:
+    """A checkpoint solved in a language other than the workbook's own (see tools/langs.py)."""
+    spec = langs.LANGUAGES[lang]
+    flag = f".\\check {checkpoint} -Lang {lang}"
+    tool, problem = langs.find_tool(lang)
+    if tool is None:
+        print(langs.install_text(lang))
+        return finish(2, verdict="missing-tool", install=langs.availability(lang))
+    solution = langs.solution_path(meta, lang, config)
+    rel = solution.relative_to(ROOT).as_posix()
+    blank = langs.blank_starter(lang, checkpoint, meta, config)
+    if not solution.exists():
+        solution.write_text(blank, encoding="utf-8", newline="\n")
+        print(f"Not started yet: created {rel} with a blank {spec['label']} starter.\n"
+              f"Write your program there (the problem is in {meta['problem']}), then run {flag} again.")
+        return finish(2, verdict="not-started", empty=False, created=rel)
+    text = solution.read_text(encoding="utf-8", errors="replace")
+    if not text.strip():
+        print(f"Not started yet: {rel} is empty.\nWrite your program there, then run {flag} again.")
+        return finish(2, verdict="not-started", empty=True)
+    if [l.rstrip() for l in text.splitlines()] == [l.rstrip() for l in blank.splitlines()]:
+        print(f"Not started yet: {rel} is still the blank starter.\nWrite your program there, then run {flag} again.")
+        return finish(2, verdict="not-started", empty=False)
+    ok, output = langs.build(lang, checkpoint, meta, config)
+    if not ok:
+        print(f"Build failed:\n{output}\n")
+        return compile_error(checkpoint, output)
+    return run_and_report(checkpoint, meta, config, case_file, cases_path, option,
+                          langs.run_command(lang, checkpoint, meta, config), f"{rel}, {spec['label']}", False)
+
+
+def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_template, who, verify) -> int:
+    """Runs every case and prints the verdict (text, and REPORT for -Json)."""
+    fresh = option("-fresh")
     only = option("-case")
     cases = case_file.cases
     if only is not None:
@@ -525,7 +583,6 @@ def main(argv: list) -> int:
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
         results = list(pool.map(lambda c: run_case(c, run_template, work, how, explain, timeout), cases))
 
-    who = "reference solution" if use_ref else ("custom command" if custom else meta["solution"])
     print(f"Checkpoint {checkpoint} - {meta['title']}")
     print(f"Program:  {run_template}   ({who})")
     print(f"Cases:    {cases_path.relative_to(ROOT).as_posix()} (seed {case_file.header.get('seed', '?')})\n")
@@ -588,7 +645,7 @@ def main(argv: list) -> int:
     if passed == len(results):
         note = f" ({len(set_aside)} disputed)" if set_aside else ""
         print(f"\nAccepted: {passed} / {len(results)} tests passed{note}.")
-        if use_ref and not custom and fresh is None and cases_path == ROOT / meta["cases"] and not set_aside:
+        if verify and fresh is None and cases_path == ROOT / meta["cases"] and not set_aside:
             record_verified(checkpoint, meta, passed, len(results))
             print(f"Recorded in {VERIFIED.relative_to(ROOT).as_posix()}: the Editorial can show this solution.")
         return finish(0, verdict="accepted")
@@ -631,13 +688,8 @@ def case_json(r: Result, texts: dict, full: bool) -> dict:
 
 
 def compiler_errors(output: str) -> list:
-    """file:line:col: error: message lines from the build output, for marking the editor."""
-    found = []
-    for m in re.finditer(r"^(.*?\.(?:c|cc|cpp|cxx|h|hpp)):(\d+):(\d+): (fatal error|error|warning): (.*)$",
-                         output, re.M):
-        found.append({"file": m.group(1).replace("\\", "/"), "line": int(m.group(2)), "column": int(m.group(3)),
-                      "kind": "warning" if m.group(4) == "warning" else "error", "message": m.group(5)})
-    return found[:50]
+    """file, line and message of each error in the build output (any language), for marking the editor."""
+    return langs.parse_errors(output)
 
 
 def main_json(argv: list) -> int:

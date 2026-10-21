@@ -27,6 +27,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_book  # noqa: E402
+import langs  # noqa: E402
 from check import to_args  # noqa: E402
 from imageio import ImageError, png_bytes, read_image  # noqa: E402
 
@@ -36,13 +37,16 @@ IMAGE_ROOTS = ("build/cases/", "build/fresh/", "tests/")  # the only folders /fi
 MAX_BODY = 4 * 1024 * 1024
 CASE_ID = re.compile(r"^[\w.+-]+$")
 # Files the learner may create and edit in solutions/common/ from the page.
-SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go",
+SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go", ".lua",
                ".java", ".kt", ".cs", ".md", ".txt", ".json"}
-# How a checkpoint file pulls in shared code, per language: C/C++ includes, Python imports, JS imports.
-USES = [re.compile(r'^\s*#\s*include\s+"(common/[^"]+)"', re.M),
-        re.compile(r"^\s*from\s+(common(?:\.\w+)+)\s+import", re.M),
+# How a checkpoint file pulls in shared code, per language. (Go builds every common/*.go with the
+# checkpoint, so there's nothing to find there.)
+USES = [re.compile(r'^\s*#\s*include\s+"(common/[^"]+)"', re.M),                     # C, C++
+        re.compile(r"^\s*from\s+(common(?:\.\w+)+)\s+import", re.M),                  # Python
         re.compile(r"^\s*import\s+(common(?:\.\w+)+)", re.M),
-        re.compile(r"""(?:require\(|from\s+)['"]\./(common/[^'"]+)['"]""", re.M)]
+        re.compile(r"""(?:require\(|from\s+)['"]\./(common/[^'"]+)['"]""", re.M),     # JS, TS
+        re.compile(r'#\[path\s*=\s*"(common/[^"]+)"\]', re.M),                        # Rust
+        re.compile(r"""require\s*\(?\s*['"](common\.[\w.]+)['"]""", re.M)]            # Lua
 
 
 class Workbook:
@@ -52,15 +56,27 @@ class Workbook:
         self.token = secrets.token_urlsafe(24)
         self.lock = threading.Lock()  # one checker run at a time: they share the build folder
         self.setup_error = None
-        self.solutions = {(ROOT / meta["solution"]).resolve(): cid for cid, meta in self.config["checkpoints"].items()}
+        self.native = langs.native(self.config)
+        # Every checkpoint's file in every language (whether it exists yet or not) -> (checkpoint, language).
+        self.solutions = {langs.solution_path(meta, lang, self.config).resolve(): (cid, lang)
+                          for cid, meta in self.config["checkpoints"].items() for lang in langs.LANGUAGES}
+        self._langs, self._langs_at = None, 0.0
 
     def solution(self, cid: str):
         meta = self.config["checkpoints"].get(cid)
         return ROOT / meta["solution"] if meta else None
 
+    def languages(self) -> dict:
+        """Which languages this computer can build and run, with install help (cached briefly)."""
+        if self._langs is None or time.time() - self._langs_at > 15:
+            self._langs = {"native": self.native, "platform": langs.platform(),
+                           "languages": [langs.availability(key) for key in langs.LANGUAGES]}
+            self._langs_at = time.time()
+        return self._langs
+
     def learner_file(self, rel: str):
-        """A path the page may read or write: a checkpoint's solution file, or a source file
-        anywhere under solutions/common/. Everything else is refused."""
+        """A path the page may read or write: a checkpoint's file (in any language), or a source
+        file anywhere under solutions/common/. Everything else is refused."""
         target = (ROOT / rel.replace("\\", "/").lstrip("/")).resolve()
         common = (ROOT / "solutions" / "common").resolve()
         if target in self.solutions:
@@ -70,20 +86,25 @@ class Workbook:
         return None
 
     def files(self) -> list:
-        """The learner's project: every checkpoint file (with the shared files it uses), then
-        everything in solutions/common/."""
+        """The learner's project: every checkpoint file (the workbook's language, plus any other
+        language started), with the shared files each uses, then everything in solutions/common/."""
         def lines(p):
             return p.read_text(encoding="utf-8", errors="replace").count("\n") + 1 if p.exists() else 0
 
         out = []
-        for path, cid in sorted(self.solutions.items(), key=lambda kv: kv[1]):
+        for path, (cid, lang) in sorted(self.solutions.items(), key=lambda kv: (kv[1][0], kv[1][1] != self.native, kv[1][1])):
+            if lang != self.native and not path.exists():
+                continue
             text = path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
             uses = []
             for pattern in USES:
                 for name in pattern.findall(text):
-                    rel = name if "/" in name else name.replace(".", "/") + ".py"
+                    if "/" in name:
+                        rel = name
+                    else:  # a dotted module name: common.x -> common/x.py or .lua
+                        rel = name.replace(".", "/") + (".lua" if lang == "lua" else ".py")
                     uses.append("solutions/" + rel)
-            out.append({"path": path.relative_to(ROOT.resolve()).as_posix(), "checkpoint": cid,
+            out.append({"path": path.relative_to(ROOT.resolve()).as_posix(), "checkpoint": cid, "lang": lang,
                         "lines": lines(path), "uses": sorted(set(uses))})
         common = ROOT / "solutions" / "common"
         if common.is_dir():
@@ -197,6 +218,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200, file_state(target))
         if path == "/api/files":
             return self.reply(200, {"files": self.server.wb.files()})
+        if path == "/api/langs":
+            return self.reply(200, self.server.wb.languages())
         if path == "/api/file":
             target = self.server.wb.learner_file(query.get("path", [""])[0])
             if target is None:
@@ -235,14 +258,30 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         if not self.allowed():
             return self.reply(403, {"error": "forbidden"})
-        m = re.match(r"^/api/check/(\w+)$", path)
-        if not m or m.group(1) not in self.server.wb.config["checkpoints"]:
-            return self.reply(404, {"error": "no such checkpoint"})
+        wb = self.server.wb
         try:
             options = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
+        lang = str(options.get("lang") or wb.native)
+        if lang not in langs.LANGUAGES:
+            return self.reply(400, {"error": "unknown language"})
+        if path == "/api/start":
+            # A checkpoint in another language: create its blank starter the first time.
+            cid = str(options.get("checkpoint", ""))
+            meta = wb.config["checkpoints"].get(cid)
+            if meta is None:
+                return self.reply(404, {"error": "no such checkpoint"})
+            target = langs.solution_path(meta, lang, wb.config)
+            if lang != wb.native and not target.exists():
+                target.write_text(langs.blank_starter(lang, cid, meta, wb.config), encoding="utf-8", newline="\n")
+            return self.reply(200, file_state(target))
+        m = re.match(r"^/api/check/(\w+)$", path)
+        if not m or m.group(1) not in wb.config["checkpoints"]:
+            return self.reply(404, {"error": "no such checkpoint"})
         args = [sys.executable, "-P", str(CHECK), m.group(1), "-Json"]
+        if lang != wb.native:
+            args += ["-Lang", lang]
         if options.get("case"):
             if not CASE_ID.match(str(options["case"])):
                 return self.reply(400, {"error": "bad test id"})

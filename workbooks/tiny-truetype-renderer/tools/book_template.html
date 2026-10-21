@@ -402,6 +402,12 @@ figure.split-figure svg { width: 100%; max-width: 200px; height: auto; display: 
 .finish td { padding: 3px 0; vertical-align: top; color: var(--text-2); }
 .finish td:first-child { font-family: var(--font-mono); color: var(--text); padding-right: 8px; word-break: break-all; }
 .vim-btn { width: auto; padding: 0 8px; font: 600 12px var(--font-mono); }
+.lang-select { height: 26px; border: 0; border-radius: 6px; background: var(--fill); color: var(--text); font: 500 13px var(--font-ui); padding: 0 4px; cursor: pointer; max-width: 160px; }
+.lang-select:hover { background: var(--fill-hover); }
+.install { display: grid; gap: 8px; background: var(--fill); border-radius: 8px; padding: 12px 14px; margin: 0 0 12px; font-size: 13px; color: var(--text-2); }
+.install p { margin: 0; }
+.install b { color: var(--medium); }
+.install .cmd { background: var(--layer); }
 .vim-btn[aria-pressed="true"] { color: var(--ok); background: var(--fill); }
 /* Vim mode: block cursor in Normal mode, and the : / command line (CodeMirror's dialog addon). */
 .cm-fat-cursor .CodeMirror-cursor { width: auto; border: 0 !important; background: color-mix(in srgb, var(--ok) 55%, transparent); }
@@ -603,7 +609,8 @@ span.CodeMirror-selectedtext { background: none; }
       <section class="panel code" aria-label="Code">
         <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: shared code in common/ and every checkpoint's file"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
         <div class="code-tools">
-          <span class="lang" id="lang" title="Only your program's output is checked, so any language works. To use another one, change build and run in workbook.json."></span>
+          <select class="lang-select" id="lang-select" aria-label="Language" title="Only your program's output is checked, so any of these languages works. Each checkpoint keeps a file per language."></select>
+          <span class="lang" id="lang" hidden></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
             <button type="button" data-kind="blank" aria-pressed="true" title="A comment and an empty main: the includes, input and output are yours">Blank</button>
             <button type="button" data-kind="boilerplate" aria-pressed="false" title="Input/output code done; you fill in the functions marked TODO">Boilerplate</button>
@@ -664,9 +671,16 @@ span.CodeMirror-selectedtext { background: none; }
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = (s) => String(s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const command = (id, extra) => DATA.check.replace('{id}', id) + (extra ? ' ' + extra : '');
+  // Languages: the workbook's own (with the boilerplate and the proven solution), and every other one
+  // in tools/langs.py. Each checkpoint has one file per language; the choice is remembered here.
+  const NATIVE = DATA.native;
+  const LANG = Object.fromEntries(DATA.languages.map((l) => [l.key, l]));
+  let curLang = LANG[store.get('lang')] ? store.get('lang') : NATIVE;
+  const fileOf = (c, lang) => c.files[lang || curLang];
+  const draftKey = (c, lang) => ((lang || curLang) === NATIVE ? `${c.id}:draft` : `${c.id}:${lang || curLang}:draft`);
+  const command = (id, extra) => DATA.check.replace('{id}', id) + (curLang !== NATIVE ? ` -Lang ${curLang}` : '') + (extra ? ' ' + extra : '');
   const solved = (id) => store.get(id + ':solved') === '1';
-  const drafted = (id) => store.get(id + ':draft') !== null;
+  const drafted = (id) => DATA.languages.some((l) => store.get(l.key === NATIVE ? `${id}:draft` : `${id}:${l.key}:draft`) !== null);
   const diffClass = (d) => d.toLowerCase();
   const icon = (paths, size, extra) => `<svg viewBox="0 0 24 24" width="${size || 16}" height="${size || 16}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"${extra || ''}>${paths}</svg>`;
   const I = {
@@ -736,7 +750,7 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="bars">${bars}</div>
       </div>
       <div class="card how"><h2>How checking works</h2><ol>
-        <li><span><b>Write it</b> in the editor here, or straight in <code>solutions/</code> in your own editor. Each starter is an empty <code>main</code>; switch to Boilerplate if you want the input and output code done for you.</span></li>
+        <li><span><b>Write it</b> in the editor here, or straight in <code>solutions/</code> in your own editor, in any of ${DATA.languages.map((l) => esc(l.label)).join(', ')} (pick one in the editor's menu). Each starter is an empty <code>main</code>; in ${esc(LANG[NATIVE].label)} you can switch to Boilerplate for ready-made input and output code.</span></li>
         ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test; the verdict appears in Test Result, and Accepted marks the checkpoint solved. Your code is saved to <code>solutions/</code> as you type.</span></li>`
           : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
         <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the checkpoint solved. Or open the workbook with <code>study</code> (double-click <code>study.cmd</code>) and Run and Submit run your code directly.</span></li>`}
@@ -930,7 +944,7 @@ span.CodeMirror-selectedtext { background: none; }
     const files = sol && sol.files.length > 1
       ? `<div class="case-pills" role="tablist">${sol.files.map((f, i) => `<button class="pill-btn" type="button" role="tab" data-sol="${i}" aria-selected="${i === solFile}">${esc(f.path)}</button>`).join('')}</div>` : '';
     $('#editorial').innerHTML = `<h1 class="ed-title">Editorial</h1>`
-      + (sol ? `<section class="ed-sec"><h2>A solution that passes</h2>${proof}
+      + (sol ? `<section class="ed-sec"><h2>A solution that passes <span class="muted">(${esc(LANG[NATIVE].label)})</span></h2>${proof}
           <p class="note">Written from the problem page, not copied from the blog. Yours can look completely different and still be right: only the output is checked.</p>
           ${files}<div class="sol-head"><code>${esc(sol.files[solFile].path)}</code><button class="btn" type="button" id="sol-copy">Copy</button></div>
           <pre class="sol-code" id="sol-code"></pre>
@@ -1020,8 +1034,8 @@ span.CodeMirror-selectedtext { background: none; }
     } else if (/Not started yet/.test(t)) {
       v = { kind: 'warn', label: 'Not started yet' };
       v.help = /is empty\./.test(t)
-        ? `Your solution file <code>${esc(c.solution)}</code> is empty, so there was nothing to check. Put your program in it, save, and run ${run} again.`
-        : `Your solution file <code>${esc(c.solution)}</code> is still the blank starter, so there was nothing to check. Write your program in it, save, and run ${run} again.`;
+        ? `Your solution file <code>${esc(fileOf(c))}</code> is empty, so there was nothing to check. Put your program in it, save, and run ${run} again.`
+        : `Your solution file <code>${esc(fileOf(c))}</code> is still the blank starter, so there was nothing to check. Write your program in it, save, and run ${run} again.`;
     } else if (/^Passed\s*$/m.test(t)) {
       v = { kind: 'ok', label: 'Passed', single: true, help: 'This one test passes. Run all of them to get a verdict for the checkpoint.' };
     } else if ((m = t.match(/^Failed: (.*)$/m))) {
@@ -1030,7 +1044,7 @@ span.CodeMirror-selectedtext { background: none; }
       v = { kind: 'unknown', label: 'Nothing was pasted', help: 'The box was empty. Copy what the checker printed in the terminal, then paste it here.' };
     } else if (looksLikeCode(t, c)) {
       v = { kind: 'unknown', label: "That's your code, not the result", code: true,
-        help: `Submit copied your code so you can put it in <code>${esc(c.solution)}</code>. Paste it into that file and save, run ${run} in ${esc(DATA.shell)}, then copy what the checker prints and paste that here.` };
+        help: `Submit copied your code so you can put it in <code>${esc(fileOf(c))}</code>. Paste it into that file and save, run ${run} in ${esc(DATA.shell)}, then copy what the checker prints and paste that here.` };
     } else if (head) {
       v = { kind: 'unknown', label: 'The output is cut off',
         help: `This starts like the checker's output but has no verdict at the end. Copy everything it printed, down to the last line (it starts with Accepted, Wrong Answer, Compile Error, Not started yet or Not implemented yet).` };
@@ -1085,7 +1099,7 @@ span.CodeMirror-selectedtext { background: none; }
     $('#result').innerHTML = (notice ? `<p class="note warn">${notice}</p>` : '')
       + (act && act.warn ? `<p class="note warn">${act.warn}</p>` : '') + (v ? verdictHtml(v, c) : '') + `
       <ol class="steps">
-        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(c.solution)}</code>. Skip this if you edit that file directly.</p>
+        <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(fileOf(c))}</code>. Skip this if you edit that file directly.</p>
           <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
         <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
         <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p><b>Copy what the checker prints</b> in the terminal and paste it here (the result, not your code).</p>
@@ -1174,8 +1188,8 @@ span.CodeMirror-selectedtext { background: none; }
   }
   const code = () => (cm ? cm.getValue() : plainEditor.value);
   // Each checkpoint starts blank; the boilerplate (input/output done) is one click away.
-  const kindOf = (c) => (c.boilerplate && store.get(c.id + ':kind') === 'boilerplate' ? 'boilerplate' : 'blank');
-  const starterOf = (c, kind) => (kind === 'boilerplate' && c.boilerplate ? c.boilerplate : c.starter);
+  const kindOf = (c) => (curLang === NATIVE && c.boilerplate && store.get(c.id + ':kind') === 'boilerplate' ? 'boilerplate' : 'blank');
+  const starterOf = (c, kind) => (curLang !== NATIVE ? c.blanks[curLang] : kind === 'boilerplate' && c.boilerplate ? c.boilerplate : c.starter);
   const kindName = (kind) => (kind === 'boilerplate' ? 'Boilerplate' : 'Blank');
   function setCode(text) {
     if (cm) cm.setValue(text); else plainEditor.value = text;
@@ -1183,12 +1197,12 @@ span.CodeMirror-selectedtext { background: none; }
   function useStarter(c, kind) {
     if (kind === 'boilerplate') store.set(c.id + ':kind', kind); else store.del(c.id + ':kind');
     setCode(starterOf(c, kind));
-    store.del(c.id + ':draft');
+    store.del(draftKey(c));
     paintKind(c);
     showSaved();
   }
   function paintKind(c) {
-    $('#kind').hidden = !c.boilerplate;
+    $('#kind').hidden = !c.boilerplate || curLang !== NATIVE;
     $$('#kind [data-kind]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.kind === kindOf(c))));
   }
   // A one-line question in the code toolbar (the page can't use confirm()).
@@ -1207,7 +1221,7 @@ span.CodeMirror-selectedtext { background: none; }
     const c = BY[current];
     if (!b || !c || b.dataset.kind === kindOf(c)) return;
     const text = code();
-    if (text === c.starter || text === c.boilerplate) useStarter(c, b.dataset.kind);
+    if (text === starterOf(c, 'blank') || text === c.boilerplate) useStarter(c, b.dataset.kind);
     else ask(`Replace your code with the ${kindName(b.dataset.kind).toLowerCase()} starter?`, () => useStarter(c, b.dataset.kind));
   });
   $('#reset').addEventListener('click', () => {
@@ -1225,25 +1239,77 @@ span.CodeMirror-selectedtext { background: none; }
 
   function loadEditor(c) {
     // Live mode: the solution file on disk is the source of truth, not browser drafts.
-    const draft = LOCAL ? (live.disk[c.solution] ? live.disk[c.solution].text : null) : store.get(c.id + ':draft');
+    const path = fileOf(c);
+    const draft = LOCAL ? (live.disk[path] ? live.disk[path].text : null) : store.get(draftKey(c));
     const start = starterOf(c, kindOf(c));
+    const unit = curLang === 'python' ? 4 : curLang === NATIVE ? c.indent : 2;
     if (cm) {
-      if (!docs[c.id]) docs[c.id] = window.CodeMirror.Doc(draft !== null ? draft : start, c.lang.mime);
-      cm.swapDoc(docs[c.id]);
-      cm.setOption('indentUnit', c.indent);
-      cm.setOption('tabSize', c.indent);
+      if (!docs[path]) docs[path] = window.CodeMirror.Doc(draft !== null ? draft : start, LANG[curLang].mime);
+      cm.swapDoc(docs[path]);
+      cm.setOption('indentUnit', unit);
+      cm.setOption('tabSize', unit);
     } else {
       plainEditor.value = draft !== null ? draft : start;
-      plainEditor.style.tabSize = c.indent;
+      plainEditor.style.tabSize = unit;
     }
     paintKind(c);
-    $('#lang').innerHTML = `${esc(c.lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
-    $('#file').textContent = c.solution;
+    paintLangs();
+    $('#file').textContent = path;
     $('#confirm').hidden = true;
     showSaved();
     showPos();
     if (LOCAL) openCheckpointFiles(c);
   }
+  // ---- the language menu
+  function langInfo(lang) {
+    return LOCAL && live.langs ? live.langs.languages.find((l) => l.key === lang) || null : null;
+  }
+  function paintLangs() {
+    const select = $('#lang-select');
+    select.innerHTML = DATA.languages.map((l) => {
+      const info = langInfo(l.key);
+      return `<option value="${esc(l.key)}">${esc(l.label)}${info && !info.installed ? ' (not installed)' : ''}</option>`;
+    }).join('');
+    select.value = curLang;
+  }
+  function setLang(lang, reopen = true) {
+    if (!LANG[lang] || lang === curLang) return;
+    if (LOCAL) saveAll();
+    curLang = lang;
+    if (lang === NATIVE) store.del('lang'); else store.set('lang', lang);
+    paintLangs();
+    if (reopen && current) {
+      const c = BY[current];
+      loadEditor(c);
+      renderCases(c);
+      if (LOCAL) {
+        renderLiveResult(c);
+        const info = langInfo(lang);
+        if (info && !info.installed) setBottom('result');
+      } else {
+        renderResult(c);
+      }
+    }
+  }
+  $('#lang-select').addEventListener('change', (e) => {
+    setLang(e.target.value);
+    if (LOCAL) refreshLangs();
+  });
+  // How to install a language this computer doesn't have (from tools/langs.py, for this OS).
+  function installHtml(info) {
+    if (!info) return '';
+    const i = info.install || {};
+    return `<div class="install"><p><b>${esc(info.label)} isn't installed on this computer.</b> ${info.problem ? esc(info.problem) + ' ' : ''}You can still write ${esc(info.label)} here; Run and Submit need it installed.</p>`
+      + (i.command ? cmdRow(i.command) : '')
+      + `<p>${i.url ? `More: <a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.url.replace(/^https?:\/\//, ''))}</a>. ` : ''}${i.note ? esc(i.note) + ' ' : ''}`
+      + `After installing, close and reopen the book (study.cmd) so it finds the new tool. Or ask Claude to “install ${esc(info.label)} for my workbook”.</p></div>`;
+  }
+  async function refreshLangs() {
+    try { live.langs = await api('/api/langs'); setOnline(true); } catch (e) { if (!e.status) setOnline(false); return; }
+    paintLangs();
+    if (current && !live.busy && !live.report[`${current}:${curLang}`]) renderLiveResult(BY[current]);
+  }
+
   function saveSoon() {
     if (live.quiet) return;
     if (LOCAL) { saveSoonLive(); return; }
@@ -1254,20 +1320,20 @@ span.CodeMirror-selectedtext { background: none; }
       if (id !== current) return;
       const text = code();
       const c = BY[id];
-      if (text === starterOf(c, kindOf(c))) store.del(id + ':draft'); else store.set(id + ':draft', text);
+      if (text === starterOf(c, kindOf(c))) store.del(draftKey(c)); else store.set(draftKey(c), text);
       showSaved();
     }, 400);
   }
   function showSaved() {
     if (!current) return;
     if (LOCAL) {
-      const path = live.active || BY[current].solution, known = live.disk[path];
+      const path = live.active || fileOf(BY[current]), known = live.disk[path];
       $('#saved').textContent = !live.online ? 'Not saved: the study server has stopped'
         : live.conflict[path] ? 'The file changed on disk'
         : known && known.text === code() ? `Saved to ${path}` : 'Saving…';
       return;
     }
-    $('#saved').textContent = drafted(current) ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
+    $('#saved').textContent = store.get(draftKey(BY[current])) !== null ? 'Saved in this browser' : `${kindName(kindOf(BY[current]))} starter`;
   }
   function showPos() {
     if (!cm) { $('#pos').textContent = ''; return; }
@@ -1294,7 +1360,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (LOCAL) { saveAll(); return; }
     clearTimeout(saveTimer);
     const c = BY[current], text = code();
-    if (text === starterOf(c, kindOf(c))) store.del(c.id + ':draft'); else store.set(c.id + ':draft', text);
+    if (text === starterOf(c, kindOf(c))) store.del(draftKey(c)); else store.set(draftKey(c), text);
     showSaved();
   }
 
@@ -1342,7 +1408,7 @@ span.CodeMirror-selectedtext { background: none; }
     const text = code();
     const entry = { kind, test, copied: false, empty: !text.trim() };
     // Say up front what the checker will answer, instead of letting it look like a failure later.
-    if (entry.empty) entry.warn = `Your code is empty. The checker will answer “Not started yet” until <code>${esc(c.solution)}</code> has a program in it.`;
+    if (entry.empty) entry.warn = `Your code is empty. The checker will answer “Not started yet” until <code>${esc(fileOf(c))}</code> has a program in it.`;
     else if (text.trim() === c.starter.trim()) entry.warn = 'This is still the blank starter (an empty <code>main</code>), so the checker will answer “Not started yet”. Write your program first, or pick Boilerplate above the editor for ready-made input/output code.';
     lastAction[c.id] = entry;
     if (entry.empty) {
@@ -1377,7 +1443,8 @@ span.CodeMirror-selectedtext { background: none; }
   const live = { online: !!LOCAL, disk: {}, conflict: {}, conflictData: {}, report: {}, marks: {}, busy: false,
     quiet: false, tabs: [], active: null, project: [], showTree: false, tick: 0 };
   const shared = {};                                    // path -> CodeMirror.Doc for files in solutions/common/
-  const BY_PATH = Object.fromEntries(CPS.map((c) => [c.solution, c]));
+  const BY_PATH = {}, LANG_OF = {};  // a checkpoint's file in any language -> the checkpoint, and that language
+  CPS.forEach((c) => Object.entries(c.files).forEach(([lang, p]) => { BY_PATH[p] = c; LANG_OF[p] = lang; }));
   const pending = new Set();                            // files with unsaved edits
   let diskTimer = 0;
 
@@ -1405,7 +1472,7 @@ span.CodeMirror-selectedtext { background: none; }
   // ---- files
   const isShared = (path) => !BY_PATH[path];
   const shortName = (path) => path.replace(/^solutions\//, '');
-  const docOf = (path) => (BY_PATH[path] ? docs[BY_PATH[path].id] : shared[path]);
+  const docOf = (path) => docs[path] || shared[path];
   const textOf = (path) => (cm ? (docOf(path) ? docOf(path).getValue() : null) : path === live.active ? plainEditor.value : null);
   const EXT_MODES = { cpp: 'text/x-c++src', cc: 'text/x-c++src', cxx: 'text/x-c++src', h: 'text/x-c++src', hpp: 'text/x-c++src',
     c: 'text/x-csrc', java: 'text/x-java', cs: 'text/x-csharp', kt: 'text/x-kotlin', py: 'text/x-python', js: 'text/javascript',
@@ -1503,14 +1570,23 @@ span.CodeMirror-selectedtext { background: none; }
   // ---- tabs: the checkpoint's own file, plus any shared files you opened (remembered)
   function openCheckpointFiles(c) {
     const kept = (() => { try { return JSON.parse(store.get('tabs') || '[]'); } catch (e) { return []; } })();
-    live.tabs = [c.solution, ...kept.filter((p) => isShared(p))];
-    live.active = c.solution;
-    loadFile(c.solution);
+    const own = fileOf(c);
+    live.tabs = [own, ...kept.filter((p) => isShared(p))];
+    live.active = own;
+    // Another language's file is created (from its blank starter) the first time it's opened.
+    (curLang === NATIVE ? Promise.resolve()
+      : api('/api/start', { method: 'POST', body: JSON.stringify({ checkpoint: c.id, lang: curLang }) }).catch(() => {}))
+      .then(() => loadFile(own));
     live.tabs.slice(1).forEach((p) => { if (!live.disk[p]) loadFile(p); });
     paintFiles();
   }
   function openTab(path, line) {
-    if (BY_PATH[path] && BY_PATH[path].id !== current) { go('p' + BY_PATH[path].id); return; }
+    if (BY_PATH[path] && (BY_PATH[path].id !== current || LANG_OF[path] !== curLang)) {
+      const c = BY_PATH[path];
+      if (LANG_OF[path] !== curLang) setLang(LANG_OF[path], c.id === current);
+      if (c.id !== current) go('p' + c.id);
+      return;
+    }
     if (!live.tabs.includes(path)) live.tabs.push(path);
     store.set('tabs', JSON.stringify(live.tabs.filter(isShared)));
     activate(path, line);
@@ -1551,10 +1627,12 @@ span.CodeMirror-selectedtext { background: none; }
     const ext = (path || '').split('.').pop();
     const names = { h: 'C/C++ header', hpp: 'C++ header', cpp: 'C++', cc: 'C++', cxx: 'C++', c: 'C', py: 'Python', js: 'JavaScript',
       mjs: 'JavaScript', ts: 'TypeScript', rs: 'Rust', go: 'Go', java: 'Java', kt: 'Kotlin', cs: 'C#', md: 'Markdown', txt: 'Text', json: 'JSON' };
+    $('#lang-select').hidden = !onCheckpoint;
+    $('#lang').hidden = onCheckpoint;
     if (!onCheckpoint) $('#lang').textContent = names[ext.toLowerCase()] || ext.toUpperCase();
-    else if (current) $('#lang').innerHTML = `${esc(BY[current].lang.label)} <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>`;
+    // (the language menu stands in for the label on a checkpoint's own file)
     // The starter switch and Reset only make sense for the checkpoint's own file.
-    $('#kind').hidden = !onCheckpoint || !(current && BY[current].boilerplate);
+    $('#kind').hidden = !onCheckpoint || curLang !== NATIVE || !(current && BY[current].boilerplate);
     $('#reset').hidden = !onCheckpoint;
     renderTree();
   }
@@ -1636,8 +1714,8 @@ span.CodeMirror-selectedtext { background: none; }
     for (const [k, id] of ids.entries()) {
       $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>Re-checking your solved checkpoints: ${k + 1} of ${ids.length} (${esc(BY[id].num)}. ${esc(BY[id].title)})…</div>` + recheckTable(rows);
       let r;
-      try { r = await api('/api/check/' + id, { method: 'POST', body: '{}' }); setOnline(true); } catch (e) { setOnline(false); r = { verdict: 'offline' }; }
-      live.report[id] = r;
+      try { r = await api('/api/check/' + id, { method: 'POST', body: JSON.stringify({ lang: store.get(id + ':lang') || NATIVE }) }); setOnline(true); } catch (e) { setOnline(false); r = { verdict: 'offline' }; }
+      live.report[`${id}:${store.get(id + ':lang') || NATIVE}`] = r;
       if (r.verdict === 'accepted') store.del(id + ':broke'); else store.set(id + ':broke', '1');
       rows.push({ id, r });
     }
@@ -1674,7 +1752,7 @@ span.CodeMirror-selectedtext { background: none; }
     $('#result').innerHTML = `<div class="running"><span class="spinner" aria-hidden="true"></span>${what}</div>`;
     let report;
     try {
-      report = await api('/api/check/' + c.id, { method: 'POST', body: JSON.stringify({ case: test, fresh: !!options.fresh }) });
+      report = await api('/api/check/' + c.id, { method: 'POST', body: JSON.stringify({ case: test, fresh: !!options.fresh, lang: curLang }) });
       setOnline(true);
     } catch (e) {
       setOnline(false);
@@ -1684,8 +1762,13 @@ span.CodeMirror-selectedtext { background: none; }
     $('#run').disabled = $('#submit').disabled = false;
     report.test = test;
     report.fresh = !!options.fresh;
-    live.report[c.id] = report;
-    if (report.verdict === 'accepted') { setSolved(c.id, true); store.del(c.id + ':broke'); }
+    live.report[`${c.id}:${curLang}`] = report;
+    if (report.verdict === 'accepted') {
+      setSolved(c.id, true);
+      store.del(c.id + ':broke');
+      if (curLang === NATIVE) store.del(c.id + ':lang'); else store.set(c.id + ':lang', curLang);
+    }
+    if (report.verdict === 'missing-tool') refreshLangs();
     await markErrors(c, report);
     if (current === c.id) { renderLiveResult(c); $('#result').scrollTop = 0; }
     if (live.showTree) refreshProject();
@@ -1694,7 +1777,7 @@ span.CodeMirror-selectedtext { background: none; }
   // Compile errors are marked in whichever file they're in: the checkpoint's or a shared one.
   function errorPath(c, file) {
     const f = String(file || '').replace(/\\/g, '/');
-    const known = [c.solution, ...live.project.filter((x) => !x.checkpoint).map((x) => x.path), ...live.tabs];
+    const known = [fileOf(c), ...live.project.filter((x) => !x.checkpoint).map((x) => x.path), ...live.tabs];
     return known.find((p) => f === p || f.endsWith('/' + p)) || null;
   }
   async function markErrors(c, report) {
@@ -1735,6 +1818,7 @@ span.CodeMirror-selectedtext { background: none; }
       case 'not-implemented': return `The boilerplate function <code>${esc(r.function || 'a function')}</code> still says it isn't written. Fill it in and Submit again.`;
       case 'passed': return `This test passes. Submit runs all ${c.tests}.`;
       case 'failed': return 'This test fails. Its input, your output and the expected output are below.';
+      case 'missing-tool': return `Nothing ran: ${esc((r.install && r.install.label) || 'this language')} isn't installed on this computer.`;
       case 'offline': return "The study server has stopped, so nothing ran. Start it again (double-click <code>study.cmd</code>, or run <code>.\\study</code> in the workbook folder), then reload this page.";
       default: return esc(r.message || 'The checker ran into a problem.');
     }
@@ -1824,7 +1908,7 @@ span.CodeMirror-selectedtext { background: none; }
   }
 
   function reportHtml(r, c) {
-    const looks = { accepted: ['ok', 'Accepted'], passed: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'],
+    const looks = { accepted: ['ok', 'Accepted'], passed: ['ok', 'Accepted'], 'wrong-answer': ['bad', 'Wrong Answer'], 'missing-tool': ['warn', 'Not installed'],
       failed: ['bad', 'Wrong Answer'], 'compile-error': ['bad', 'Compile Error'], 'not-started': ['warn', 'Not started yet'],
       'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'], dispute: ['ok', 'Dispute recorded'] };
     const [kind, label] = looks[r.verdict] || ['unknown', 'Something went wrong'];
@@ -1834,6 +1918,7 @@ span.CodeMirror-selectedtext { background: none; }
       r.seconds != null ? `${r.seconds} s` : ''].filter(Boolean).join(' · ');
     let h = `<div class="verdict ${kind}"><h2>${esc(label)}</h2>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
     h += `<p class="note">${liveHelp(r, c)}</p>`;
+    if (r.verdict === 'missing-tool') h += installHtml(r.install);
     if (r.verdict === 'compile-error') {
       const errs = (r.errors || []).filter((e) => e.kind === 'error').slice(0, 8);
       if (errs.length) h += `<div class="err-list">${errs.map((e) => {
@@ -1858,18 +1943,25 @@ span.CodeMirror-selectedtext { background: none; }
   }
 
   function renderLiveResult(c) {
-    const r = live.report[c.id];
-    const intro = LOCAL.problem
-      ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
-      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). What you type is saved to <code>${esc(c.solution)}</code>, and changes you make to that file in another editor show up here.</p>`;
+    const r = live.report[`${c.id}:${curLang}`];
+    const missing = langInfo(curLang);
+    const intro = missing && !missing.installed ? `<p class="note">${installHtml(missing)}</p>`
+      : LOCAL.problem && curLang === NATIVE ? `<p class="note warn">${esc(LOCAL.problem)}</p>`
+      : `<p class="note">Run checks the selected example (Ctrl+'), Submit runs all ${c.tests} tests (Ctrl+Enter). What you type is saved to <code>${esc(fileOf(c))}</code>, and changes you make to that file in another editor show up here.</p>`;
     // After an Accepted Submit (not the last checkpoint): suggest keeping the reusable parts in common/.
     const last = CPS.indexOf(c) === CPS.length - 1;
     const nudge = r && r.verdict === 'accepted' && !r.fresh && !last && cm ? (() => {
       const slug = c.solution.split('/').pop().replace(/\.[^.]+$/, '').replace(/^p\d+_/, '');
-      const how = /C\+\+|^C$/.test(c.lang.label) ? `<code>common/${esc(slug)}.h</code> with a <code>.cpp</code> beside it, then <code>#include "common/${esc(slug)}.h"</code> here`
-        : c.lang.label === 'Python' ? `<code>common/${esc(slug)}.py</code>, then <code>from common.${esc(slug)} import ...</code> here`
-        : /JavaScript|TypeScript/.test(c.lang.label) ? `<code>common/${esc(slug)}.js</code>, then <code>require('./common/${esc(slug)}')</code> here`
-        : `a file in <code>common/</code>`;
+      const how = {
+        cpp: `<code>common/${esc(slug)}.h</code> with a <code>.cpp</code> beside it, then <code>#include "common/${esc(slug)}.h"</code> here`,
+        c: `<code>common/${esc(slug)}.h</code> with a <code>.c</code> beside it, then <code>#include "common/${esc(slug)}.h"</code> here`,
+        python: `<code>common/${esc(slug)}.py</code>, then <code>from common.${esc(slug)} import ...</code> here`,
+        javascript: `<code>common/${esc(slug)}.js</code> (ending in <code>module.exports = {...}</code>), then <code>require("./common/${esc(slug)}.js")</code> here`,
+        typescript: `<code>common/${esc(slug)}.ts</code> (with <code>export</code>), then <code>import {...} from "./common/${esc(slug)}.ts"</code> here`,
+        go: `<code>common/${esc(slug)}.go</code> (in <code>package main</code>), and call it directly: it's built with every checkpoint`,
+        rust: `<code>common/${esc(slug)}.rs</code>, then <code>#[path = "common/${esc(slug)}.rs"] mod ${esc(slug)};</code> here`,
+        lua: `<code>common/${esc(slug)}.lua</code> (ending in <code>return {...}</code>), then <code>package.path = "solutions/?.lua;" .. package.path</code> and <code>require("common.${esc(slug)}")</code> here`,
+      }[curLang] || `a file in <code>common/</code>`;
       return `<div class="nudge"><span><b>Keep it for later.</b> Later checkpoints build on what you just wrote, and the last one needs it all. Move the reusable parts into ${how}, then Submit again to check nothing broke. (Where this fits, under the statement, says which checkpoints come next.)</span>`
         + `<span><button class="btn" type="button" id="open-files">Open the Files panel</button></span></div>`;
     })() : '';
@@ -1906,7 +1998,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (LOCAL) renderLiveResult(c); else renderResult(c);
     loadEditor(c);
     setLeft('desc');
-    setBottom((LOCAL ? live.report[c.id] : store.get(c.id + ':result')) ? 'result' : 'cases');
+    setBottom((LOCAL ? live.report[`${c.id}:${curLang}`] : store.get(c.id + ':result')) ? 'result' : 'cases');
     $('#desc').scrollTop = 0;
     const k = CPS.indexOf(c);
     $('#prev').disabled = k === 0;
@@ -1978,8 +2070,10 @@ span.CodeMirror-selectedtext { background: none; }
 
   renderListShell();
   initEditor();
+  paintLangs();
   if (LOCAL) {
     paintLive();
+    refreshLangs();
     if (cm) {  // the Files panel needs the full editor
       $('#tree-btn').hidden = $('#tree-sep').hidden = false;
       live.showTree = store.get('tree') === '1';

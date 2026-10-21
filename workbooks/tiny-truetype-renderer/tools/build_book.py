@@ -25,6 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check import VERIFIED, fingerprint, reference_sources  # noqa: E402
+import langs  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WARNINGS = []  # printed after a build; a book with warnings isn't ready to publish
@@ -44,7 +45,7 @@ LANGS = {
 MODE_FILES = {
     "clike": ["mode/clike/clike.min.js"], "python": ["mode/python/python.min.js"],
     "javascript": ["mode/javascript/javascript.min.js"], "go": ["mode/go/go.min.js"],
-    "rust": ["addon/mode/simple.min.js", "mode/rust/rust.min.js"],
+    "rust": ["addon/mode/simple.min.js", "mode/rust/rust.min.js"], "lua": ["mode/lua/lua.min.js"],
 }
 # Section name (lower case) -> where the page shows it.
 ROLES = {
@@ -326,7 +327,7 @@ def solution_code(cid: str, meta: dict) -> dict:
             "proof": proof, "uses": uses}
 
 
-def checkpoint(cid: str, meta: dict) -> dict:
+def checkpoint(cid: str, meta: dict, config: dict) -> dict:
     md = (ROOT / meta["problem"]).read_text(encoding="utf-8").splitlines()
     title = re.sub(r"^#\s+\d+\s*·\s*", "", md[0]).strip()
     found = re.search(r"\*\*Difficulty:\*\*\s*(\w+)", "\n".join(md[:8]))
@@ -376,7 +377,11 @@ def checkpoint(cid: str, meta: dict) -> dict:
             "difficulty": difficulty, "tests": cases, "solution": meta["solution"], "problem": meta["problem"],
             "lang": {"label": label, "mime": mime, "mode": mode}, "starter": blank, "boilerplate": boilerplate,
             "indent": indent_unit(boilerplate or blank, 4 if mode == "python" else 2),
-            "tags": tags, "body": "".join(body), "solutionCode": solution_code(cid, meta), **data}
+            "tags": tags, "body": "".join(body), "solutionCode": solution_code(cid, meta),
+            # The same checkpoint in every other language: its file and its blank starter.
+            "files": {key: langs.solution_path(meta, key, config).relative_to(ROOT).as_posix() for key in langs.LANGUAGES},
+            "blanks": {key: langs.blank_starter(key, cid, meta, config) for key in langs.LANGUAGES if key != langs.native(config)},
+            **data}
 
 
 # ---- Page -------------------------------------------------------------------------
@@ -385,7 +390,7 @@ def build_page() -> str:
     """The whole book as one HTML string (tools/serve.py serves this directly)."""
     WARNINGS.clear()
     config = json.loads((ROOT / "workbook.json").read_text(encoding="utf-8"))
-    cps = [checkpoint(cid, meta) for cid, meta in sorted(config["checkpoints"].items())
+    cps = [checkpoint(cid, meta, config) for cid, meta in sorted(config["checkpoints"].items())
            if (ROOT / meta["problem"]).exists() and (ROOT / meta["cases"]).exists()]
     book = config["book"]
     data = {
@@ -396,8 +401,12 @@ def build_page() -> str:
         # so a shared book doesn't carry the author's local path.
         "folder": book.get("folder") or ROOT.name, "check": book.get("checkCommand", ".\\check {id}"), "shell": book.get("shell", "PowerShell"),
         "checkpoints": cps,
+        # Languages the learner can switch to (see tools/langs.py); the workbook's own comes first.
+        "native": langs.native(config),
+        "languages": [{"key": key, "label": spec["label"], "ext": spec["ext"], "mime": spec["mime"]}
+                      for key, spec in sorted(langs.LANGUAGES.items(), key=lambda kv: kv[0] != langs.native(config))],
     }
-    modes = dict.fromkeys(f for c in cps if c["lang"]["mode"] for f in MODE_FILES[c["lang"]["mode"]])
+    modes = dict.fromkeys(f for mode in ("clike", "python", "javascript", "go", "rust", "lua") for f in MODE_FILES[mode])
     scripts = "\n".join(f'<script src="{CODEMIRROR}{f}"></script>' for f in modes)
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "\\u003c!--")
 

@@ -16,7 +16,7 @@ a Claude Code plugin that reads a post and builds the checkpoints, tests and pro
 
 | Workbook | Built on | Language | Checkpoints | What you build |
 |---|---|---|---|---|
-| [Tiny TrueType renderer](workbooks/tiny-truetype-renderer) | [Writing a tiny TrueType parser and renderer from scratch](https://yayo1.com/en/blog/tiny-truetype-renderer/) by Yohei Yamasaki | C++ starters (any language works) | 18, with 572 tests | A font renderer from raw bytes: the table directory, character maps, glyph outlines, Bézier curves, scanline filling, and finally a line of text |
+| [Tiny TrueType renderer](workbooks/tiny-truetype-renderer) | [Writing a tiny TrueType parser and renderer from scratch](https://yayo1.com/en/blog/tiny-truetype-renderer/) by Yohei Yamasaki | C++ starters; also C, Go, Rust, Python, JavaScript, TypeScript or Lua | 18, with 572 tests | A font renderer from raw bytes: the table directory, character maps, glyph outlines, Bézier curves, scanline filling, and finally a line of text |
 
 *More workbooks on the way.*
 
@@ -58,7 +58,9 @@ Ninja, and Python 3.11 or newer).
 ## How checking works
 
 - **Only your output is checked.** Your program runs as `<program> <input-file> <output-file>`,
-  so you choose the structure, the language and the libraries.
+  so you choose the structure, the language and the libraries. Eight languages are built in: pick
+  one in the book's editor, or run `.\check 07 -Lang python` (C, C++, Go, Rust, Python,
+  JavaScript, TypeScript, Lua).
 - **Expected answers come from somewhere independent**, never from the reference solution. In the
   TrueType workbook that's mostly [fontTools](https://github.com/fonttools/fonttools).
 - **The checks are checked.** Before a checkpoint ships, the reference solution passes, planted
