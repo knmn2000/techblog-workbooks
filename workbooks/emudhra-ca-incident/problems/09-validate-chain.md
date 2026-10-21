@@ -77,8 +77,8 @@ order above, using this fixed vocabulary:
 
 | Reason | Meaning |
 |---|---|
-| `bad-signature` | Some certificate in the chain was not really signed by the next one up (or the trust anchor, for the topmost one) |
-| `unknown-anchor` | The topmost certificate's signature doesn't check out against **any** given trust anchor |
+| `bad-signature` | A non-topmost certificate in the chain was not really signed by the next one up |
+| `unknown-anchor` | The topmost certificate's signature doesn't check out against **any** given trust anchor - this is its own, separate step (see "The model" above), never reported as `bad-signature` |
 | `not-a-ca` | A certificate that signed another one in the chain isn't marked CA:TRUE |
 | `path-too-long` | A certificate's path length constraint was violated by how many more intermediates follow it |
 | `expired` | Some certificate's validity window does not cover `now` (this includes "not yet valid", not only "expired" in the everyday sense - this checkpoint doesn't distinguish the two directions) |
