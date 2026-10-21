@@ -27,8 +27,8 @@
     "files": {
       "_spoilers/reference/p04_ecdsa_verify.py": "c9c93fe0c3e67cdf62b91546c0b00e0d1f5c969070abfa84eef4edf3e6656487"
     },
-    "passed": 12,
-    "total": 12,
+    "passed": 13,
+    "total": 13,
     "date": "2026-10-21"
   },
   "05": {
@@ -56,6 +56,15 @@
     },
     "passed": 6,
     "total": 6,
+    "date": "2026-10-21"
+  },
+  "08": {
+    "files": {
+      "_spoilers/reference/p08_certificate_signature.py": "21c45f52ec64045261af02c10e47d977eb081bbffceb65ac827d7f7526529b9a",
+      "_spoilers/reference/common/certlib.py": "6c827435c17dcc8428208f1a5b0c3a2734fac5993ca17315243ac1da828e7ff2"
+    },
+    "passed": 10,
+    "total": 10,
     "date": "2026-10-21"
   },
   "10": {
