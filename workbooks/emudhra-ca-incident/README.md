@@ -1,6 +1,6 @@
 # Build a PKI auditor yourself
 
-*How to not f*ck up like eMudhra.*
+*How to not f\*ck up like eMudhra.*
 
 LeetCode-style assignments built around
 [eMudhra's statement on a certificate security incident](https://emudhra.com/en/post/certificate-security-incident).
@@ -35,7 +35,7 @@ Ask Claude to "set up my workbook": it checks the tools, asks which language you
 workbook's project is Python), creates the project and opens the book. Or double-click
 `study.cmd` (or run `.\study` in PowerShell, `./study.sh` on macOS or Linux): the book opens with
 Run and Submit working, and offers to create the project if there isn't one yet. Leave its window
-open while you work, or use the book's **Exit** button when you're done.
+open while you work, or use the book's Exit button when you're done.
 
 ## Your project
 
@@ -61,11 +61,11 @@ certificate reader, and the audit uses most of the package. The assignment's pro
 `assignments/` reads a test input, calls your code and writes the answer.
 
 Each test input carries what earlier assignments would produce, so an assignment's tests depend
-only on the earlier modules it imports. **Re-check solved** in the book runs every solved
+only on the earlier modules it imports. The book's Re-check solved button runs every solved
 assignment again, so you see at once when a change breaks an earlier one (the book marks it with a
 red `!`).
 
-The **Files** panel in the book's editor shows the project as it grows, with each file's
+The Files panel in the book's editor shows the project as it grows, with each file's
 assignment. Run the finished program:
 
 ```
@@ -77,11 +77,11 @@ installs the `pkiaudit` command.
 
 ## Doing an assignment
 
-1. Read the problem (book or `problems/NN-*.md`). In the book, its **Start here** card lists the
+1. Read the problem (book or `problems/NN-*.md`). In the book, its Start here card lists the
    files to write, your job in each, the earlier modules you can use, and the two ways to start.
 2. Write the files. Each one starts as the Boilerplate, which gives you the input/output code, the
    constants and the function signatures, and you fill in the bodies marked `TODO`. To write all
-   of it yourself, choose **From scratch** on the Start here card: each file then starts empty
+   of it yourself, choose From scratch on the Start here card: each file then starts empty
    apart from its comment.
 3. Check it from this folder in PowerShell (`./check.sh` on macOS or Linux), or with Run and
    Submit in the book:

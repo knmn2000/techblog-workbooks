@@ -34,9 +34,9 @@ of its text in the map you read here.
 Write a program that reads a font's character map and answers two kinds of question: how many
 characters it maps, and which glyph a given character maps to.
 
-A **code point** is a character's number in Unicode, written `U+` and hexadecimal digits: `A`
-is U+0041. A **glyph** is a shape the font can draw, and its **glyph id** is its number in the
-font, from 0 up. The **character map** (the `cmap` table) lists the glyph id for each code
+A code point is a character's number in Unicode, written `U+` and hexadecimal digits: `A`
+is U+0041. A glyph is a shape the font can draw, and its glyph id is its number in the
+font, from 0 up. The character map (the `cmap` table) lists the glyph id for each code
 point. Your program reads one part of it: the platform 0 / encoding 4 subtable in format 12,
 described below.
 
@@ -70,17 +70,17 @@ Otherwise write one line per question, in input order:
 
 ### The `cmap` table
 
-All numbers are **big-endian**. Every offset inside `cmap` counts from the start of the
+All numbers are big-endian. Every offset inside `cmap` counts from the start of the
 `cmap` table, not from the start of the file.
 
-**Header**, 4 bytes, at the table's offset:
+The table starts with a 4-byte header:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `version` | uint16 | 0 (skip it) |
 | `numberSubtables` | uint16 | How many encoding records follow |
 
-**Encoding records**: `numberSubtables` of them, 8 bytes each, right after the header:
+Right after the header come `numberSubtables` encoding records, 8 bytes each:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -88,8 +88,8 @@ All numbers are **big-endian**. Every offset inside `cmap` counts from the start
 | `encodingID` | uint16 | Meaning depends on the platform. For platform 0: 3 = Unicode, BMP only (code points up to U+FFFF); 4 = Unicode, full repertoire; 5 = variation sequences |
 | `offset` | uint32 | Where this record's subtable starts, from the start of `cmap` |
 
-**Which subtable.** Every subtable starts with a uint16 `format`. Find the **(0, 4)
-record**, the one with `platformID` 0 and `encodingID` 4:
+Every subtable starts with a uint16 `format`. To choose a subtable, find the (0, 4) record,
+the one with `platformID` 0 and `encodingID` 4:
 
 - If it exists and its subtable is format 12, use that subtable, wherever the record is in
   the list.
@@ -100,7 +100,7 @@ record**, the one with `platformID` 0 and `encodingID` 4:
 Fonts also use format 4 for BMP-only maps, format 13 for "many codes, one glyph" maps, and
 format 14 for variation sequences. Your program reads only format 12.
 
-**Format 12 subtable** ("segmented coverage"):
+A format 12 subtable ("segmented coverage") has these fields:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -113,12 +113,12 @@ format 14 for variation sequences. Your program reads only format 12.
 
 Your program skips `reserved`, `length` and `language`, 10 bytes in all.
 
-**One group**, 12 bytes:
+Each group is 12 bytes:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `startCharCode` | uint32 | First code point in the group |
-| `endCharCode` | uint32 | Last code point in the group, **included** |
+| `endCharCode` | uint32 | Last code point in the group, included |
 | `startGlyphID` | uint32 | Glyph id of `startCharCode` |
 
 A code point c with `startCharCode` ≤ c ≤ `endCharCode` maps to glyph
@@ -331,7 +331,7 @@ supported format" if there is none, or if the subtable's format isn't 12. Then i
 10 header bytes, reads the group count, and expands every group into an `unordered_map`
 from code point to glyph id, `unicodeToGlyphCode`, which later steps look characters up in.
 
-**Something to look for:** the loop doesn't stop at the first match, so if a font had two
+The loop doesn't stop at the first match, so if a font had two
 (0, 4) records, the loader would keep the last one. The spec doesn't allow duplicate records
 (fontTools won't write them), so this makes no difference in practice. Expanding every group
 trades memory for simpler code: a font that maps most of Unicode would need over a million

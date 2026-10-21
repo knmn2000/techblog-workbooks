@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, read the blog's
-**"What is TrueType?"** section, then
+"What is TrueType?" section, then
 [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files).
 That section has one paragraph, and the author's code follows it, below a link card.
 
@@ -50,7 +50,7 @@ The first line of the input file names the file to read. Every other line is one
 | `jump <offset>` | Move to byte `offset`, counted from the start of the file. Byte 0 is the first byte. |
 | `skip <count>` | Move `count` bytes forward from the current position. |
 
-The reader keeps a **current position**: the byte the next read starts at.
+The reader keeps a current position: the byte the next read starts at.
 
 - The position starts at byte 0.
 - Each read moves it forward by the number of bytes it read.
@@ -62,17 +62,17 @@ The reader keeps a **current position**: the byte the next read starts at.
 - Each read operation writes one line, in input order: the operation's name, a space, and the
   value in decimal. For example `u16 65535`, `i16 -1` or `f2dot14 1.75`.
 - `jump` and `skip` write nothing.
-- **F2Dot14 values** have at most 14 digits after the decimal point, and the Boilerplate's
+- F2Dot14 values have at most 14 digits after the decimal point, and the Boilerplate's
   output code prints all of them. If you write your own output code, the checker accepts any
   value within 0.000001 of the exact one.
 
-**Running out of bytes.** If a read needs a byte past the end of the file, write the line
-`eof` in place of its value and stop: your program runs no further operations. A read that
-ends on the last byte of the file succeeds.
+If a read needs a byte past the end of the file, write the line `eof` in place of its value
+and stop: your program runs no further operations. A read that ends on the last byte of the
+file succeeds.
 
 ### Big-endian byte order
 
-**Big-endian** means the most significant byte comes first, and TrueType stores every number
+Big-endian means the most significant byte comes first, and TrueType stores every number
 this way. The two bytes `12 34` hold `0x1234` = 4660 (a little-endian reader would get
 `0x3412` = 13330 instead). With the bytes b0, b1, b2, b3 in file order:
 
@@ -91,7 +91,7 @@ this way. The two bytes `12 34` hold `0x1234` = 4660 (a little-endian reader wou
 
 ### Signed numbers: two's complement
 
-**Two's complement** is how the signed types store negative numbers. A signed read takes the
+Two's complement is how the signed types store negative numbers. A signed read takes the
 same bytes as the unsigned read of the same size. Call the unsigned result u and the size in
 bits n (8, 16 or 32):
 
@@ -108,7 +108,7 @@ bits n (8, 16 or 32):
 
 ### F2Dot14
 
-An **F2Dot14** is a fixed-point number: 2 bits before the binary point and 14 after. Read the
+An F2Dot14 is a fixed-point number: 2 bits before the binary point and 14 after. Read the
 2 bytes as an `i16`, then divide by 16384 (2^14). The OpenType specification gives these
 examples:
 
@@ -307,7 +307,7 @@ of the file, assembles the bytes most significant first, and converts signed typ
 complement by hand. `readUint8` to `readInt32` are one-line wrappers around it, and
 `readF2Dot14` divides an `int16` by 2^14.
 
-**Something to look for:** since C++20, the standard defines a conversion from an unsigned
+Since C++20, the standard defines a conversion from an unsigned
 value to a signed type of the same width as wrapping modulo 2^n, so
 `static_cast<int16_t>(uint16_t{0xfffe})` is −2. Before C++20 the result was
 implementation-defined, which is one reason to write the conversion out by hand as the author

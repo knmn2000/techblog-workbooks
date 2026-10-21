@@ -52,23 +52,23 @@ There can be several outlines. Fill each one on its own, one after another, in t
 ### Output
 
 A PNG (or binary PPM) `width` pixels wide and `height` pixels high. Every pixel starts black
-(0, 0, 0). Paint a pixel in the fill colour when its **centre** is inside an outline by the
+(0, 0, 0). Paint a pixel in the fill colour when its centre is inside an outline by the
 even-odd rule. Pixel (px, py), with py counted down from the top, has its centre at screen position
 (px + 0.5, py + 0.5), which is glyph point ((px + 0.5 − x0) / scale, (baseline − py − 0.5) / scale).
 
-**The checker forgives edges that move by one pixel.** If you sample at the top of each row instead
+The checker forgives edges that move by one pixel. If you sample at the top of each row instead
 of the centre, or round x another way, you still pass. Missing or extra shapes, holes in the wrong
 place and stray lines fail.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so either of these works:
+Write the picture to the output path you're given. The name ends in `.png`, but the checker
+looks at the contents, so a PNG and a binary PPM both work:
 
-- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
-  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
-  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
+  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
-  height and `255`, separated by spaces or newlines and ended by one newline (for example
+- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
@@ -81,7 +81,7 @@ order, as your `render/Outline` did when it drew curves in assignment 11:
 - Two on-curve points in a row make a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
   point to the next on-curve point: B(t) = (1−t)²·P0 + 2(1−t)t·P1 + t²·P2 for t from 0 to 1.
-- Two off-curve points next to each other have an **implied on-curve point** at their midpoint.
+- Two off-curve points next to each other have an implied on-curve point at their midpoint.
   Each off-curve point then has on-curve points on both sides.
 - A contour can start with an off-curve point, and can even consist only of off-curve points (then
   each of its on-curve points is an implied one).
@@ -91,16 +91,16 @@ order, as your `render/Outline` did when it drew curves in assignment 11:
 Draw a ray from the point to the right and count how many times it crosses the outline. An odd count
 means inside, an even count means outside.
 
-A **scanline** is a horizontal line through a row of pixel centres. With scanlines the rule
+A scanline is a horizontal line through a row of pixel centres. With scanlines the rule
 becomes, for each row:
 
 1. Find every x where the scanline crosses an edge.
 2. Sort the crossings by x.
 3. Fill between the 1st and 2nd, the 3rd and 4th, and so on.
 
-**Vertices on the scanline.** If a scanline passes through a point where two edges meet, a naive
-count sees that point twice and flips the rest of the row (a stray line), or misses a crossing it
-should count. To fix this, treat each edge as **half-open in y**:
+If a scanline passes through a vertex, a point where two edges meet, a naive count sees that
+point twice and flips the rest of the row (a stray line), or misses a crossing it should count.
+To fix this, treat each edge as half-open in y:
 
 - An edge from y0 to y1 counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured
   on the screen (pixels, growing downward).
@@ -109,19 +109,18 @@ should count. To fix this, treat each edge as **half-open in y**:
 Then a vertex the outline passes through counts once. A pointed tip (both edges above, or both
 below) counts twice or not at all, which leaves the parity right either way.
 
-**Curves.** A quadratic curve can cross one scanline twice. Split each curve where its y turns
-around: each piece then crosses a scanline at most once, and the half-open rule works for curves
-too.
+A quadratic curve can cross one scanline twice. Split each curve where its y turns around: each
+piece then crosses a scanline at most once, and the half-open rule works for curves too.
 
 - For a curve P0, P1, P2 the turning point is at t = (P0.y − P1.y) / (P0.y − 2·P1.y + P2.y).
   Split there only when the denominator isn't 0 and 0 < t < 1. Otherwise the curve is already
-  **monotone**: it only rises or only falls.
+  monotone: it only rises or only falls.
 - Use the same split point, with the same y, for both halves.
 - To find where a piece crosses scanline y, solve y(t) = y as a quadratic in t (linear when
   P0.y − 2·P1.y + P2.y = 0) and keep the root in [0, 1].
 
-**Clipping.** Crossings can lie far outside the canvas. Clamp x to the canvas before you convert it
-to an integer, because C++ doesn't define what happens when you convert a huge double to `int`. The
+Crossings can lie far outside the canvas. Clamp x to the canvas before you convert it to an
+integer, because C++ doesn't define what happens when you convert a huge double to `int`. The
 function that fills a stretch of a row (the boilerplate's `fillSpan`) should skip columns outside
 the canvas and do nothing when the stretch is empty.
 
@@ -224,7 +223,7 @@ ranges.
 - Use half-open intervals in y (min ≤ y < max) so a shared vertex counts once; skip horizontal edges.
 - Split each quadratic curve where its y turns around (t = (y0 − yc) / (y0 − 2·yc + y2), with yc
   the control point's y, when 0 < t < 1), so each piece crosses a row at most once.
-- Implied on-curve points: between two off-curve points, add their midpoint.
+- Between two off-curve points, add their midpoint as an implied on-curve point.
 - A contour may start off-curve: start walking from an on-curve point (or an implied one).
 - The y axis flips: pixel y = baseline − scale·glyph y.
 </details>
@@ -278,6 +277,6 @@ row's top edge (integer y) instead of through the pixel centres. Its fix for ver
 edge only when the edge's lowest y (on screen) is above the scanline, and handles curves that cross
 twice with a convexity check (assignment 15 finds the curve's lowest point).
 
-**Something to look for:** in the fixed version, the check for a curve's endpoint on the scanline
-compares the row y with the endpoints' **x** coordinates. That branch tests the wrong coordinate
+In the fixed version, the check for a curve's endpoint on the scanline
+compares the row y with the endpoints' x coordinates. That branch tests the wrong coordinate
 and seldom catches an endpoint that sits on the scanline.

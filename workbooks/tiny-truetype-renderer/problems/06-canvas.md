@@ -25,7 +25,7 @@ before the author's code that follows it.
 
 In assignments 01 to 05 you read numbers out of the font file. Six later assignments draw
 pictures: outlines with straight lines (08) and with curves (11), filled glyphs (14, 16, 17)
-and a line of text (18). They all draw on the **framebuffer** you build here, in
+and a line of text (18). They all draw on the framebuffer you build here, in
 `src/FrameBufferCanvas.h` and `.cpp`. It is a grid of pixels in memory with three operations
 (paint one pixel, fill a rectangle, draw a thick line) and a way to save the grid as a PNG.
 
@@ -52,25 +52,25 @@ Colours are 0 to 255 per channel. Coordinates can be negative or beyond the pict
 ### Output
 
 A PNG (or binary PPM) file of `w` x `h` pixels, 8 bits per channel, RGB (RGBA works too; the
-checker ignores alpha). Pixel (0, 0) is the **top-left** corner; x grows to the right and **y
-grows downwards**. Every pixel that no command paints stays black (0, 0, 0).
+checker ignores alpha). Pixel (0, 0) is the top-left corner; x grows to the right and y
+grows downwards. Every pixel that no command paints stays black (0, 0, 0).
 
-**Writing the picture.** Write the picture to the output path the checker gives you. The name
-ends in `.png`, but the checker looks at the contents, so either of these works:
+Write the picture to the output path the checker gives you. The name ends in `.png`, but the
+checker looks at the contents, so either of these works:
 
-- **A binary PPM**, which needs no library: the header `P6`, the width, the height and
+- A binary PPM, which needs no library: the header `P6`, the width, the height and
   `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`), then 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
-- **A real PNG**: `third_party/stb_image_write.h` in your project is on the include path.
+- A real PNG: `third_party/stb_image_write.h` in your project is on the include path.
   `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### The commands, in order
 
-Draw the commands in the order they appear. A later command paints over an earlier one
-wherever they overlap.
+Draw the commands in the order they appear, so that a later command paints over an earlier
+one wherever they overlap.
 
 ### Painting one pixel
 
@@ -78,7 +78,7 @@ wherever they overlap.
 x ≥ w or y ≥ h), nothing happens.
 
 The rectangle and the line paint through this operation, so its bounds check does the
-**clipping** for every shape: a shape that crosses the edge of the picture keeps only its
+clipping for every shape: a shape that crosses the edge of the picture keeps only its
 inside part.
 
 ### Drawing a rectangle
@@ -105,9 +105,9 @@ an even size the left (or top) side gets one pixel more than the right (or botto
 `line ax ay bx by t ...` stamps one `t` x `t` square (centred like a rectangle) for every
 step along the line's longer direction:
 
-1. If the line is **steep**, meaning |by - ay| > |bx - ax|, swap the roles of x and y for
+1. If the line is steep, meaning |by - ay| > |bx - ax|, swap the roles of x and y for
    the steps below (step along y instead of x).
-2. Step from the end with the smaller x to the end with the larger x, **both ends included**.
+2. Step from the end with the smaller x to the end with the larger x, both ends included.
    With x = the step and (x1, y1), (x2, y2) the two ends in that order, the other coordinate
    is `y1 + (y2 - y1) / (x2 - x1) * (x - x1)`, worked out in floating point and rounded to
    the nearest whole number.
@@ -115,12 +115,12 @@ step along the line's longer direction:
    swapping back).
 4. If both ends are the same pixel, the line is a single square.
 
-**Rounding.** Round to the nearest whole number. Truncating toward zero also passes, and a tie
-at .5 may go either way, because the checker forgives an edge that moves by one pixel. It
-doesn't forgive a missing piece, a gap or a shape in the wrong place.
+Truncating toward zero instead of rounding to the nearest also passes, and a tie at .5 may
+go either way, because the checker forgives an edge that moves by one pixel. It doesn't
+forgive a missing piece, a gap or a shape in the wrong place.
 
-**The slope.** Compute it in floating point: with ints, `(by - ay) / (bx - ax)` is integer
-division and loses the fraction.
+Compute the slope in floating point: with ints, `(by - ay) / (bx - ax)` is integer division
+and loses the fraction.
 
 ### How the picture is compared
 
@@ -310,7 +310,7 @@ does the steep swap, orders the ends and stamps a `drawRect` at every step. A se
 `writePngFile` hands the buffer to `stbi_write_png` with 3 channels. Its `main` draws the
 scene from Example 1.
 
-**Something to look for:** the snippet turns the stepped coordinate into a pixel with a plain
+The snippet turns the stepped coordinate into a pixel with a plain
 cast, which truncates toward zero instead of rounding, so its lines can sit up to a pixel to
 one side, and the tests accept both. It also divides by `bx - ax` without checking, so a
 zero-length line divides by zero; this page asks for one square instead.

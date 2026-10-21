@@ -28,13 +28,13 @@ checked a signature against a public key. In this assignment you add signing to 
 
 Signing is what an attacker does with `d` once they have it. It is the same arithmetic as
 verifying, run forwards. With `d`, a few lines of code produce a signature anyone will accept,
-on a message that says anything the attacker likes. That is why eMudhra's eight intermediate keys
-mattered from the moment they were weak, whether or not anyone had used them yet.
+on a message that says anything the attacker likes. eMudhra's eight intermediate keys were
+therefore a risk from the moment they were weak, whether or not anyone had used them yet.
 
 ## The problem
 
 Write a program that computes an ECDSA signature from a private key, a message's hash and a
-one-time random number called the **nonce** (written `k`).
+one-time random number called the nonce (written `k`).
 
 ### The signing equation
 
@@ -204,19 +204,19 @@ This assignment hands you `k` so the answer is exact and the checker can compare
 signer draws `k` from a secure random source and never writes it down. Two mistakes with `k`,
 which this assignment's tests don't exercise, show why.
 
-**Reusing `k` for two different messages leaks `d`.** Two signatures `(r, s1)` and `(r, s2)` with
+Reusing `k` for two different messages leaks `d`. Two signatures `(r, s1)` and `(r, s2)` with
 the same `k` share `r`, since `r` depends only on `k`. They satisfy
 `s1 - s2 = k^-1 * (z1 - z2) mod n`, so `k = (z1 - z2) * (s1 - s2)^-1 mod n`, and then
 `d = (s1*k - z1) * r^-1 mod n`. Sony's PlayStation 3 signing key leaked this way in 2010: the
 group fail0verflow found that Sony's signer used a fixed `k` for every signature, where it should
 have drawn a fresh one each time, and recovered the key from two signatures.
 
-**A `k` that is a little less than uniformly random** (biased, short, or predictable from a weak
+A `k` that is a little less than uniformly random (biased, short, or predictable from a weak
 random number generator) lets an attacker recover `d` from a handful of real signatures with
-lattice methods, without ever seeing `k`. This attack differs from assignment 10's and is harder, but it starts from the same
-place: a key generation process that doesn't do its job.
+lattice methods, without ever seeing `k`. This attack differs from assignment 10's and is
+harder, but it starts from the same place: a key generation process that doesn't do its job.
 
-eMudhra's incident involved a weak **key**, and both of these mistakes concern the **nonce**, so
+eMudhra's incident involved a weak key, and both of these mistakes concern the nonce, so
 neither applies to it directly. Both teach assignment 10's lesson from another angle: in ECDSA,
 every number that should be unpredictable has to be unpredictable, or the private key stops
 being private.

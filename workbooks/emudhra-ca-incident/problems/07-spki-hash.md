@@ -90,7 +90,7 @@ difference points to.
 
 - **R1** The SPKI hash is correct for several P-256 certificates.
 - **R2** The SPKI hash is correct for several P-384 certificates.
-- **R3** Two certificates that carry the same public key give the **same** hash, even when their
+- **R3** Two certificates that carry the same public key give the same hash, even when their
   subject names, validity periods and serial numbers differ. The hash survives reissuance, which
   is why Chrome blocked on it instead of on a certificate's serial number or fingerprint.
 
@@ -189,7 +189,7 @@ A failing test looks like this:
   R3  Two different certificates ... share the same public key hash t...    0 / 2   FAILED
       x 07-R3-same-key-reissued  two certificates with different subject names and different validity periods, same public key
           spki[1]: expected (hash=119d012a158acc40f0a6790aa182b23f5cdb5e6be3ce0773cf69d3486b7b18e7), got (hash=<a different hash>) - differs in hash
-          likely cause: R3 - Two different certificates (different subject, different validity) that share the same public key hash the same - the hash survives reissuance
+          likely cause: R3 - Two different certificates (different subject, different validity) that share the same public key hash the same, so the hash survives reissuance
           expected values from: openssl x509 -pubkey | openssl pkey -pubin -outform DER | openssl dgst -sha256 (three independent OpenSSL commands)
           reproduce: py -P tools/run_py.py solutions 07 build/cases/07/07-R3-same-key-reissued.in build/cases/07/07-R3-same-key-reissued.out
 ```
@@ -201,7 +201,6 @@ for computing the hash. The reference `x509/spki.py` reuses `tbs_fields` from
 `x509/certificate.py`, the same field-finding code as assignment 06, and hashes the node's
 `encoding` with `hashlib.sha256`.
 
-**Something to look for:** the reference finds the SPKI node by the same fixed-position walk as
-assignment 06. Another valid approach looks among `tbsCertificate`'s children for a SEQUENCE
-shaped like SubjectPublicKeyInfo (a SEQUENCE followed by a BIT STRING), without counting
-positions. Both find the same bytes.
+`tbs_fields` finds the SPKI node by its fixed position. Another valid approach looks among
+`tbsCertificate`'s children for a SEQUENCE shaped like SubjectPublicKeyInfo (a SEQUENCE followed
+by a BIT STRING), without counting positions. Both find the same bytes.

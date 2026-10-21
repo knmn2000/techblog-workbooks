@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, in the blog's
-**"Renderer: Filling Glyph"** section, read the start of
+"Renderer: Filling Glyph" section, read the start of
 [Even-odd Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Even%2Dodd%20Rule)
 and then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments).
 Stop after the formula for t. The author's code (the listing "Function to find a
@@ -26,7 +26,7 @@ intersections of 2 segments") follows it.
 ## Where this fits
 
 In assignment 14 you fill a glyph with the even-odd rule. For each row of pixels, your program
-lays a long horizontal line, a **scanline**, across the glyph. It finds every place where the
+lays a long horizontal line, a scanline, across the glyph. It finds every place where the
 scanline crosses the outline and fills between pairs of crossings.
 
 Here you find the crossing with one straight edge. In assignment 13 you do the same for a
@@ -58,14 +58,14 @@ and rounds the others to 4 decimals, dropping trailing zeros (`37.5`, `0.0625`).
 
 ### The rules
 
-1. **Segments include their endpoints.** If the two segments meet only at an endpoint, that
+1. Segments include their endpoints. If the two segments meet only at an endpoint, that
    point is the answer. This covers two edges of a polygon that share a corner, and a
-   **T-junction**, where one segment ends on the middle of the other.
-2. **Parallel segments give `none`.** That includes **collinear** segments, which lie on the
+   T-junction, where one segment ends on the middle of the other.
+2. Parallel segments give `none`. That includes collinear segments, which lie on the
    same line, even when they overlap, touch end to end, or are identical. They have no single
    meeting point. (For filling this is harmless: an edge that lies along the scanline adds no
    crossing.)
-3. **Otherwise** the answer is the one point the two segments share, or `none` if they don't
+3. Otherwise the answer is the one point the two segments share, or `none` if they don't
    share one. Two lines that aren't parallel cross at one point, but that point may lie
    beyond the end of one segment or both.
 
@@ -78,8 +78,8 @@ cross(u, v) = u.x · v.y − u.y · v.x
 - It is 0 when u and v are parallel or one of them is zero, and only then.
 - Its sign says which way you turn going from the direction of u to the direction of v.
 
-**Which side of a line a point is on.** For a line through s and e, and a point p, the
-**side value** is:
+The side value tells you which side of a line a point is on. For a line through s and e, and
+a point p, it is:
 
 ```
 side(p; s, e) = cross(e − s, p − s)
@@ -160,7 +160,7 @@ output:  4 2
 | side(a1; b1, b2), side(a2; b1, b2) | cross((4, −8), (−2, −6)), cross((4, −8), (6, −2)) | −40, 40: opposite sides |
 | cross(v1, v2) | 8 · (−8) − 4 · 4 | −80 |
 | cross(b1 − a1, v2) | 2 · (−8) − 6 · 4 | −40 |
-| t, point | −40 / −80 = 0.5, (0, 0) + 0.5 · (8, 4) | **(4, 2)** |
+| t, point | −40 / −80 = 0.5, (0, 0) + 0.5 · (8, 4) | (4, 2) |
 
 ### Example 2: a horizontal line through a corner (test `12-R2-scanline-vertex`)
 
@@ -279,7 +279,7 @@ the opposite sign from this page's `side`, which makes no difference to a produc
 function runs the side test with ≤ 0 as here, then checks the denominator, then returns
 a1 + t·v1.
 
-**Something to look for:** the parallel check compares |cross(v1, v2)| with an `eps` that the
+The parallel check compares |cross(v1, v2)| with an `eps` that the
 listing doesn't define. Any small value works for glyph outlines, because two edges that
 aren't parallel have a cross product far from 0. In the blog's fill, one of the two segments
 is the scanline itself, running from x = 0 to the image width.

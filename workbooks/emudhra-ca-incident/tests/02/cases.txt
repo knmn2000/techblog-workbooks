@@ -7,7 +7,7 @@ requirement R1 Adding two distinct points with different x, using the chord thro
 requirement R2 Doubling a point (P + P), using the tangent at that point
 requirement R3 Identity laws: P + inf = P, inf + P = P, inf + inf = inf
 requirement R4 Inverse pairs: P + (-P) = inf, where -P is (x, 17 - y)
-requirement R5 Every output other than inf is a point actually on the curve
+requirement R5 Every output other than inf is a point on the curve
 requirement E2E A full table covering every one of the curve's points at least once
 case 02-R1-small R1
 title 1*G + 2*G (the first ordinary addition in the worked table)

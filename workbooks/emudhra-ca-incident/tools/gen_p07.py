@@ -36,7 +36,7 @@ LIB = "openssl x509 -pubkey | openssl pkey -pubin -outform DER | openssl dgst -s
 REQUIREMENTS = [
     ("R1", "The SPKI hash is correct for several P-256 certificates"),
     ("R2", "The SPKI hash is correct for several P-384 certificates"),
-    ("R3", "Two different certificates (different subject, different validity) that share the same public key hash the same - the hash survives reissuance"),
+    ("R3", "Two different certificates (different subject, different validity) that share the same public key hash the same, so the hash survives reissuance"),
     ("E2E", "A small set of certificates mixing both curves and a reissued key, matching OpenSSL's own pipeline bit for bit"),
 ]
 EXPLAIN = "_lines=R1"

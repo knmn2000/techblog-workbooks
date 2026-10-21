@@ -31,7 +31,7 @@ import wbcore  # noqa: E402
 LIB = f"cryptography {cryptography.__version__}: public_key.verify(signature, tbs_bytes, ec.ECDSA(hashes.SHA384())), independent of this workbook's modular-arithmetic reference"
 
 REQUIREMENTS = [
-    ("R1", "A genuinely self-signed certificate, verified against its own public key, is valid"),
+    ("R1", "A self-signed certificate, verified against its own public key, is valid"),
     ("R2", "A certificate verified against the wrong issuer key is invalid"),
     ("R3", "A certificate whose signature bytes have been tampered with (one flipped bit in r or s) is invalid"),
     ("R4", "The TBS bytes are re-extracted correctly even when the certificate has v3 extensions (a non-trivial TBS structure)"),

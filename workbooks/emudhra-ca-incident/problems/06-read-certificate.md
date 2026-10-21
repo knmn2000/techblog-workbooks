@@ -49,9 +49,9 @@ whose fields, in file order, are:
 | `validity` | SEQUENCE of two Time values | read both, below |
 | `subject` | SEQUENCE (a Name) | read its commonName, below |
 | `subjectPublicKeyInfo` | SEQUENCE | read the curve and the point, below |
-| `extensions` | `[3]` EXPLICIT SEQUENCE OF Extension, **optional** | read BasicConstraints if present, below |
+| `extensions` | `[3]` EXPLICIT SEQUENCE OF Extension, optional | read BasicConstraints if present, below |
 
-**EXPLICIT** tagging means the `[0]` node wraps a complete INTEGER node, so the version number is
+EXPLICIT tagging means the `[0]` node wraps a complete INTEGER node, so the version number is
 the `[0]` node's child. Every certificate here is version 3, so the first child of
 `tbsCertificate` is the `[0]` version (its INTEGER holds 2, meaning v3), and you can skip it.
 
@@ -100,12 +100,12 @@ Find the extension whose `extnID` is `2.5.29.19` (basicConstraints). Its `extnVa
 STRING whose content bytes are another complete DER structure. Parse those bytes as
 `BasicConstraints ::= SEQUENCE { cA BOOLEAN DEFAULT FALSE, pathLenConstraint INTEGER OPTIONAL }`.
 
-`cA` has **DEFAULT FALSE**, and DER leaves out a field that holds its default value, so the bytes
+`cA` has DEFAULT FALSE, and DER leaves out a field that holds its default value, so the bytes
 contain `cA` only when it's true. If the SEQUENCE's first child isn't a BOOLEAN, `cA` is false,
 and the child there, if any, is `pathLenConstraint`.
 
-**If there is no `extensions` field, or no basicConstraints extension among the extensions**, read
-the certificate as **not a CA, with no path length constraint**. RFC 5280 section 4.2.1.9 makes
+If there is no `extensions` field, or no basicConstraints extension among the extensions, read
+the certificate as not a CA, with no path length constraint. RFC 5280 section 4.2.1.9 makes
 the extension optional and leaves open what its absence means for older certificates. Modern
 verifiers, and this workbook, read absence as "not a CA" because it's the safe direction: a
 certificate not marked as a CA can't sign other certificates.
@@ -301,7 +301,6 @@ eMudhra's post has no code for this, so there is no author's version to compare.
 `read_public_key`, `read_basic_constraints`), and `parse_certificate` puts them together into a
 `Certificate`.
 
-**Something to look for:** the reference looks for `extensions` by checking that there is a child
-after `subjectPublicKeyInfo` *and* that it carries tag `[3]`. A check for "one more field than
-expected" would also accept a stray extra field that isn't extensions. Compare that with the
-check you wrote.
+To find `extensions`, the reference checks that there is a child after `subjectPublicKeyInfo`
+*and* that it carries tag `[3]`. A check for "one more field than expected" would also accept a
+stray extra field that isn't extensions. Compare that with the check you wrote.

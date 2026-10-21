@@ -9,8 +9,8 @@
 #   expected one. Run `.\check 16`, or use Run and Submit in the book.
 #
 # Your job:
-#   The Boilerplate gives you this program finished: it reads the input, calls your code
-#   and writes the answer. You fill in the TODOs in this assignment's other files.
+#   The Boilerplate gives you this program finished. You fill in the TODOs in this
+#   assignment's other files.
 #
 # The other files of this assignment:
 #   You also write src/pkiaudit/pki/audit.py and src/pkiaudit/__main__.py in this

@@ -93,7 +93,7 @@
     "author": "Yohei Yamasaki",
     "headline": "Build a TrueType renderer yourself",
     "lede": "Each assignment has you write the program that one part of the blog post builds, from reading big-endian bytes to drawing a line of text. The checker feeds your program test inputs and compares what it writes with expected answers, most of them computed by fontTools. You choose how to structure the code and which language or libraries to use.",
-    "credits": "Fonts: JetBrains Mono (Nerd Font build) and Noto Sans JP, both under the SIL Open Font License. Expected outputs come from fontTools. The book keeps your progress in this browser only."
+    "credits": "Fonts: JetBrains Mono (Nerd Font build) and Noto Sans JP, both under the SIL Open Font License. Most expected outputs come from fontTools. The book keeps your progress in this browser only."
   },
   "checkpoints": {
     "01": {
@@ -354,7 +354,7 @@
       "jobs": {
         "assignments/assignment_14_even_odd_fill.cpp": "Read the `canvas`, `place` and `color` lines and each `outline` with its `ends` and `points` lines (see Input). Make the canvas, fill every outline in turn with your even-odd fill, and write the picture to the output path (see Output).",
         "src/render/Scanline.h": "Declare what both fill rules share: a type for an edge piece (a straight line or a quadratic curve, in pixels) and one for a crossing (its x, and whether the edge runs up or down the screen there, which assignment 16 needs). Then declare functions that turn an outline and its placement into edge pieces, give each pixel row its crossings sorted by x, and fill a stretch of one row.",
-        "src/render/Scanline.cpp": "Implement the three functions you declared in `Scanline.h`: building edges, scanning rows and filling a stretch. In the edge builder, make implied on-curve points explicit, start each contour at an on-curve point and split every curve where its y turns around. In the row scan, find where the line through the row's pixel centres crosses each piece (by the half-open rule) and sort the crossings. In the stretch fill, paint the pixels whose centres lie in the stretch, clipped to the canvas.",
+        "src/render/Scanline.cpp": "Implement the three functions you declared in `Scanline.h`. When you build the edges, make implied on-curve points explicit, start each contour at an on-curve point and split every curve where its y turns around. For each row, find where the line through its pixel centres crosses each piece (by the half-open rule) and sort the crossings. To fill a stretch, paint the pixels whose centres lie in it, clipped to the canvas.",
         "src/render/EvenOdd.h": "Declare one function that fills an outline on a canvas by the even-odd rule, given its placement and colour.",
         "src/render/EvenOdd.cpp": "Implement the even-odd fill with your `render/Scanline`: build the edge pieces, then on every row fill from the 1st crossing to the 2nd, the 3rd to the 4th, and so on."
       },
@@ -460,7 +460,7 @@
       "windows": "study.cmd",
       "other": "python3 -P tools/serve.py"
     },
-    "caveat": "Built and tested on Windows. On Linux or macOS the build commands in workbook.json use .exe names, so they may need small changes.",
-    "promptNote": "This workbook was built on Windows, and its build and run commands in workbook.json use .exe names. On Linux or macOS, adapt them and tell me exactly what you changed."
+    "caveat": "This workbook was built and tested on Windows. Its build commands in workbook.json use .exe names, so on Linux or macOS they may need small changes.",
+    "promptNote": "This workbook was built on Windows, and its build and run commands in workbook.json use .exe names. On Linux or macOS, adapt them and tell me what you changed."
   }
 }

@@ -17,8 +17,8 @@ does not say what a correct key-generation step looks like. In this assignment y
 plain procedure every key generator must follow so that a number like the ones recovered in this
 incident can't come out of it.
 
-**eMudhra has not confirmed the exact root cause.** Assignment 14 models one plausible shape that
-would match their description, and this assignment doesn't depend on that question. It is the
+eMudhra has not confirmed the exact root cause. Assignment 14 models one plausible shape that
+would match their description, and this assignment doesn't depend on that question. It covers the
 standard, published procedure for turning random bytes into a private key, the one assignments
 01 to 03 assumed had already happened.
 
@@ -44,21 +44,21 @@ Write a program that turns recorded random draws into private keys, the way a co
 generator does.
 
 A private key for an elliptic curve is a whole number `d` with `1 <= d <= n - 1`, where `n` is
-the curve's **order**: the number of points that `G` generates (see the table below). A key
+the curve's order: the number of points that `G` generates (see the table below). A key
 generator gets raw bytes from its random number source and has to turn them into a number in that
 range. It must not favor small numbers, large numbers or any other pattern an attacker could
 exploit.
 
 ### Rejection sampling
 
-The standard method, from FIPS 186-5 and SEC 1, is **rejection sampling**:
+The standard method, from FIPS 186-5 and SEC 1, is rejection sampling:
 
 1. Draw as many random bytes as the curve's order needs: 32 bytes for P-256, 48 for P-384. That
    covers every value below `n`, with no bits to spare.
-2. Read those bytes as one big-endian unsigned integer: the **candidate**.
-3. If the candidate is `0`, or `n` or greater, **reject** it and draw a fresh set of random bytes
+2. Read those bytes as one big-endian unsigned integer: the candidate.
+3. If the candidate is `0`, or `n` or greater, reject it and draw a fresh set of random bytes
    (step 1 again).
-4. Otherwise **accept** the candidate. It is `d`.
+4. Otherwise accept the candidate. It is `d`.
 
 The method adds no bias: every candidate in range is equally likely to be drawn, and the
 generator throws away any candidate out of range. Reducing an out-of-range candidate modulo `n`
@@ -164,7 +164,7 @@ accept it on the first draw.
 
 <details><summary>Hint 1: where to start</summary>
 
-Your generator doesn't make randomness. It calls the `random_bytes` function it is given, and in
+Your generator gets its randomness by calling the `random_bytes` function it is given, and in
 the tests that function returns the input's blocks in the order they were drawn. Your work is the
 accept/reject rule, applied to each candidate in turn, stopping at the first one accepted.
 </details>
@@ -231,7 +231,7 @@ Key Generation Ceremony should follow at the moment it chooses a private key. Th
 `ecc/keys.py` draws from `os.urandom` unless the caller passes another source, which is how the
 program replays the recorded blocks.
 
-**Something to look for:** this assignment computes no public key. A generator that follows this
+This assignment computes no public key. A generator that follows this
 rule can still feed a broken step afterwards, such as the wrap/unwrap step assignment 14 models.
 Getting this part right is necessary, and on its own it isn't enough. A Key Generation Ceremony
 has that shape: several steps, and each one has to be correct on its own.

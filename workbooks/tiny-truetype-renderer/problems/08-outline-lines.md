@@ -61,21 +61,21 @@ The output file name ends in `.png`. The input file contains these lines:
 A PNG (or binary PPM) file of `w` x `h` pixels, RGB. Pixel (0, 0) is the top-left corner and
 pixel y grows downwards.
 
-**Writing the picture.** Your `FrameBufferCanvas` from assignment 06 can already do this
-(`writePng` in the Boilerplate). Write the picture to the output path the checker gives you.
-The name ends in `.png`, but the checker looks at the contents, so either of these works:
+Your `FrameBufferCanvas` from assignment 06 can already write the picture (`writePng` in the
+Boilerplate). Write it to the output path the checker gives you. The name ends in `.png`, but
+the checker looks at the contents, so either of these works:
 
-- **A binary PPM**: the header `P6`, the width, the height and `255`, separated by spaces or
+- A binary PPM: the header `P6`, the width, the height and `255`, separated by spaces or
   newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes per pixel
   (red, green, blue), row by row from the top-left. Open the file in binary mode
   (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
-- **A real PNG**: `third_party/stb_image_write.h` in your project is on the include path.
+- A real PNG: `third_party/stb_image_write.h` in your project is on the include path.
   `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### From font units to pixels
 
-Glyph coordinates are in **font units**, which grow **upwards** from the baseline; pixel
+Glyph coordinates are in font units, which grow upwards from the baseline; pixel
 coordinates grow downwards from the top. A point (x, y) in font units lands on pixel
 
 ```
@@ -85,21 +85,22 @@ py = baseline - scale * y
 
 rounded to the nearest whole number. This makes `x0` the pixel column where font x = 0 lands
 and `baseline` the pixel row where font y = 0 lands. A point with a negative y (a descender,
-like the tail of `g`) ends up **below** the baseline row.
+like the tail of `g`) ends up below the baseline row.
 
 ### What to draw
 
 For each outline, in input order:
 
-1. **Lines.** The `ends` values split the points into contours: contour 0 is points 0 to
-   `e0`, contour 1 is points `e0 + 1` to `e1`, and so on. Within each contour, draw a line
-   from every point to the next one, and from the **last point back to the contour's first
-   point**. Don't draw a line from one contour to the next. Draw each line with your
+1. The `ends` values split the points into contours: contour 0 is points 0 to `e0`,
+   contour 1 is points `e0 + 1` to `e1`, and so on. Within each contour, draw a line
+   from every point to the next one, and from the last point back to the contour's first
+   point. Don't draw a line from one contour to the next. Draw each line with your
    `FrameBufferCanvas` line from assignment 06, with thickness `lineThickness`.
-2. **Markers.** Then, on every point, draw a `markerSize` x `markerSize` square centred on it
-   (your canvas's rectangle): columns x − size/2 up to x − size/2 + size − 1 with size/2 rounded
-   down, and rows likewise. With an odd size the point sits in the middle; with an even size the
-   left and top sides get one pixel more, so a 10-pixel marker at x = 16 covers columns 11 to 20.
+2. Then draw a marker on every point: a `markerSize` x `markerSize` square centred on it
+   (your canvas's rectangle), covering columns x − size/2 up to x − size/2 + size − 1 with
+   size/2 rounded down, and rows likewise. With an odd size the point sits in the middle; with
+   an even size the left and top sides get one pixel more, so a 10-pixel marker at x = 16
+   covers columns 11 to 20.
 
 Three more rules:
 
@@ -295,7 +296,7 @@ point, as Hint 2 does. It draws each line with thickness 5 and puts a 20 x 20 sq
 the current point in the same loop. Its `main` draws `a` from JetBrains Mono Bold at
 (300, 300) on a 1200 x 1200 canvas; test `08-E2E-blog-a` is the same picture at half size.
 
-**Something to look for:** the snippet doesn't flip y itself. It adds the start position to
+The snippet doesn't flip y itself. It adds the start position to
 the font coordinates and asks stb to turn the whole image upside down when it writes the PNG.
 That works for one glyph, but the start position then counts from the bottom of the
 picture. This page uses an explicit baseline instead, which the later assignments need when

@@ -40,20 +40,18 @@ blocked.
 
 ### Two ways to block a chain
 
-Either of two independent mechanisms can block a chain:
-
-1. **SPKI blocking.** The browser blocks one public key, named by its **SPKI hash** (a hash of the
-   certificate's SubjectPublicKeyInfo, the field that holds its public key), wherever it appears:
+1. SPKI blocking: the browser blocks one public key, named by its SPKI hash (a hash of the
+   certificate's SubjectPublicKeyInfo, the field that holds its public key), wherever it appears,
    in any certificate of any chain. It's fast to issue and exact, because it blocks that one key
    and nothing else. Chrome's CRLSet did this in the real incident, within hours.
-2. **Root distrust.** The browser distrusts a whole root certificate, named by an id. Every chain
+2. Root distrust: the browser distrusts a whole root certificate, named by an id. Every chain
    that leads back to that root is blocked, including certificates whose own keys aren't on any
    blocklist. This is coarser, since it can affect certificates that were fine on their own, and
    it was the precautionary step in this incident.
 
-A chain is blocked by whichever mechanism applies. If a chain's own certificates trigger both,
-**report the SPKI block**: it's the more specific, faster-acting mechanism, and the one a response
-like this one would issue first.
+The two mechanisms are independent, and either one blocks a chain on its own. If a chain's own
+certificates trigger both, report the SPKI block: it's the more specific, faster-acting
+mechanism, and the one a response like this one would issue first.
 
 ### Input
 
@@ -216,6 +214,6 @@ separate actions taken during the same incident. You gave the distinction betwee
 mechanism that's surgical and fast, another that's broad and precautionary, and a rule for which
 one to report when both apply.
 
-**Something to look for:** this is also the last assignment in the workbook about policy alone,
+This is also the last assignment in the workbook about policy alone,
 with no cryptography. Assignment 16 is the capstone: it puts the earlier assignments' pieces
 together into one audit of a small, synthetic PKI.

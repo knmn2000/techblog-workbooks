@@ -24,8 +24,8 @@ follows that paragraph.
 
 ## Where this fits
 
-A TrueType font is a set of **tables** (`cmap`, `glyf`, `head`, ...) packed into one file. The
-**table directory** at the start of the file lists where each table is. Assignments 03 to 05
+A TrueType font is a set of tables (`cmap`, `glyf`, `head`, ...) packed into one file. The
+table directory at the start of the file lists where each table is. Assignments 03 to 05
 read the `cmap`, `loca` and metrics tables at the offsets you find here. Their inputs already
 contain this assignment's output lines for the tables they need, so you can solve them without
 finishing this one.
@@ -65,10 +65,10 @@ table "<tag>" <checkSum> <offset> <length>
 
 ### The table directory
 
-The directory starts at byte 0 of the file. All numbers are **big-endian**, and your
+The directory starts at byte 0 of the file. All numbers are big-endian, and your
 `ByteReader` from assignment 01 can read every field.
 
-**Header** (the "offset subtable"), 12 bytes:
+The first 12 bytes are the header, which Apple's manual calls the "offset subtable":
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -80,7 +80,7 @@ The directory starts at byte 0 of the file. All numbers are **big-endian**, and 
 
 Of these five fields, your program needs `numTables`. Skip the other four, whatever they hold.
 
-**Table records**: `numTables` of them, 16 bytes each, starting at byte 12:
+The table records follow from byte 12, `numTables` of them, 16 bytes each:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -277,7 +277,7 @@ raw bytes turned into a string, followed by the checksum, offset and length. The
 into an `unordered_map` keyed by tag, so every later step finds its table by name, for
 example the `cmap` table in assignment 03.
 
-**Something to look for:** the snippet doesn't check the scaler type or verify any
+The snippet doesn't check the scaler type or verify any
 checksums. Neither matters for this workbook. A stricter parser would reject files whose
 scaler type isn't `0x00010000` or `'true'` (an `'OTTO'` font stores CFF outlines instead of
 `glyf`), and could check each table's sum of uint32 words against its `checkSum`.

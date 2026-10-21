@@ -31,7 +31,7 @@ export function injectIntoBook(html, w) {
   <div class="wbs-dialog" role="dialog" aria-modal="true" aria-labelledby="wbs-title" tabindex="-1">
     <button class="wbs-x" type="button" aria-label="Close">&times;</button>
     <h2 id="wbs-title">Run this workbook on your computer</h2>
-    <p class="wbs-sub">This copy of the book can't run code. On your machine, Run and Submit build your project and check it against every test.</p>
+    <p class="wbs-sub">This copy of the book can't run code. On your machine, Run builds your project and checks the selected example, and Submit runs every test.</p>
     ${startPanelHtml(w, { prefix: 'modal', heading: '', lead: false, first: 'ai' })}
   </div>
 </div>`;

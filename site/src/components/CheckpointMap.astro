@@ -16,9 +16,9 @@ const cols = Math.ceil(checkpoints.length / Math.ceil(checkpoints.length / maxCo
 const pending = checkpoints.filter((c) => !c.difficulty).length;
 ---
 <div class={`map ${size}`}>
-  <div class="dots" style={`--cols:${cols}`} role="img" aria-label={`${checkpoints.length} ${unit}s:${counts.Easy ?? 0} easy, ${counts.Medium ?? 0} medium, ${counts.Hard ?? 0} hard`}>
+  <div class="dots" style={`--cols:${cols}`} role="img" aria-label={`${checkpoints.length} ${unit}s: ${counts.Easy ?? 0} easy, ${counts.Medium ?? 0} medium, ${counts.Hard ?? 0} hard`}>
     {checkpoints.map((c) => {
-      const label = `${c.id} · ${c.title} · ${c.difficulty ?? 'not written yet'}`;
+      const label = `${c.id} · ${c.title} · ${c.difficulty ?? 'in progress'}`;
       return link
         ? <a class={`dot ${cls(c.difficulty)}`} href={`#cp-${c.id}`} title={label} aria-label={label}></a>
         : <i class={`dot ${cls(c.difficulty)}`} title={label}></i>;

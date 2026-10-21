@@ -38,18 +38,18 @@ signed it.
 
 ### What the issuer signs
 
-A certificate's `signatureValue` is a signature over `tbsCertificate`'s **original DER bytes**, as
-they appear in the certificate. DER's rules give each value one encoding (DER is **canonical**),
+A certificate's `signatureValue` is a signature over `tbsCertificate`'s original DER bytes, as
+they appear in the certificate. DER's rules give each value one encoding (DER is canonical),
 so re-encoding `tbsCertificate` from its fields should give the same bytes back. One slip, such as a
 length written in the long form where DER uses the short form, gives different bytes, and the
 signature no longer checks against them.
 
-Slice the bytes out of the certificate instead: from `tbsCertificate`'s first header byte through
-its last content byte, tag and length included. Hash **that** slice.
+Slice the bytes out of the certificate instead, from `tbsCertificate`'s first header byte through
+its last content byte, tag and length included, and hash that slice.
 
 ### The equation
 
-1. Hash `tbsCertificate`'s original bytes (above) with **SHA-384**, and read the digest as a
+1. Hash `tbsCertificate`'s original bytes (above) with SHA-384, and read the digest as a
    big-endian number. Every certificate in this assignment is P-384, signed `ecdsa-with-SHA384`.
    A P-256 certificate would use SHA-256 instead, which is out of scope here (see Constraints).
 2. `signatureValue` is a BIT STRING. Its content, after the unused-bits byte (`0` here), is DER
@@ -244,7 +244,7 @@ and reads `r` and `s`, with `certificate_node` from assignment 06 and the DER de
 assignment 05. `tbs_hash` turns the bytes into `z`, and `check_signature` calls `verify` from
 `ecc/ecdsa.py` (assignment 04).
 
-**Something to look for:** the reference's `scalar_multiply` (assignment 03), which `verify`
-calls, does double-and-add from the least significant bit. A correct alternative starts from the
-most significant bit and doubles the running result before each add. It gives the same answer
-with the bits in the opposite order. Compare it with the version you wrote.
+Inside `verify`, the reference's `scalar_multiply` (assignment 03) does double-and-add from the
+least significant bit. A correct alternative starts from the most significant bit and doubles the
+running result before each add. It gives the same answer with the bits in the opposite order.
+Compare it with the version you wrote.

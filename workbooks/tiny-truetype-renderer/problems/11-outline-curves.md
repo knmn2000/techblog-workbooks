@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, read the blog's
-**"Renderer: Curve Rendering"** section through
+"Renderer: Curve Rendering" section through
 [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
 and stop at the sentence that introduces the code. The author's code follows it.
 
@@ -58,21 +58,21 @@ outlines; each outline uses the most recent ones. Coordinates may have a fractio
 
 ### Output
 
-Your program writes a PNG (or binary PPM) file of exactly `w` x `h` pixels, RGB, with (0, 0)
-at the top-left and y growing downwards.
+Your program writes a PNG (or binary PPM) file of `w` x `h` pixels, RGB, with (0, 0) at the
+top-left and y growing downwards.
 
-**Writing the picture.** Write it to the output path the checker gives you. The name ends in
-`.png`, but the checker looks at the contents, so a PNG and a binary PPM both work.
+Write the picture to the output path the checker gives you. The name ends in `.png`, but the
+checker looks at the contents, so a PNG and a binary PPM both work.
 
-- **With your canvas:** `writePng` on your `FrameBufferCanvas` from assignment 06 writes a PNG.
-  The boilerplate calls it.
-- **A binary PPM by hand:** the header `P6`, the width, the height and `255`, separated by
-  spaces or newlines and ended by one newline (for example `P6\n205 195\n255\n`), then 3 bytes
-  per pixel (red, green, blue), row by row from the top-left. Open the file in binary mode
-  (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
-- **A real PNG by hand:** `third_party/stb_image_write.h` in your project is on the include
-  path. `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
-  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- `writePng` on your `FrameBufferCanvas` from assignment 06 writes a PNG. The boilerplate
+  calls it.
+- To write a binary PPM by hand, write the header `P6`, the width, the height and `255`,
+  separated by spaces or newlines and ended by one newline (for example `P6\n205 195\n255\n`),
+  then 3 bytes per pixel (red, green, blue), row by row from the top-left. Open the file in
+  binary mode (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
+- To write a PNG without the canvas, use `third_party/stb_image_write.h`, which is on your
+  project's include path. `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one
+  file, then call `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### From font units to pixels
 
@@ -97,29 +97,29 @@ passes.
 contour 1 is points `e0 + 1` to `e1`, and so on. Each contour closes on itself: after its last
 point comes its first point again.
 
-Go round a contour keeping a **current position**: the point where the next piece starts. The
+Go round a contour keeping a current position: the point where the next piece starts. The
 current position is an on-curve point, real or implied. Each point you reach adds one piece
 that starts at the current position:
 
 | Point reached | The point after it | Piece | Current position becomes |
 |---|---|---|---|
-| on-curve | (doesn't matter) | a **straight line** to it | this point |
-| off-curve | on-curve | a **curve** with this point as control point, ending at the point after it, which the walk then skips | the point after it |
-| off-curve | off-curve | a **curve** with this point as control point, ending at the **implied on-curve point** halfway between the two | the implied point |
+| on-curve | (doesn't matter) | a straight line to it | this point |
+| off-curve | on-curve | a curve with this point as control point, ending at the point after it, which the walk then skips | the point after it |
+| off-curve | off-curve | a curve with this point as control point, ending at the implied on-curve point halfway between the two | the implied point |
 
 If two off-curve points follow each other, the outline passes through the point halfway
-between them. The font doesn't store that point; it is an **implied on-curve point**, where
+between them. The font doesn't store that point; it is an implied on-curve point, where
 one curve ends and the next begins. The last and the first point of a contour count as
 neighbours.
 
-**Where to start.** Every piece starts at an on-curve point, real or implied, so start the
-walk at the first on-curve point of the contour and go round the contour back to it. The walk
-ends when it reaches the starting point again:
+Every piece starts at an on-curve point, real or implied, so start the walk at the first
+on-curve point of the contour and go round the contour back to it. The walk ends when it
+reaches the starting point again:
 
 - if the contour's last point is on-curve, the final piece is a line back to the start;
 - if it is off-curve, the final piece is a curve that ends at the start.
 
-A contour with k off-curve control points gives k curves. If the contour has **no** on-curve
+A contour with k off-curve control points gives k curves. If the contour has no on-curve
 point, start at the implied point halfway between its last and first points.
 
 The start rule matters for two kinds of contour:
@@ -144,7 +144,7 @@ Draw it as `n` short straight lines from B((i - 1) / n) to B(i / n) for i = 1 to
 n = max(1, ceil(|P1 - P0| + |P2 - P1|))       lengths in pixels
 ```
 
-The curve is no longer than its **control polygon** (P0 to P1 to P2), so each short line is
+The curve is no longer than its control polygon (P0 to P1 to P2), so each short line is
 about a pixel long at most. More pieces are fine; much fewer, such as a fixed 8, leave visible
 corners on long curves.
 
@@ -152,7 +152,7 @@ Lines and curves both use thickness `lineThickness` and the outline's colour.
 
 ### Markers
 
-Draw the markers after **all** the lines and curves of an outline: a square of size
+Draw the markers after all the lines and curves of an outline: a square of size
 `2 * lineThickness` on each point, rounded to the nearest pixel. The size is even, so the
 square covers columns x − lineThickness up to x + lineThickness − 1 (and rows likewise), as
 your `FrameBufferCanvas::drawRect` from assignment 06 does: a 6 x 6 marker at x = 50 covers
@@ -382,7 +382,7 @@ walks each contour once, and `drawBezier` flattens a curve with `quadBezierLerp`
 ceiling of the control polygon's length as the number of pieces, as on this page. Its markers
 are twice the line thickness and coloured red, green and blue, as here.
 
-**Something to look for:** the snippet keeps a "previous point" that starts at (0, 0) and
+The snippet keeps a "previous point" that starts at (0, 0) and
 doesn't reset it between contours. A contour whose first point is off-curve therefore starts
 its first curve from that stale point and skips its real closing curve. The JetBrains Mono
 Nerd Font has over two thousand such contours, most of them in icons, and R4's tests cover

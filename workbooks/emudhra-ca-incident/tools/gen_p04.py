@@ -33,10 +33,10 @@ LIB = (f"cryptography {cryptography.__version__} (OpenSSL): ec.ECDSA(utils.Preha
        "the library's own verification")
 
 REQUIREMENTS = [
-    ("R1", "A genuinely valid signature verifies as `valid`"),
+    ("R1", "A signature made with the matching private key verifies as `valid`"),
     ("R2", "r or s outside [1, n-1] is `invalid` without needing the point computation (0, and n or larger); "
            "and a signature where the recomputed point is itself the point at infinity is `invalid`"),
-    ("R3", "Changing the signature by 1 - in r, in s, or in the signed hash - flips a valid signature to `invalid`"),
+    ("R3", "Changing r, s or the signed hash by 1 flips a valid signature to `invalid`"),
     ("R4", "A signature checked against a different public key than the one that made it is `invalid`"),
     ("R5", "r == n-1 or s == n-1 (the top of the legal range) verifies `valid` when the signature is otherwise genuine"),
     ("E2E", "A mixed batch of signatures: some valid, some altered, some out of range, some wrong key"),

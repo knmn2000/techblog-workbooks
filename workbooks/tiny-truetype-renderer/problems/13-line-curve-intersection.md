@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, in the blog's
-**"Renderer: Filling Glyph"** section, read
+"Renderer: Filling Glyph" section, read
 [Intersection detection for Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Intersection%20detection%20for%20B%C3%A9zier%20curves)
 up to the quadratic equation in t. The author's code (the listing "Function to find a
 intersections of a segment and a quadratic Bezier curve") follows it. Assignment 10 covers
@@ -43,7 +43,7 @@ Every line of the input file has the same form:
 
 | Line | Meaning |
 |---|---|
-| `curve p1x p1y p2x p2y p3x p3y line l1x l1y l2x l2y` | The curve starts at p1, bends toward the control point p2, and ends at p3. The line is the **infinite** straight line through l1 and l2. |
+| `curve p1x p1y p2x p2y p3x p3y line l1x l1y l2x l2y` | The curve starts at p1, bends toward the control point p2, and ends at p3. The line is the infinite straight line through l1 and l2. |
 
 - The curve is the one from assignment 10: the point at parameter t is
   P(t) = (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1.
@@ -57,7 +57,7 @@ Write one line per input line, in the same order:
 - the meeting points on one line: `x1 y1`, or `x1 y1 x2 y2`.
 
 Points come in increasing order of t (the order you meet them travelling along the curve from
-p1 to p3), not by x or y. A line that touches the curve without crossing it (a **tangent**)
+p1 to p3), not by x or y. A line that touches the curve without crossing it (a tangent)
 gives its one point once.
 
 The checker accepts any number within 0.001 of the expected value. If a value isn't whole,
@@ -78,7 +78,7 @@ A, B and C are vectors, so compute each one for x and for y.
 ### The line as an equation
 
 Let d = l2 − l1 be the line's direction, and K = (d.y, −d.x). K is perpendicular to the line:
-it is a **normal vector** of the line. A point X lies on the line if and only if
+it is a normal vector of the line. A point X lies on the line if and only if
 
 ```
 K · (X − l1) = 0           (· is the dot product: u · v = u.x v.x + u.y v.y)
@@ -100,7 +100,7 @@ the line.
 
 ### Solving for t
 
-The case depends on whether a is 0, and on D = b² − 4ac, the **discriminant**:
+The case depends on whether a is 0, and on D = b² − 4ac, the discriminant:
 
 | Case | Roots |
 |---|---|
@@ -165,7 +165,7 @@ output:  20 32 80 32
 | a, b, c | K·A, K·B, K·((0, 0) − (0, 32)) | 20000, −20000, 3200 |
 | D | 20000² − 4 · 20000 · 3200 | 144,000,000, so √D = 12000 |
 | t | (20000 ∓ 12000) / 40000 | 0.2 and 0.8 |
-| P(0.2), P(0.8) | A t² + B t + C | **(20, 32)** and **(80, 32)** |
+| P(0.2), P(0.8) | A t² + B t + C | (20, 32) and (80, 32) |
 
 ### Example 2: the linear case (test `13-R5-scanline`)
 
@@ -277,7 +277,7 @@ is one function, `segmentQuadBezierIntersect`, that returns `std::vector<glm::ve
 builds K, A, B and C as on this page, calls `solveQuadratic(dot(k, a), dot(k, b),
 dot(k, c - l1))`, and keeps the roots with −eps ≤ t ≤ 1 + eps.
 
-**Something to look for:**
+The blog's version differs from this assignment in a few ways:
 
 - Despite its name, the function treats l1 and l2 as an infinite line. It doesn't check that a
   point lies between them, which suits the blog's fill: its scanline spans the whole image.

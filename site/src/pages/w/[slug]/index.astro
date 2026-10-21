@@ -28,9 +28,9 @@ const first = w.checkpoints[0];
       <section class="card here" aria-labelledby="here">
         <h2 id="here">Start here</h2>
         <ol class="here-steps">
-          <li><b>Get it on your computer.</b> Clone the workbook, or hand the prompt under <a href="#start">Run it locally</a> to your coding assistant. The book runs your code on your machine.</li>
-          <li><b>Open the book</b> and set up your {w.language} project. Each {w.unit}'s <b>Start here</b> card lists the files to write and your job in each.</li>
-          <li><b>Begin with {w.unit} {first?.id}</b>{first ? `, ${first.title.toLowerCase()}` : ''}, and go in order: each one adds files to the project, and later ones use them.{w.hasBook && first ? <> <a href={bookUrl(first.id)}>Read it now</a>.</> : ''}</li>
+          <li>Get the workbook onto your computer: clone it, or hand the prompt under <a href="#start">Run it locally</a> to your coding assistant. The book runs your code on your machine.</li>
+          <li>Open the book and set up your {w.language} project. In the book, each {w.unit}'s Start here card lists the files to write and your job in each.</li>
+          <li>Begin with {w.unit} {first?.id}{first ? ` (${first.title})` : ''} and go in order: each one adds files to the project, and later ones use them.{w.hasBook && first ? <> <a href={bookUrl(first.id)}>Read it now</a>.</> : ''}</li>
         </ol>
       </section>
 
@@ -62,7 +62,7 @@ const first = w.checkpoints[0];
         <section class="card proj" aria-labelledby="proj">
           <div class="proj-head">
             <h2 id="proj">The project you build</h2>
-            <p>Your own {w.language} project in <code>{w.project.dir}/</code>, one {w.unit} at a time. The number is the {w.unit} that creates the file; a <b>+</b> marks the ones that add to it later.</p>
+            <p>Your {w.language} project lives in <code>{w.project.dir}/</code> and grows one {w.unit} at a time. The number by each file is the {w.unit} that creates it, and a <code>+</code> marks the {w.unit}s that add to it later.</p>
           </div>
           <div class="tree">
             {w.project.folders.map((f) => (
@@ -140,7 +140,6 @@ const first = w.checkpoints[0];
   .here { padding: 18px 20px; }
   .here h2 { margin-bottom: 10px; }
   .here-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--text-2); line-height: 1.6; }
-  .here-steps b { color: var(--text); font-weight: 600; }
   .proj { overflow: hidden; }
   .proj-head { padding: 18px 18px 12px; }
   .proj-head p { color: var(--text-2); margin: 6px 0 0; max-width: 66ch; }

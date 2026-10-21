@@ -9,9 +9,9 @@
 
 ## Read in the blog first
 
-This page is complete on its own. This is the capstone, and it has no new source material: it
-combines assignments 06, 09, 10 and 13 and applies them to a small **public key infrastructure**
-(PKI), a set of trust anchors, certificates and chains, instead of one key or one chain at a time.
+This page is complete on its own. The capstone has no new source material: it combines
+assignments 06, 09, 10 and 13 and applies them to a small public key infrastructure (PKI), a set
+of trust anchors, certificates and chains, instead of one key or one chain at a time.
 For the story behind it, eMudhra's
 [statement](https://emudhra.com/en/post/certificate-security-incident) is still the one to read.
 
@@ -24,8 +24,8 @@ For the story behind it, eMudhra's
 
 Each earlier assignment answered one question about one key or one chain. This one asks the
 questions an incident response has to answer across a whole PKI: which keys are bad, which chains
-a verifier trusts, and, if a given key turned out to be compromised, **which chains it would
-break**. That last question, the key's **blast radius**, is new. eMudhra, Mozilla and Chrome had to
+a verifier trusts, and, if a given key turned out to be compromised, which chains it would
+break. That last question, the key's blast radius, is new. eMudhra, Mozilla and Chrome had to
 work it out within hours of the disclosure: what a bad key reaches, as well as whether it's bad.
 
 Your new `pki/audit.py` puts your earlier modules together: `lint_key` from your `pki/lint.py`
@@ -41,18 +41,18 @@ for every key that signs something, the chains that depend on it.
 
 ### The three things you report
 
-1. **Lint every key**, anchors included, with assignment 13's three checks in the same priority
+1. Lint every key, anchors included, with assignment 13's three checks in the same priority
    order: off-curve, known-compromised (on the blocklist), and weak (a small private key, found by
    assignment 10's bounded search). In assignment 13 the blocklist grew as the program read. Here
    every `blocklist` line applies to every key in the file, including keys declared before it.
-2. **Validate every chain** with three of assignment 09's four checks, in the same order:
+2. Validate every chain with three of assignment 09's four checks, in the same order:
    signatures, CA permission and path length. The input has no `now` line, so there is no time to
    check a certificate's validity window against. Assignment 09 covers that check, and repeating
    it here would test the same thing twice. A chain here names no anchor: its topmost certificate
-   must be signed by **any** anchor declared anywhere in this PKI. That's assignment 09's "try
+   must be signed by any anchor declared anywhere in this PKI. That's assignment 09's "try
    each" rule for several anchors, applied to every anchor in the PKI.
-3. **Report blast radius.** For every key that sits in a signer's position in some chain (an
-   intermediate or anchor one step above a leaf or another intermediate), report every chain that
+3. Report the blast radius of every key that sits in a signer's position in some chain (an
+   intermediate or anchor one step above a leaf or another intermediate): every chain that
    depends on it. This is structural: it follows where a key sits in a chain's list, whether or
    not every signature along that chain verifies. A certificate that names an issuer that didn't
    sign it (`bad-signature`) still has that issuer in its structure, so the issuer still gets an
@@ -69,7 +69,7 @@ The input file contains, in any order except as noted:
 | `blocklist <curve> <x> <y>` | A known-compromised public key. It applies to every key in the file, wherever the `blocklist` line appears, so read the whole file before you lint any key. |
 | `anchor <id> <curve> <x> <y>` | A trust anchor: a public key the verifier already trusts, with no certificate of its own. `id` is a word with no spaces, unique across every `anchor` and `cert` line. |
 | `cert <id> <hex>` | A full DER certificate, in the same format as assignments 06 to 09. |
-| `chain <chain-id> <id> <id> ...` | A chain: certificate ids only, leaf first, most senior last. **No anchor id appears here**: your program finds the topmost certificate's signer among all the declared anchors. |
+| `chain <chain-id> <id> <id> ...` | A chain: certificate ids only, leaf first, most senior last. No anchor id appears here: your program finds the topmost certificate's signer among all the declared anchors. |
 
 Every `anchor` and `cert` line comes before any `chain` line that uses its id.
 
@@ -88,7 +88,7 @@ exposed <id> <chain-id> <chain-id> ...
   `unknown-anchor`, `not-a-ca` and `path-too-long`, four of assignment 09's five words. `expired`
   never appears, because the input has no `now` line to check validity windows against (see
   "Validate every chain" above).
-- One `exposed` line per key that sits in a signer's position in **some** chain (by structure,
+- One `exposed` line per key that sits in a signer's position in some chain (by structure,
   as above), in input order. It lists every chain id that depends on the key, separated by
   spaces, in the order the input declares those chains. A key that no chain depends on gets no
   `exposed` line, not even an empty one.
@@ -221,7 +221,7 @@ same reason, one level further up.
 
 <details><summary>Hint 1: where to start</summary>
 
-None of this is new arithmetic. `lint_key` is your `pki/lint.py` from assignment 13, unchanged.
+`lint_key` is your `pki/lint.py` from assignment 13, unchanged.
 `parse_certificate` from your `x509/certificate.py` (assignment 06) gives each certificate's curve
 and public key. `validate_chain` from your `pki/chain.py` (assignment 09) already tries every
 anchor it's given. The new pieces are `read_pki`, `blast_radius`, `audit` and the report's
@@ -248,7 +248,7 @@ that none did), and `blast_radius` needs that as well as the verdict. If your as
 - "Any declared anchor" means trying all of them for the topmost certificate, not stopping at the
   first one declared. A chain can validate against an anchor that comes after an unrelated one in
   the input.
-- Blast radius counts every id in a chain's list except the leaf (position 0), **and** whichever
+- Blast radius counts every id in a chain's list except the leaf (position 0), and whichever
   anchor verified the topmost certificate. Both kinds of key get `exposed` lines.
 - A chain that fails with `unknown-anchor` contributes no anchor `exposed` line, since no anchor
   verified it, but its intermediates still do, if it has any. Exposure from a mid-chain signer
@@ -303,7 +303,7 @@ A failing test looks like this:
   R1  Every key is linted (anchors included), in input order: off-curve... .    4 / 5   FAILED
       x 16-R1-priority  a key that is both weak (d=56) and on the blocklist: known-compromised wins (checked first)
           line 2: expected `key weak-and-blocked known-compromised`, got `key weak-and-blocked weak`
-          likely cause: R1 - Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority - same rules as assignment 13
+          likely cause: R1 - Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority, by the same rules as assignment 13
           expected values from: cryptography 41.0.7 / OpenSSL (key checks and openssl verify): independent of this assignment's own lint, chain and blast-radius logic
           reproduce: py -P tools/run_py.py solutions 16 build/cases/16/16-R1-priority.in build/cases/16/16-R1-priority.out
 ```
@@ -316,11 +316,11 @@ To run the finished command on the sample PKI in your project, use
 A real relying party does more than this. It checks revocation (OCSP, CRLs, OneCRL), enforces
 Certificate Transparency, and applies name constraints and extended key usage, and this workbook
 covers none of them. The part of the lesson you built here holds whichever of these mechanisms
-catches a weak key in the end: a weak key is a weak key, and knowing what a key reaches turns
-"this key is bad" into an incident response. That's the work eMudhra, Mozilla and Chrome all did
-within hours of the real disclosure.
+catches a weak key in the end: an incident response needs to know which chains a bad key reaches,
+as well as that it is bad. That's the work eMudhra, Mozilla and Chrome all did within hours of the
+real disclosure.
 
-You've now rebuilt, from modular arithmetic up, the chain of reasoning that made eight weak
-intermediate keys a same-day incident instead of a quiet footnote: the maths that makes a key pair
-work, the format that carries a key between systems, the chain that decides whether to trust it,
-the search that breaks a bad one, and the checks that would have caught it first.
+You've now rebuilt, from modular arithmetic up, the reasoning that made eight weak intermediate
+keys a same-day incident: the maths that makes a key pair work, the format that carries a key
+between systems, the chain that decides whether to trust it, the search that breaks a bad one,
+and the checks that would have caught it first.

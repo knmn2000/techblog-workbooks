@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, in the blog's
-**"Renderer: Filling Glyph"** section, read
+"Renderer: Filling Glyph" section, read
 [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors)
 up to the formula for the t where the curve turns. The author's code (the listing "Find a
 minimum curve of a quad Bézier curve") comes right after it. Assignment 10 covers the curve
@@ -53,11 +53,10 @@ is (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1.
 One line per input line, in the same order: the smallest y of any point on the curve, for t
 from 0 to 1 inclusive.
 
-- The checker accepts any number within 0.001 of the expected value.
-- If a value isn't whole, print enough decimals to be within 0.001 (4 is plenty), and don't
-  round it to a whole number.
-- The boilerplate's `number()` does this: it prints whole numbers without a decimal point, and
-  rounds others to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
+The checker accepts any number within 0.001 of the expected value. If a value isn't whole, print
+enough decimals to be within 0.001 (4 is plenty), and don't round it to a whole number. The
+boilerplate's `number()` does this: it prints whole numbers without a decimal point, and rounds
+others to 4 decimals with trailing zeros dropped (`37.5`, `0.0625`).
 
 ### The curve's height as a polynomial
 
@@ -72,7 +71,7 @@ with y1, y2, y3 the y coordinates of p1, p2, p3.
 ### Candidates for the lowest point
 
 On 0 ≤ t ≤ 1, the lowest point is at one of the ends, y(0) = y1 or y(1) = y3, or at the
-**turning point**, where y stops falling and starts rising. There the slope 2at + b is 0:
+turning point, where y stops falling and starts rising. There the slope 2at + b is 0:
 
 ```
 t* = −b / (2a),     y(t*) = a t*² + b t* + y1
@@ -81,14 +80,14 @@ t* = −b / (2a),     y(t*) = a t*² + b t* + y1
 | a | Shape | Smallest y |
 |---|---|---|
 | a > 0 | a valley: the turning point is the lowest point of the whole parabola | y(t*) if 0 < t* < 1; otherwise min(y1, y3) |
-| a < 0 | a hill: the turning point is the **highest** point | min(y1, y3) |
+| a < 0 | a hill: the turning point is the highest point | min(y1, y3) |
 | a = 0, b ≠ 0 | straight: y changes at a steady rate | min(y1, y3) |
 | a = 0, b = 0 | flat: y1 = y2 = y3 | y1 |
 
 The answer is the smallest of y1, y3 and, when a > 0 and 0 < t* < 1, y(t*). Don't compute t*
 when a = 0, because the formula divides by zero.
 
-**Decimal inputs and a = 0.** Coordinates like 0.1 aren't exact in binary, so a can come out as a
+Decimal coordinates like 0.1 aren't exact in binary, so a can come out as a
 tiny non-zero number such as 1e-17 when it should be 0. That does no harm if you use t* only when
 a > 0 and 0 < t* < 1: on a curve whose a should be 0, t* lands far outside [0, 1], or y(t*) is
 within rounding of an endpoint. You don't need an `a == 0` comparison.
@@ -233,7 +232,7 @@ min(p1.y, p3.y) otherwise. Else it computes t*, and returns y(t*) when t* lies i
 [−eps, 1 + eps] and a > 0, and min(p1.y, p3.y) in every other case. Its branches match the rows
 of the table above.
 
-**Something to look for:** the result goes through `static_cast<int>`, which drops the fraction
+The result goes through `static_cast<int>`, which drops the fraction
 by rounding toward zero. On screen, where y is positive, that is the same as rounding down, so
 61.875 becomes 61 and the comparison with the integer row still works. For a negative y it
 rounds up instead (−1.25 becomes −1). This assignment asks for the exact value, so a solution

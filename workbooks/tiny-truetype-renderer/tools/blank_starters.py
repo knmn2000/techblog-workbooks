@@ -73,8 +73,7 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
     names = ", with the author's names" if config["project"].get("author") else ""
     job = jobs.get(path) or "See this assignment's Start here card in the problem book."
     if kind == "boilerplate" and path == entry:
-        job = ("The Boilerplate gives you this program finished: it reads the input, calls your code and "
-               "writes the answer. You fill in the TODOs in this assignment's other files.")
+        job = "The Boilerplate gives you this program finished. You fill in the TODOs in this assignment's other files."
     elif kind == "boilerplate" and todo:
         job += " The Boilerplate gives you the declarations; fill in each TODO."
     elif kind == "boilerplate":

@@ -36,7 +36,7 @@ location. Assignments 09 and 18 also find glyphs through your `Loca`.
 Write a program that finds where each requested glyph's record is in the font file, and how
 many bytes long it is.
 
-A glyph's **record** is the block of bytes in the `glyf` table that holds its outline. The
+A glyph's record is the block of bytes in the `glyf` table that holds its outline. The
 `loca` table (index to location) gives the start of each record, and two fields in `maxp` and
 `head` tell you how to read `loca`.
 
@@ -68,7 +68,7 @@ Then, for each `glyph` line, in input order:
 glyph <id> <offset> <length>
 ```
 
-- `offset` is where the glyph's record starts, in bytes from the start of the **file**.
+- `offset` is where the glyph's record starts, in bytes from the start of the file.
 - `length` is the record's size in bytes. A length of 0 means the glyph has no outline (the
   space character, for example).
 
@@ -77,16 +77,16 @@ and your assignment 07 program can decode the glyphs.
 
 ### The tables you need
 
-All numbers are **big-endian**.
+All numbers are big-endian.
 
-**`maxp`**: you need one field.
+From `maxp` you need one field:
 
 | Offset in `maxp` | Field | Type | Meaning |
 |---|---|---|---|
 | 0 | `version` | 4 bytes | Skip it |
 | 4 | `numGlyphs` | uint16 | How many glyphs the font has. Glyph ids go from 0 to `numGlyphs` − 1. |
 
-**`head`**: you need one field, 50 bytes in.
+From `head` you also need one field, 50 bytes in:
 
 | Offset in `head` | Field | Type | Meaning |
 |---|---|---|---|
@@ -94,7 +94,7 @@ All numbers are **big-endian**.
 | 50 | `indexToLocFormat` | int16 | 0: `loca` holds short offsets. 1: `loca` holds long offsets. |
 | 52 | `glyphDataFormat` | int16 | 0 (not needed) |
 
-**`loca`**: `numGlyphs` + 1 entries, one after another from the start of the table.
+`loca` holds `numGlyphs` + 1 entries, one after another from the start of the table:
 
 | `indexToLocFormat` | Entry type | The offset it stands for |
 |---|---|---|
@@ -105,7 +105,7 @@ Short entries store half the offset, so a font whose `glyf` table is under 128 K
 bytes per entry. (That only works if every offset is even, which is why short-format fonts
 pad their glyph records to even lengths.)
 
-The offsets count from the start of the **`glyf` table**. Glyph i's record runs from
+The offsets count from the start of the `glyf` table. Glyph i's record runs from
 offset(i) up to, but not including, offset(i + 1):
 
 - absolute offset = `glyf` table offset + offset(i)
@@ -310,7 +310,7 @@ map from glyph id to file offset, `glyphCodeToOffset`. It doesn't store lengths.
 glyph i − 1 has the same offset as glyph i, it marks glyph i − 1 as empty, and later steps
 skip empty glyphs.
 
-**Something to look for:** the snippet reads `numGlyphs` entries, where the spec has
+The snippet reads `numGlyphs` entries, where the spec has
 `numGlyphs` + 1. With no entry after the last glyph to compare against, the loader can't mark
 the last glyph as empty, and later steps would read its record even when it has no outline.
 In JetBrains Mono the last glyph (12124) is empty. The spec's extra entry covers this case,

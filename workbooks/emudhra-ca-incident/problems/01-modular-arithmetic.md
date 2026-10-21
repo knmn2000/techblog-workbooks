@@ -25,9 +25,9 @@ operations you build here. "Source material" below lists where this arithmetic c
 This is the first assignment. In `ecc/modmath.py` you write two pieces of arithmetic mod a
 number:
 
-- **modular exponentiation**: a number raised to an exponent hundreds of bits long, mod a prime,
-  in about `log2(exp)` steps;
-- **the modular inverse**: the way to divide mod a prime, since there are no fractions.
+- modular exponentiation, which raises a number to an exponent hundreds of bits long, mod a
+  prime, in about `log2(exp)` steps;
+- the modular inverse, which is how you divide mod a prime, since there are no fractions.
 
 Your `ecc/curve.py` divides with the inverse when it adds points in assignment 02, and your
 `ecc/ecdsa.py` divides with it when it checks a signature in assignment 04. Assignment 03
@@ -42,7 +42,7 @@ writes the answer to each, in order.
 
 Computing `base ** exp mod mod` the ordinary way multiplies `base` by itself `exp` times. The
 exponents here are hundreds of bits long, so that loop would run for longer than the universe has
-existed. **Square-and-multiply** gets the same answer in about `log2(exp)` multiplications:
+existed. Square-and-multiply gets the same answer in about `log2(exp)` multiplications:
 
 - look at `exp` one bit at a time, starting from the lowest;
 - keep a running power of `base` and square it at every step (`base`, `base^2`, `base^4`, ...);
@@ -50,11 +50,11 @@ existed. **Square-and-multiply** gets the same answer in about `log2(exp)` multi
 
 ### Modular inverse
 
-Arithmetic mod a number has no division. Instead, the **modular inverse** of `a` mod `mod` is the
+Arithmetic mod a number has no division. Instead, the modular inverse of `a` mod `mod` is the
 number `b` with `a * b mod mod == 1`, and multiplying by `b` acts like dividing by `a`. The inverse
 exists when `gcd(a, mod) == 1`, and only then.
 
-The **extended Euclidean algorithm** finds it. It runs the steps of computing `gcd(a, mod)`, which
+The extended Euclidean algorithm finds it. It runs the steps of computing `gcd(a, mod)`, which
 replace the larger of two numbers with the remainder of dividing it by the smaller. Along the way
 it also writes each remainder as some multiple of `a` plus some multiple of `mod`. The multiple of
 `a` written for the remainder 1 is the inverse; reduce it mod `mod` to bring it into range.
@@ -100,8 +100,7 @@ difference points to.
 - **R3** `exp = 1` gives `base mod m`.
 - **R4** Exponents hundreds of bits long finish well under the time limit. A loop that multiplies
   `exp` times can't; square-and-multiply needs about `log2(exp)` multiplications.
-- **R5** `base >= mod` is reduced mod `mod` before exponentiating. It isn't an error, and it
-  doesn't stay unreduced in the arithmetic.
+- **R5** `base >= mod` is valid input, and is reduced mod `mod` before exponentiating.
 - **R6** `modinv` returns the correct inverse when `gcd(a, mod) == 1`.
 - **R7** `modinv` returns `none` when `gcd(a, mod) != 1`. This includes `a = 0` (with `mod > 1`,
   since `gcd(0, mod) == mod`), and `a` sharing a prime factor with a composite `mod`.
@@ -162,8 +161,8 @@ No number multiplied by `21` gives something congruent to `1` mod `35`.
 - Numbers can be a few hundred bits long, as large as the P-256 and P-384 primes in later
   assignments.
 - Each case has a 10-second limit. The R4 cases use exponents and moduli several hundred bits
-  long. Square-and-multiply finishes them in well under a millisecond, but a loop of `exp` plain
-  multiplications would still be running long after the universe ends.
+  long. Square-and-multiply finishes them in well under a millisecond; a loop of `exp` plain
+  multiplications wouldn't finish in time.
 - There are 27 tests: 3 for R1, 3 for R2, 3 for R3, 4 for R4, 3 for R5, 3 for R6, 4 for R7, 2 for
   R8, and 2 end-to-end cases using the real P-384 field prime. Part of the set is random and
   changes with `-Fresh`.
@@ -250,6 +249,6 @@ A failing test looks like this:
 ## After you pass: nothing to compare
 
 This assignment has no blog code to compare with: the post doesn't describe this arithmetic, and
-every later assignment builds on it. Cryptography libraries build on the two algorithms you wrote,
+the later assignments build on it. Cryptography libraries build on the two algorithms you wrote,
 square-and-multiply and extended Euclid, often in faster variants. That includes the library the
 later assignments' tests use as an independent source of expected answers.

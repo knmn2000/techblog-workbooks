@@ -48,7 +48,7 @@
     "author": "eMudhra",
     "headline": "How to not f*ck up like eMudhra",
     "lede": "Each assignment has you write what one part of the incident calls for, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, then the checks that would have caught the weak key. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
-    "credits": "Expected outputs come from independent sources. The book keeps your progress in this browser only.",
+    "credits": "Most expected outputs come from OpenSSL and the cryptography library. The book keeps your progress in this browser only.",
     "checkCommand": ".\\check {id}",
     "shell": "PowerShell"
   },

@@ -6,7 +6,7 @@ explain _lines=R1
 requirement R1 One output line per input, in order: `signature <id> <r> <s>`, in lowercase hex
 requirement R2 Both curves work: P-256 and P-384 each use their own p, a, G and n
 requirement R3 Every nonce k works, including k = 1, k = 2, k = n - 1, and a large random k, so the answer must come from double-and-add, not a loop that runs k times
-requirement R4 The private key can be any value, including the recovered incident value d = 4: the formula does not care how small or large d is
+requirement R4 The private key can be any value, including the recovered incident value d = 4: the formula is the same however small or large d is
 requirement R5 The hash z can be any value in range, including 0 and n - 1
 case 11-R1-three-signatures R1
 title three signatures in one input, two curves

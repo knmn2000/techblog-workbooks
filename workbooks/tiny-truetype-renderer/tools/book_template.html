@@ -288,6 +288,8 @@ body.in-ide { overflow: hidden; }
   color: var(--text-2); font-size: 13px; margin-bottom: 18px; }
 .callout svg { margin-top: 3px; color: var(--brand-ink); }
 .callout p { margin: 0; }
+.callout > div { display: grid; gap: 6px; min-width: 0; }
+.callout-title { color: var(--text); font-weight: 600; }
 .start { margin: 22px 0 30px; padding: 20px 20px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--layer); display: grid; gap: 18px; }
 .start-top { display: grid; gap: 4px; }
 .start-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-ink); }
@@ -344,7 +346,6 @@ button.fpath { cursor: pointer; } button.fpath:hover { background: var(--fill-ho
 .trees h3 { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--text-2); }
 .trees pre { margin: 0; max-width: 100%; font: 11.5px/1.55 var(--font-mono); color: var(--text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
 .trees .hit { color: var(--ok); }
-.callout b { color: var(--text); font-weight: 600; }
 .flow > * { margin: 0; }
 .flow > * + * { margin-top: 12px; }
 .flow > h2:not(:first-child) { margin-top: 26px; }
@@ -663,13 +664,13 @@ span.CodeMirror-selectedtext { background: none; }
   <header class="topbar">
     <div class="tb-left">
       <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
-      <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem List</span></a>
+      <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem list</span></a>
       <button class="icon-btn" id="prev" type="button" aria-label="Previous assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
       <button class="icon-btn" id="next" type="button" aria-label="Next assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
     <div class="tb-mid">
-      <button class="act run" id="run" type="button" title="Copy your code and the command that runs the selected case (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
-      <button class="act submit" id="submit" type="button" title="Copy your code and the command that runs every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
+      <button class="act run" id="run" type="button" title="Check your code against the selected example (Ctrl+')"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Run</button>
+      <button class="act submit" id="submit" type="button" title="Check your code against every test (Ctrl+Enter)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9a4 4 0 0 1 0 9"/><path d="M12 13v8M9 16l3-3 3 3"/></svg>Submit</button>
     </div>
     <div class="tb-right"><span class="live" id="live" hidden></span><span class="tb-prog" id="tb-prog"></span><button class="exit-btn" id="exit" type="button" hidden title="Save, stop the book and close it">Exit</button></div>
   </header>
@@ -713,9 +714,9 @@ span.CodeMirror-selectedtext { background: none; }
 
       <section class="panel tests" aria-label="Tests">
         <div class="panel-head" role="tablist">
-          <button class="ptab" role="tab" data-bottom="cases" aria-selected="true"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg>Testcase</button>
+          <button class="ptab" role="tab" data-bottom="cases" aria-selected="true"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg>Test cases</button>
           <span class="sep"></span>
-          <button class="ptab" role="tab" data-bottom="result" aria-selected="false"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7 5 5-5 5M12 18h7"/></svg>Test Result</button>
+          <button class="ptab" role="tab" data-bottom="result" aria-selected="false"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 7 5 5-5 5M12 18h7"/></svg>Test result</button>
         </div>
         <div class="panel-body" id="cases" role="tabpanel"></div>
         <div class="panel-body" id="result" role="tabpanel" hidden></div>
@@ -831,14 +832,14 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="bars">${bars}</div>
       </div>
       <div class="card how"><h2>Using the book</h2><ol>
-        <li><span><b>You build one project.</b> Each assignment adds files to your ${esc(PROJECT.label)} project in <code>${esc(PROJECT_DIR)}</code>, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
-        <li><span><b>Write the code</b> here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
-        ${LOCAL ? `<li><span><b>Run</b> checks the selected example and <b>Submit</b> runs every test. The verdict appears in Test Result, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
-          : HOST ? `<li><span><b>Run it on your computer.</b> This copy shows the problems and the starter code. Once the workbook is set up on your machine, Run and Submit check your code there. <button type="button" class="linkish" data-run-local>See how</button></span></li>`
-          : `<li><span><b>Submit</b> copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
-        <li><span><b>Paste the checker's output</b> into Test Result. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
-        <li><span><b>Each assignment stands alone.</b> A test input carries what earlier assignments would produce, so an assignment's tests depend only on the earlier files it uses. <b>Re-check solved</b> reruns your solved assignments and shows any that a later change broke.</span></li>
-        <li><span><b>If a test looks wrong,</b> run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask Claude to review your disputes.</span></li>
+        <li><span>You build one ${esc(PROJECT.label)} project, in <code>${esc(PROJECT_DIR)}</code>. Each assignment adds files to it, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
+        <li><span>Write the code here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
+        ${LOCAL ? `<li><span>The Run button checks the selected example, and Submit runs every test. The verdict appears in the Test result tab, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
+          : HOST ? `<li><span>Once the workbook is set up on your computer, Run and Submit check your code there. This copy shows the problems and the starter code. <button type="button" class="linkish" data-run-local>See how</button></span></li>`
+          : `<li><span>The Submit button copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
+        <li><span>Paste the checker's output into the Test result tab. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
+        <li><span>An assignment's tests depend only on the earlier files it uses, because each test input carries what earlier assignments would produce.${LOCAL ? ' The Re-check solved button reruns your solved assignments and shows any that a later change broke.' : ''}</span></li>
+        <li><span>If a test looks wrong, run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask Claude to review your disputes.</span></li>
       </ol></div>`;
     if (CPS.length && done.length === CPS.length) renderFinish();
   }
@@ -949,7 +950,7 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="chip">${c.tests} tests</span>
         <span class="chip" title="The checker compares only what your program writes, so you can use any structure, language or library.">Any language</span>
       </div>
-      ${c.read ? `<div class="callout">${I.book}<div><b>${esc(c.readTitle || 'Read in the blog first')}.</b> ${c.read.replace(/^<p>|<\/p>$/g, '')}</div></div>` : ''}
+      ${c.read ? `<div class="callout">${I.book}<div><p class="callout-title">${esc(c.readTitle || 'Read in the blog first')}</p>${c.read}</div></div>` : ''}
       ${c.sources ? `<div class="accs accs-top">${acc('acc-sources', I.link, 'Source material', c.sources)}</div>` : ''}
       ${startCard(c)}
       <div class="flow">${c.body}</div>
@@ -1006,7 +1007,7 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="way-note">${WAY_NOTES[kindOf(c)]}</span>`]);
     }
     if (c.buildsOn.length) facts.push(['You can use', `<span>${c.buildsOn.map((f) => `${link(f)} <span class="muted">${from(f)}</span>`).join(' &nbsp;')}</span>`]);
-    facts.push(['Done when', `<span>Submit says <b>Accepted</b> on all ${c.tests} tests.</span>`]);
+    facts.push(['Done when', `<span>Submit says Accepted on all ${c.tests} tests.</span>`]);
     return `<section class="start" aria-labelledby="start-title">
       <div class="start-top"><span class="start-eyebrow">Start here</span>
         <h2 id="start-title">You write ${order.length === 1 ? 'one file' : `${order.length} files`}</h2>
@@ -1142,9 +1143,9 @@ span.CodeMirror-selectedtext { background: none; }
     $('#cases').innerHTML = `
       <div class="case-pills" role="tablist">${list.map((x, i) => `<button class="pill-btn" type="button" role="tab" data-case="${i}" aria-selected="${i === caseIndex}">Case ${i + 1}</button>`).join('')}</div>
       ${ex.name ? `<p class="case-name">${ex.name}</p>` : ''}
-      <div class="field"><div class="field-k">input</div><pre class="field-v">${esc(ex.input)}</pre></div>
-      <div class="field"><div class="field-k">expected output</div>${expected}</div>
-      ${ex.test ? `<div class="field"><div class="field-k">run just this case (test ${esc(ex.test)})</div>${cmdRow(command(c.id, '-Case ' + ex.test))}</div>` : ''}`;
+      <div class="field"><div class="field-k">Input</div><pre class="field-v">${esc(ex.input)}</pre></div>
+      <div class="field"><div class="field-k">Expected output</div>${expected}</div>
+      ${ex.test ? `<div class="field"><div class="field-k">Run only this case (test ${esc(ex.test)})</div>${cmdRow(command(c.id, '-Case ' + ex.test))}</div>` : ''}`;
   }
   $('#cases').addEventListener('click', (e) => {
     const b = e.target.closest('[data-case]');
@@ -1171,7 +1172,7 @@ span.CodeMirror-selectedtext { background: none; }
       v = { kind: 'bad', label: 'Wrong Answer', passed: +m[1], total: +m[2] };
       v.help = /wrote nothing in any failing test/.test(t)
         ? `Your program ran but didn't write anything. The checker starts it with two file names, the input to read and the output to write; write your answer to the second one.`
-        : `Some tests failed. Each one below shows the expected output, what your program wrote, and the requirement the checker thinks it breaks.`;
+        : `Some tests failed. Each one below shows the expected output, what your program wrote, and the requirement it most likely breaks.`;
     } else if (/Compile Error/.test(t)) {
       v = { kind: 'bad', label: 'Compile Error' };
       v.help = /has no main\(\) function/.test(t)
@@ -1219,7 +1220,7 @@ span.CodeMirror-selectedtext { background: none; }
 
   function verdictHtml(v, c) {
     let h = `<div class="verdict ${v.kind}"><h2>${esc(v.label)}</h2>`
-      + (v.total ? `<span class="sub">${v.passed} / ${v.total} testcases passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
+      + (v.total ? `<span class="sub">${v.passed} / ${v.total} tests passed${v.disputed ? ` · ${v.disputed} disputed` : ''}</span>` : '')
       + `<button class="btn" type="button" id="clear-result">Clear</button></div>`;
     if (v.other) h += `<p class="note warn">This output is from assignment ${esc(v.other)}, not ${esc(c.id)}, so it wasn't counted here. Open assignment ${esc(v.other)} and paste it there.</p>`;
     else if (v.kind === 'ok' && !v.single) h += `<p class="note">The book marked the assignment solved and opened the Editorial tab.</p>`;
@@ -1248,17 +1249,17 @@ span.CodeMirror-selectedtext { background: none; }
     const v = saved ? parseOutput(saved, c) : null;
     const act = lastAction[c.id];
     const runCmd = act && act.kind === 'run' && act.test ? command(c.id, '-Case ' + act.test) : command(c.id);
-    const copied = !act ? '<b>Copy your code</b> and paste it over'
-      : act.empty ? '<b>Nothing to copy yet:</b> the editor is empty. Write your program, then paste it over'
-      : act.copied ? '<b>Code copied.</b> Paste it over'
-      : '<b>Copy didn\'t work here:</b> the book selected the code in the editor, so press Ctrl+C, then paste it over';
+    const copied = !act ? 'Copy your code and paste it over'
+      : act.empty ? 'Nothing to copy yet: the editor is empty. Write your program, then paste it over'
+      : act.copied ? 'The book copied your code. Paste it over'
+      : 'Copy didn\'t work here, so the book selected the code in the editor. Press Ctrl+C, then paste it over';
     $('#result').innerHTML = (notice ? `<p class="note warn">${notice}</p>` : '')
       + (act && act.warn ? `<p class="note warn">${act.warn}</p>` : '') + (v ? verdictHtml(v, c) : '') + `
       <ol class="steps">
         <li class="step${act && act.copied ? ' done' : ''}"><span>1</span><div><p>${copied} <code>${esc(act && act.path ? act.path : c.entry)}</code>, and the same for this assignment's other files you changed (the tabs above the editor). Skip this step if you write in the project's files with your own editor.</p>
           <div><button class="btn" type="button" id="copy-again">Copy code</button></div></div></li>
-        <li class="step"><span>2</span><div><p><b>Run the checker</b> in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
-        <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p><b>Copy what the checker prints</b> in the terminal and paste it here (the result, not your code).</p>
+        <li class="step"><span>2</span><div><p>Run the checker in ${esc(DATA.shell)}, in <code>${esc(DATA.folder)}</code>:</p>${cmdRow(runCmd)}</div></li>
+        <li class="step${v && v.kind !== 'unknown' ? ' done' : ''}"><span>3</span><div><p>Copy what the checker prints in the terminal and paste it here (the result, not your code).</p>
           <textarea class="paste" id="paste" spellcheck="false" placeholder="Paste the checker's output here (Ctrl+V). It starts with “Assignment ${esc(c.id)} - …”"></textarea></div></li>
       </ol>
       <details class="more"><summary>More commands, and what a failure looks like</summary><div>
@@ -2143,7 +2144,7 @@ span.CodeMirror-selectedtext { background: none; }
       'not-implemented': ['warn', 'Not implemented yet'], offline: ['unknown', 'Not connected'], dispute: ['ok', 'Dispute recorded'] };
     const [kind, label] = looks[r.verdict] || ['unknown', 'Something went wrong'];
     const single = r.verdict === 'passed' || r.verdict === 'failed';
-    const sub = [single ? `test ${esc(r.test || '')}` : r.total ? `${r.passed} / ${r.total} testcases passed` : '',
+    const sub = [single ? `test ${esc(r.test || '')}` : r.total ? `${r.passed} / ${r.total} tests passed` : '',
       r.disputed && r.disputed.length ? `${r.disputed.length} disputed` : '', r.fresh ? 'fresh tests' : '',
       r.seconds != null ? `${r.seconds} s` : ''].filter(Boolean).join(' · ');
     let h = `<div class="verdict ${kind}"><h2>${esc(label)}</h2>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
@@ -2179,7 +2180,7 @@ span.CodeMirror-selectedtext { background: none; }
     const k = CPS.indexOf(c), next = CPS[k + 1];
     const uses = next ? next.files.filter((f) => f.role === 'adds').concat(next.buildsOn).filter((f) => c.files.some((g) => g.path === f.path)) : [];
     const nudge = r && r.verdict === 'accepted' && !r.fresh && next
-      ? `<div class="nudge"><span><b>Next: <a href="#p${esc(next.id)}">${esc(next.num)}. ${esc(next.title)}</a></b>${uses.length ? `, which builds on ${uses.map((f) => `<code>${esc(shortName(f.path))}</code>`).join(', ')}` : ''}.</span></div>` : '';
+      ? `<div class="nudge"><span>Next: <a href="#p${esc(next.id)}">${esc(next.num)}. ${esc(next.title)}</a>${uses.length ? `, which builds on ${uses.map((f) => `<code>${esc(shortName(f.path))}</code>`).join(', ')}` : ''}.</span></div>` : '';
     const solvedCount = CPS.filter((x) => solved(x.id)).length;
     $('#result').innerHTML = (r ? reportHtml(r, c) : intro) + nudge
       + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`

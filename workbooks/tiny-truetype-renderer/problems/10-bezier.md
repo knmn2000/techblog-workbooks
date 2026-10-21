@@ -10,7 +10,7 @@
 ## Read in the blog first
 
 You can pass using this page alone. For the background, read the start of the blog's
-**"Renderer: Curve Rendering"** section:
+"Renderer: Curve Rendering" section:
 [Definition of Bézier Curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Definition%20of%20B%C3%A9zier%20Curves)
 and [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=De%20Casteljau,algorithm).
 Stop at the sentence that introduces the code. The author's code (the listing "Lerp for a
@@ -27,7 +27,7 @@ assignment 11.
 ## Where this fits
 
 In assignment 08 you drew glyph outlines with straight lines. TrueType outlines also use
-quadratic Bezier curves. Each curve has an on-curve start point, an off-curve **control point**
+quadratic Bezier curves. Each curve has an on-curve start point, an off-curve control point
 that pulls the curve toward itself, and an on-curve end point.
 
 Here you compute points along such a curve. In assignment 11 you draw each curve by joining
@@ -50,7 +50,7 @@ The input file contains two kinds of lines:
 
 - Every number is a decimal such as `12`, `-3.25` or `0.0625`.
 - `t` is between 0 and 1, inclusive.
-- Mind the order on a `bezier` line: start, **control point**, end. The control point is the
+- Mind the order on a `bezier` line: start, control point, end. The control point is the
   middle pair of numbers.
 
 ### Output
@@ -65,7 +65,7 @@ and rounds the others to 4 decimals, dropping trailing zeros (`37.5`, `0.0625`).
 
 ### Linear interpolation
 
-**Linear interpolation** (lerp for short) gives the point a fraction t of the way from a to b:
+Linear interpolation (lerp for short) gives the point a fraction t of the way from a to b:
 
 ```
 lerp(a, b, t) = a + (b − a) · t
@@ -77,13 +77,13 @@ lerp(a, b, t) = a + (b − a) · t
 
 ### A point on a quadratic Bezier curve
 
-Three points define a **quadratic Bezier curve**: the start a, the control point b and the end
+Three points define a quadratic Bezier curve: the start a, the control point b and the end
 c. The curve leaves a heading toward b and arrives at c coming from the direction of b. It
 bends toward b but doesn't pass through it, unless all three points lie on one line with b
 between a and c.
 
-Each value of the **curve parameter** t picks one point on the curve. **De Casteljau's
-construction** finds the point at t with three lerps, all with the same t:
+Each value of the curve parameter t picks one point on the curve. De Casteljau's
+construction finds the point at t with three lerps, all with the same t:
 
 1. p = lerp(a, b, t), a point on the leg from a to the control point
 2. q = lerp(b, c, t), a point on the leg from the control point to c
@@ -113,7 +113,7 @@ difference points to.
 
 - **R1** A `lerp` line gives the point a fraction t of the way from a to b.
 - **R2** A `bezier` line gives the point at t on the curve that starts at a, ends at c and is
-  pulled toward the control point b (the **middle** point on the line).
+  pulled toward the control point b (the middle point on the line).
 - **R3** The ends are exact: t = 0 gives the first point and t = 1 the last one. For a curve,
   that is c, not the control point b.
 - **R4** Negative coordinates, fractional coordinates and fractional t all work.
@@ -148,7 +148,7 @@ output:  50 50
 |---|---|---|
 | p = lerp(a, b, 0.5) | halfway from (0, 0) to (50, 100) | (25, 50) |
 | q = lerp(b, c, 0.5) | halfway from (50, 100) to (100, 0) | (75, 50) |
-| lerp(p, q, 0.5) | halfway from (25, 50) to (75, 50) | **(50, 50)** |
+| lerp(p, q, 0.5) | halfway from (25, 50) to (75, 50) | (50, 50) |
 
 The control point is at height 100, but the curve only reaches 50. With the formula:
 0.25 · (0, 0) + 0.5 · (50, 100) + 0.25 · (100, 0) = (50, 50).
@@ -245,6 +245,6 @@ has two short functions on `glm::vec2`. `lerp` asserts that t is between 0 and 1
 a + (b − a) · t. `bezierLerp` nests three `lerp` calls in de Casteljau's order, as in
 Example 2. The blog gives the expanded formula in its prose and doesn't use it in the code.
 
-**Something to look for:** the drawing code in the next section ("TrueType Bézier curves")
+The drawing code in the next section ("TrueType Bézier curves")
 calls the curve function `quadBezierLerp`, while this listing names it `bezierLerp`. They are
 the same function. If you follow along in C++, pick one name.

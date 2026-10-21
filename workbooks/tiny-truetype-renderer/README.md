@@ -32,7 +32,7 @@ Ask Claude to "set up my workbook": it checks the tools, asks which language you
 workbook's project is C++), creates the project and opens the book. Or double-click `study.cmd`
 (or run `.\study` in PowerShell): the book opens with Run and Submit working, and offers to create
 the C++ project if there isn't one yet. Leave its window open while you work, or use the book's
-**Exit** button when you're done. If a tool is missing, it tells you which.
+Exit button when you're done. If a tool is missing, it tells you which.
 
 ## Your project
 
@@ -59,10 +59,10 @@ draws on your canvas, and the text renderer uses most of the project. The assign
 Each test input carries what earlier assignments would produce (a table's offset, a glyph's
 location), so an assignment's tests depend only on the earlier files it uses. The checker builds
 the whole project at once, though, and if a file from another assignment doesn't compile, it tells
-you which one. **Re-check solved** in the book runs every solved assignment again, so you see at
-once when a change breaks an earlier one (the book marks it with a red `!`).
+you which one. The book's Re-check solved button runs every solved assignment again, so you see
+at once when a change breaks an earlier one (the book marks it with a red `!`).
 
-The **Files** panel in the book's editor shows the project as it grows, with each file's
+The Files panel in the book's editor shows the project as it grows, with each file's
 assignment. The problem list shows your project next to the author's once all 18 assignments pass.
 Build and run the finished program:
 
@@ -76,12 +76,12 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
 
 ## Doing an assignment
 
-1. Read the problem (book or `problems/NN-*.md`). In the book, its **Start here** card lists the
+1. Read the problem (book or `problems/NN-*.md`). In the book, its Start here card lists the
    files to write, your job in each, the earlier files you can use, and the two ways to start.
 2. Write the files. Each one starts as the Boilerplate, which gives you the input/output code and
    the declarations (with the author's names where the post has them), and you fill in the parts
    marked `TODO`. To write all of it yourself, including the includes, the parsing and the output,
-   choose **From scratch** on the Start here card: each file then starts empty apart from its
+   choose From scratch on the Start here card: each file then starts empty apart from its
    comment.
 3. Check it from this folder in PowerShell, or with Run and Submit in the book:
 
@@ -99,7 +99,7 @@ best guess at the requirement behind it, where the expected value came from, and
 reproduces it. For picture assignments it also writes a diff image (red: extra pixels, blue:
 missing, yellow: forgiven).
 
-**The checker compares pictures with a 1-pixel tolerance** along edges, so a different but correct
+The checker compares pictures with a 1-pixel tolerance along edges, so a different but correct
 line or fill algorithm passes. Missing shapes, stray lines and holes in the wrong place still fail.
 
 ## If you think a test is wrong

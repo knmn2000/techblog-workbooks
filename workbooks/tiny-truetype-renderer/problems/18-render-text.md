@@ -52,37 +52,37 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 
 A PNG (or binary PPM) `width` pixels wide and `height` pixels high. For each character, in order:
 
-1. **Decode UTF-8** into Unicode code points. A code point takes 1 to 4 bytes: `0xxxxxxx`,
+1. Decode UTF-8 into Unicode code points. A code point takes 1 to 4 bytes: `0xxxxxxx`,
    `110xxxxx 10xxxxxx`, `1110xxxx 10xxxxxx 10xxxxxx` or `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx`.
-2. **Find the glyph** with the font's cmap: the format 12 subtable with platform 0, encoding 4
-   (your `font/Cmap` from assignment 03). A code point the font doesn't map uses **glyph 0**
+2. Find the glyph with the font's cmap: the format 12 subtable with platform 0, encoding 4
+   (your `font/Cmap` from assignment 03). A code point the font doesn't map uses glyph 0
    (`.notdef`, which most fonts draw as a box).
-3. **Get its outline** (assignments 04, 07 and 09): find the glyph's record with `loca`. A simple
+3. Get its outline (assignments 04, 07 and 09): find the glyph's record with `loca`. A simple
    glyph gives one outline. A compound glyph gives the outlines of its components placed with
    their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment 09's
    rules, your `font/CompoundGlyph`). An empty glyph (such as space) gives nothing. Fill every
    component outline; filling them one by one or merged gives the same picture for these fonts.
    Noto Sans JP is a variable font: use the outlines stored in `glyf` and ignore its variation
    tables.
-4. **Fill it** with the non-zero rule (your `render/NonZero` from assignment 17), placed with
+4. Fill it with the non-zero rule (your `render/NonZero` from assignment 17), placed with
    glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). Paint a pixel when
    its centre is inside.
-5. **Move the pen**: penX += advanceWidth × scale, using the glyph's advance width from `hmtx`
+5. Move the pen: penX += advanceWidth × scale, using the glyph's advance width from `hmtx`
    (your `font/Metrics` from assignment 05; glyphs past numberOfHMetrics use the last advance).
    Don't round the pen position: keep it fractional.
 
 The checker forgives edges that move by one pixel. Missing glyphs, glyphs in the wrong place or
 colour, and holes in the wrong places fail.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so either of these works:
+Write the picture to the output path you're given. The name ends in `.png`, but the checker
+looks at the contents, so a PNG and a binary PPM both work:
 
-- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
-  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
-  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
+  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
-  height and `255`, separated by spaces or newlines and ended by one newline (for example
+- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.

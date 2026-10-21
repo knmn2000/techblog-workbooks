@@ -39,11 +39,11 @@ encoding.
 
 Every DER-encoded value is three parts, back to back:
 
-- a **tag**: what kind of value this is;
-- a **length**: how many bytes of content follow;
-- the **content**: the value itself or, for a constructed value, more complete TLV nodes.
+- a tag: what kind of value this is;
+- a length: how many bytes of content follow;
+- the content: the value itself or, for a constructed value, more complete TLV nodes.
 
-**The tag** is the first byte. Its bits mean:
+The tag is the first byte. Its bits mean:
 
 | Bits | Meaning |
 |---|---|
@@ -54,7 +54,7 @@ Every DER-encoded value is three parts, back to back:
 DER also has a multi-byte "high tag number" form for tag numbers 31 and above. No test uses it, so
 every tag in this assignment fits in one byte.
 
-**Universal** tags are ASN.1's built-in types: each number means the same type wherever it
+Universal tags are ASN.1's built-in types: each number means the same type wherever it
 appears. You need these:
 
 | Tag number | Type | Form |
@@ -70,27 +70,27 @@ appears. You need these:
 | 23 | UTCTime | primitive |
 | 24 | GeneralizedTime | primitive |
 
-A **context-specific** tag ([0], [1], [2], [3], ...) means something different in each structure
+A context-specific tag ([0], [1], [2], [3], ...) means something different in each structure
 that uses it. A certificate uses [0] for its version field and [3] for its extensions. Both wrap
 another value, so both are constructed in this workbook. The tag number sits in the same bits 5-1
 as a universal tag's; only the class bits differ.
 
-**The length** follows the tag byte, in one of two forms:
+The length follows the tag byte, in one of two forms:
 
-- **Short form**: if the length byte's high bit is 0, the rest of that byte (0 to 127) is the
-  length, and the length field is that one byte.
-- **Long form**: if the length byte's high bit is 1, its low 7 bits say how many more bytes
-  follow, and those bytes, read as one big-endian number, are the length. `0x81 0xC8` means "1
+- In the short form, the length byte's high bit is 0, and the rest of that byte (0 to 127) is the
+  length. The length field is that one byte.
+- In the long form, the length byte's high bit is 1, and its low 7 bits say how many more bytes
+  follow. Those bytes, read as one big-endian number, are the length. `0x81 0xC8` means "1
   more byte: 0xC8", a length of 200. `0x82 0x01 0x2C` means "2 more bytes: 0x01 0x2C", a length
   of 300.
 
 A length of 127 is the largest short form, and 128 is the first length that needs the long form.
 
-BER, the looser encoding that DER restricts, also allows an **indefinite length**: `0x80` with no
+BER, the looser encoding that DER restricts, also allows an indefinite length: `0x80` with no
 length at all, ended by two zero bytes. DER forbids it and no test uses it, so you don't need to
 handle it.
 
-**The content** is the next `length` bytes. For a primitive node, those bytes are the value,
+The content is the next `length` bytes. For a primitive node, those bytes are the value,
 decoded by type (below). For a constructed node, they are more complete TLV nodes, one after
 another, each one level deeper than its parent.
 
@@ -114,12 +114,12 @@ bits, only the top 4 count. You print the bytes the same way in both cases.
 
 "Any other type" covers the string types you meet in real certificates, such as PrintableString
 and UTF8String, which this assignment doesn't decode. It also covers a context-specific tag used
-for **implicit tagging**: the tag replaces a value's own tag instead of wrapping another TLV, so
+for implicit tagging: the tag replaces a value's own tag instead of wrapping another TLV, so
 the node is primitive.
 
 #### INTEGER
 
-The content bytes are a **two's complement** number, most significant byte first:
+The content bytes are a two's complement number, most significant byte first:
 
 - If the top bit of the first byte is 0, the value is the bytes read as an unsigned number.
 - If that bit is 1, the value is negative: subtract `2^(8 * number of bytes)` from the unsigned
@@ -138,11 +138,11 @@ serial number. Python's `int` holds it; in another language, use a big-integer t
 
 #### OBJECT IDENTIFIER
 
-An object identifier is a list of numbers called **arcs**, printed with dots between them, such as
+An object identifier is a list of numbers called arcs, printed with dots between them, such as
 `1.2.840.10045.2.1`. The encoding packs the first two arcs into one value, `40 * arc1 + arc2` (arc1
 is 0, 1 or 2), and gives each later arc a value of its own.
 
-Each value takes one or more bytes in **base 128**: 7 bits per byte, most significant group first,
+Each value takes one or more bytes in base 128: 7 bits per byte, most significant group first,
 with the top bit set on every byte of the value except its last. To decode:
 
 1. Start the current value at 0. For each byte, shift the value left 7 bits and OR in the byte's
@@ -362,6 +362,6 @@ eMudhra's post has no code for this, so there is no author's version to compare.
 decoder each for INTEGER, OBJECT IDENTIFIER and BIT STRING. The program's `format_value` has one
 branch per type.
 
-**Something to look for:** the reference decodes an OBJECT IDENTIFIER's first value with the same
-base-128 loop as the other arcs, with no special case for a single byte. Compare how it handles an
-arc pair whose combined value is large with the code you wrote for the later arcs.
+For an OBJECT IDENTIFIER's first value, the reference uses the same base-128 loop as for the other
+arcs, with no special case for a single byte. Compare how it handles an arc pair whose combined
+value is large with the code you wrote for the later arcs.

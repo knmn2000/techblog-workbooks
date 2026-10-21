@@ -3,12 +3,12 @@ source cryptography 41.0.7 / OpenSSL (key checks and openssl verify): independen
 seed 1
 compare records
 explain _lines=R1 key=R1 chain=R2 exposed=R3
-requirement R1 Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority - same rules as assignment 13
-requirement R2 Every chain is validated in input order: trusted, or untrusted with a reason - same rules as assignment 09
+requirement R1 Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority, by the same rules as assignment 13
+requirement R2 Every chain is validated in input order: trusted, or untrusted with a reason, by assignment 09's rules without the validity dates
 requirement R3 Every key that signs at least one other certificate gets an `exposed` line listing every chain that depends on it; a key that only ever appears as a leaf gets none
-requirement R4 A key shared by two chains (the same intermediate signs both) is exposed by both - the actual blast-radius lesson: one compromised key can threaten more than one chain
+requirement R4 A key shared by two chains (the same intermediate signs both) is exposed by both: one compromised key can threaten more than one chain
 requirement R5 Both curves work, for anchors and certs alike
-requirement E2E A small PKI shaped like the real incident: one root, several intermediates - one of them with the recovered weak key - and several leaf chains, some through the weak intermediate and some not
+requirement E2E A small PKI shaped like the real incident: one root, several intermediates (one of them with the recovered weak key) and several leaf chains, some through the weak intermediate and some not
 case 16-R1-off-curve R1
 title an extra anchor key perturbed off the curve by 1, alongside a clean chain
 input

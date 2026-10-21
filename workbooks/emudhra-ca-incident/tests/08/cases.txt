@@ -3,7 +3,7 @@ source cryptography 41.0.7: public_key.verify(signature, tbs_bytes, ec.ECDSA(has
 seed 1
 compare records
 explain _lines=R1 valid=R2 invalid=R3
-requirement R1 A genuinely self-signed certificate, verified against its own public key, is valid
+requirement R1 A self-signed certificate, verified against its own public key, is valid
 requirement R2 A certificate verified against the wrong issuer key is invalid
 requirement R3 A certificate whose signature bytes have been tampered with (one flipped bit in r or s) is invalid
 requirement R4 The TBS bytes are re-extracted correctly even when the certificate has v3 extensions (a non-trivial TBS structure)

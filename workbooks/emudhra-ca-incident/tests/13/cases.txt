@@ -3,7 +3,7 @@ source cryptography 41.0.7 (OpenSSL) for curve membership and real key points; e
 seed 1
 compare records
 explain _lines=R1
-requirement R1 A genuinely strong, valid key that is not blocklisted passes every check: `ok`
+requirement R1 A strong, valid key that is not blocklisted passes every check: `ok`
 requirement R2 An off-curve point fails with `off-curve`, checked before anything else
 requirement R3 A key whose private key is at most the weak-key bound fails with `weak`
 requirement R4 A key that is not weak but matches a `blocklist` entry declared earlier fails with `known-compromised`

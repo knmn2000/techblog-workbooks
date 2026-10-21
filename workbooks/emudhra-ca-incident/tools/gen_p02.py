@@ -39,7 +39,7 @@ REQUIREMENTS = [
     ("R2", "Doubling a point (P + P), using the tangent at that point"),
     ("R3", "Identity laws: P + inf = P, inf + P = P, inf + inf = inf"),
     ("R4", "Inverse pairs: P + (-P) = inf, where -P is (x, 17 - y)"),
-    ("R5", "Every output other than inf is a point actually on the curve"),
+    ("R5", "Every output other than inf is a point on the curve"),
     ("E2E", "A full table covering every one of the curve's points at least once"),
 ]
 EXPLAIN = "_lines=R1"

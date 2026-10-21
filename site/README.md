@@ -11,12 +11,13 @@ At build time `src/lib/workbooks.mjs` reads `../workbooks/*/workbook.json` (set 
 to build from another checkout). For each workbook it reads the book's title and lede, the
 assignments, the planned project layout, and each problem page's difficulty and concept tags.
 The `site` block of `workbook.json` holds what the site needs and the tools don't: the language
-label, what to install, and how to start the study server on each system.
+label, what to install, how to start the study server on each system, and optional notes for the
+setup panel (`caveat`) and the AI prompt (`promptNote`).
 
 The published book is the workbook's own `book/problem-book.html`. `src/lib/book-inject.mjs`
 turns on the book's hosted mode (`window.WORKBOOK_HOST`): the editor is read-only, and typing in
-it, Run, Submit and the Run locally button all open the setup dialog. The book template draws all of that
-itself, so a change to the template can't break the site.
+it, Run, Submit and the Run locally button all open the setup dialog. The book template draws all
+of that itself, so a change to the template can't break the site.
 
 ## Local development
 
@@ -30,8 +31,8 @@ npm run build      # writes dist/
 
 `.github/workflows/pages.yml` publishes to GitHub Pages on every push to `main`: it rebuilds each
 workbook's book from its sources, builds the site, and deploys it to
-`https://knmn2000.github.io/techblog-workbooks/`. Turn it on once in the repository's
-**Settings > Pages > Build and deployment > Source: GitHub Actions**.
+`https://knmn2000.github.io/techblog-workbooks/`. Turn it on once in the repository's settings:
+under Settings > Pages > Build and deployment, set Source to GitHub Actions.
 
 For a custom domain, add it on the same settings page, point a `CNAME` record at
 `knmn2000.github.io`, and set `SITE_BASE: /` and `SITE_URL: https://<your-domain>` as environment

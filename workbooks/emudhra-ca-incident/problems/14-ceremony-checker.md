@@ -16,9 +16,9 @@ FIPS 140-2 Level 3 hardware security modules, and "a flaw in one step of that pr
 a second, weak set of keys alongside the original strong keys." The post also mentions "similar
 labels" among the materials handled.
 
-**eMudhra has not confirmed the exact root cause.** This assignment is **not** a reconstruction
-of their ceremony software, which nobody outside eMudhra has described in public. It models a
-plausible shape that fits their own description. A step that wraps a key for transport and later
+eMudhra has not confirmed the exact root cause. This assignment models a plausible shape that
+fits their own description, and it doesn't reconstruct their ceremony software, which nobody
+outside eMudhra has described in public. A step that wraps a key for transport and later
 unwraps it could, with a bug, hand back different key material than it received, and a mix-up
 between artifacts with similar names is the kind of slip that would let that go unnoticed. Treat
 the log format below as a teaching model built for this workbook, not as eMudhra's file format or
@@ -40,8 +40,8 @@ Your new `pki/ceremony.py` needs none of your earlier modules, and no later assi
 
 ## The problem
 
-A **ceremony log** is a list of steps, one per line, recording what happened to a set of keys as
-they moved through a Key Generation Ceremony. Each step names one or two **labels**: words that
+A ceremony log is a list of steps, one per line, recording what happened to a set of keys as
+they moved through a Key Generation Ceremony. Each step names one or two labels: words that
 refer to a key artifact at some point in the ceremony. Write a program that reads the log and
 reports two kinds of problem: a label that's ambiguous because two `generate` steps used it, and a
 published key whose material doesn't match the fingerprint attested when it was generated.
@@ -55,7 +55,7 @@ Each line is one ceremony step:
 |---|---|
 | `generate <label> <curve>` | The ceremony generates a new key and names it `label`. This starts a new key every time, even if an earlier `generate` used the same `label` (see R3). `curve` is `P-256` or `P-384`; it has no effect on this assignment's logic. |
 | `wrap <label> <wrapped-label>` | The ceremony wraps (encrypts for transport or backup) the key that `label` names now, and names the result `wrapped-label`. A correct wrap carries the same key material forward. |
-| `unwrap <wrapped-label> <label>` | The ceremony unwraps the artifact that `wrapped-label` names back into a usable key, named `label`. **This is the step eMudhra's account points to**: a flawed unwrap can hand back different key material from what went in. |
+| `unwrap <wrapped-label> <label>` | The ceremony unwraps the artifact that `wrapped-label` names back into a usable key, named `label`. eMudhra's account points to this step: a flawed unwrap can hand back different key material from what went in. |
 | `fingerprint <label> <hex>` | The ceremony software records the fingerprint of `label`, a hash of the key bytes, as 64 lowercase hex characters. This line comes straight after the step (`generate`, `wrap` or `unwrap`) that created `label`. |
 | `publish <label>` | The ceremony publishes the key that `label` names now. |
 
@@ -65,7 +65,7 @@ their source label names at that moment, and only `unwrap` can be defective.
 
 ### Output
 
-For each `generate` step whose label was already used by an **earlier** `generate` step, in the
+For each `generate` step whose label was already used by an earlier `generate` step, in the
 order you meet it:
 
 ```
@@ -86,8 +86,8 @@ ignores extra whitespace.
 
 ### Chains of custody
 
-Every `generate` step starts a key's **chain of custody**, the record of where that key goes. The
-first `fingerprint` line recorded for the new key is the chain's **attested fingerprint**: the
+Every `generate` step starts a key's chain of custody, the record of where that key goes. The
+first `fingerprint` line recorded for the new key is the chain's attested fingerprint: the
 fingerprint of the key as the ceremony created it. `wrap` and `unwrap` carry a
 key's chain of custody forward to their target label, whatever that label's text is.
 
@@ -98,7 +98,7 @@ fingerprint at the start of its chain:
 - If they're equal, the key is `ok`.
 - If they differ, report `MISMATCH`, naming the label the chain started at.
 
-**A reused label leaves an earlier chain alone.** Suppose `generate` creates a key under a label, a
+A reused label leaves an earlier chain alone. Suppose `generate` creates a key under a label, a
 `wrap` moves that key away, and only *afterward* another `generate` reuses the label. The key that
 was wrapped away still traces back to the *first* `generate`, and the second `generate` starts its
 own, separate chain of custody. Your program still flags the duplicate label, because that kind of
@@ -263,6 +263,6 @@ cause isn't confirmed, so there's no author's code to compare with here. You bui
 ceremony-log checker could have caught a failure of the shape they described, with no claim about
 what their software does.
 
-**Something to look for:** the post's mention of "similar labels" matters in this assignment. A
+The post's mention of "similar labels" matters in this assignment. A
 ceremony that lets one name mean two different things at different times is a process hazard worth
 flagging on its own (R3's point), whether or not a key's material changed along the way.

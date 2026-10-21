@@ -14,7 +14,7 @@ Each assignment has a program in your project (e.g. solutions/assignments/assign
 that reads a test input, calls your code and writes the output. It is built with your project and
 started from the workbook folder as `<run> <input-file> <output-file>`; workbook.json says how.
 Checking an assignment you haven't started creates its files first (see tools/project.py).
-For checkpoints whose answer is a picture, the output file name ends in .png and your
+For assignments whose answer is a picture, the output file name ends in .png and your
 program writes a PNG (or binary PPM) there.
 """
 
@@ -283,7 +283,7 @@ def run_step(title: str, command: str) -> bool:
 
 def describe_exit(code: int) -> str:
     known = {0xC0000005: "access violation (read or write through a bad pointer)",
-             0xC00000FD: "stack overflow (infinite recursion?)",
+             0xC00000FD: "stack overflow (often infinite recursion)",
              0xC0000094: "integer division by zero", 3: "abort() - often a failed bounds check",
              0xC0000409: "abort() - often a failed bounds check (index out of range)"}
     return known.get(code & 0xFFFFFFFF, f"exit code {code}")

@@ -9,8 +9,8 @@
 #   expected one. Run `.\check 03`, or use Run and Submit in the book.
 #
 # Your job:
-#   The Boilerplate gives you this program finished: it reads the input, calls your code
-#   and writes the answer. You fill in the TODOs in this assignment's other files.
+#   The Boilerplate gives you this program finished. You fill in the TODOs in this
+#   assignment's other files.
 #
 # The other files of this assignment:
 #   It adds to src/pkiaudit/ecc/curve.py, which you started earlier: Add scalar

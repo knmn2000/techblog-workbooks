@@ -9,13 +9,12 @@
 //   run on it.
 //
 // Your job:
-//   Implement the three functions you declared in `Scanline.h`: building edges, scanning
-//   rows and filling a stretch. In the edge builder, make implied on-curve points
-//   explicit, start each contour at an on-curve point and split every curve where its y
-//   turns around. In the row scan, find where the line through the row's pixel centres
-//   crosses each piece (by the half-open rule) and sort the crossings. In the stretch
-//   fill, paint the pixels whose centres lie in the stretch, clipped to the canvas. The
-//   Boilerplate gives you the declarations; fill in each TODO.
+//   Implement the three functions you declared in `Scanline.h`. When you build the edges,
+//   make implied on-curve points explicit, start each contour at an on-curve point and
+//   split every curve where its y turns around. For each row, find where the line through
+//   its pixel centres crosses each piece (by the half-open rule) and sort the crossings.
+//   To fill a stretch, paint the pixels whose centres lie in it, clipped to the canvas.
+//   The Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

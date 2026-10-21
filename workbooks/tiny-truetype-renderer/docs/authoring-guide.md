@@ -47,6 +47,9 @@ Register every assignment in `workbook.json`, with its place in the project, bef
 
 `files` lists the files this assignment creates, `extends` the earlier files it adds to, and
 `buildsOn` the earlier files you expect it to use (the book shows them; nothing enforces them).
+Add `"generatorNeedsReference": true` only when the generator runs the reference program, e.g. to
+draw expected pictures. `assets/example-assignment/` shows a registered assignment.
+
 Each project file gets a purpose in `project.purposes` (why it exists: its role, and which later
 assignments use it), and each assignment gets `"jobs"`: for every file it touches, entry program
 included, one to three imperative sentences on what the learner writes there, for someone starting
@@ -54,9 +57,7 @@ from an empty file (capabilities and data, not exact signatures or the algorithm
 jobs become each starter's header and the book's "Start here" card, so they tell the learner where
 to begin. The card shows a job's first sentence on its own and folds the rest away, so that
 sentence must make sense alone: "Implement the even-odd fill with your `render/Scanline`", not
-"Implement it" or "Implement those three functions". Add `"generatorNeedsReference": true` only
-when the generator runs the reference program, e.g. to draw expected pictures.
-`assets/example-assignment/` shows a registered assignment.
+"Implement it" or "Implement those three functions".
 
 ## 2. The problem page
 
@@ -71,13 +72,13 @@ book builder parses them):
    (`url#:~:text=Heading%20words`), and where to stop before the author's code. Say that the page
    is complete on its own.
 5. `## Source material`: specification links, references the post cites, the post's section.
-6. `## Where this fits`: two or three sentences: what came before, what this unlocks, and which
+6. `## Where this fits`: two or three sentences on what came before, what this unlocks, and which
    files of the project it adds to.
 7. `## The problem`: one or two short, plain sentences saying what the program does. The files,
    the jobs, the earlier files it can use and the two ways to start are on the book's "Start here"
-   card (from `workbook.json`), so the page doesn't repeat them. Then
-   `### Input` (a table of line kinds), `### Output` (exact format, with a fenced block showing it),
-   then `###` subsections with every rule, table, formula and edge case needed. Write binary
+   card (from `workbook.json`), so the page doesn't repeat them. Then come `### Input` (a table of
+   line kinds), `### Output` (exact format, with a fenced block showing it), and `###` subsections
+   with every rule, table, formula and edge case needed. Write binary
    layouts as tables of field / type / meaning, in your own words. A learner must be able to pass
    using only this page; the independent solver proves it.
 8. `## Requirements`: `- **R1** ...`, one testable behaviour each. Every case targets one.
@@ -87,7 +88,7 @@ book builder parses them):
    non-obvious step (a byte-by-byte table is ideal). Picture assignments embed the expected image:
    `![expected picture for <id>](tests/NN/expected/<id>.png)`.
 10. `## Constraints`: input limits, the guarantees about well-formed input, the number of tests and
-   what they cover, the time limit.
+    what they cover, the time limit.
 11. `## Hints`: four blocks, each
     `<details><summary>Hint k: title</summary>` ... `</details>`:
     1. a nudge (where to start, what to think about),
@@ -98,16 +99,23 @@ book builder parses them):
 12. `## Checking your solution`: the four commands (`.\check NN`, `-Case <id>`, `-Fresh`,
     `-Dispute <id> "why"`) and one real failure message copied from a planted bug's run.
 13. `## After you pass: compare with the author's code`: how the author structured it (by
-    function name), linked to the snippet's caption with a text fragment, and "Something to look
-    for:" any place the snippet differs from the spec, in a neutral tone.
+    function name), linked to the snippet's caption with a text fragment. Then point out, in a
+    neutral tone, any place the snippet differs from the spec, in a sentence that leads with the
+    difference (no label such as "Something to look for:").
 
 The web book (`tools/build_book.py`) finds these sections by their heading text, so keep it
-exact. "The problem", Requirements, Examples and Constraints form the statement; "Read in the blog
-first" becomes a note at the top, with "Source material" folded away right under it; Hints open in
-order; "Where this fits" folds away under the statement; "Checking your solution" sits with the test results; "After you pass"
-becomes the Editorial tab, locked until the learner passes. Any other `##` section appears in the
-statement under its own heading. Each example's `input:` block, and its `output:` block or expected
-picture, also becomes a test case in the book's bottom panel.
+exact. It places them like this:
+- "The problem", Requirements, Examples and Constraints form the statement.
+- "Read in the blog first" becomes a note at the top, with "Source material" folded away right
+  under it.
+- "Where this fits" folds away under the statement.
+- Hints open in order.
+- "Checking your solution" sits with the test results.
+- "After you pass" becomes the Editorial tab, locked until the learner passes.
+- Any other `##` section appears in the statement under its own heading.
+
+Each example's `input:` block, and its `output:` block or expected picture, also becomes a test
+case in the book's bottom panel.
 
 ## 3. The reference project
 
@@ -116,18 +124,18 @@ program, from the specification and your own understanding; never copy from the 
 references include earlier ones the same way the learner's will, so the reference reads as the
 finished project and doubles as the proof that the layout works.
 
-- **The entry program** reads the input, calls the project, and writes the output in the exact
-  format. It holds no logic later assignments need.
-- **Project files** use the author's names where the post has them (types, functions, files),
-  and carry a short header comment saying which assignment they belong to.
-- **A file later assignments add to** has sections: each later assignment's additions go under a
+- The entry program reads the input, calls the project, and writes the output in the exact format.
+  It holds no logic later assignments need.
+- Project files use the author's names where the post has them (types, functions, files), and
+  carry a short header comment saying which assignment they belong to.
+- A file later assignments add to has sections: each later assignment's additions go under a
   marker line, `// ---- Assignment 12: two segments ----` (`#` or `--` in languages with those
   comments). The code before the first marker belongs to the assignment that creates the file.
   Includes a later section needs go in that section, even mid-file, so the file builds at every
   point in the series.
-- **Learners read it.** The Editorial shows the assignment's files as they stand after it (later
-  sections left out), with the names of earlier files it uses. Write a model answer: clear names,
-  a short comment wherever the reasoning isn't obvious, no dead code or debugging leftovers.
+- Learners read the reference: the Editorial shows the assignment's files as they stand after it
+  (later sections left out), with the names of earlier files it uses. Write a model answer: clear
+  names, a short comment wherever the reasoning isn't obvious, no dead code or debugging leftovers.
 
 `check NN -Ref` builds and checks the reference *as it stands after assignment NN*: the files of
 assignments 01 to NN, later sections left out (`tools/project.py`, `reference_as_of`). An Accepted
@@ -145,19 +153,19 @@ boilerplate by default (`project.starter` in `workbook.json`), or the blank ones
 chose From scratch; the book's switch replaces them after asking.
 
 `py -P tools/blank_starters.py` writes the same header, from `workbook.json`, at the top of every
-starter, blank or boilerplate: the assignment and its problem page, **Why this file exists** (the
-purpose), **Your job** (the assignment's job for this file) and **How to start** (write it all
-yourself, or press Boilerplate). The entry program's header also says how
-the checker runs it and lists the assignment's other files, with the job in any earlier file it
-adds to. **Blank** starters are that header and nothing else (an empty `main` in the entry
-program; `#pragma once` for C++ headers): the learner writes the imports, the API, the input
-parsing and the output. Rerun the script with `--force` after changing titles, files, purposes or
-jobs; it replaces only the header of boilerplate files.
+starter, blank or boilerplate: the assignment and its problem page, then "Why this file exists:"
+(the purpose), "Your job:" (the assignment's job for this file) and "How to start:" (write it all
+yourself, or press Boilerplate). The entry program's header also says how the checker runs it and
+lists the assignment's other files, with the job in any earlier file it adds to. Blank starters
+are that header and nothing else (an empty `main` in the entry program; `#pragma once` for C++
+headers): the learner writes the imports, the API, the input parsing and the output. Rerun the
+script with `--force` after changing titles, files, purposes or jobs; it replaces only the header
+of boilerplate files.
 
-You write the **Boilerplate** starters from the reference:
-- The entry program is the reference's, with a header comment saying what's left to write, and
-  exit **99** when it catches a "not implemented" error (the checker then says "Not implemented
-  yet: <function>"); 1 plus a message on stderr for other errors.
+You write the Boilerplate starters from the reference:
+- The entry program is the reference's, with a header comment saying what's left to write. It
+  exits with 99 when it catches a "not implemented" error (the checker then says "Not implemented
+  yet: <function>"), and with 1 plus a message on stderr for other errors.
 - Headers that only declare things are the reference's. Function bodies become a `TODO:` comment
   pointing at the page's section, then a "not implemented" error naming the function.
 - A file later assignments add to has stubs for their functions too (marked with the assignment),
@@ -178,9 +186,10 @@ formatting rule the boilerplate handles (how to round numbers, how to print byte
 
 Use `tools/wbcore.py`: `wbcore.parse_args("NN")`, `wbcore.Cases(out, seed, compare, requirements,
 explain, source=...)`, `cases.add(id, req, title, input_lines, expected=... | expected_file=...)`,
-`cases.save()`. Domain helpers (file formats, sample data) go in a workbook-specific module next to it.
+`cases.save()`. Domain helpers (file formats, sample data) go in a workbook-specific module next
+to it.
 
-The case file header:
+The case file's header has:
 - `source` (default source of expected values; cases may override),
 - `compare` (`records name=field1,field2 tolerance=x`, `unordered name=...`, or
   `image band=1 allow=0.0002`),
@@ -188,8 +197,8 @@ The case file header:
   `key~word=R3`, `_lines=R1`; for `unordered`, `key:missing`),
 - `requirement R1 text` lines.
 
-Case ids: `NN-R<k>-<slug>` for a case aimed at a requirement, `NN-E2E-<slug>` for end-to-end
-cases. Titles in ASCII, saying what the input is. Cases built from randomness include the seed in
+Name a case aimed at a requirement `NN-R<k>-<slug>`, and an end-to-end case `NN-E2E-<slug>`.
+Write titles in ASCII, saying what the input is. Cases built from randomness include the seed in
 their id. Cover every requirement (two or more cases each), every trap the blog's text or code
 reveals, real data, edge cases, and a random section that changes with `--seed`.
 
@@ -201,10 +210,11 @@ only on the earlier files it chooses to use.
 ## 6. Picture assignments
 
 - The output path ends in `.png`; the program writes a PNG or binary PPM the size of the canvas.
-- End the page's Output section with a "**Writing the picture.**" paragraph for learners without
-  the boilerplate: a binary PPM by hand (header, then 3 bytes per pixel; open the file in binary
-  mode), or a PNG through a library such as stb_image_write. The checker reads either, whatever
-  the file's name. A header the project needs goes in through `project.copy` (e.g.
+- End the page's Output section with a plain paragraph, with no bold label, for learners without
+  the boilerplate. Say that the program writes the picture to the output path the checker gives
+  it, as a PNG (through the project's canvas or a library such as stb_image_write) or as a binary
+  PPM written by hand (header, then 3 bytes per pixel; open the file in binary mode). The checker
+  reads either, whatever the file's name. A header the project needs goes in through `project.copy` (e.g.
   `third_party/stb_image_write.h`), so the learner's project builds on its own.
 - State the exact pixel rule (e.g. "filled when the pixel's centre is inside", "a w x h
   rectangle covers columns cx - floor(w/2) ..."), and say that edges may move one pixel.
@@ -218,23 +228,51 @@ only on the earlier files it chooses to use.
 ## 7. Checking the checks
 
 Compile into your own build folder and use `-Run` while others work in parallel. All of these must
-hold (details in `test-trust.md`): the reference as it stands after the assignment passes with
-Accepted (committed cases and two fresh seeds), which also proves the project builds at that point
-in the series; the boilerplate says "Not implemented yet"; the blank starter says "Not started yet";
-three or more planted bugs fail with useful messages and causes, including the blog's own bugs;
-correct variants pass where a tolerance exists; every requirement has cases; the independent
-solver passes.
+hold (details in `test-trust.md`):
+- The reference as it stands after the assignment passes with Accepted (committed cases and two
+  fresh seeds), which also proves the project builds at that point in the series.
+- The boilerplate says "Not implemented yet".
+- The blank starter says "Not started yet".
+- Three or more planted bugs fail with useful messages and causes, including the blog's own bugs.
+- Correct variants pass where a tolerance exists.
+- Every requirement has cases.
+- The independent solver passes.
 
 ## 8. Writing style
 
 All text the learner reads should sound like a person wrote it for them: the book's labels and
 messages, the problem pages, the starter headers, the `jobs` and `purposes` in `workbook.json`,
-the checker's output and the READMEs. These rules adapt
-[stop-slop](https://github.com/hardikpandya/stop-slop) (MIT) to this kind of text. Before you call
-a page or a pass done, run `py -P scripts/slop_scan.py <workbook>` (in this skill): it flags the
-patterns a script can find, and you decide each hit.
+the checker's output, the READMEs and a collection site's pages. The rules below adapt
+[stop-slop](https://github.com/hardikpandya/stop-slop) (MIT) to this kind of text.
 
-**Sentences**
+Every page and README also gets a pass with the
+[avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) skill (MIT) in edit mode,
+technical context, keeping the page's plain technical voice. Install it once as a user skill
+(`~/.claude/skills/avoid-ai-writing`, with its `bin/avoid-ai-writing.js` detector), and read its
+`SKILL.md` and `references/patterns.md` in full before the pass, as it asks. Its editing contract
+fits workbooks: code blocks, test ids, links, tables of formats and anything the tests check are
+protected, and a rewrite never adds facts.
+
+Before you call a page or a pass done, run both scanners (in this skill):
+`py -P scripts/slop_scan.py <workbook>` for the rules below, and
+`py -P scripts/aiw_scan.py <workbook>` for avoid-ai-writing's detector. Each hit is a prompt to
+look; you decide it.
+
+### Formatting
+
+- Bold only what the book or the tests parse: the header line (`**Difficulty:**`,
+  `**Assignment** N of M`, `**Check:**`), `**Tags**`, and requirement ids (`- **R1**`, and
+  `- **E2E**` where a page has one). Don't bold defined terms or phrases for emphasis; allow at
+  most one bold phrase in a `##` section, and usually none. Lead with the important word instead.
+- Don't open list items or paragraphs with bold labels ("**Writing the picture.** The name
+  ends..."). Write the point as a sentence, or use a `###` heading when it starts a real
+  subsection.
+- Use sentence case for headings and every UI label ("Problem list", "Test result"), except names
+  such as verdicts ("Wrong Answer") that the checker prints.
+- Use a list where the content is a list (steps, rules, cases, fields) and prose for
+  explanations. Don't follow a heading with a one-line warm-up that repeats it.
+
+### Sentences
 
 - Use active voice and name the actor: "the checker compares what your program writes", not "the
   output is checked".
@@ -244,9 +282,9 @@ patterns a script can find, and you decide each hit.
   point, or with "So" or "Look".
 - Write whole sentences. No staccato fragments ("Small. Fast. Yours."), and no short line at the
   end of a paragraph that sounds like a slogan ("Tests stay fair.", "so the design is yours").
-- No em dashes, and no spaced en dashes. Use a comma, a colon, brackets or a new sentence.
+- Don't use em dashes or spaced en dashes. Use a comma, a colon, brackets or a new sentence.
 
-**Structures to drop**
+### Structures to drop
 
 - Binary contrasts: "not X but Y", "it isn't A, it's B", "not just X". Say the true thing once.
 - Saying what something isn't before saying what it is.
@@ -256,22 +294,28 @@ patterns a script can find, and you decide each hit.
   checker, the font, the parser.
 - A list of three out of habit. Give the real items, however many there are.
 
-**Words**
+### Words
 
-- No adverbs or fillers: just, really, simply, actually, basically, exactly, very, quite, truly,
+- Cut adverbs and fillers: just, really, simply, actually, basically, exactly, very, quite, truly,
   easily, carefully, clearly, completely.
-- No sweeping words (always, never, everything, everyone, nobody) unless they state a rule the
+- Use sweeping words (always, never, everything, everyone, nobody) only when they state a rule the
   tests check. "Every point gets a marker" is a spec; "always be careful" is filler.
-- No meta-commentary ("This section explains...", "Let's walk through...", "Note that...") and no
-  telling the reader something is important, hard or easy. Start with the content; show the number
-  or the case that makes it hard.
+- Leave out meta-commentary ("This section explains...", "Let's walk through...", "Note
+  that..."), and don't tell the reader something is important, hard or easy. Start with the
+  content; show the number or the case that makes it hard.
 
-**Specifics**
+### Specifics
 
 - Give the number wherever there is one, and use the names the learner knows (their project's
   file and function names).
 - Use tables for layouts and rules.
 - Use ASCII only in test titles and in anything the checker prints.
+
+### Final read
+
+Read for the patterns avoid-ai-writing names that neither scanner catches: a colon leading into
+three items, runs of sentences with the same opener, paragraphs of the same length, and a
+punchline that restates the paragraph.
 
 Last, score the page as stop-slop does: directness, rhythm, trust in the reader, sounding human
 and density, 1 to 10 each. Under 35 of 50, revise it.

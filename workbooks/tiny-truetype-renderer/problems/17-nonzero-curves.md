@@ -53,19 +53,19 @@ Compound glyphs arrive already resolved into one outline (assignment 09's job).
 ### Output
 
 A PNG (or binary PPM) `width` pixels wide and `height` pixels high, black to begin with. Paint a
-pixel in the fill colour when its **centre** (px + 0.5, py + 0.5) is inside an outline by the
+pixel in the fill colour when its centre (px + 0.5, py + 0.5) is inside an outline by the
 non-zero rule. The checker forgives edges that move by one pixel; missing or extra shapes and
 stray lines fail.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so either of these works:
+Write the picture to the output path you're given. The name ends in `.png`, but the checker
+looks at the contents, so a PNG and a binary PPM both work:
 
-- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
-  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
-  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
+  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
-  height and `255`, separated by spaces or newlines and ended by one newline (for example
+- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
@@ -78,7 +78,7 @@ in assignment 14:
 - Two on-curve points in a row make a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
   point to the next one: B(t) = (1−t)²·P0 + 2(1−t)t·P1 + t²·P2 for t from 0 to 1.
-- Two off-curve points next to each other have an **implied on-curve point** halfway between
+- Two off-curve points next to each other have an implied on-curve point halfway between
   them.
 - A contour can start with an off-curve point, or consist only of off-curve points.
 
@@ -88,32 +88,30 @@ Every edge has a direction, from a point to the next one. For each place a scanl
 outline, note the x and whether the outline is going down or up the screen there (+1 or −1). Sort by
 x, keep a running count from left to right, and fill wherever the count isn't zero.
 
-**A curve can cross one scanline twice.** At the bottom of a `U`, the curve goes down then up, so its
+A curve can cross one scanline twice. At the bottom of a `U`, the curve goes down then up, so its
 two crossings have opposite directions. Split each curve at the point where its y turns around:
 for y(t) = (1−t)²·y0 + 2(1−t)t·y1 + t²·y2 that is t = (y0 − y1) / (y0 − 2·y1 + y2), when the
-denominator isn't 0 and 0 < t < 1. Each piece is then **monotone**:
+denominator isn't 0 and 0 < t < 1. Each piece is then monotone, going only up or only down. A
+monotone piece crosses a scanline at most once, and its direction comes from comparing its end's
+y with its start's y.
 
-- it goes only up or only down;
-- it crosses a scanline at most once;
-- its direction comes from comparing its end's y with its start's y.
-
-**Finding the crossing.** For a line, interpolate. For a curve piece, solve y(t) = scanline y, a
+To find a crossing on a line, interpolate. For a curve piece, solve y(t) = scanline y, a
 quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and c = y0 − scanline y
 (linear when a = 0). After the split, a single root lies in [0, 1]; its x is
 (1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
 
-**Vertices and touching scanlines.** Treat every piece as half-open in y: it counts at scanline y when
-min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a curve's extreme without
-crossing it then counts it either:
+For vertices and touching scanlines, treat every piece as half-open in y: it counts at scanline
+y when min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a curve's extreme
+without crossing it then counts it either:
 
 - twice, with opposite directions, when the extreme is the smaller y of both pieces, or
 - not at all, when the extreme is the larger y of both.
 
 Neither case changes the fill.
 
-**Clipping.** Crossings can lie far outside the canvas, for example at large scales. Clamp x to the
-canvas before you convert it to an integer pixel index, because C++ doesn't define what happens
-when you convert a huge double to `int`.
+Crossings can lie far outside the canvas, for example at large scales. Clamp x to the canvas
+before you convert it to an integer pixel index, because C++ doesn't define what happens when you
+convert a huge double to `int`.
 
 ## Requirements
 
@@ -244,5 +242,5 @@ from the curve's convexity: the crossing nearer the curve's start gets one direc
 crossing gets the opposite. It scans only the rows inside the glyph's bounding box, and fills each
 component of a compound glyph on its own.
 
-**Something to look for:** like the line-only version, it fills only where the count is positive,
+Like the line-only version, it fills only where the count is positive,
 so a contour wound the other way on its own would stay empty (assignment 16, test `16-R4-reversed`).

@@ -42,7 +42,7 @@ REQUIREMENTS = [
     ("R1", "A valid 2-level chain: the leaf is signed directly by a trust anchor"),
     ("R2", "A valid 3-level chain: leaf, one intermediate, then a trust anchor"),
     ("R3", "The last certificate's issuer key isn't one of the given trust anchors: unknown-anchor"),
-    ("R4", "A certificate in the chain was not really signed by the next one up: bad-signature"),
+    ("R4", "A certificate names the next one up as its issuer, but a different key signed it: bad-signature"),
     ("R5", "An intermediate in the chain lacks CA:true: not-a-ca"),
     ("R6", "An intermediate's path length constraint is violated by how many more intermediates follow it: path-too-long"),
     ("R7", "A certificate's validity window does not cover `now`: expired"),

@@ -43,22 +43,22 @@ reads, and decides whether each key passes every check a linter runs before trus
 A key fails for one of three reasons. Run the checks in this order and stop at the first one that
 fails:
 
-1. **`off-curve`**: the point doesn't satisfy the curve's equation. If that's true, nothing else
+1. `off-curve`: the point doesn't satisfy the curve's equation. If that's true, nothing else
    about the key means anything, so this check runs first.
-2. **`known-compromised`**: the point's exact coordinates, on the same curve, appear on the
+2. `known-compromised`: the point's exact coordinates, on the same curve, appear on the
    blocklist of keys already known to be bad (for example, keys published in an earlier
    incident). This is a cheap lookup, so it runs before the search.
-3. **`weak`**: the point equals `d*G` for some whole number `d` with `1 <= d <= 4096`, small
+3. `weak`: the point equals `d*G` for some whole number `d` with `1 <= d <= 4096`, small
    enough for an attacker to find by brute force with the search from assignment 10. This is
    the most expensive check, so it runs last.
 
 A key that fails none of these passes.
 
-**Why the bound is only 4096.** A linter auditing real keys would use a bound many orders of
-magnitude higher. The incident's keys turned up in a search of values up to about 2^8, but a
-thorough audit tries far more, often with faster methods than a search that adds `G` one step at a
-time. This assignment keeps the bound at 4096 so that every test finishes well inside the time
-limit with the loop from assignment 10. The idea is the same at a smaller budget.
+A linter auditing real keys would use a bound many orders of magnitude higher than 4096. The
+incident's keys turned up in a search of values up to about 2^8, but a thorough audit tries far
+more, often with faster methods than a search that adds `G` one step at a time. This assignment
+keeps the bound at 4096 so that every test finishes well inside the time limit with the loop
+from assignment 10. The idea is the same at a smaller budget.
 
 ### Input
 
@@ -101,7 +101,7 @@ and the doubling formula when the running total reaches `G` a second time.
 
 ### What this assignment does not ask
 
-The **point at infinity** is the curve's identity element. It has no `(x, y)` form, and SEC 1 encodes it
+The point at infinity is the curve's identity element. It has no `(x, y)` form, and SEC 1 encodes it
 as a single zero byte. Every key in this input is an explicit `(x, y)` pair, so
 the input has no way to spell the identity, and this assignment has no separate `identity`
 reason. An attempt to encode it would be some pair of numbers that either satisfies the curve
@@ -246,6 +246,6 @@ compare with here. You built one plausible shape for the audit step. Run on thes
 before they were published, it would have stopped the incident at publication instead of about
 18 months later.
 
-**Something to look for:** the post says the weak keys went undetected "across two audit cycles,"
+The post says the weak keys went undetected "across two audit cycles,"
 without describing what either audit checked. This assignment makes no claim about those audits.
 It's the minimum a key linter could do, built from checks that earlier assignments covered.

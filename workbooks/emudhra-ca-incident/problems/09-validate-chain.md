@@ -10,15 +10,15 @@
 ## Read in the blog first
 
 This assignment is background that eMudhra's post leaves out. It is the mechanism behind the
-incident's visible effect: once a CA's intermediate was distrusted, certificates issued through
-it stopped verifying.
+incident's visible effect: once browsers distrusted a CA's intermediate, certificates issued
+through it stopped verifying.
 
 - For the full, general algorithm, read RFC 5280 section 6 ("Certification Path Validation
   Algorithm"). This assignment implements its core on a small scale.
 - For what happened, read eMudhra's own
   [statement on the incident](https://emudhra.com/en/post/certificate-security-incident): eight
   intermediate CA certificates were found to have been issued with cryptographically weak keys,
-  and were revoked or distrusted by the major browsers.
+  and the major browsers revoked or distrusted them.
 
 You can pass using this page alone.
 
@@ -35,8 +35,8 @@ Your `x509/certificate.py` from assignment 06 reads a certificate's fields, and 
 incoming TLS certificate: walk up from the leaf to a key it already trusts, and decide whether
 to trust the leaf. Assignment 16 runs your checks over every chain in a PKI.
 
-Browsers rejected the compromised eMudhra intermediates the same way once they were removed from
-the trust store: the chains through them no longer reached a trusted key.
+Once the compromised eMudhra intermediates left the trust store, browsers rejected them the same
+way: the chains through them no longer reached a trusted key.
 
 ## The problem
 
@@ -45,38 +45,38 @@ whether a verifier should trust it, and if not, why.
 
 ### Trust anchors and chains
 
-- A **trust anchor** is a public key the verifier already trusts. It has no certificate of its
+- A trust anchor is a public key the verifier already trusts. It has no certificate of its
   own: trust in it is axiomatic, the way a browser's root store works.
-- A **chain** is a list of certificates, leaf first. Certificate 0, the **leaf**, is the one being
+- A chain is a list of certificates, leaf first. Certificate 0, the leaf, is the one being
   checked. Certificate 1 (if present) signed it, certificate 2 (if present) signed certificate 1,
-  and so on. Every certificate after the leaf is an **intermediate**.
-- One of the trust anchors must have signed the last certificate in the list, the **topmost**
+  and so on. Every certificate after the leaf is an intermediate.
+- One of the trust anchors must have signed the last certificate in the list, the topmost
   one. The list holds no certificate for the anchor itself.
 
 ### The four checks, in order
 
 Check a chain in this order, and stop at the first problem:
 
-1. **Signatures.** For each certificate below the topmost, the next certificate up must have
-   signed it: certificate `i + 1`'s public key must verify certificate `i`'s signature (your
-   check from assignment 08). Then **one of** the trust anchors must have signed the topmost
-   certificate. Try each anchor; one match is enough.
-2. **CA permission.** Every certificate that signed another one in the chain, which means every
+1. Signatures: the next certificate up must have signed each certificate below the topmost.
+   Certificate `i + 1`'s public key must verify certificate `i`'s signature (your check from
+   assignment 08). Then one of the trust anchors must have signed the topmost certificate. Try
+   each anchor; one match is enough.
+2. CA permission: every certificate that signed another one in the chain, which means every
    certificate except the leaf, must have BasicConstraints CA:TRUE (the `ca` field from
    assignment 06). A certificate without it can't sign other certificates, however good its
    signature is.
-3. **Path length.** A certificate's path length constraint (the `pathlen` field from assignment
-   06, when it has one) limits how many **more** intermediates may appear between it and the
+3. Path length: a certificate's path length constraint (the `pathlen` field from assignment
+   06, when it has one) limits how many more intermediates may appear between it and the
    leaf. With the leaf at position 0 in the list, the certificate at position `i` has `i - 1`
    intermediates below it (closer to the leaf). If it has a path length constraint and `i - 1`
    is larger, the chain fails.
-4. **Validity.** Every certificate's validity window, `notBefore` through `notAfter`, must cover
+4. Validity: every certificate's validity window, `notBefore` through `notAfter`, must cover
    the given `now`. Every time string in this assignment is UTCTime in the same format, with a
    two-digit year (`250601000000Z` is 2025-06-01). Comparing the strings as text puts them in
    time order, so you don't need to parse dates.
 
-If all four hold, the chain is **trusted**. Otherwise report the **first** problem, in the order
-above, with one of these reasons:
+If all four hold, the chain is trusted. Otherwise report the first problem, in the order above,
+with one of these reasons:
 
 | Reason | Meaning |
 |---|---|
@@ -220,11 +220,11 @@ order on this page, so there is no need to collect them all.
 <details><summary>Hint 3: the traps</summary>
 
 - The topmost certificate has no next certificate. Check its signature against the trust anchors,
-  and accept a match with **any** of them.
+  and accept a match with any of them.
 - "Every certificate that signed another one" means every certificate except the leaf
   (certificate 0), and the topmost one counts. A 3-level chain (the leaf, one intermediate and an
   anchor) has one signer to check for CA status and path length: the intermediate.
-- Path length counts the intermediates **below** a certificate (closer to the leaf). It doesn't
+- Path length counts the intermediates below a certificate (closer to the leaf). It doesn't
   count the leaf or the certificate itself. A path length of `0` on the certificate that signs
   the leaf is fine: it limits what may sit between that certificate and the leaf, and nothing
   does.
@@ -290,7 +290,7 @@ and `read_signed_data` and `check_signature` from `x509/signature.py`. It checks
 CA status, then path length, then validity, in that fixed order, and returns at the first
 failure.
 
-**Something to look for:** every chain in these tests has at most one problem, so the order of
+Every chain in these tests has at most one problem, so the order of
 the four checks doesn't change any test's answer. A correct solution that checks validity first
 and signatures last passes the same tests. The order decides which reason you report when a chain
 has more than one problem, and no test has such a chain. To see the difference, build a chain

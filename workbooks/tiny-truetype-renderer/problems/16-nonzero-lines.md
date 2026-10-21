@@ -44,7 +44,7 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `color <r> <g> <b>` | The fill colour |
 | `outline` | Starts an outline; its `ends` and `points` lines follow |
 | `ends <e0> <e1> ...` | Index of the last point of each contour, counting from 0: contour k runs from the point after the previous end up to and including `e_k` |
-| `points <x> <y> on ...` | The outline's points. **In this assignment every point is on-curve**, so every edge is a straight line. |
+| `points <x> <y> on ...` | The outline's points. In this assignment every point is on-curve, so every edge is a straight line. |
 
 There can be several outlines. Fill each one on its own, one after another, in the same colour.
 Keep a separate winding count (below) for each outline; a pixel ends up in the fill colour if any
@@ -53,22 +53,22 @@ outline fills it.
 ### Output
 
 A PNG (or binary PPM) `width` pixels wide and `height` pixels high, black to begin with. Paint a
-pixel in the fill colour when its **centre** is inside an outline by the non-zero rule. Pixel
+pixel in the fill colour when its centre is inside an outline by the non-zero rule. Pixel
 (px, py), with py counted down from the top, has its centre at screen position (px + 0.5, py + 0.5).
 
 The checker forgives edges that move by one pixel, so you still pass if you sample at the top of
 each row instead of the centre, or round x another way. Missing or extra shapes and stray lines
 fail.
 
-**Writing the picture.** Write it to the output path you're given. The name ends in `.png`, but
-the checker looks at the contents, so either of these works:
+Write the picture to the output path you're given. The name ends in `.png`, but the checker
+looks at the contents, so a PNG and a binary PPM both work:
 
-- **A PNG.** Your `FrameBufferCanvas` from assignment 06 already does this in `writePng`, and the
-  boilerplate calls it. Underneath, `third_party/stb_image_write.h` is on your project's include
-  path: `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
+  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- **A binary PPM**, if you'd rather write the bytes yourself. The header is `P6`, the width, the
-  height and `255`, separated by spaces or newlines and ended by one newline (for example
+- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
+  `255`, separated by spaces or newlines and ended by one newline (for example
   `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
   top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
   byte 10 as two bytes.
@@ -76,12 +76,12 @@ the checker looks at the contents, so either of these works:
 ### The non-zero rule
 
 Every contour is a closed loop (after its last point it continues to its first), and every edge
-has a **direction**: from a point to the next one.
+has a direction: from a point to the next one.
 
-Draw a ray from the point to the right and keep a **winding count**, starting at 0. For each edge
+Draw a ray from the point to the right and keep a winding count, starting at 0. For each edge
 the ray crosses, add 1 if the edge goes up the screen and subtract 1 if it goes down. (Either sign
 convention works, as long as it's the same for all edges.) The point is inside when the final
-count is **not zero**.
+count is not zero.
 
 - Two overlapping contours that go the same way give a count of 2 where they overlap: still
   inside, so there is no hole. (Even-odd would leave one.)
@@ -96,7 +96,8 @@ With scanlines, for each row:
 2. Sort the crossings by x.
 3. Walk left to right keeping a running count, and fill the stretches where the count isn't zero.
 
-**Vertices on the scanline.** As in assignment 14, treat each edge as half-open in y:
+To count a vertex on the scanline the right number of times, treat each edge as half-open in
+y, as in assignment 14:
 
 - An edge counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured on the screen
   (pixels, growing downward).
@@ -104,9 +105,9 @@ With scanlines, for each row:
 
 Then a vertex the outline passes through counts once, with the right direction.
 
-**Clipping.** Clamp crossing x values to the canvas before converting them to integers. Your
-stretch fill from assignment 14 (the boilerplate's `fillSpan`) should already skip columns
-outside the canvas and do nothing when a stretch is empty.
+Clamp crossing x values to the canvas before converting them to integers. Your stretch fill from
+assignment 14 (the boilerplate's `fillSpan`) should already skip columns outside the canvas and
+do nothing when a stretch is empty.
 
 ## Requirements
 
@@ -239,7 +240,7 @@ The blog's [line-only version](https://yayo1.com/en/blog/tiny-truetype-renderer/
 stores each crossing as an x and an "is upward" flag and keeps a running count while it walks the
 sorted crossings, the same way this page describes.
 
-**Something to look for:** it fills a stretch only when the count before it is greater than zero
+It fills a stretch only when the count before it is greater than zero
 (and the count after it isn't negative). That works for fonts whose outer contours are all
 clockwise, but a contour wound the other way on its own (test `16-R4-reversed`) stays empty. The
 non-zero rule fills wherever the count isn't zero.

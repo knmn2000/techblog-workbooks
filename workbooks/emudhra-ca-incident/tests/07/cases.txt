@@ -5,7 +5,7 @@ compare records spki=hash
 explain _lines=R1
 requirement R1 The SPKI hash is correct for several P-256 certificates
 requirement R2 The SPKI hash is correct for several P-384 certificates
-requirement R3 Two different certificates (different subject, different validity) that share the same public key hash the same - the hash survives reissuance
+requirement R3 Two different certificates (different subject, different validity) that share the same public key hash the same, so the hash survives reissuance
 requirement E2E A small set of certificates mixing both curves and a reissued key, matching OpenSSL's own pipeline bit for bit
 case 07-R1-p256-several R1
 title three different P-256 certificates, three different keys

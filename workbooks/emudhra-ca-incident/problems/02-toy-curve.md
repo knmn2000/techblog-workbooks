@@ -46,7 +46,7 @@ pass, that table gives you a second example to check your rule against.
 
 ### The point at infinity
 
-Besides its `(x, y)` pairs, an elliptic curve has one more point, called **infinity**. It is the
+Besides its `(x, y)` pairs, an elliptic curve has one more point, called infinity. It is the
 group's identity element, the way `0` is for addition of numbers:
 
 - `P + inf = P` and `inf + P = P` for any point `P`;
@@ -91,7 +91,7 @@ either.
 
 ### Inverse points
 
-The **negation** of `(x, y)` is `(x, 17 - y mod 17)`: the same `x` and the other `y`. A point plus
+The negation of `(x, y)` is `(x, 17 - y mod 17)`: the same `x` and the other `y`. A point plus
 its own negation is infinity: `P + (-P) = inf`. Check for this before you apply either formula,
 because `x1 == x2` there and the chord formula would divide by zero.
 
@@ -250,5 +250,5 @@ A failing test looks like this:
 ## After you pass: nothing to compare
 
 This assignment has no blog code to compare with: the post doesn't describe this arithmetic, and
-every later assignment builds on it. The chord-and-tangent rule you wrote is the point-addition
+the later assignments build on it. The chord-and-tangent rule you wrote is the point-addition
 step inside elliptic-curve libraries, run here on a curve small enough to check by hand.

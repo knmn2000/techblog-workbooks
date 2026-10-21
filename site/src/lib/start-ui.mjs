@@ -31,14 +31,14 @@ export function startPanelHtml(w, { id = '', prefix = 'p', heading = 'Solve it o
       <li>
         <h3>Get the files</h3>
         <div class="wbs-modes" role="radiogroup" aria-label="What to clone">
-          <label><input type="radio" name="wbs-mode-${esc(prefix)}" value="single" checked> Just this workbook</label>
+          <label><input type="radio" name="wbs-mode-${esc(prefix)}" value="single" checked> Only this workbook</label>
           <label><input type="radio" name="wbs-mode-${esc(prefix)}" value="full"> Whole collection</label>
         </div>
         ${term('bash', `<pre data-code="single">${esc(git.single)}</pre><pre data-code="full" hidden>${esc(git.full)}</pre>`)}
       </li>
       <li>
         <h3>Start the problem book</h3>
-        <p class="wbs-note">Run the one for your system from the workbook folder. It opens in your browser with Run and Submit working.</p>
+        <p class="wbs-note">Run the command for your system from the workbook folder. The book opens in your browser with Run and Submit working.</p>
         ${term('shell', `<pre>${esc(launchText(w))}</pre>`)}
       </li>
     </ol>

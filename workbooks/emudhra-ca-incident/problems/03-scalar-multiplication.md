@@ -26,7 +26,7 @@ backwards by brute force. "Source material" below lists where it comes from.
 ## Where this fits
 
 Your `ecc/curve.py` from assignment 02 adds two points on a small curve. In this assignment you add
-**scalar multiplication** to it: `d*G`, the point `G` added to itself `d` times. You also add the
+scalar multiplication to it: `d*G`, the point `G` added to itself `d` times. You also add the
 real curves this workbook uses from here on, the 256-bit P-256 and the 384-bit P-384, to your
 `ecc/curves.py`.
 
@@ -171,8 +171,7 @@ of the table above. The output's x is `Gx`, and its y is `p - Gy`.
 - `d` is a decimal integer with `1 <= d < n`.
 - Each case has a 10-second limit. Double-and-add finishes in well under a millisecond, even for
   `d` near the full width of `n`. A loop that adds `G` to itself `d` times would need on the order
-  of `2^384` additions for the largest `d` here, which no computer finishes in the lifetime of the
-  universe, let alone 10 seconds.
+  of `2^384` additions for the largest `d` here.
 - There are 9 tests: 2 for R1, 2 for R2, 2 for R3, 1 for R4, and 2 for R5. Each requirement except
   R4 has one test per curve; R4's test mixes both curves in one input. Part of the set is random
   and changes with `-Fresh`.

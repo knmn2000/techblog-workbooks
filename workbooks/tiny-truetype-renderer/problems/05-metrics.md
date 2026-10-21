@@ -36,13 +36,13 @@ you read here.
 Write a program that reads a font's ascent and descent, and the advance width and left side
 bearing of requested glyphs.
 
-Text sits on a horizontal line, the **baseline**. A **pen** moves along it: the renderer draws
+Text sits on a horizontal line, the baseline. A pen moves along it: the renderer draws
 each glyph at the pen's position, then moves the pen right. The numbers your program reads
 are:
 
-- **ascent** and **descent**: how much room a line needs above and below the baseline.
-- **advance width**: how far to move the pen after drawing a glyph.
-- **left side bearing** (lsb): where the glyph's outline starts, measured from the pen.
+- ascent and descent: how much room a line needs above and below the baseline.
+- advance width: how far to move the pen after drawing a glyph.
+- left side bearing (lsb): where the glyph's outline starts, measured from the pen.
 
 ### Input
 
@@ -66,7 +66,7 @@ One line per question, in input order:
 - `font-metrics` → `ascent <ascent> descent <descent>`
 - `glyph <id>` → `glyph <id> advance <advanceWidth> lsb <leftSideBearing>`
 
-All values are whole numbers in **font units**, the grid the type designer drew the glyphs on.
+All values are whole numbers in font units, the grid the type designer drew the glyphs on.
 In both real fonts, 1000 font units make one em, the font's nominal size.
 
 The Boilerplate writes `glyph <id> missing` if the list your function returns has no entry for
@@ -74,9 +74,9 @@ a glyph. Every glyph has metrics, so a `missing` line fails the test.
 
 ### The tables you need
 
-All numbers are **big-endian**.
+All numbers are big-endian.
 
-**`hhea`** (horizontal header), 36 bytes. You need three fields:
+`hhea` (the horizontal header) is 36 bytes long, and you need three of its fields:
 
 | Offset in `hhea` | Field | Type | Meaning |
 |---|---|---|---|
@@ -86,9 +86,9 @@ All numbers are **big-endian**.
 | 8 to 33 | `lineGap`, `advanceWidthMax`, ..., `metricDataFormat` | | Not needed here |
 | 34 | `numberOfHMetrics` | uint16 | How many full records `hmtx` starts with |
 
-**`maxp`**: `numGlyphs` is the uint16 at `maxp` + 4.
+From `maxp` you need `numGlyphs`, the uint16 at `maxp` + 4.
 
-**`hmtx`** (horizontal metrics) has two parts, one after the other:
+`hmtx` (horizontal metrics) has two parts, one after the other:
 
 | Part | Count | Each entry |
 |---|---|---|
@@ -97,11 +97,13 @@ All numbers are **big-endian**.
 
 The `leftSideBearings` array starts at `hmtx` + 4 × `numberOfHMetrics`.
 
-**A glyph's metrics.** For glyph id i:
+### A glyph's metrics
+
+For glyph id i:
 
 - If i < `numberOfHMetrics`: advance = `hMetrics[i].advanceWidth` and
   lsb = `hMetrics[i].lsb`.
-- Otherwise: advance = the advance of the **last** `longHorMetric`,
+- Otherwise: advance = the advance of the last `longHorMetric`,
   `hMetrics[numberOfHMetrics − 1].advanceWidth`, and lsb = `leftSideBearings[i − numberOfHMetrics]`.
 
 The second rule saves space. If the last glyphs of a font all have the same advance (common in
@@ -297,7 +299,7 @@ has two parts. `getFontMetric` returns a `FontMetric` holding the ascent and des
 then reads that many (advance width, left side bearing) pairs from `hmtx` into a map keyed by
 glyph id, `glyphMetric`.
 
-**Something to look for:** the snippet stops after the `longHorMetric` records, so glyphs at
+The snippet stops after the `longHorMetric` records, so glyphs at
 or past `numberOfHMetrics` get no entry. JetBrains Mono and Noto Sans JP store a full record
 for every glyph, so the gap doesn't show with them. Many fonts, including those compiled by
 fontTools, drop the trailing records when the last glyphs share an advance width, and a

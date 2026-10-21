@@ -23,7 +23,7 @@ As compound glyphs are nested", before the author's code.
 ## Where this fits
 
 Your `GlyphParser` from assignment 07 decodes simple glyphs and only reports compound ones. A
-**compound glyph** has no points of its own: it lists other glyphs, its **components**, and where
+compound glyph has no points of its own: it lists other glyphs, its components, and where
 to put each one. For example, `é` is `e` plus an acute accent moved above it. Here you turn any
 glyph into the outlines of the simple glyphs that make it up, each in its final position. The
 fill assignments (14, 16, 17) and the text renderer (18) draw those outlines.
@@ -58,7 +58,7 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
 
 - An empty glyph (length 0) gives `components 0`. A simple glyph gives `components 1` with its own
   outline.
-- Components appear in **depth-first order**: the order of the component records, and inside a
+- Components appear in depth-first order: the order of the component records, and inside a
   nested compound glyph, its components in their order before moving on. A component that is an
   empty glyph adds nothing and isn't counted.
 - `ends` and `on|off` are the simple glyph's own values, as in assignment 07.
@@ -74,7 +74,7 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
 The 10-byte header is the same as for simple glyphs: `numberOfContours` (int16, negative for a
 compound glyph) and the bounding box (4 x int16, you can ignore it).
 
-**Component records** follow, one per component, one after another, until one has
+Component records follow, one per component, one after another, until one has
 MORE_COMPONENTS clear:
 
 | Field | Type | Meaning |
@@ -84,12 +84,11 @@ MORE_COMPONENTS clear:
 | `argument1`, `argument2` | int16 each if ARG_1_AND_2_ARE_WORDS is set, otherwise int8 each | The offset (e, f) |
 | transform | F2Dot14 x 0, 1, 2 or 4 | Depends on the scale flags |
 
-All numbers are big-endian. **F2Dot14** is a signed 16-bit number divided by 16384 (your
-`ByteReader` from assignment 01 reads it), so `40 00` is 1.0 and `c0 00` is -1.0.
+All numbers are big-endian. F2Dot14 is a signed 16-bit number divided by 16384 (your
+`ByteReader` from assignment 01 reads it), so `40 00` is 1.0 and `c0 00` is -1.0. The
+arguments are signed too: the byte `e2` is -30, not 226.
 
-**The arguments are signed**: the byte `e2` is -30, not 226.
-
-**Component flags** (bits not listed don't affect the output):
+The bits of `flags` are below; bits not listed don't affect the output:
 
 | Bit | Mask | Name | Meaning |
 |---|---|---|---|
@@ -113,14 +112,14 @@ x' = a*x + c*y + e
 y' = b*x + d*y + f
 ```
 
-where a, b, c, d are the **2 x 2 part** set by the scale flags (it scales, flips or rotates)
-and (e, f) is the **offset**, (argument1, argument2). If SCALED_COMPONENT_OFFSET is set, the
+where a, b, c, d are the 2 x 2 part set by the scale flags (it scales, flips or rotates)
+and (e, f) is the offset, (argument1, argument2). If SCALED_COMPONENT_OFFSET is set, the
 offset goes through the 2 x 2 part first: e = a*argument1 + c*argument2 and
 f = b*argument1 + d*argument2.
 
 A component can itself be a compound glyph. In that case you place its own components with
 their own transforms first, then place the result with the outer transform, so transforms
-compose **from the inside out**.
+compose from the inside out.
 
 ## Requirements
 
@@ -229,7 +228,7 @@ each component.
 <details><summary>Hint 2: the approach</summary>
 
 Write one recursive function that takes a glyph id and the transform to apply, and appends
-outlines to a list. For a compound glyph, read **all** of its component records first (reading a
+outlines to a list. For a compound glyph, read all of its component records first (reading a
 component moves the file position elsewhere), then call the function again for each one with the
 combined transform. Keep a transform as six numbers a, b, c, d, e, f.
 </details>
@@ -298,7 +297,7 @@ nested compound glyphs. It builds a `glm::mat3` for each component, saves the st
 before recursing and jumps back afterwards, and takes the glyph's metrics from a component with
 USE_MY_METRICS.
 
-**Things to look for:**
+The snippet differs from the current specifications in these places:
 - The snippet reads 1-byte arguments as unsigned, so a small negative offset like -30 becomes 226.
   JetBrains Mono has 48 such components, all in its ligature glyphs.
 - It scales the offset with Apple's older `m`/`n` rule for every component. The current

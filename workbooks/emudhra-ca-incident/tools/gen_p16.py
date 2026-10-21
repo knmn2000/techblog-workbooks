@@ -37,18 +37,13 @@ LIB = (f"cryptography {cryptography.__version__} / OpenSSL (key checks and opens
        "independent of this assignment's own lint, chain and blast-radius logic")
 
 REQUIREMENTS = [
-    ("R1", "Every key is linted (anchors included), in input order: off-curve, known-compromised, "
-           "weak or ok, in that priority - same rules as assignment 13"),
-    ("R2", "Every chain is validated in input order: trusted, or untrusted with a reason - same "
-           "rules as assignment 09"),
+    ("R1", "Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority, by the same rules as assignment 13"),
+    ("R2", "Every chain is validated in input order: trusted, or untrusted with a reason, by assignment 09's rules without the validity dates"),
     ("R3", "Every key that signs at least one other certificate gets an `exposed` line listing "
            "every chain that depends on it; a key that only ever appears as a leaf gets none"),
-    ("R4", "A key shared by two chains (the same intermediate signs both) is exposed by both - "
-           "the actual blast-radius lesson: one compromised key can threaten more than one chain"),
+    ("R4", "A key shared by two chains (the same intermediate signs both) is exposed by both: one compromised key can threaten more than one chain"),
     ("R5", "Both curves work, for anchors and certs alike"),
-    ("E2E", "A small PKI shaped like the real incident: one root, several intermediates - one of "
-            "them with the recovered weak key - and several leaf chains, some through the weak "
-            "intermediate and some not"),
+    ("E2E", "A small PKI shaped like the real incident: one root, several intermediates (one of them with the recovered weak key) and several leaf chains, some through the weak intermediate and some not"),
 ]
 EXPLAIN = "_lines=R1 key=R1 chain=R2 exposed=R3"
 

@@ -30,7 +30,7 @@ LIB = f"cryptography {cryptography.__version__} (OpenSSL) for curve membership a
 WEAK_BOUND = 4096  # see the problem page for why a toy linter uses a bound this small
 
 REQUIREMENTS = [
-    ("R1", "A genuinely strong, valid key that is not blocklisted passes every check: `ok`"),
+    ("R1", "A strong, valid key that is not blocklisted passes every check: `ok`"),
     ("R2", "An off-curve point fails with `off-curve`, checked before anything else"),
     ("R3", "A key whose private key is at most the weak-key bound fails with `weak`"),
     ("R4", "A key that is not weak but matches a `blocklist` entry declared earlier fails with `known-compromised`"),

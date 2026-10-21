@@ -17,7 +17,7 @@ it comes from.
 ## Source material
 
 - ANSI X9.62 / FIPS 186-5, the Elliptic Curve Digital Signature Algorithm (ECDSA). The
-  verification equation above is the standard one, stated for example in NIST FIPS 186-5,
+  verification equation on this page is the standard one, stated for example in NIST FIPS 186-5,
   section 6.4.2 ("ECDSA Signature Verification Algorithm").
 - SECG, [SEC 1: Elliptic Curve Cryptography](https://www.secg.org/sec1-v2.pdf), section 4.1.4
   ("Verifying Operation").
@@ -44,10 +44,8 @@ An ECDSA signature can pair any curve with any hash function. The verifier trunc
 than the curve's order to the order's bit length before using it as a number, and that step has
 rules of its own. This assignment avoids them: it covers only P-384 keys signing
 a SHA-384 hash. SHA-384 produces 48 bytes, and P-384's order is also 384 bits (48 bytes) wide, so
-you use the hash as it comes, with no truncation.
-
-**Out of scope:** hash digests longer or shorter than the curve's order, which need truncation
-rules this assignment doesn't cover.
+you use the hash as it comes, with no truncation. Hash digests longer or shorter than the curve's
+order are out of scope.
 
 ### The verification equation
 
@@ -55,11 +53,11 @@ Let `n` be the curve's order, `G` its generator, `Q` the public key point, and `
 as one big number. Here `z` has at most `n`'s bit length, so no truncation applies. Given a signature
 `(r, s)`:
 
-1. If `r` isn't in `[1, n-1]`, or `s` isn't in `[1, n-1]`, the signature is **invalid**. Stop
+1. If `r` isn't in `[1, n-1]`, or `s` isn't in `[1, n-1]`, the signature is invalid. Stop
    here, without computing anything else.
 2. Otherwise compute `w`, `u1`, `u2` and `point` as the block below shows.
-3. If `point` is the point at infinity, the signature is **invalid**.
-4. Otherwise the signature is **valid** when `point.x mod n == r`, and **invalid** when it isn't.
+3. If `point` is the point at infinity, the signature is invalid.
+4. Otherwise the signature is valid when `point.x mod n == r`, and invalid when it isn't.
 
 ```
 w  = s^-1 mod n
@@ -96,7 +94,7 @@ All five values are lowercase hexadecimal, with no `0x` prefix:
 |---|---|
 | `pubx`, `puby` | The public key's coordinates, each zero-padded to 96 hex characters (48 bytes) |
 | `hash` | The signed message's SHA-384 digest: 96 hex characters (48 bytes) |
-| `r`, `s` | The signature, each up to 96 hex characters. They are plain integers, not fixed-width field elements, so the input **doesn't zero-pad them** |
+| `r`, `s` | The signature, each up to 96 hex characters. They are plain integers, not fixed-width field elements, so the input doesn't zero-pad them |
 
 ### Output
 
@@ -108,12 +106,11 @@ Each test checks one of these requirements. If tests fail, the checker's report 
 pass for each requirement, and it may add a `likely cause` line that names the requirement the
 difference points to.
 
-- **R1** A genuine, valid signature verifies as `valid`.
+- **R1** A signature made with the matching private key verifies as `valid`.
 - **R2** `r` or `s` outside `[1, n-1]` is `invalid` without the point computation. This includes
   `0`, and `n` or larger. R2 also covers a signature whose `r` and `s` are both in range but whose
   recomputed point is the point at infinity (step 3 above), which must also read `invalid`.
-- **R3** Changing the signature by 1 (in `r`, in `s`, or in the signed hash) flips a valid
-  signature to `invalid`.
+- **R3** Changing `r`, `s` or the signed hash by 1 flips a valid signature to `invalid`.
 - **R4** A signature checked against a different public key than the one that made it is
   `invalid`.
 - **R5** `r == n-1` or `s == n-1`, the top of the legal range, verifies `valid` when the signature
@@ -243,7 +240,7 @@ A failing test looks like this:
 
 ## After you pass: nothing to compare
 
-This assignment has no blog code to compare with: it's the other half of the arithmetic every
-later assignment builds on, and the post doesn't describe it. In assignment 08 your code runs this
+This assignment has no blog code to compare with: it's the other half of the arithmetic the later
+assignments build on, and the post doesn't describe it. In assignment 08 your code runs this
 ECDSA verification equation on a real certificate's signature bytes. Browsers and certificate
 authorities run the same check before they trust a certificate.

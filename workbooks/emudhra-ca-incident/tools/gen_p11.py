@@ -37,8 +37,7 @@ REQUIREMENTS = [
     ("R2", "Both curves work: P-256 and P-384 each use their own p, a, G and n"),
     ("R3", "Every nonce k works, including k = 1, k = 2, k = n - 1, and a large random k, so the "
            "answer must come from double-and-add, not a loop that runs k times"),
-    ("R4", "The private key can be any value, including the recovered incident value d = 4: "
-           "the formula does not care how small or large d is"),
+    ("R4", "The private key can be any value, including the recovered incident value d = 4: the formula is the same however small or large d is"),
     ("R5", "The hash z can be any value in range, including 0 and n - 1"),
 ]
 # A wrong signature's r or s could come from almost any part of the formula, so there is no
