@@ -1,109 +1,177 @@
 # 14 · Check a key ceremony
 
-**Difficulty:** Medium · **Assignment** 14 of 16 · **Check:** `.\check 14`
+**Difficulty:** Medium · **Assignment** 14 of 19 · **Check:** `.\check 14`
 
 **Tags**
-- *Language:* parsing a small log format · dictionaries · sets
+- *Language:* parsing a small log format · dictionaries · string normalisation
 - *Library:* none needed (the log gives every fingerprint as hex, so you compare text and compute no hash)
-- *Concepts:* chain of custody · key wrap/unwrap · attested fingerprints · process auditing
+- *Concepts:* key identity · public-key fingerprints (assignment 07) · ceremony deviations · label collisions · process auditing
 
 ## Read in the blog first
 
-This page is complete on its own. Read eMudhra's
+This page is complete on its own. eMudhra's
 [Update 3](https://emudhra.com/en/post/certificate-security-incident#:~:text=An%20Update%20on%20Our%20Global%20TLS%20Intermediate%20CA%20Incident),
-"How it happened": the keys were generated in a Key Generation Ceremony (KGC) in April 2025, on
-FIPS 140-2 Level 3 hardware security modules, and "a flaw in one step of that process... produced
-a second, weak set of keys alongside the original strong keys." The post also mentions "similar
-labels" among the materials handled.
+"How it happened", says eMudhra generated the keys in a Key Generation Ceremony (KGC) in April 2025,
+on FIPS 140-2 Level 3 hardware security modules, and that "a flaw in one step of that process...
+produced a second, weak set of keys alongside the original strong keys."
 
-eMudhra has not confirmed the exact root cause. This assignment models a plausible shape that
-fits their own description, and it doesn't reconstruct their ceremony software, which nobody
-outside eMudhra has described in public. A step that wraps a key for transport and later
-unwraps it could, with a bug, hand back different key material than it received, and a mix-up
-between artifacts with similar names is the kind of slip that would let that go unnoticed. Treat
-the log format below as a teaching model built for this workbook, not as eMudhra's file format or
-process.
+eMudhra gave a fuller account in Mozilla bug 2083449, comments 10 and 11. These are eMudhra's own
+statements, unverified by anyone else:
+
+- a set of original ECC keys "were created onboard as expected";
+- "an approved deviation to our usual KGC to test a wrap/unwrap was introduced";
+- "a flaw in the code resulted in the second pair of keys being created onboard which were weaker";
+- the weaker pair "were used by mistake to create the csr (because the key labels were similar)";
+- the CSR from the weaker keys "were also sent over to Sectigo for cross signing";
+- on human error: "There were human errors in multiple steps of the process".
+
+eMudhra has not confirmed a root cause. Commenters in the bug (Thor Simon, comment 31; Jacob
+Durham, comments 32 and 33) and in Hacker News thread 50166579 ask the questions the account
+leaves open: which call created the second pair (key-pair generation or unwrapping a key), who
+approved the deviation, and whether an auditor watched it. They also ask for the KGC script, the
+ceremony and witness reports, the HSM model and firmware, and a record of any imported or restored
+keys. Those are questions, and any answer a commenter guesses at is speculation.
+
+This assignment models one failure shape that fits eMudhra's account. The log format below is a
+teaching model built for this workbook. It is not eMudhra's file format or process, and it makes
+no claim about what their software did.
 
 ## Source material
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3 ("How it happened", and the statement that the root cause is not yet confirmed)
-- Assignment 12 (`problems/12-generate-key.md`): the step that should go right every time, before any ceremony log starts
+- Mozilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): eMudhra's account in comments 10 and 11, Chrome's root program's questions in comment 30, other questions to eMudhra in comments 31 to 33
+- Hacker News, [thread 50166579](https://news.ycombinator.com/item?id=50166579)
+- Assignment 07 (`problems/07-spki-hash.md`): hashing a public key to get a name for it that survives reissuance
+- Assignment 13 (`problems/13-key-linter.md`): the check on the key itself
 
 ## Where this fits
 
-Assignment 12's `ecc/keys.py` turned random bytes into a key, the step that should go right every
-time. This assignment checks a later step: that a key which started out fine is still the same key
-when the ceremony publishes it. Your linter from assignment 13 can only catch a bad key it gets to
-look at, and this checker finds the moment the key stopped being the one the ceremony generated.
+Assignment 07 hashed a certificate's public key, which gave you a name for the key that no label
+can change. Assignment 12 built a key by the standard procedure and assignment 13 linted a key it could look
+at. This assignment audits the steps between those: whether the key a ceremony used for its CSR is
+the key the witnesses approved.
 
-Your new `pki/ceremony.py` needs none of your earlier modules, and no later assignment uses it.
+Your new `pki/ceremony.py` needs none of your earlier modules, because the log carries each
+fingerprint ready-made, and no later assignment uses it.
 
 ## The problem
 
-A ceremony log is a list of steps, one per line, recording what happened to a set of keys as
-they moved through a Key Generation Ceremony. Each step names one or two labels: words that
-refer to a key artifact at some point in the ceremony. Write a program that reads the log and
-reports two kinds of problem: a label that's ambiguous because two `generate` steps used it, and a
-published key whose material doesn't match the fingerprint attested when it was generated.
+Write a program that replays a ceremony log and checks, at each CSR and each publish, that the key
+used is the key the witnesses approved. It also flags labels that collide and deviations from the
+ceremony's script.
 
 ### Input
 
 The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-Each line is one ceremony step:
+Each line is one step of the ceremony:
 
 | Line | Meaning |
 |---|---|
-| `generate <label> <curve>` | The ceremony generates a new key and names it `label`. This starts a new key every time, even if an earlier `generate` used the same `label` (see R3). `curve` is `P-256` or `P-384`; it has no effect on this assignment's logic. |
-| `wrap <label> <wrapped-label>` | The ceremony wraps (encrypts for transport or backup) the key that `label` names now, and names the result `wrapped-label`. A correct wrap carries the same key material forward. |
-| `unwrap <wrapped-label> <label>` | The ceremony unwraps the artifact that `wrapped-label` names back into a usable key, named `label`. eMudhra's account points to this step: a flawed unwrap can hand back different key material from what went in. |
-| `fingerprint <label> <hex>` | The ceremony software records the fingerprint of `label`, a hash of the key bytes, as 64 lowercase hex characters. This line comes straight after the step (`generate`, `wrap` or `unwrap`) that created `label`. |
-| `publish <label>` | The ceremony publishes the key that `label` names now. |
+| `generate <label> <fp>` | The HSM creates a key pair and names it `label`. `fp` is the fingerprint of its public key. |
+| `approve <label> <fp>` | The witnesses approve the key with fingerprint `fp` under `label`, for use in a CSR. |
+| `deviation <approver>` | The ceremony departs from its script. `approver` is the name of the person who signed off, or `none` when no one signed off. |
+| `csr <label> <fp>` | The operator picks the key named `label` and creates a CSR. `fp` is the fingerprint of the public key the CSR carries. |
+| `publish <label>` | The ceremony signs the latest CSR made under `label` and publishes the certificate. |
 
-A label is a name. Once a `generate`, `wrap` or `unwrap` step has used it, it refers to whatever key
-material that step produced, until the log uses it again. `wrap` and `unwrap` carry forward the key
-their source label names at that moment, and only `unwrap` can be defective.
+A fingerprint is the SHA-256 of a public key, written as 64 lowercase hex characters. It is the
+same idea as the SPKI hash in assignment 07. The log gives you every fingerprint, so you compare
+text and compute no hash. A label is a word of ASCII letters, digits, `-`, `_` and `.` with at
+least one letter or digit. People and software choose labels, and nothing makes them unique.
 
 ### Output
 
-For each `generate` step whose label was already used by an earlier `generate` step, in the
-order you meet it:
+Each step writes zero or one line, in log order:
+
+| Step | Line it writes |
+|---|---|
+| `generate` | `duplicate <label>` or `similar <label> <earlier-label>`, or nothing when neither applies |
+| `approve` | nothing |
+| `deviation` | `deviation <approver> approved`, or `deviation none UNAPPROVED` |
+| `csr` | `csr <label> <status>` |
+| `publish` | `publish <label> <status>` |
 
 ```
-duplicate <label>
+duplicate ecc-root-1
+similar ECC_Root_1 ecc-root-1
+deviation alice approved
+deviation none UNAPPROVED
+csr ecc-root-1 MISMATCH ECC_Root_1
+publish ecc-root-1 BLOCKED
 ```
 
-For each `publish` step, in the order it appears, write one line:
+The checker ignores extra whitespace. If several findings apply to one step, the step writes only
+the one listed first below.
 
-```
-publish <label> ok                    the key currently under <label> matches what was attested when it was generated
-publish <label> MISMATCH <origin>     it doesn't; <origin> is the label it was originally generated under
-publish <label> undefined             <label> was never generated, wrapped, or unwrapped
-```
+`csr` status, first rule that applies:
 
-Write both kinds of line interleaved, in the order their triggering steps appear in the log: a
-`duplicate` line at its `generate` step, a `publish` line at its `publish` step. The checker
-ignores extra whitespace.
+| Status | When |
+|---|---|
+| `UNVERIFIED` | An earlier step was `deviation none`. |
+| `NOT-APPROVED` | The ceremony holds no approval for this exact label. |
+| `MISMATCH <key-label>` | The fingerprint approved for the label differs from the CSR's. `<key-label>` is the label of the `generate` line with the CSR's fingerprint (no two `generate` lines share one, see Constraints), or `unknown` when no `generate` line has it. |
+| `ok` | The approved fingerprint equals the CSR's. |
 
-### Chains of custody
+`publish` status, first rule that applies:
 
-Every `generate` step starts a key's chain of custody, the record of where that key goes. The
-first `fingerprint` line recorded for the new key is the chain's attested fingerprint: the
-fingerprint of the key as the ceremony created it. `wrap` and `unwrap` carry a
-key's chain of custody forward to their target label, whatever that label's text is.
+| Status | When |
+|---|---|
+| `undefined` | No `csr` line has used this exact label so far. |
+| `UNVERIFIED` | An earlier step was `deviation none`. |
+| `BLOCKED` | The latest `csr` under this label did not write `ok`. |
+| `ok` | The latest `csr` under this label wrote `ok`. |
 
-At `publish`, find the chain of custody for the label being published. Compare the label's current
-fingerprint (the latest `fingerprint` line recorded for that exact label) with the attested
-fingerprint at the start of its chain:
+A `publish` looks only at the outcome of that latest CSR and at whether the ceremony is still
+verified. It does not look at approvals again, so a later approved deviation doesn't change it.
 
-- If they're equal, the key is `ok`.
-- If they differ, report `MISMATCH`, naming the label the chain started at.
+`generate` finding, first rule that applies: `duplicate` when an earlier `generate` used this same
+label, character for character, then `similar` when an earlier `generate` label matches this one
+after normalisation (see Label collisions), naming the earliest such label. Only `generate` labels
+take part.
 
-A reused label leaves an earlier chain alone. Suppose `generate` creates a key under a label, a
-`wrap` moves that key away, and only *afterward* another `generate` reuses the label. The key that
-was wrapped away still traces back to the *first* `generate`, and the second `generate` starts its
-own, separate chain of custody. Your program still flags the duplicate label, because that kind of
-mix-up makes a ceremony harder to audit, but the reuse doesn't corrupt a key that had already moved
-elsewhere.
+### Identifying a key
+
+A label says which slot an operator meant. The fingerprint says which key is in it. Two keys can
+share a label, or carry labels that differ by a case or a separator, and a CSR line gives the label
+the operator picked next to the fingerprint of the key that went into the CSR. Only the fingerprint
+names that key.
+
+`approve` binds a label to a fingerprint. A later `approve` for the same label replaces the earlier
+one. At `csr`, compare the approved fingerprint for that exact label with the CSR's fingerprint, as
+text. The match is exact for labels (`Root-1` and `root-1` are different labels here) and for
+fingerprints. To name the key a mismatched CSR carried, look its fingerprint up among the
+`generate` lines.
+
+The log may approve a fingerprint that no `generate` line recorded, and a CSR may carry one. The
+rules above still apply, and `unknown` names the key of a CSR that matches no `generate` line.
+
+### Label collisions
+
+Two labels are similar when they are equal after this normalisation: lowercase every ASCII letter,
+then delete every `-`, `_` and `.`. Labels have no spaces, so nothing else needs removing. Digits
+and other letters stay.
+
+| Label | Normalised | Similar to |
+|---|---|---|
+| `ECC-Root-1` | `eccroot1` | `ecc_root_1`, `ecc.root.1`, `eccroot1` |
+| `ecc-root-10` | `eccroot10` | none of the above |
+| `ecc-root-l` | `eccrootl` | none of the above (the letter `l` is not the digit `1`) |
+
+Each `generate` is checked against earlier `generate` labels only. An earlier label gets no finding
+for a later one.
+
+### Deviations
+
+A deviation is a departure from the script, and the witnesses approved the keys against the
+script as it stood.
+
+- `deviation <name>`, with a name: someone signed off. The step writes `deviation <name> approved`
+  and clears every approval, so each key needs an `approve` again before its CSR counts.
+- `deviation none`: no one signed off. The step writes `deviation none UNAPPROVED`, and every later
+  `csr` and `publish` is `UNVERIFIED`, whatever the later lines say, including a later approved
+  deviation and fresh approvals. Steps before it keep their results. `generate` findings don't
+  depend on verification and still appear.
+
+`none` is not an approver's name, and no label is `none` or `unknown`.
 
 ## Requirements
 
@@ -111,128 +179,155 @@ Each test checks one of these requirements. If tests fail, the checker's report 
 pass for each requirement, and it may add a `likely cause` line that names the requirement the
 difference points to.
 
-- **R1** A clean ceremony (`generate`, `wrap`, a correct `unwrap`, `publish`) reports `ok`. So
-  does publishing a key straight from `generate`, with no wrap/unwrap round trip.
-- **R2** A defective `unwrap` that hands back different key material shows up at `publish`:
-  `MISMATCH`, naming the label the key was first generated under.
-- **R3** A label that a second `generate` step reuses gets a `duplicate <label>` line, whether or
-  not anything downstream of it breaks. A chain already wrapped away under the label's earlier
-  identity still resolves to that identity: the duplicate doesn't disturb it.
-- **R4** A `publish` of a label that no step generated, wrapped or unwrapped reports `undefined`.
-- **R5** With several keys in one ceremony and only one of them defective, every `publish` line
-  judges its own key, so only the defective key's line says `MISMATCH`.
+- **R1** A `csr` whose fingerprint equals the one approved for its label writes `ok`, and its `publish` writes `ok`. The check compares fingerprints and does not look at the key's strength.
+- **R2** A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, naming the label of the `generate` line with that fingerprint, or `unknown`. The fingerprint tells apart two keys that share a label.
+- **R3** A `csr` under a label with no current approval writes `NOT-APPROVED`. Labels match as written, and a later `approve` replaces an earlier one for the same label.
+- **R4** An approved deviation clears every approval, so a `csr` needs a new `approve` after it.
+- **R5** After `deviation none`, every later `csr` and `publish` writes `UNVERIFIED`, and nothing later restores verification.
+- **R6** A `publish` writes `undefined` when no `csr` used its label, `BLOCKED` when the latest `csr` under the label did not write `ok`, and `ok` otherwise.
+- **R7** A `generate` whose label an earlier `generate` already used writes `duplicate <label>`.
+- **R8** A `generate` whose label equals an earlier `generate` label after lowercasing and removing `-`, `_` and `.` writes `similar <label> <earlier-label>`, naming the earliest match.
+- **R9** When several findings apply to one step, the step writes only the first in the priority order above.
+- **R10** The output follows log order: one line per `deviation`, `csr` and `publish`, a line per `generate` only when it has a finding, and nothing for `approve`.
 
 ## Examples
 
-### Example 1: a defective unwrap, caught at publish (test `14-R2-bad-unwrap`)
+### Example 1: a weak pair used by mistake (test `14-R2-weak-pair-substituted`)
 
 ```
-input:   generate k1 P-384
-         fingerprint k1 <hash of the real key>
-         wrap k1 wk1
-         fingerprint wk1 <the same hash: wrap preserved it>
-         unwrap wk1 k1b
-         fingerprint k1b <a DIFFERENT hash: the unwrap substituted something else>
-         publish k1b
+input:   generate ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+         approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+         deviation alice
+         generate ECC_Root_1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+         csr ecc-root-1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         publish ecc-root-1
 
-output:  publish k1b MISMATCH k1
+output:  deviation alice approved
+         similar ECC_Root_1 ecc-root-1
+         csr ecc-root-1 MISMATCH ECC_Root_1
+         publish ecc-root-1 BLOCKED
 ```
 
-The key stayed the same through the wrap. The unwrap produced something with a different
-fingerprint from what went in, and that's the key the ceremony publishes. The output names `k1`
-because this chain of custody started there.
+The deviation clears the first approval, and the witnesses approve the intended key again after
+it. A second pair appears under `ECC_Root_1`, which normalises to the same text as `ecc-root-1`,
+so the step writes `similar`. The operator picks `ecc-root-1` and the CSR carries the second
+pair's fingerprint, `ea5397...`. That differs from the approved `1c4084...`, so the CSR is a
+`MISMATCH`, and the `generate` line with that fingerprint gives the label `ECC_Root_1`. The publish
+is `BLOCKED`.
 
-### Example 2: a duplicate label that doesn't disturb an earlier chain (test `14-R3-duplicate-does-not-disturb-earlier-wrap`)
+### Example 2: an approved key that is itself weak (test `14-R1-approved-weak-key-passes`)
 
 ```
-input:   generate first-use P-384
-         fingerprint first-use <hash A>
-         wrap first-use stashed
-         fingerprint stashed <hash A>
-         generate first-use P-384
-         fingerprint first-use <hash B>
-         unwrap stashed recovered
-         fingerprint recovered <hash A>
-         publish recovered
+input:   generate root-key-a a177c2bfa7e95678341780c2f4fde9a764fa1e546a634fc79b8f719634ea0574
+         generate root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         approve root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         csr root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         publish root-key-b
 
-output:  duplicate first-use
-         publish recovered ok
+output:  csr root-key-b ok
+         publish root-key-b ok
 ```
 
-The `wrap` moved the *first* `first-use` key to `stashed` before the label was reused. The second
-`generate` points `first-use` at a different key, and your program flags it as a duplicate.
-`recovered`, unwrapped from `stashed`, still traces back to the *first* key, and its fingerprint
-(hash A) matches the one attested for that key. The output reports the duplicate, and `recovered`
-is `ok`.
+The fingerprint `ea5397...` belongs to a key whose private value is 4. The witnesses approved that
+key, the CSR carries it, and every comparison passes. A fingerprint names a key and says nothing
+about its strength, so this check can't tell.
+
+### Example 3: a deviation nobody approved (test `14-R5-only-later-csrs-affected`)
+
+```
+input:   generate k1 e2f5eb64d7cd11d077fac1fcfaf23fb3fed588e8fc01321753aa8a8f855988d6
+         generate k2 a781428686099d5f292b46bb110b969efa6f5849b76b7e490c14abb763b5cd8e
+         approve k1 e2f5eb64d7cd11d077fac1fcfaf23fb3fed588e8fc01321753aa8a8f855988d6
+         approve k2 a781428686099d5f292b46bb110b969efa6f5849b76b7e490c14abb763b5cd8e
+         csr k1 e2f5eb64d7cd11d077fac1fcfaf23fb3fed588e8fc01321753aa8a8f855988d6
+         deviation none
+         csr k1 e2f5eb64d7cd11d077fac1fcfaf23fb3fed588e8fc01321753aa8a8f855988d6
+         csr k2 a781428686099d5f292b46bb110b969efa6f5849b76b7e490c14abb763b5cd8e
+
+output:  csr k1 ok
+         deviation none UNAPPROVED
+         csr k1 UNVERIFIED
+         csr k2 UNVERIFIED
+```
+
+The first CSR happened before the deviation and keeps its `ok`. After `deviation none`, both later
+CSRs have approved fingerprints that match, and both write `UNVERIFIED`, for either label.
 
 ## Constraints
 
 - Every line is one of the five step kinds above; there are no blank lines.
-- A `fingerprint` line names the label that the step right before it (`generate`, `wrap` or
-  `unwrap`) created.
+- A fingerprint is 64 lowercase hex characters, and no two `generate` lines share one.
+- A label is ASCII letters, digits, `-`, `_` and `.` with at least one letter or digit, and is not `none` or `unknown`. An approver's name is a word without spaces.
 - An input has at most 50 steps and at most 8 `publish` lines.
 - Each case has a 10-second limit; this assignment does no heavy computation.
-- There are 10 tests: 2 for R1, 2 for R2, 2 for R3, 1 for R4, 2 for R5 and 1 end-to-end case
-  mixing several keys, a duplicate label, a defective unwrap and an undefined reference in one
+- There are 30 tests: 2 for R1, 4 for R2, 2 for R3, 2 for R4, 3 for R5, 5 for R6, 2 for R7, 3 for R8,
+  3 for R9, 2 for R10 and 2 end-to-end cases, one with the failure shape of Example 1 and one random
   ceremony. Part of the set is random and changes with `-Fresh`.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Work through the log from top to bottom and keep track, for every label you've seen, of the key it
-names now. A second `generate` can reuse a label, so the label's text alone doesn't tell you which
-key it is: give each key something of its own to track it by.
+Go through the log from top to bottom and decide each step's line from what came before it. For a
+CSR, ask which key it carries, and answer from the fingerprint. The label on the line is
+only what the operator typed.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Give every `generate` step its own identity (a counter works: 1, 2, 3, ...), even when it reuses a
-label. In `Ceremony`, the dictionary `points_at` maps a label to the identity it names now:
-`generate` sets it to a new identity, and `wrap` and `unwrap` copy the identity of their source
-label. A second dictionary, `attested`, maps an identity to its attested fingerprint, set once by
-the first `fingerprint` line after the key's generation. A third, `latest`, maps a label to the last
-fingerprint recorded for it. At `publish`, look up the label's identity and compare.
+Keep four things in `Ceremony`: a list of `(label, fingerprint)` pairs, one per `generate`, in log
+order; a dictionary `approved` from label to fingerprint; a dictionary from label to whether its
+latest `csr` wrote `ok`; and a flag `unverified`. Each method returns the line its step writes (or
+None) and then updates that state. For `similar`, write `normalise(label)` once and compare it with
+the normalised form of each earlier `generate` label, earliest first. `csr` and `publish` each
+check their statuses in the order the tables list them and stop at the first that applies.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- A label used by a second `generate` needs a new identity. Don't let the second `generate`
-  overwrite the attested fingerprint of the first one's identity.
-- `wrap` and `unwrap` look up the identity their *source* label names at the moment they run, not
-  at some later point.
-- A `publish` of an unknown label has no identity to look up: check for that before anything else.
-- The `MISMATCH` line names the label the chain started at (the `generate` step), not the `wrap`
-  or `unwrap` step that corrupted it, and not the label being published.
-- `duplicate` lines and `publish` lines go out interleaved in log order, not grouped by kind.
+- A `csr` compares fingerprints. Comparing labels passes a CSR that uses a different key under the same label.
+- A `generate` writes at most one line, and `duplicate` wins over `similar`, even when the label is also similar to an older one.
+- Approvals use exact labels, so `Root-1` and `root-1` differ there. Only the `generate` check normalises.
+- `MISMATCH` names the label of the `generate` line with the CSR's fingerprint. It doesn't name the approved key or the label on the `csr` line.
+- A failed `csr` still replaces the stored result of an earlier `ok` for its label, because `publish` follows the latest one.
+- An approved deviation clears approvals and writes a line. `deviation none` sets the flag, and nothing later clears it.
+- `approve` writes nothing, and `generate` findings still appear after `deviation none`.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
-points_at = {}        # label -> identity id
-generated_as = {}      # identity id -> label it was generated under
-attested = {}          # identity id -> fingerprint attested at generation
-latest = {}            # label -> most recent fingerprint recorded for it
-next_id = 0
+generated = []        # (label, fingerprint), in log order
+approved = {}         # label -> fingerprint
+csr_ok = {}           # label -> did its latest csr write ok
+unverified = False
+
+normalise(label): lowercase, delete "-", "_" and "."
 
 for step in log:
-    if step is generate(label, curve):
-        if label in points_at: emit "duplicate " + label
-        next_id += 1
-        points_at[label] = next_id
-        generated_as[next_id] = label
-    if step is wrap(label, wrapped_label) or unwrap(wrapped_label=label, target):
-        points_at[target] = points_at[source]
-    if step is fingerprint(label, hex):
-        latest[label] = hex
-        id = points_at[label]
-        if id not yet in attested: attested[id] = hex
-    if step is publish(label):
-        if label not in points_at: emit "publish " + label + " undefined"; continue
-        id = points_at[label]
-        if latest[label] == attested[id]: emit "publish " + label + " ok"
-        else: emit "publish " + label + " MISMATCH " + generated_as[id]
+    generate(label, fp):
+        if label in [l for l, _ in generated]: emit "duplicate " + label
+        else if some earlier l has normalise(l) == normalise(label): emit "similar " + label + " " + (earliest such l)
+        append (label, fp) to generated
+    approve(label, fp):
+        approved[label] = fp
+    deviation(who):
+        if who == "none": unverified = True; emit "deviation none UNAPPROVED"
+        else: approved = {}; emit "deviation " + who + " approved"
+    csr(label, fp):
+        if unverified: status = "UNVERIFIED"
+        else if label not in approved: status = "NOT-APPROVED"
+        else if approved[label] != fp: status = "MISMATCH " + (label of the generated entry with fp, or "unknown")
+        else: status = "ok"
+        csr_ok[label] = (status == "ok")
+        emit "csr " + label + " " + status
+    publish(label):
+        if label not in csr_ok: status = "undefined"
+        else if unverified: status = "UNVERIFIED"
+        else if not csr_ok[label]: status = "BLOCKED"
+        else: status = "ok"
+        emit "publish " + label + " " + status
 ```
 </details>
 
@@ -240,29 +335,56 @@ for step in log:
 
 ```
 .\check 14                                  run every test
-.\check 14 -Case 14-R2-bad-unwrap           one test, showing its full input, expected output and your output
+.\check 14 -Case 14-R2-weak-pair-substituted   one test, showing its full input, expected output and your output
 .\check 14 -Fresh                           a new set of tests (new random seed), to confirm on data you haven't seen
 .\check 14 -Dispute <id> "why"              set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+A failing test looks like this, from a solution that writes `ok` when a `generate` line with the same
+label carries the CSR's key:
 
 ```
-  R2  A defective unwrap that substitutes a different token is caught ... .    1 / 2   FAILED
-      x 14-R2-bad-unwrap  the unwrap step silently substitutes a different token: MISMATCH at publish
-          line 1: expected `publish k1b MISMATCH k1`, got `publish k1b ok`
-          likely cause: R2 - A defective unwrap that substitutes a different token is caught at publish: `MISMATCH <origin>`
-          expected values from: definitional: fingerprint = sha256(token) in hex, computed by hashlib in this generator
-          reproduce: py -P tools/run_py.py solutions 14 build/cases/14/14-R2-bad-unwrap.in build/cases/14/14-R2-bad-unwrap.out
+  R2  A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, ... .    3 / 4   FAILED
+      x 14-R2-identical-labels-different-keys  two keys share one label; the CSR uses the unapproved one, so only the finger...
+          line 2: expected `csr ecc-root-1 MISMATCH ecc-root-1`, got `csr ecc-root-1 ok`  (in `duplicate ecc-root-1`)
+          likely cause: R2 - A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, naming the label of the `generate` line with that fingerprint, or `unknown`
+          expected values from: definitional: fingerprint = sha256 of the uncompressed P-384 public point, computed by hashlib from OpenSSL's d*G; expected lines follow the page's rules
+          reproduce: py -P tools/run_py.py solutions 14 build/cases/14/14-R2-identical-labels-different-keys.in build/cases/14/14-R2-identical-labels-different-keys.out
 ```
+
+The checker groups output lines by the word the first expected line starts with, and `(in ...)`
+names the most recent line in that group. Here that word is `duplicate`, so the note points at
+the `duplicate ecc-root-1` line above the failing `csr` line. The failing line is still line 2.
 
 ## After you pass: compare with the post
 
-The post describes the outcome of a ceremony gone wrong in vague terms and says that the root
-cause isn't confirmed, so there's no author's code to compare with here. You built one way a
-ceremony-log checker could have caught a failure of the shape they described, with no claim about
-what their software does.
+eMudhra has published an account of the ceremony and no code, so there is no author's code to
+compare with. You built one way a checker could have caught a failure of the shape that account
+describes. It makes no claim about what their software did.
 
-The post's mention of "similar labels" matters in this assignment. A
-ceremony that lets one name mean two different things at different times is a process hazard worth
-flagging on its own (R3's point), whether or not a key's material changed along the way.
+The check catches a second key pair that replaces the approved one by mistake. Example 1 is that
+case: the label was similar, and the check names the key by fingerprint. It also works when the
+two keys carry an identical label, which a check by label cannot separate. It
+refuses to call anything verified after an unapproved deviation, and after an
+approved one it makes the witnesses approve the keys again.
+
+The check cannot catch a weak pair that the ceremony planned and the witnesses approved. Example 2
+passes with `ok` on every line because the CSR carries the key the witnesses approved, and that
+key has the private value 4. A fingerprint is a name for a key. It tells nothing about the
+key's strength, so comparing fingerprints can only show that the key used is the key
+approved. Whether the approved key is any good needs a check on the key itself, which is what the
+linter from assignment 13 does: it finds a weak key whether or not anyone approved it, and it can't
+tell that a good key replaced another good one. Each check covers a gap in the other, and a
+ceremony needs both.
+
+The model leaves out what eMudhra's account leaves open. It doesn't say which call created the
+second pair, so `generate` records only a fingerprint. eMudhra says it approved the deviation,
+so the `deviation none` rule describes a case the account doesn't mention. Whether the witnesses
+approved the keys again after that deviation is also unknown. Chrome's root program asked eMudhra
+why the later CRL re-signing did not trigger a halt. A `BLOCKED` publish models one answer to that
+kind of question in a log: a failed check stops the signing.
+
+The reference solution's `Ceremony.csr` keeps only whether the latest CSR under a label passed,
+and `Ceremony.publish` uses that and the `unverified` flag. It doesn't look at approvals again, as
+the Output section specifies. A design that re-checked approvals at publish would block a CSR made
+before a later approved deviation, and the tests rule that design out.

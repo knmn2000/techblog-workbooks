@@ -1,6 +1,6 @@
 # 02 · Add points on a toy curve
 
-**Difficulty:** Easy · **Assignment** 2 of 16 · **Check:** `.\check 02`
+**Difficulty:** Easy · **Assignment** 2 of 19 · **Check:** `.\check 02`
 
 **Tags**
 - *Language:* small integers · modular arithmetic (`pow(a, -1, p)` in Python) · parsing a point

@@ -3,18 +3,17 @@
 # Problem: problems/14-ceremony-checker.md (and in the problem book, with its Start here card)
 #
 # Why this file exists:
-#   It replays the log of a key generation ceremony and follows each key from the step
-#   that made it to the step that publishes it, so a reused label or a key that changed on
-#   the way gets flagged. It needs none of your earlier modules, and no later assignment
-#   uses it.
+#   It replays the log of a key generation ceremony and checks that each CSR carries the
+#   public key the witnesses approved, identifying keys by fingerprint and never by label.
+#   It flags labels that collide and deviations from the script. It needs none of your
+#   earlier modules, and no later assignment uses it.
 #
 # Your job:
 #   Write the ceremony state in `pki/ceremony.py`, which replays a key ceremony log one
-#   step at a time: generate, wrap, unwrap, fingerprint and publish. Give every generate
-#   step a new key identity, even when it reuses a label, and let wrap and unwrap pass the
-#   identity a label names on to another label. A publish reports `ok`, `undefined`, or a
-#   mismatch with the label the key was generated under (see Chains of custody). The
-#   Boilerplate gives you the declarations; fill in each TODO.
+#   step at a time: generate, approve, deviation, csr and publish. Identify each key by
+#   its public-key fingerprint and never by its label, and let the priorities under Output
+#   decide the line when several findings apply (see Identifying a key and Deviations).
+#   The Boilerplate gives you the declarations; fill in each TODO.
 #
 # How to start:
 #   This is the Boilerplate. To start from an empty file instead, choose From scratch in
@@ -23,78 +22,65 @@
 
 """Checking the log of a key ceremony (assignment 14).
 
-A ceremony log is a list of steps. `Ceremony` replays them one at a time:
+A ceremony log is a list of steps. `Ceremony` replays them one at a time and returns the line the
+step writes to the output, or None when the step writes nothing:
 
-| Step | What the ceremony does |
-|---|---|
-| generate <label> <curve> | makes a new key and names it `label` |
-| wrap <label> <wrapped> | exports the key `label` names, encrypted, as `wrapped` |
-| unwrap <wrapped> <label> | imports `wrapped` back under `label` |
-| fingerprint <label> <hex> | records the fingerprint of the key `label` names |
-| publish <label> | publishes the key `label` names |
+| Step | What the ceremony does | Output |
+|---|---|---|
+| generate <label> <fp> | the HSM makes a key pair named `label` | `duplicate` or `similar` finding, if any |
+| approve <label> <fp> | the witnesses approve the key behind `label` | none |
+| deviation <approver> | the ceremony departs from its script | one line |
+| csr <label> <fp> | the operator makes a CSR; `fp` names the public key it carries | one line |
+| publish <label> | the ceremony publishes the certificate for the latest CSR of `label` | one line |
 
-Each generate makes a new key identity, even when it reuses a label. A label names one identity
-at a time, and wrap and unwrap pass the identity on to another label. The ceremony tracks
-identities by number, so reusing a label for a new key leaves earlier wraps pointing at the old
-key. The first fingerprint recorded after a key's generation attests that key. A publish is ok
-only when the label's latest fingerprint matches its identity's attested one.
+A key is identified by the fingerprint of its public key, never by its label. Labels are only
+compared to find collisions: exact reuse (`duplicate`) and reuse after normalising case and
+separators (`similar`). A CSR is checked against the fingerprint approved for its label. An
+approved deviation clears every approval, so the keys need approving again. An unapproved one
+makes every later CSR and publish unverified.
 """
 
 from dataclasses import dataclass, field
 
 
-@dataclass(frozen=True)
-class Publication:
-    """The result of a publish step: "ok", "undefined" or "MISMATCH".
-
-    For a mismatch, `generated_as` is the label the key's generate step used, where an auditor
-    starts looking.
-    """
-
-    status: str
-    generated_as: str | None = None
+def normalise(label: str) -> str:
+    """Lowercases a label and removes `-`, `_` and `.`, so labels that look alike compare equal."""
+    # TODO: the rule under "Label collisions" on the problem page.
+    raise NotImplementedError("normalise")
 
 
 @dataclass
 class Ceremony:
     """The state of a key ceremony, replayed one step at a time."""
 
-    known: set[str] = field(default_factory=set)  # every label a step has defined
-    points_at: dict[str, int | None] = field(default_factory=dict)  # label -> the identity it names
-    generated_as: dict[int, str] = field(default_factory=dict)  # identity -> its generate label
-    attested: dict[int, str] = field(default_factory=dict)  # identity -> its first fingerprint
-    latest: dict[str, str] = field(default_factory=dict)  # label -> the last fingerprint recorded for it
-    unattested: set[int] = field(default_factory=set)  # identities with no fingerprint yet
-    identities: int = 0  # how many keys the ceremony has generated
+    generated: list[tuple[str, str]] = field(default_factory=list)  # (label, fingerprint), in log order
+    approved: dict[str, str] = field(default_factory=dict)  # label -> the fingerprint approved for it
+    csr_passed: dict[str, bool] = field(default_factory=dict)  # label -> was its latest CSR ok
+    unverified: bool = False  # set for good by a deviation nobody approved
 
-    def generate(self, label: str) -> bool:
-        """Makes a new key named `label`; returns True when the label was already in use."""
-        # TODO: a new identity, even for a reused label; see the `generate` row under "Input" on
-        # the problem page.
+    def generate(self, label: str, fingerprint: str) -> str | None:
+        """Records a new key; returns the finding for its label, if it collides with an earlier one."""
+        # TODO: `duplicate` or `similar`, never both; see "Label collisions" and the priorities
+        # under "Output" on the problem page.
         raise NotImplementedError("Ceremony.generate")
 
-    def wrap(self, label: str, wrapped_label: str) -> None:
-        """Exports the key `label` names as `wrapped_label`."""
-        self._carry(label, wrapped_label)
+    def approve(self, label: str, fingerprint: str) -> None:
+        """The witnesses approve the key with this fingerprint under `label`, replacing any earlier approval."""
+        # TODO: see the `approve` row under "Input" on the problem page.
+        raise NotImplementedError("Ceremony.approve")
 
-    def unwrap(self, wrapped_label: str, label: str) -> None:
-        """Imports the key `wrapped_label` names back under `label`."""
-        self._carry(wrapped_label, label)
+    def deviation(self, approver: str) -> str:
+        """A departure from the script. Without an approver, the ceremony cannot verify anything after it."""
+        # TODO: see "Deviations" on the problem page.
+        raise NotImplementedError("Ceremony.deviation")
 
-    def _carry(self, source: str, target: str) -> None:
-        """Passes the identity `source` names on to `target`, for wrap and unwrap."""
-        # TODO: `target` names whatever identity `source` names now (none, when `source` is
-        # undefined); see the `wrap` and `unwrap` rows under "Input" on the problem page.
-        raise NotImplementedError("Ceremony._carry")
+    def csr(self, label: str, fingerprint: str) -> str:
+        """Checks the key a CSR carries against the key approved for `label`."""
+        # TODO: pick the status by priority, and remember whether this CSR passed; see
+        # "Identifying a key" and "Output" on the problem page.
+        raise NotImplementedError("Ceremony.csr")
 
-    def fingerprint(self, label: str, value: str) -> None:
-        """Records the fingerprint of the key `label` names."""
-        # TODO: the label's latest fingerprint, and the attested one for a new identity; see
-        # "Chains of custody" on the problem page.
-        raise NotImplementedError("Ceremony.fingerprint")
-
-    def publish(self, label: str) -> Publication:
-        """Checks the key `label` names against the fingerprint attested at its generation."""
-        # TODO: undefined, ok or MISMATCH; see "Output" and "Chains of custody" on the problem
-        # page.
+    def publish(self, label: str) -> str:
+        """Publishes the latest CSR under `label` only if it passed and the ceremony is still verified."""
+        # TODO: see the `publish` lines under "Output" on the problem page.
         raise NotImplementedError("Ceremony.publish")

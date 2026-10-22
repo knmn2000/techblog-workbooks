@@ -1,16 +1,25 @@
 # Build a PKI auditor yourself
 
-*How to not f\*ck up like eMudhra.*
+*Find a weak CA key, then work through the response.*
 
-LeetCode-style assignments built around
-[eMudhra's statement on a certificate security incident](https://emudhra.com/en/post/certificate-security-incident).
-Eight of eMudhra's intermediate certificate authority keys turned out to be weak (one had the
-private key value 4), and anyone could have recovered them in under a second. You build the maths
-that makes a key pair work, parse and validate certificates by hand, recover a weak key yourself,
-sign with it, and then build the checks that would have caught it: correct key generation, a key
-linter, a ceremony checker and SPKI blocklisting. Each assignment adds modules to a Python project
-of your own. After the last one, `solutions/` holds `pkiaudit`, a working PKI auditor you can put
-on GitHub as it is.
+LeetCode-style assignments built around the October 2026 eMudhra certificate authority key incident
+([eMudhra's statement](https://emudhra.com/en/post/certificate-security-incident)). Eight of eMudhra's
+intermediate CA keys turned out to be tiny integers (the smallest private key was 4), and anyone
+could recover them in under a second. The root cause is still open: eMudhra has not confirmed it,
+and what is public is part eMudhra's own account and part speculation.
+[What we know and what we don't](docs/what-we-know.md) sorts the two, with sources and an
+"as of" date.
+
+The workbook covers the established facts: how to find weak CA keys, and what an incident response
+involves. You build the maths that makes a key pair work, parse and validate certificates by hand,
+recover a weak key yourself, sign with it, and then build detection and response tools: a key
+validator and generator, a key linter that finds small private keys, a ceremony
+checker, SPKI blocklisting and an audit of a whole PKI. Assignments 17 to 19 go further: a faster
+search for weak keys, checking a revocation list's signature, and which clients still accept a
+chain after the response. Assignments 12 and 14 are models of
+possible failure shapes in key generation and key ceremonies. They make no claim about what
+happened at eMudhra. Each assignment adds modules to a Python project of your own. After the last
+one, `solutions/` holds `pkiaudit`, a working PKI auditor you can put on GitHub as it is.
 
 The problems are in `problems/` and, nicer to read, in the web problem book
 (`book/problem-book.html`: open it in a browser). The book has a problem list with your progress,
@@ -23,11 +32,19 @@ the example test cases.
 | 01 | Modular arithmetic | 09 | Validate a certificate chain |
 | 02 | Add points on a toy curve | 10 | Find a weak private key |
 | 03 | Multiply a point by a number | 11 | Sign a certificate with a recovered key |
-| 04 | Verify an ECDSA signature | 12 | Generate a key correctly |
+| 04 | Verify an ECDSA signature | 12 | Generate and validate a key |
 | 05 | Read DER | 13 | Lint a public key |
 | 06 | Read a certificate | 14 | Check a key ceremony |
 | 07 | Hash the public key (SPKI) | 15 | Block and distrust |
 | 08 | Check a certificate's signature | 16 | Audit a PKI |
+
+Going further, after the capstone:
+
+| # | Assignment |
+|---|---|
+| 17 | Find a weak key in square-root time |
+| 18 | Verify a revocation list's signature |
+| 19 | Decide what each client accepts |
 
 ## Start here
 
@@ -45,11 +62,12 @@ solutions/
   src/pkiaudit/ecc/     modmath (01), curve and curves (02, 03), ecdsa (04, 11), keys (12)
   src/pkiaudit/asn1/    der (05)
   src/pkiaudit/x509/    certificate (06), spki (07), signature (08)
-  src/pkiaudit/pki/     chain (09), lint (13), ceremony (14), trust (15), audit (16)
-  src/pkiaudit/attack/  weak_key (10)
+  src/pkiaudit/pki/     chain (09), lint (13), ceremony (14), trust (15), audit (16), crl (18),
+                        client_policy (19)
+  src/pkiaudit/attack/  weak_key (10), bsgs (17)
   src/pkiaudit/__main__.py   the pkiaudit command (16)
   examples/sample.pki   a small PKI to audit
-  assignments/          assignment_01_modular_arithmetic.py ... assignment_16_audit_pki.py: one
+  assignments/          assignment_01_modular_arithmetic.py ... assignment_19_client_policy.py: one
                         program per assignment, which the checker runs; you write these too
 ```
 
@@ -136,6 +154,7 @@ To check a one-off program without changing anything, run
 | `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
 | `tools/gen_pNN.py` | Each assignment's test generator (used by `-Fresh`) |
 | `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
+| `docs/what-we-know.md` | What is established about the incident, what eMudhra says, and what is still speculation |
 | `docs/authoring-guide.md` | How to write the assignments and their tests |
 | `_spoilers/` | The reference project. Don't open it until you've passed. |
 

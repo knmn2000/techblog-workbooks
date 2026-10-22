@@ -6,7 +6,7 @@ Three checks run from cheapest to most expensive, and the first that fails names
 |---|---|
 | The point satisfies the curve's equation | off-curve |
 | The key is not on the blocklist of known-compromised keys | known-compromised |
-| The private key is not small enough to find by search | weak |
+| The private key is not d or n - d for any d up to the bound | weak |
 
 Any one of them, run by the CA, would have caught the incident's keys.
 """
@@ -14,7 +14,7 @@ Any one of them, run by the CA, would have caught the incident's keys.
 from pkiaudit.attack.weak_key import find_private_key
 from pkiaudit.ecc.curve import Curve
 
-WEAK_BOUND = 4096  # how far the weak-key search goes (the problem page explains the size)
+WEAK_BOUND = 4096  # how far the weak-key search goes, for both signs (the problem page explains the size)
 
 
 def on_curve(curve: Curve, point: tuple[int, int]) -> bool:

@@ -1,0 +1,115 @@
+# What we know and what we don't
+
+Status as of October 22, 2026. The incident became public five days ago and the facts are still moving. eMudhra says it has not confirmed the root cause and will publish it in full when its investigation ends. This page separates three kinds of statement: facts that independent sources report, eMudhra's own account (attributed and unverified), and speculation or points in dispute. When eMudhra publishes, the second and third sections will change, and assignments 12 and 14 may change with them.
+
+## Established
+
+These points come from Mozilla's staff in Bugzilla bug 2083449 and from three outside reports (Scott Helme, Cisco Talos and BleepingComputer). Where they overlap they agree, and each point below names its source.
+
+### The keys
+
+- Eight P-384 intermediate CA private keys were integers below 256. The values are 4, 56, 66, 115, 155, 156, 230 and 237. Dennis Jackson of Mozilla wrote "The 8 impacted keys all used integers less than 256" (Bugzilla comment 5), and Helme lists the same eight values.
+- Six of the eight are TLS issuing CAs (DV, OV and EV, in two generations called G3B and G3C). Two are code-signing CAs (Helme, Talos).
+- They come from a key generation ceremony on April 30, 2025 that produced 24 intermediates. All impacted keys are P-384 keys in series B and C. In comment 5, Jackson reported that the P-384 keys in series A and A-1 resisted recovery, and that he had not yet examined the RSA keys.
+- Sectigo cross-signed these keys under its AAA Certificate Services root in May 2025. Each key therefore appears in two certificates, 16 certificates for 8 keys (Helme).
+
+### Why the weakness is cheap to find
+
+- Jackson says baby-step giant-step, or generating the first 256 P-384 keys, recovers the keys "near instantly". Helme computed 1G, 2G, 3G and so on until one matched the public key, at most 255 steps, and recovered the keys behind all 16 certificates in under a second.
+- The public key for d = 4 is the point 4G, which lies on P-384 like any other point. Its encoding and curve membership check out. This follows from the arithmetic and none of the sources disputes it. Only recovering the private key, or testing the public key against small multiples of G, shows the weakness.
+- Helme built a forged chain for `api.stripe.com` on a local test server. He reports that curl with default settings verified it, Python completed the handshake and Node reported `authorized: true`, with the same results on Linux and macOS. On Windows, the chain passed unless revocation checking was on.
+- Helme also reports that most non-browser clients trust an on-disk CA bundle and do not check revocation or Certificate Transparency (CT) by default. He reports Chrome's observation that no TLS certificates chaining to these CAs appeared in CT logs, so browsers that require CT should not have accepted forgeries.
+
+### The response
+
+- On Saturday, October 17, a researcher who goes by Wayne reported the keys to Apple, Google, Microsoft, Mozilla and eMudhra (Helme; Bugzilla comment 2). Chrome blocked the intermediates that evening with a CRLSet update, and Mozilla blocked them a few hours later through OneCRL (Helme).
+- Apple added protections on October 19 (BleepingComputer). Talos reports that Microsoft blocked the two code-signing certificates.
+- eMudhra revoked all eight intermediates.
+- Mozilla announced the emergency removal of trust in emSign ECC Root CA - G3, the root above these intermediates (Bugzilla comment 18). Chrome expects its root store change to land on October 27 (comment 30).
+- Talos reports that Go released versions 1.27.3 and 1.26.10, which filter chains containing the SPKI hashes of the eight certificates, under CVE-2026-111943.
+
+### Exploitation
+
+No public source reports evidence that anyone recovered or used the keys, and none shows that no one did. The keys existed from April 30, 2025 to October 17, 2026, about 17 months. Talos reported no malicious incidents involving the certificates as of October 21, 14:00 UTC. A forged certificate served only to clients that skip revocation and CT checks would leave no public trace, which is the gap Helme's report points at.
+
+## What eMudhra says
+
+Everything in this section is eMudhra's account, from its statement (updated October 21) and its comments in Bugzilla. No independent party has confirmed it.
+
+- eMudhra says it generated the keys on Utimaco HSMs certified to FIPS 140-2 Level 3 (comments 10 and 11).
+- In comment 11, eMudhra describes the cause in three pieces. First, "an approved deviation to our usual KGC to test a wrap/unwrap was introduced as these keys were meant for export for this instance". Second, "a flaw in the code resulted in the second pair of keys being created onboard which were weaker". Third, "these second pair of weaker keys were used by mistake to create the csr (because the key labels were similar)". It adds that a set of original ECC keys was "created onboard as expected".
+- The same comment acknowledges human errors in more than one step, and eMudhra says it will re-verify all its ceremonies.
+- On CRLs, eMudhra says "The CRL's were signed with the original private keys (which were supposed to be the correct keys with appropriate entropy)" and that "they were resigned with flawed keys".
+- Its statement says one affected intermediate was in production, that it issued no end-entity certificates, and that the problem went undetected through two audit cycles. The Register quotes eMudhra saying the roots "have gone through independent audits for two years in a row".
+- In comment 19, eMudhra estimates "about 30,000 certs that require migration and about 97% came via ACME". Chrome's root program (comment 30) counts about 30,800 unexpired precertificates in CT logs that chain to the root, and says two InCommon intermediates issued 99.9% of them.
+- eMudhra says it has no evidence that anyone recovered or exploited the keys before disclosure.
+- It says it has not confirmed the root cause and promises to publish it in full.
+
+## Speculation and disputed points
+
+### Theories from public threads
+
+Commenters on Hacker News (item 50166579) have offered several explanations: test keys used by accident, keys generated outside the HSM and imported, a truncation or indexing bug that kept one byte, an operator who misread the key range, and values typed by hand. None of these comes with evidence. One commenter countered that a truncation bug would give uniform random bytes, and that these values do not look uniform. Another argued that any single value, including 4, is as likely as any other, and others replied that eight keys all below 256 is implausible by chance.
+
+### Standards-minded questions on Bugzilla
+
+Thor Simon (comment 31) asks how a Level 3 HSM could produce such keys, and suggests either that the operators did not follow policy and loaded keys from outside, or that the HSM can be configured to produce them. Jacob Durham (comment 33) argues that a P-384 scalar below 256 implies supplied or imported key material, because an in-module generator would not produce one. Both are arguments from how generators behave, and neither is an established finding.
+
+### Whether the CRL problem shares the cause
+
+eMudhra's account links its invalid CRL signatures (Mozilla bug 1970728, June 2025) to the same key mix-up. Jackson cites an Internet Archive snapshot showing the six P-384 CRLs failing verification since May 23, 2025. He reports that eMudhra said it produced the faulty CRLs the same day it created the A-1 certificates, and writes that, if accurate, the mismatch has nothing to do with creating the A-1 series on May 29. The link is contested.
+
+### Dates and counts that differ between sources
+
+- Mozilla reports receiving the report on October 17 at 20:06 UTC. eMudhra's statement says the researcher reported it on October 18.
+- Jackson reports that eMudhra revoked the eight intermediates on October 18 at 09:38 UTC. eMudhra's statement says October 19.
+- eMudhra's statement says one intermediate was in production. The Register reports eMudhra saying most were not used in production. Wayne's comment 2 describes the CA that eMudhra names as the production one as live before eMudhra disabled it.
+- Talos writes that the flaw "took the encryption from 384 bytes of entropy down to 3 – 8" and uses bits earlier in the same post. P-384 keys carry about 384 bits. The eight values need between 3 bits (the value 4) and 8 bits (the value 237), so the Talos figures read as bits, but the post does not say so.
+
+### The audit question
+
+Some commenters argue that CAs choose and pay their auditors, and that WebTrust does not require an auditor to attest that the HSM generated the keys. This page does not rely on those claims, and the WebTrust criteria and CA/Browser Forum Baseline Requirements text were not checked here. eMudhra's statement says the issue passed two audit cycles. Why it passed is an open question.
+
+## Open questions
+
+- Which key-creation call produced the second key pair, who approved the deviation, and whether an auditor observed the ceremony (Durham, comment 33).
+- Where the weak scalars came from, given the argument that an in-module generator would not produce them.
+- The per-key records Durham requests under Baseline Requirements 6.1.1.1: the generation script, the ceremony report, the witness report or video, the HSM model and firmware, the CMVP certificate number, any custom firmware, and any imported or restored key material.
+- Why the A and A-1 P-384 keys resisted recovery, and whether the RSA keys have the problem (Jackson, comment 5).
+- Whether the CRL signing failure and the weak keys share a cause.
+- Chrome's twelve questions (comment 30), which include migration instructions, the ACME migration mechanism and metrics, Sectigo's notification, the replacement of series A, and why the second key pair was not caught after the 2025 CRL incident.
+- Why CRL #11 for emSign Root TLS CA - G1, published October 14, 2026, carries a signature that verifies under no disclosed key (Wayne, comment 7).
+- Whether anyone used the keys between April 30, 2025 and October 17, 2026.
+
+## What this workbook teaches
+
+The workbook teaches how to detect weak CA keys and what the response involves. It does not claim to explain how eMudhra's keys came to be weak.
+
+| Assignment | What it covers | Relation to the incident |
+|---|---|---|
+| 01 to 09 | Modular arithmetic, elliptic curves, ECDSA, DER, certificates, SPKI hashes, chain validation | Background that every later assignment uses |
+| 10 Find a weak private key | Recovering a private key below a bound by enumeration, for the key and its negation | Matches the established facts: values below 256, recovered in well under a second |
+| 11 Sign with a weak key | What an attacker can do with a recovered CA key | Matches the established facts, and the forged-chain demonstration in Helme's report |
+| 12 Generate and validate a key | Range and small-value checks on a private key before use, and rejection sampling | A model of correct generation and validation. The check flags values like the incident's; it makes no claim about how eMudhra's keys were generated |
+| 13 Lint a public key | The check that finds a small private key before a CA trusts or publishes it | Matches the established facts: only trying to recover the key exposes it |
+| 14 Check a key ceremony | Following a key's identity from generation to publication | A model of one possible failure shape, drawn from eMudhra's unconfirmed account. It makes no claim about what happened |
+| 15 Block and distrust | Blocking keys by SPKI hash and distrusting a root | Matches the established response by Mozilla, Chrome, Apple, Microsoft and Go |
+| 16 Audit a PKI | Which chains break when a signing key leaks | The same question the response raised: which chains depend on each affected key |
+| 17 Find a weak key in square-root time | Baby-step giant-step, which searches a bound of N in about the square root of N steps | Jackson names this method as one way to recover the keys |
+| 18 Verify a revocation list's signature | Checking a CRL against its issuer's key, and halting the issuer when it fails | A detection practice. eMudhra ties its invalid CRL signatures to the same key mix-up, and Jackson questions the link |
+| 19 Decide what each client accepts | Which clients still accept a chain, given their revocation, blocklist, bundle and CT settings | Matches Helme's report that several non-browser clients accepted a forged chain with default settings |
+
+Assignments 12 and 14 teach concepts: how to draw and check a private key, and why a ceremony has to track which key each step produces. If eMudhra's published analysis describes a different failure, those two assignments still teach the same concepts as models, and their framing will change to match.
+
+## Sources
+
+Read on October 22, 2026.
+
+- eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), updated October 21
+- Mozilla, [Bugzilla bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comments 1 to 33
+- Mozilla, [Bugzilla bug 1970728](https://bugzilla.mozilla.org/show_bug.cgi?id=1970728), eMudhra invalid CRL signatures
+- Scott Helme, [Eight bits of trust: eMudhra's CA keys cracked in milliseconds](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/)
+- Cisco Talos, [Compromised intermediate certificates](https://blog.talosintelligence.com/compromised-intermediate-certificates/)
+- The Register, [Certification authority eMudhra defends its laughably weak private keys](https://www.theregister.com/security/2026/10/22/certification-authority-emudhra-defends-its-laughably-weak-private-keys/5304647)
+- BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/)
+- Hacker News, [eMudhra intermediate CA compromise](https://news.ycombinator.com/item?id=50166579), commenter theories only

@@ -11,7 +11,8 @@
 #   Write the key linter in `pki/lint.py`: a test that a point satisfies its curve's
 #   equation, and a function that runs the three checks in their order and returns the
 #   first finding, or None for a good key. For the weak check, call your weak-key search
-#   from assignment 10 with the bound of 4096 (see The three checks).
+#   from assignment 10 with the bound of 4096; it finds d*G and -(d*G) alike (see The
+#   three checks).
 #
 # How to start:
 #   Write it yourself from here, or press Boilerplate in the book's editor to get the

@@ -1,6 +1,6 @@
 # 08 · Check a certificate's signature
 
-**Difficulty:** Hard · **Assignment** 8 of 16 · **Check:** `.\check 08`
+**Difficulty:** Hard · **Assignment** 8 of 19 · **Check:** `.\check 08`
 
 **Tags**
 - *Language:* byte slicing · big integers · modular arithmetic

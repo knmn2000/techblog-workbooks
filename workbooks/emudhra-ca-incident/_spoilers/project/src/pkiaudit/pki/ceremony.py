@@ -1,85 +1,95 @@
 """Checking the log of a key ceremony (assignment 14).
 
-A ceremony log is a list of steps. `Ceremony` replays them one at a time:
+A ceremony log is a list of steps. `Ceremony` replays them one at a time and returns the line the
+step writes to the output, or None when the step writes nothing:
 
-| Step | What the ceremony does |
-|---|---|
-| generate <label> <curve> | makes a new key and names it `label` |
-| wrap <label> <wrapped> | exports the key `label` names, encrypted, as `wrapped` |
-| unwrap <wrapped> <label> | imports `wrapped` back under `label` |
-| fingerprint <label> <hex> | records the fingerprint of the key `label` names |
-| publish <label> | publishes the key `label` names |
+| Step | What the ceremony does | Output |
+|---|---|---|
+| generate <label> <fp> | the HSM makes a key pair named `label` | `duplicate` or `similar` finding, if any |
+| approve <label> <fp> | the witnesses approve the key behind `label` | none |
+| deviation <approver> | the ceremony departs from its script | one line |
+| csr <label> <fp> | the operator makes a CSR; `fp` names the public key it carries | one line |
+| publish <label> | the ceremony publishes the certificate for the latest CSR of `label` | one line |
 
-Each generate makes a new key identity, even when it reuses a label. A label names one identity
-at a time, and wrap and unwrap pass the identity on to another label. The ceremony tracks
-identities by number, so reusing a label for a new key leaves earlier wraps pointing at the old
-key. The first fingerprint recorded after a key's generation attests that key. A publish is ok
-only when the label's latest fingerprint matches its identity's attested one.
+A key is identified by the fingerprint of its public key, never by its label. Labels are only
+compared to find collisions: exact reuse (`duplicate`) and reuse after normalising case and
+separators (`similar`). A CSR is checked against the fingerprint approved for its label. An
+approved deviation clears every approval, so the keys need approving again. An unapproved one
+makes every later CSR and publish unverified.
 """
 
 from dataclasses import dataclass, field
 
+_SEPARATORS = str.maketrans("", "", "-_.")
 
-@dataclass(frozen=True)
-class Publication:
-    """The result of a publish step: "ok", "undefined" or "MISMATCH".
 
-    For a mismatch, `generated_as` is the label the key's generate step used, where an auditor
-    starts looking.
-    """
-
-    status: str
-    generated_as: str | None = None
+def normalise(label: str) -> str:
+    """Lowercases a label and removes `-`, `_` and `.`, so labels that look alike compare equal."""
+    return label.lower().translate(_SEPARATORS)
 
 
 @dataclass
 class Ceremony:
     """The state of a key ceremony, replayed one step at a time."""
 
-    known: set[str] = field(default_factory=set)  # every label a step has defined
-    points_at: dict[str, int | None] = field(default_factory=dict)  # label -> the identity it names
-    generated_as: dict[int, str] = field(default_factory=dict)  # identity -> its generate label
-    attested: dict[int, str] = field(default_factory=dict)  # identity -> its first fingerprint
-    latest: dict[str, str] = field(default_factory=dict)  # label -> the last fingerprint recorded for it
-    unattested: set[int] = field(default_factory=set)  # identities with no fingerprint yet
-    identities: int = 0  # how many keys the ceremony has generated
+    generated: list[tuple[str, str]] = field(default_factory=list)  # (label, fingerprint), in log order
+    approved: dict[str, str] = field(default_factory=dict)  # label -> the fingerprint approved for it
+    csr_passed: dict[str, bool] = field(default_factory=dict)  # label -> was its latest CSR ok
+    unverified: bool = False  # set for good by a deviation nobody approved
 
-    def generate(self, label: str) -> bool:
-        """Makes a new key named `label`; returns True when the label was already in use."""
-        duplicate = label in self.known
-        self.identities += 1
-        self.points_at[label] = self.identities
-        self.generated_as[self.identities] = label
-        self.unattested.add(self.identities)
-        self.known.add(label)
-        return duplicate
+    def generate(self, label: str, fingerprint: str) -> str | None:
+        """Records a new key; returns the finding for its label, if it collides with an earlier one."""
+        finding = None
+        if any(earlier == label for earlier, _ in self.generated):
+            finding = f"duplicate {label}"
+        else:
+            for earlier, _ in self.generated:
+                if normalise(earlier) == normalise(label):
+                    finding = f"similar {label} {earlier}"  # the earliest label that matches
+                    break
+        self.generated.append((label, fingerprint))
+        return finding
 
-    def wrap(self, label: str, wrapped_label: str) -> None:
-        """Exports the key `label` names as `wrapped_label`."""
-        self._carry(label, wrapped_label)
+    def approve(self, label: str, fingerprint: str) -> None:
+        """The witnesses approve the key with this fingerprint under `label`, replacing any earlier approval."""
+        self.approved[label] = fingerprint
 
-    def unwrap(self, wrapped_label: str, label: str) -> None:
-        """Imports the key `wrapped_label` names back under `label`."""
-        self._carry(wrapped_label, label)
+    def deviation(self, approver: str) -> str:
+        """A departure from the script. Without an approver, the ceremony cannot verify anything after it."""
+        if approver == "none":
+            self.unverified = True
+            return "deviation none UNAPPROVED"
+        self.approved.clear()  # the keys have to be verified again after the change
+        return f"deviation {approver} approved"
 
-    def _carry(self, source: str, target: str) -> None:
-        # An undefined source leaves the target naming no identity.
-        self.points_at[target] = self.points_at.get(source)
-        self.known.add(target)
+    def csr(self, label: str, fingerprint: str) -> str:
+        """Checks the key a CSR carries against the key approved for `label`."""
+        if self.unverified:
+            status = "UNVERIFIED"
+        elif label not in self.approved:
+            status = "NOT-APPROVED"
+        elif self.approved[label] != fingerprint:
+            status = f"MISMATCH {self._generated_as(fingerprint)}"
+        else:
+            status = "ok"
+        self.csr_passed[label] = status == "ok"
+        return f"csr {label} {status}"
 
-    def fingerprint(self, label: str, value: str) -> None:
-        """Records the fingerprint of the key `label` names."""
-        self.latest[label] = value
-        identity = self.points_at.get(label)
-        if identity in self.unattested:
-            self.attested[identity] = value
-            self.unattested.discard(identity)
+    def publish(self, label: str) -> str:
+        """Publishes the latest CSR under `label` only if it passed and the ceremony is still verified."""
+        if label not in self.csr_passed:
+            status = "undefined"
+        elif self.unverified:
+            status = "UNVERIFIED"
+        elif not self.csr_passed[label]:
+            status = "BLOCKED"
+        else:
+            status = "ok"
+        return f"publish {label} {status}"
 
-    def publish(self, label: str) -> Publication:
-        """Checks the key `label` names against the fingerprint attested at its generation."""
-        if label not in self.known:
-            return Publication("undefined")
-        identity = self.points_at[label]
-        if self.latest.get(label) == self.attested.get(identity):
-            return Publication("ok")
-        return Publication("MISMATCH", self.generated_as.get(identity))
+    def _generated_as(self, fingerprint: str) -> str:
+        """The label of the earliest `generate` line with this fingerprint, or `unknown`."""
+        for label, generated in self.generated:
+            if generated == fingerprint:
+                return label
+        return "unknown"

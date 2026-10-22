@@ -1,11 +1,11 @@
 # 13 · Lint a public key
 
-**Difficulty:** Medium · **Assignment** 13 of 16 · **Check:** `.\check 13`
+**Difficulty:** Medium · **Assignment** 13 of 19 · **Check:** `.\check 13`
 
 **Tags**
 - *Language:* big integers · modular arithmetic · parsing hex · sets
 - *Library:* none needed
-- *Concepts:* curve membership · weak-key search (assignment 10) · key blocklists · check ordering
+- *Concepts:* curve membership · weak-key search (assignment 10) · point negation · key blocklists · check ordering
 
 ## Read in the blog first
 
@@ -24,10 +24,10 @@ certificate authority, or anyone about to trust a public key, could run before p
 
 ## Where this fits
 
-Your `attack/weak_key.py` from assignment 10 finds a key's private value when it's small. In this
-assignment that search becomes one of three checks in a new module, `pki/lint.py`. The other two
-test that the key is a point on its curve and look it up in a list of keys already known to be
-bad. The curve test uses the `Curve` type from your `ecc/curve.py` (assignment 02) and the curves
+Your `attack/weak_key.py` from assignment 10 finds a key's private value when it's a small `d` or
+`n - d`. In this assignment that search becomes one of three checks in a new module,
+`pki/lint.py`. The other two test that the key is a point on its curve and look it up in a list
+of keys already known to be bad. The curve test uses the `Curve` type from your `ecc/curve.py` (assignment 02) and the curves
 in your `ecc/curves.py` (assignment 03).
 
 Assignment 16 lints every key of a whole PKI with your `lint_key`. Assignment 15 turns to the next
@@ -43,16 +43,24 @@ reads, and decides whether each key passes every check a linter runs before trus
 A key fails for one of three reasons. Run the checks in this order and stop at the first one that
 fails:
 
-1. `off-curve`: the point doesn't satisfy the curve's equation. If that's true, nothing else
+1. `off-curve`: a coordinate is outside `[0, p)`, or the point doesn't satisfy the curve's
+   equation. If that's true, nothing else
    about the key means anything, so this check runs first.
 2. `known-compromised`: the point's exact coordinates, on the same curve, appear on the
    blocklist of keys already known to be bad (for example, keys published in an earlier
    incident). This is a cheap lookup, so it runs before the search.
-3. `weak`: the point equals `d*G` for some whole number `d` with `1 <= d <= 4096`, small
-   enough for an attacker to find by brute force with the search from assignment 10. This is
-   the most expensive check, so it runs last.
+3. `weak`: the point equals `d*G` or `-(d*G)` for some whole number `d` with
+   `1 <= d <= 4096`. The private key is then `d` or `n - d`, and the search from assignment 10
+   finds either one in a single walk of 4096 steps. This is the most expensive check, so it runs
+   last.
 
 A key that fails none of these passes.
+
+`-(d*G)` is the point `(x, p - y)` for `d*G = (x, y)`, and its private key is `n - d`, where `n`
+is the curve's order. That number is as large as any random key, but an attacker who walks
+`G, 2G, 3G, ...` and compares each point with the key's negation finds it at step `d`, for the
+cost of one extra comparison per step. A linter that checks only `d*G` passes `-(4*G)`, the
+public key of `n - 4`.
 
 A linter auditing real keys would use a bound many orders of magnitude higher than 4096. The
 incident's keys turned up in a search of values up to about 2^8, but a thorough audit tries far
@@ -95,9 +103,11 @@ defines them. Copy `<label>` from the input unchanged. The checker ignores extra
 | `Gx` | `6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296` | `aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7` |
 | `Gy` | `4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5` | `3617de4a96262c6f5d9e98bf9292dc29f8f41dbd289a147ce9da3113b5f0b8c00a60b1ce1d7e819d7a431d7c90ea0e5f` |
 
-A point `(x, y)` is on the curve when `y^2 = x^3 + a*x + b (mod p)`. Finding `d` for a weak key
+A point `(x, y)` is on the curve when both coordinates are in `[0, p)` and
+`y^2 = x^3 + a*x + b (mod p)`. SEC 1 section 3.2.2 requires the range check too: a coordinate
+written with the curve's byte length can still be `p` or more. Finding `d` for a weak key
 uses the point-addition rules from assignment 10: the formula for adding two different points,
-and the doubling formula when the running total reaches `G` a second time.
+and the doubling formula on the first step, when the running total is `G` and you add `G` to it.
 
 ### What this assignment does not ask
 
@@ -114,11 +124,13 @@ pass for each requirement, and it may add a `likely cause` line that names the r
 difference points to.
 
 - **R1** A strong, valid key that isn't on the blocklist passes every check: `ok`.
-- **R2** A point that doesn't satisfy the curve equation fails with `off-curve`, before any other
-  check runs.
-- **R3** A key whose private value is at most 4096 fails with `weak`. One at 4097 does not.
+- **R2** A point that doesn't satisfy the curve equation, or has a coordinate outside `[0, p)`,
+  fails with `off-curve`, before any other check runs.
+- **R3** A key equal to `d*G` or `-(d*G)` with `d` at most 4096 fails with `weak`.
+  `4097*G` and `-(4097*G)` do not.
 - **R4** A key that isn't weak, and whose exact coordinates an earlier `blocklist` line added,
-  fails with `known-compromised`. A blocklist entry for a different key doesn't affect it.
+  fails with `known-compromised`. A blocklist entry for a different key doesn't affect it,
+  including an entry for the key's negation.
 - **R5** When more than one reason applies to the same point, `off-curve` wins over
   `known-compromised`, and `known-compromised` wins over `weak`.
 
@@ -166,9 +178,10 @@ the input passes.
 - An input has at most 10 `key` lines and at most 5 `blocklist` lines. Labels have no spaces.
 - Each case has a 10-second limit. A bound of 4096, stepped one addition at a time as in
   assignment 10, finishes well inside it even with several keys in one input.
-- There are 24 tests: 2 for R1, 2 for R2, 10 for R3 (both curves, several small `d`, the bound
-  itself, and one past it), 4 for R4, 4 for R5 and 2 end-to-end cases mixing every reason in one
-  input with a growing blocklist. Part of the set is random and changes with `-Fresh`.
+- There are 36 tests: 2 for R1, 2 for R2, 18 for R3 (both curves, `d*G` and `-(d*G)` for several
+  small `d`, the bound itself, and one past it in both signs), 6 for R4, 6 for R5 and 2
+  end-to-end cases mixing every reason in one input with a growing blocklist. Part of the set is
+  random and changes with `-Fresh`.
 
 ## Hints
 
@@ -186,20 +199,24 @@ For curve membership, put `x` and `y` into `y^2 = x^3 + a*x + b (mod p)` and com
 The program keeps the blocklist as a `set` of `(curve name, (x, y))` pairs, adding to it as
 `blocklist` lines arrive, so `lint_key` checks whether the key's own pair is in it. For a weak key,
 call `find_private_key` with the bound: it starts at `G`, adds `G` at every step and compares with
-the target point, up to the bound.
+the target point and its negation, up to the bound. Either answer, `d` or `-d`, means `weak`.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Check curve membership before anything else. The weak-key search's point addition runs on an
-  off-curve point without crashing and finds no match, so the key would come out `ok` when it
+- Check curve membership before anything else. The weak-key search compares the key only with
+  multiples of `G`, which are all on the curve, so it finds no match, so the key would come out `ok` when it
   should fail with `off-curve`.
 - The blocklist only grows. An entry declared early in the input still applies to a `key` line
   much later.
 - The weak-key bound is inclusive: `d = 4096` is `weak`, `d = 4097` is `ok` (if nothing else is
   wrong with it).
+- The weak check covers both signs. `-(4096*G)` is `weak` and `-(4097*G)` is `ok`. If your
+  `find_private_key` from assignment 10 only matches `d*G`, extend it there; a value of `-d` is
+  still not `None`, so `lint_key` needs no change.
 - A blocklist entry matches only its own exact `(curve, x, y)`. Matching only `x`, or ignoring
-  the curve, blocks keys that happen to share a coordinate.
+  the curve, blocks keys that happen to share a coordinate. An entry for `Q` doesn't block `-Q`,
+  which has the same x.
 - Coordinates arrive as hex text, parsed as base 16. Store the blocklist's coordinates as the
   same kind of value (integers) you parse keys into, or a lookup finds nothing and no error
   tells you.
@@ -213,7 +230,7 @@ lint_key(curve, public_key, blocklist):
         return "off-curve"
     if (curve.name, public_key) in blocklist:
         return "known-compromised"
-    if find_private_key(curve, public_key, bound=4096) is not None:
+    if find_private_key(curve, public_key, bound=4096) is not None:   # d or -d
         return "weak"
     return None   # ok
 ```
@@ -231,12 +248,12 @@ lint_key(curve, public_key, blocklist):
 A failing test looks like this:
 
 ```
-  R5  Priority: off-curve is reported before known-compromised, and kno... .    3 / 4   FAILED
-      x 13-R5-blocklist-beats-weak-p384  P-384: d = 4 (weak) whose coordinates are also blocklisted: known-compromised wins
-          line 1: expected `fail a known-compromised`, got `fail a weak`
-          likely cause: R5 - Priority: off-curve is reported before known-compromised, and known-compromised before weak
-          expected values from: cryptography 41.0.7 (OpenSSL) for curve membership and real key points; exact coordinate match for the blocklist
-          reproduce: py -P tools/run_py.py solutions 13 build/cases/13/13-R5-blocklist-beats-weak-p384.in build/cases/13/13-R5-blocklist-beats-weak-p384.out
+  R3  A key equal to d*G or -(d*G) with 1 <= d <= 4096 fails with `weak... .   12 / 18  FAILED
+      x 13-R3-weak-neg-d1-p256  P-256: -(d*G) for d = 1, the private key n - 1 (at or inside the bound 4096)
+          line 1: expected `fail a weak`, got `ok a`
+          likely cause: R3 - A key equal to d*G or -(d*G) with 1 <= d <= 4096 fails with `weak`; 4097*G and -(4097*G) do not
+          expected values from: cryptography 41.0.7 (OpenSSL) for curve membership and the public keys of d and n - d; exact coordinate match for the blocklist
+          reproduce: py -P tools/run_py.py solutions 13 build/cases/13/13-R3-weak-neg-d1-p256.in build/cases/13/13-R3-weak-neg-d1-p256.out
 ```
 
 ## After you pass: compare with the post
