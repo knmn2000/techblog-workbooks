@@ -25,11 +25,15 @@ the curve itself.
 
 ## Where this fits
 
-In assignment 14 you fill a glyph row by row. For every row of pixels, your program lays a
-horizontal line across the glyph and finds where that line crosses the outline. In
-assignment 12 you found the crossing with a straight edge.
+The blog's even-odd fill lays a horizontal line across the glyph for every row of pixels and
+finds where it meets each edge. In assignment 12 you wrote that for a straight edge. Here you
+find the points where a line meets a curved edge, which can be zero, one or two, and add the
+function to your `utils/Geometry.h`.
 
-Here you find the crossings with a curved edge, which can have zero, one or two of them.
+Your fill in assignment 14 doesn't call this function either. This function keeps roots at
+t = 0 and t = 1, so a scanline through the point where a curve meets the next edge finds that
+point on both, while the fill's half-open rule counts it once. The fill splits each curve where
+its y turns around and solves each piece's own quadratic.
 
 ## The problem
 

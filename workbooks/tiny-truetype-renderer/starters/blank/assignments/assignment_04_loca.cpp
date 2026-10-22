@@ -3,10 +3,11 @@
 // Problem: problems/04-loca.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 04 as `build/solutions/assignment_04.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 04`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 04 as `build/solutions/assignment_04
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 04` (`./check.sh 04` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   Read the `font` line, turn the four `table` lines (`glyf`, `head`, `loca`, `maxp`)

@@ -10,6 +10,8 @@ compares what it writes with the expected output.
                                        are replaced with file paths
     .\\check 07 -Json                  print the result as JSON (used by .\\study)
 
+On macOS and Linux, type ./check.sh instead of .\\check (or python3 -P tools/check.py).
+
 Each assignment has a program in your project (e.g. solutions/assignments/assignment_07_simple_glyph.cpp)
 that reads a test input, calls your code and writes the output. It is built with your project and
 started from the workbook folder as `<run> <input-file> <output-file>`; workbook.json says how.
@@ -264,7 +266,14 @@ def to_args(command: str) -> list:
     if args and args[0].lower() in ("python", "python3", "py"):
         args[0] = sys.executable  # the Python running the checker, whatever it's called on this computer
     elif args and ("/" in args[0] or "\\" in args[0]):
-        args[0] = str((ROOT / args[0]).resolve())
+        program = (ROOT / args[0]).resolve()
+        # A program named for Windows (`assignment_07.exe`) is `assignment_07` on macOS and Linux,
+        # and the other way round.
+        if not project.WINDOWS and program.suffix.lower() == ".exe" and not program.exists():
+            program = program.with_suffix("")
+        elif project.WINDOWS and not program.exists() and program.with_name(program.name + ".exe").exists():
+            program = program.with_name(program.name + ".exe")
+        args[0] = str(program)
     return args
 
 
@@ -282,6 +291,10 @@ def run_step(title: str, command: str) -> bool:
 
 
 def describe_exit(code: int) -> str:
+    if code < 0:  # macOS and Linux: the program was stopped by a signal
+        signals = {6: "SIGABRT: abort() - often a failed assert or bounds check",
+                   8: "SIGFPE: integer division by zero", 11: "SIGSEGV: read or write through a bad pointer"}
+        return signals.get(-code, f"stopped by signal {-code}")
     known = {0xC0000005: "access violation (read or write through a bad pointer)",
              0xC00000FD: "stack overflow (often infinite recursion)",
              0xC0000094: "integer division by zero", 3: "abort() - often a failed bounds check",
@@ -415,23 +428,23 @@ def not_started(checkpoint: str, meta: dict, config: dict):
     folder = config["project"]["dir"]
     if not project.exists(config):
         print(f"There's no project yet: {folder}/ doesn't exist.\n"
-              "Ask Claude to set up your workbook, or run:  py -P tools/project.py setup")
+              f"Ask Claude to set up your workbook, or run:  {project.PY} -P tools/project.py setup")
         return finish(2, verdict="no-project")
     created = project.start(config, checkpoint)
     entry = project.entry(config, checkpoint)
     if created:
         listed = "\n  ".join(f"{folder}/{p}" for p in created)
         print(f"Not started yet. Created this assignment's files:\n  {listed}\n"
-              f"The problem is in {meta['problem']}. Run .\\check {checkpoint} again when you've written them.")
+              f"The problem is in {meta['problem']}. Run {project.CHECK} {checkpoint} again when you've written them.")
         return finish(2, verdict="not-started", empty=False, created=[f"{folder}/{p}" for p in created])
     if not (ROOT / meta["solution"]).read_text(encoding="utf-8", errors="replace").strip():
         print(f"Not started yet: {meta['solution']} is empty.\n"
-              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.\n"
+              f"Write your program there (the problem is in {meta['problem']}), then run {project.CHECK} {checkpoint} again.\n"
               f"To start again from the blank starter, copy starters/blank/{entry} over it.")
         return finish(2, verdict="not-started", empty=True)
     if project.still_blank(config, entry):
         print(f"Not started yet: {meta['solution']} is still the blank starter.\n"
-              f"Write your program there (the problem is in {meta['problem']}), then run .\\check {checkpoint} again.")
+              f"Write your program there (the problem is in {meta['problem']}), then run {project.CHECK} {checkpoint} again.")
         if project.starter("boilerplate", entry).exists():
             print(f"For ready-made input/output code instead, copy the files under starters/boilerplate/ "
                   f"for this assignment into {folder}/ (the book's Boilerplate button does this).")
@@ -463,10 +476,10 @@ def main(argv: list) -> int:
         if step_config.get("snapshot"):  # the reference as it stands after this checkpoint
             project.write_tree(project.reference_as_of(config, checkpoint), ROOT / step_config["snapshot"])
         setup = step_config.get("setup", config.get("setup"))
-        setup_command = setup["command"].replace("{root}", ROOT.as_posix()) if setup else ""
+        setup_command = project.native(setup["command"].replace("{root}", ROOT.as_posix())) if setup else ""
         if setup and not (ROOT / setup["creates"]).exists() and not run_step("Setup", setup_command):
             return False
-        command = step_config.get("build", "").format(id=checkpoint)
+        command = project.native(step_config.get("build", "")).format(id=checkpoint)
         if not command:
             return True
         proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True)
@@ -484,7 +497,7 @@ def main(argv: list) -> int:
         # Picture checkpoints draw their expected images with the reference program.
         if meta.get("generatorNeedsReference") and not build(config["reference"]):
             return finish(3, verdict="error", message="couldn't build the reference program to draw fresh pictures")
-        command = meta["generator"].format(seed=seed, out=out.relative_to(ROOT).as_posix())
+        command = project.native(meta["generator"]).format(seed=seed, out=out.relative_to(ROOT).as_posix())
         if not run_step("Generating fresh cases", command):
             return finish(3, verdict="error", message="couldn't generate fresh cases")
         cases_path = out / "cases.txt"
@@ -493,15 +506,14 @@ def main(argv: list) -> int:
 
     if (d := option("-dispute", 2)) is not None:
         if len(d) < 2:
-            print('Usage: .\\check 07 -Dispute <test-id> "why you think it is wrong"')
+            print(f'Usage: {project.CHECK} 07 -Dispute <test-id> "why you think it is wrong"')
             return finish(2, verdict="error", message="-Dispute needs a test id and a reason")
         return finish(dispute(checkpoint, case_file, d[0], d[1]), verdict="dispute")
 
     use_ref = "-ref" in args
     custom = option("-run")
     steps = config["reference"] if use_ref else config
-    run_template = custom[0] if custom else steps["run"]
-    run_template = run_template.replace("{id}", checkpoint)
+    run_template = project.native(custom[0] if custom else steps["run"]).replace("{id}", checkpoint)
 
     REPORT["language"] = config["project"]["language"]
     if not use_ref and not custom and (code := not_started(checkpoint, meta, config)) is not None:
@@ -536,7 +548,7 @@ def compile_error(checkpoint: str, output: str, config: dict, use_ref: bool = Fa
         whose = f"assignment {blame['checkpoint']}'s file" if blame["checkpoint"] else "a file in your project"
         print(f"The build stopped in {blame['file']}, which is {whose}, not one of this assignment's.\n"
               "The build compiles your whole project at once, so fix that file first.")
-    print(f"Compile Error: fix the errors above and run .\\check {checkpoint} again.")
+    print(f"Compile Error: fix the errors above and run {project.CHECK} {checkpoint} again.")
     return finish(3, verdict="compile-error", build=output, noMain=no_main, errors=errors, blame=blame)
 
 
@@ -570,7 +582,7 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
     missing = next((r for r in results if r.status == "not-implemented"), None)
     if missing:
         print(f"Not implemented yet: {missing.message}\nIt's still a TODO in your project. Write it, "
-              f"then run .\\check {checkpoint} again.")
+              f"then run {project.CHECK} {checkpoint} again.")
         return finish(2, verdict="not-implemented", function=missing.message)
 
     order = [rid for rid, _ in case_file.requirements]
@@ -644,8 +656,8 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
         print(f"\n  Most failures ({count}) point to {top} - {texts.get(top, '')}")
         REPORT["mostLikely"] = {"id": top, "text": texts.get(top, ""), "count": count}
     print(f"\nWrong Answer: {passed} / {len(results)} tests passed.\n"
-          f"  See one case in full:     .\\check {checkpoint} -Case <test-id>\n"
-          f"  If a test looks wrong:    .\\check {checkpoint} -Dispute <test-id> \"why\"")
+          f"  See one case in full:     {project.CHECK} {checkpoint} -Case <test-id>\n"
+          f"  If a test looks wrong:    {project.CHECK} {checkpoint} -Dispute <test-id> \"why\"")
     return finish(1, verdict="wrong-answer", wroteNothing=silent)
 
 

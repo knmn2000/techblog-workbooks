@@ -11,9 +11,10 @@
 
 This page is complete on its own. eMudhra's
 [Update 3](https://emudhra.com/en/post/certificate-security-incident#:~:text=An%20Update%20on%20Our%20Global%20TLS%20Intermediate%20CA%20Incident),
-"How it happened", says eMudhra generated the keys in a Key Generation Ceremony (KGC) in April 2025,
-on FIPS 140-2 Level 3 hardware security modules, and that "a flaw in one step of that process...
-produced a second, weak set of keys alongside the original strong keys."
+says eMudhra generated the keys in a Key Generation Ceremony (KGC) on April 30, 2025, on FIPS
+140-2 Level 3 hardware security modules. Under "How it happened" it names the step: "The problem
+was a flaw in one step of the ceremony procedure, not the absence of HSMs. During the ceremony, a
+key wrap/unwrap step produced a second, weak set of keys alongside the original strong keys."
 
 eMudhra gave a fuller account in Mozilla bug 2083449, comments 10 and 11. These are eMudhra's own
 statements, unverified by anyone else:
@@ -91,12 +92,12 @@ Each step writes zero or one line, in log order:
 | `publish` | `publish <label> <status>` |
 
 ```
-duplicate ecc-root-1
-similar ECC_Root_1 ecc-root-1
+duplicate ica-g3b-dv
+similar ICA_G3B_DV ica-g3b-dv
 deviation alice approved
 deviation none UNAPPROVED
-csr ecc-root-1 MISMATCH ECC_Root_1
-publish ecc-root-1 BLOCKED
+csr ica-g3b-dv MISMATCH ICA_G3B_DV
+publish ica-g3b-dv BLOCKED
 ```
 
 The checker ignores extra whitespace. If several findings apply to one step, the step writes only
@@ -137,7 +138,7 @@ names that key.
 
 `approve` binds a label to a fingerprint. A later `approve` for the same label replaces the earlier
 one. At `csr`, compare the approved fingerprint for that exact label with the CSR's fingerprint, as
-text. The match is exact for labels (`Root-1` and `root-1` are different labels here) and for
+text. The match is exact for labels (`ICA-G3B-DV` and `ica-g3b-dv` are different labels here) and for
 fingerprints. To name the key a mismatched CSR carried, look its fingerprint up among the
 `generate` lines.
 
@@ -152,9 +153,9 @@ and other letters stay.
 
 | Label | Normalised | Similar to |
 |---|---|---|
-| `ECC-Root-1` | `eccroot1` | `ecc_root_1`, `ecc.root.1`, `eccroot1` |
-| `ecc-root-10` | `eccroot10` | none of the above |
-| `ecc-root-l` | `eccrootl` | none of the above (the letter `l` is not the digit `1`) |
+| `ICA-G3B-OV` | `icag3bov` | `ica_g3b_ov`, `ica.g3b.ov`, `icag3bov` |
+| `ica-g3b-ov2` | `icag3bov2` | none of the above |
+| `ica-g3b-0v` | `icag3b0v` | none of the above (the digit `0` is not the letter `o`) |
 
 Each `generate` is checked against earlier `generate` labels only. An earlier label gets no finding
 for a later one.
@@ -195,38 +196,38 @@ difference points to.
 ### Example 1: a weak pair used by mistake (test `14-R2-weak-pair-substituted`)
 
 ```
-input:   generate ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
-         approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+input:   generate ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+         approve ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
          deviation alice
-         generate ECC_Root_1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-         approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
-         csr ecc-root-1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-         publish ecc-root-1
+         generate ICA_G3B_DV ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         approve ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+         csr ica-g3b-dv ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         publish ica-g3b-dv
 
 output:  deviation alice approved
-         similar ECC_Root_1 ecc-root-1
-         csr ecc-root-1 MISMATCH ECC_Root_1
-         publish ecc-root-1 BLOCKED
+         similar ICA_G3B_DV ica-g3b-dv
+         csr ica-g3b-dv MISMATCH ICA_G3B_DV
+         publish ica-g3b-dv BLOCKED
 ```
 
 The deviation clears the first approval, and the witnesses approve the intended key again after
-it. A second pair appears under `ECC_Root_1`, which normalises to the same text as `ecc-root-1`,
-so the step writes `similar`. The operator picks `ecc-root-1` and the CSR carries the second
+it. A second pair appears under `ICA_G3B_DV`, which normalises to the same text as `ica-g3b-dv`,
+so the step writes `similar`. The operator picks `ica-g3b-dv` and the CSR carries the second
 pair's fingerprint, `ea5397...`. That differs from the approved `1c4084...`, so the CSR is a
-`MISMATCH`, and the `generate` line with that fingerprint gives the label `ECC_Root_1`. The publish
+`MISMATCH`, and the `generate` line with that fingerprint gives the label `ICA_G3B_DV`. The publish
 is `BLOCKED`.
 
 ### Example 2: an approved key that is itself weak (test `14-R1-approved-weak-key-passes`)
 
 ```
-input:   generate root-key-a a177c2bfa7e95678341780c2f4fde9a764fa1e546a634fc79b8f719634ea0574
-         generate root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-         approve root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-         csr root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-         publish root-key-b
+input:   generate ica-g3c-dv a177c2bfa7e95678341780c2f4fde9a764fa1e546a634fc79b8f719634ea0574
+         generate ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         approve ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         csr ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+         publish ica-g3c-ov
 
-output:  csr root-key-b ok
-         publish root-key-b ok
+output:  csr ica-g3c-ov ok
+         publish ica-g3c-ov ok
 ```
 
 The fingerprint `ea5397...` belongs to a key whose private value is 4. The witnesses approved that
@@ -288,7 +289,7 @@ check their statuses in the order the tables list them and stop at the first tha
 
 - A `csr` compares fingerprints. Comparing labels passes a CSR that uses a different key under the same label.
 - A `generate` writes at most one line, and `duplicate` wins over `similar`, even when the label is also similar to an older one.
-- Approvals use exact labels, so `Root-1` and `root-1` differ there. Only the `generate` check normalises.
+- Approvals use exact labels, so `ICA-G3B-DV` and `ica-g3b-dv` differ there. Only the `generate` check normalises.
 - `MISMATCH` names the label of the `generate` line with the CSR's fingerprint. It doesn't name the approved key or the label on the `csr` line.
 - A failed `csr` still replaces the stored result of an earlier `ok` for its label, because `publish` follows the latest one.
 - An approved deviation clears approvals and writes a line. `deviation none` sets the flag, and nothing later clears it.
@@ -346,7 +347,7 @@ label carries the CSR's key:
 ```
   R2  A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, ... .    3 / 4   FAILED
       x 14-R2-identical-labels-different-keys  two keys share one label; the CSR uses the unapproved one, so only the finger...
-          line 2: expected `csr ecc-root-1 MISMATCH ecc-root-1`, got `csr ecc-root-1 ok`  (in `duplicate ecc-root-1`)
+          line 2: expected `csr ica-g3b-dv MISMATCH ica-g3b-dv`, got `csr ica-g3b-dv ok`  (in `duplicate ica-g3b-dv`)
           likely cause: R2 - A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, naming the label of the `generate` line with that fingerprint, or `unknown`
           expected values from: definitional: fingerprint = sha256 of the uncompressed P-384 public point, computed by hashlib from OpenSSL's d*G; expected lines follow the page's rules
           reproduce: py -P tools/run_py.py solutions 14 build/cases/14/14-R2-identical-labels-different-keys.in build/cases/14/14-R2-identical-labels-different-keys.out
@@ -354,7 +355,7 @@ label carries the CSR's key:
 
 The checker groups output lines by the word the first expected line starts with, and `(in ...)`
 names the most recent line in that group. Here that word is `duplicate`, so the note points at
-the `duplicate ecc-root-1` line above the failing `csr` line. The failing line is still line 2.
+the `duplicate ica-g3b-dv` line above the failing `csr` line. The failing line is still line 2.
 
 ## After you pass: compare with the post
 

@@ -25,12 +25,14 @@ intersections of 2 segments") follows it.
 
 ## Where this fits
 
-In assignment 14 you fill a glyph with the even-odd rule. For each row of pixels, your program
-lays a long horizontal line, a scanline, across the glyph. It finds every place where the
-scanline crosses the outline and fills between pairs of crossings.
+The blog's even-odd fill finds where each row's scanline, a horizontal line across the glyph,
+meets each straight edge of the outline with this function, and fills between pairs of those
+points. Here you write it: the point where two segments meet, endpoints included. In assignment
+13 you do the same for a curved edge, and both go into your `utils/Geometry.h`.
 
-Here you find the crossing with one straight edge. In assignment 13 you do the same for a
-curved edge.
+Your fill in assignment 14 doesn't call this function. For a scanline through a vertex, this
+function reports that point for both edges that meet there, while the fill's half-open rule
+counts it once. The fill works out each crossing's x from the edge instead.
 
 ## The problem
 

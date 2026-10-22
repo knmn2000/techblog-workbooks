@@ -18,7 +18,7 @@ files, and the example test cases.
 |---|---|---|---|
 | 01 | Read big-endian numbers | 10 | Lerp and quadratic Bezier curves |
 | 02 | Read the table directory | 11 | Draw an outline with curves |
-| 03 | Map characters to glyphs (cmap) | 12 | Intersect two segments |
+| 03 | Map characters to glyphs (cmap format 12) | 12 | Intersect two segments |
 | 04 | Locate glyph records (loca) | 13 | Intersect a line and a quadratic curve |
 | 05 | Read the horizontal metrics | 14 | Fill a glyph: even-odd rule |
 | 06 | Draw on a framebuffer | 15 | Lowest point of a quadratic curve |
@@ -30,9 +30,10 @@ files, and the example test cases.
 
 Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
 workbook's project is C++), creates the project and opens the book. Or double-click `study.cmd`
-(or run `.\study` in PowerShell): the book opens with Run and Submit working, and offers to create
-the C++ project if there isn't one yet. Leave its window open while you work, or use the book's
-Exit button when you're done. If a tool is missing, it tells you which.
+on Windows or `study.command` on macOS (or run `.\study` in PowerShell, `./study.sh` on macOS or
+Linux): the book opens with Run and Submit working, and offers to create the C++ project if there
+isn't one yet. Leave its window open while you work, or use the book's Exit button when you're
+done. If a tool is missing, it tells you which.
 
 ## Your project
 
@@ -49,7 +50,8 @@ solutions/
   third_party/      stb_image_write.h, for writing PNG files
 ```
 
-Do the assignments in order. Opening an assignment (in the book, or with `.\check NN`) creates
+Do the assignments in order. Opening an assignment (in the book, or with `.\check NN` or
+`./check.sh NN`) creates
 its files, each with a comment saying why the file exists and what your job in it is. It doesn't
 overwrite anything you've written.
 You write an assignment's real work in `src/`, and later assignments use it: the outline renderer
@@ -64,7 +66,7 @@ at once when a change breaks an earlier one (the book marks it with a red `!`).
 
 The Files panel in the book's editor shows the project as it grows, with each file's
 assignment. The problem list shows your project next to the author's once all 18 assignments pass.
-Build and run the finished program:
+Build and run the finished program (on macOS or Linux, leave out the `.exe`):
 
 ```
 cmake --build build/solutions --target tiny_ttf
@@ -83,7 +85,8 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
    marked `TODO`. To write all of it yourself, including the includes, the parsing and the output,
    choose From scratch on the Start here card: each file then starts empty apart from its
    comment.
-3. Check it from this folder in PowerShell, or with Run and Submit in the book:
+3. Check it from this folder in PowerShell (`./check.sh` on macOS or Linux), or with Run and
+   Submit in the book:
 
 ```
 .\check 07                         run every test
@@ -115,12 +118,12 @@ The checker reads only your program's output, so you can write the project in an
 workbook's project, its starters and its reference are C++.
 
 To work in another language, ask Claude. It shows which languages you have installed
-(`py -P tools/langs.py` lists them) and how to install the others, keeps your C++ project in a
+(`py -P tools/langs.py` lists them; `python3` in place of `py` on macOS or Linux) and how to install the others, keeps your C++ project in a
 folder of its own, and sets up a project in the new language, with its own build file and the same
 layout in that language's style. It creates nothing for languages you don't choose.
 
 To check a one-off program without changing anything, run
-`.\check 07 -Run "path/to/program.exe {input} {output}"`.
+`.\check 07 -Run "path/to/program {input} {output}"`.
 
 ## What's in here
 
@@ -131,9 +134,9 @@ To check a one-off program without changing anything, run
 | `starters/project/` | What your project starts with: the build file, README and `.gitignore` |
 | `starters/blank/`, `starters/boilerplate/` | Each assignment's files, blank and with the input/output done |
 | `tests/NN/` | Test inputs and expected outputs (`cases.txt`, plus data files and expected pictures) |
-| `study.cmd`, `study.ps1` | Open the book with Run and Submit working (they start `tools/serve.py`) |
+| `study.cmd`, `study.command`, `study.ps1`, `study.sh` | Open the book with Run and Submit working (they start `tools/serve.py`) |
 | `tools/serve.py` | The study server: only reachable from this computer; loads and saves your project's files and runs the checker |
-| `tools/check.py` | The checker (`check.ps1` and `check.cmd` call it) |
+| `tools/check.py` | The checker (`check.ps1`, `check.cmd` and `check.sh` call it) |
 | `tools/project.py` | Sets up your project and starts assignments (`setup`, `start NN`, `status`) |
 | `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
 | `tools/gen_pNN.py` | Each assignment's test generator (used by `-Fresh`) |
@@ -143,10 +146,11 @@ To check a one-off program without changing anything, run
 | `docs/authoring-guide.md` | How to write the assignments and their tests |
 | `_spoilers/` | The reference project. Don't open it until you've passed. |
 
-Needs: g++ (MinGW) with CMake and Ninja, and Python 3.11+ with `fontTools` for `-Fresh`. The
-commands in `workbook.json` assume Windows (PowerShell, the `py` launcher, `.exe` programs). On
-macOS or Linux, change the `.exe` paths there and run `python3 tools/check.py 07` instead of
-`.\check 07`.
+Needs: g++ (MinGW on Windows, GCC on Linux, the one from Xcode's command line tools on macOS)
+with CMake and Ninja, and Python 3.11+ with `fontTools` for `-Fresh`. The program names in
+`workbook.json` end in `{exe}`, which the tools turn into `.exe` on Windows and leave out on macOS
+and Linux, so the same file works on all three. Its checks pass on Windows and Linux; on macOS they
+use the Linux commands and haven't run yet.
 
 Apache-2.0 covers this workbook, except the fonts and `third_party/`. The workbook contains no
 text or code from the blog post; the problem pages link to it.

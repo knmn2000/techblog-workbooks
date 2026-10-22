@@ -79,8 +79,9 @@ Every contour is a closed loop (after its last point it continues to its first),
 has a direction: from a point to the next one.
 
 Draw a ray from the point to the right and keep a winding count, starting at 0. For each edge
-the ray crosses, add 1 if the edge goes up the screen and subtract 1 if it goes down. (Either sign
-convention works, as long as it's the same for all edges.) The point is inside when the final
+the ray crosses, add 1 if the edge goes down the screen (y grows from its start to its end) and
+subtract 1 if it goes up. (The opposite signs work too, as long as they're the same for all
+edges; this page and the hints use down = +1.) The point is inside when the final
 count is not zero.
 
 - Two overlapping contours that go the same way give a count of 2 where they overlap: still
@@ -140,7 +141,7 @@ input:   canvas 205 195
 This is the star from assignment 14. The outline winds around the pentagon in the middle twice
 (count 2), so the non-zero rule fills it:
 
-![expected picture for 16-R2-star](tests/16/expected/16-R2-star.png)
+![expected picture for 16-R2-star](../tests/16/expected/16-R2-star.png)
 
 ### Example 2: squares going opposite ways (test `16-R3-opposite-overlap`)
 
@@ -155,7 +156,7 @@ input:   canvas 133 133
 
 The first square goes clockwise, the second counter-clockwise, so their overlap has a count of 0:
 
-![expected picture for 16-R3-opposite-overlap](tests/16/expected/16-R3-opposite-overlap.png)
+![expected picture for 16-R3-opposite-overlap](../tests/16/expected/16-R3-opposite-overlap.png)
 
 ### Example 3: crossing strokes (test `16-R2-ten`)
 
@@ -171,7 +172,7 @@ input:   canvas 234 238
 U+5341 (十) from Noto Sans JP is two rectangles going the same way. The even-odd rule in
 assignment 14 left the crossing empty, and the non-zero rule fills it.
 
-![expected picture for 16-R2-ten](tests/16/expected/16-R2-ten.png)
+![expected picture for 16-R2-ten](../tests/16/expected/16-R2-ten.png)
 
 ## Constraints
 

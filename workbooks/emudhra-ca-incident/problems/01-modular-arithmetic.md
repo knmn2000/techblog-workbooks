@@ -121,7 +121,7 @@ input:   modexp 2 3 5
 output:  modexp 3
          modexp 1
          modexp 10
-         modexp 15
+         modexp 9
 ```
 
 Take `2 ** 3 mod 5`. `exp = 3` is `11` in binary. Start with `result = 1` and `base = 2`:

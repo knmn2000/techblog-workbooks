@@ -3,10 +3,11 @@
 // Problem: problems/02-table-directory.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 02 as `build/solutions/assignment_02.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 02`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 02 as `build/solutions/assignment_02
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 02` (`./check.sh 02` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   The Boilerplate gives you this program finished. You fill in the TODOs in this

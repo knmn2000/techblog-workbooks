@@ -17,58 +17,58 @@ requirement E2E A longer ceremony mixing every event kind, with a substituted we
 case 14-R1-clean-two-keys R1
 title two keys generated, approved, turned into CSRs and published: ok
 input
-generate ecc-root-1 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
-generate ecc-root-2 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
-approve ecc-root-1 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
-approve ecc-root-2 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
-csr ecc-root-1 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
-csr ecc-root-2 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
-publish ecc-root-1
-publish ecc-root-2
+generate ica-g3b-dv 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
+generate ica-g3b-ov 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
+approve ica-g3b-dv 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
+approve ica-g3b-ov 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
+csr ica-g3b-dv 84b13ca426c3a069420d228373536c453fd3051761f8eef470699e4a6cd1308e
+csr ica-g3b-ov 55010e22d44b117c1b62364b95aa2746aab1779206df21cd67531ddb3411c0e7
+publish ica-g3b-dv
+publish ica-g3b-ov
 expected
-csr ecc-root-1 ok
-csr ecc-root-2 ok
-publish ecc-root-1 ok
-publish ecc-root-2 ok
+csr ica-g3b-dv ok
+csr ica-g3b-ov ok
+publish ica-g3b-dv ok
+publish ica-g3b-ov ok
 end
 case 14-R1-approved-weak-key-passes R1
 title the key the witnesses approved is itself weak (private value 4): nothing here can tell, ok
 input
-generate root-key-a a177c2bfa7e95678341780c2f4fde9a764fa1e546a634fc79b8f719634ea0574
-generate root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-approve root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-csr root-key-b ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-publish root-key-b
+generate ica-g3c-dv a177c2bfa7e95678341780c2f4fde9a764fa1e546a634fc79b8f719634ea0574
+generate ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+approve ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+csr ica-g3c-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+publish ica-g3c-ov
 expected
-csr root-key-b ok
-publish root-key-b ok
+csr ica-g3c-ov ok
+publish ica-g3c-ov ok
 end
 case 14-R2-weak-pair-substituted R2
 title a second pair with a similar label appears after an approved deviation and its key is used for the CSR
 input
-generate ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
-approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+generate ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+approve ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
 deviation alice
-generate ECC_Root_1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-approve ecc-root-1 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
-csr ecc-root-1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-publish ecc-root-1
+generate ICA_G3B_DV ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+approve ica-g3b-dv 1c40841efcb5adebe4f6342814989255d8ffb92c3007ec4d21fe583c4cf104c1
+csr ica-g3b-dv ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+publish ica-g3b-dv
 expected
 deviation alice approved
-similar ECC_Root_1 ecc-root-1
-csr ecc-root-1 MISMATCH ECC_Root_1
-publish ecc-root-1 BLOCKED
+similar ICA_G3B_DV ica-g3b-dv
+csr ica-g3b-dv MISMATCH ICA_G3B_DV
+publish ica-g3b-dv BLOCKED
 end
 case 14-R2-identical-labels-different-keys R2
 title two keys share one label; the CSR uses the unapproved one, so only the fingerprint tells them apart
 input
-generate ecc-root-1 5a295ef3825a3cbeb5d537433c275fade604dbf7880d29a903bf098a990e930b
-generate ecc-root-1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-approve ecc-root-1 5a295ef3825a3cbeb5d537433c275fade604dbf7880d29a903bf098a990e930b
-csr ecc-root-1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+generate ica-g3b-dv 5a295ef3825a3cbeb5d537433c275fade604dbf7880d29a903bf098a990e930b
+generate ica-g3b-dv ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+approve ica-g3b-dv 5a295ef3825a3cbeb5d537433c275fade604dbf7880d29a903bf098a990e930b
+csr ica-g3b-dv ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
 expected
-duplicate ecc-root-1
-csr ecc-root-1 MISMATCH ecc-root-1
+duplicate ica-g3b-dv
+csr ica-g3b-dv MISMATCH ica-g3b-dv
 end
 case 14-R2-key-never-generated R2
 title the CSR carries a key that no generate line recorded: MISMATCH unknown
@@ -95,14 +95,14 @@ end
 case 14-R3-no-approval-for-label R3
 title a label never approved, and a label that differs from an approved one only in letter case
 input
-generate root-1 bff927ff6d6a6c30845ae15b98c0f5982bc9c3d1fe454a72148c82189f00e384
-generate root-2 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
-approve root-2 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
-csr root-1 bff927ff6d6a6c30845ae15b98c0f5982bc9c3d1fe454a72148c82189f00e384
-csr Root-2 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
+generate ica-g3b-ev bff927ff6d6a6c30845ae15b98c0f5982bc9c3d1fe454a72148c82189f00e384
+generate ica-g3c-ev 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
+approve ica-g3c-ev 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
+csr ica-g3b-ev bff927ff6d6a6c30845ae15b98c0f5982bc9c3d1fe454a72148c82189f00e384
+csr ICA-G3C-EV 3c3b95ab60a413d0c9ec12d9a30b27ffd3f038b39c8c2f21881b6be8c93e712a
 expected
-csr root-1 NOT-APPROVED
-csr Root-2 NOT-APPROVED
+csr ica-g3b-ev NOT-APPROVED
+csr ICA-G3C-EV NOT-APPROVED
 end
 case 14-R3-latest-approval-replaces-earlier R3
 title a label approved twice: only the latest key counts
@@ -292,24 +292,24 @@ end
 case 14-R8-case-and-separators R8
 title case, underscore, dot and missing separators all match the first label
 input
-generate ecc-root-1 cfd35a1312415e21052aa06df1da1a871a1f6c0e32ba64640e72441b171b6638
-generate ECC-ROOT-1 57e32b6cc085a0671f2ad2f6244ebfacba8f6757212fd87d8e3d1232bbb95830
-generate ecc_root_1 3546aa482b1a47af4d3719cf028cc23b667b403ba4643b58e6b66c043323bab1
-generate ecc.root.1 28425ae269e685aef1595684b63e6481c5fd9a7edc71c1af86645449a5ccd914
-generate eccroot1 cef0e504878725fc77a6dfd17b666de34c2cb3ff7c73ff0051dbc4a9b4dc0db5
+generate ica-g3b-ov cfd35a1312415e21052aa06df1da1a871a1f6c0e32ba64640e72441b171b6638
+generate ICA-G3B-OV 57e32b6cc085a0671f2ad2f6244ebfacba8f6757212fd87d8e3d1232bbb95830
+generate ica_g3b_ov 3546aa482b1a47af4d3719cf028cc23b667b403ba4643b58e6b66c043323bab1
+generate ica.g3b.ov 28425ae269e685aef1595684b63e6481c5fd9a7edc71c1af86645449a5ccd914
+generate icag3bov cef0e504878725fc77a6dfd17b666de34c2cb3ff7c73ff0051dbc4a9b4dc0db5
 expected
-similar ECC-ROOT-1 ecc-root-1
-similar ecc_root_1 ecc-root-1
-similar ecc.root.1 ecc-root-1
-similar eccroot1 ecc-root-1
+similar ICA-G3B-OV ica-g3b-ov
+similar ica_g3b_ov ica-g3b-ov
+similar ica.g3b.ov ica-g3b-ov
+similar icag3bov ica-g3b-ov
 end
 case 14-R8-not-similar R8
 title labels that differ in a digit or a letter are not similar (no homoglyph rule)
 input
-generate ecc-root-1 5df874925cf517661d7920a44d022faa90732011d1683a7ccb5695e8c0c66785
-generate ecc-root-10 277fbb0a0e10ed9d9cbc8fb2530e506eaa2288d5c5db3cd1ed0489fbca122195
-generate ecc-root-l 2256ce6543e9560b2bc5840e11e79aaa2701c6872a65b6b1d22014ef64638c79
-generate ecc-rootx1 6b09240bd04d73f6d3250d238a0517e8914cf0be9f16d30f19eadf761d5ff0ee
+generate ica-g3b-ov 5df874925cf517661d7920a44d022faa90732011d1683a7ccb5695e8c0c66785
+generate ica-g3b-ov2 277fbb0a0e10ed9d9cbc8fb2530e506eaa2288d5c5db3cd1ed0489fbca122195
+generate ica-g3b-0v 2256ce6543e9560b2bc5840e11e79aaa2701c6872a65b6b1d22014ef64638c79
+generate ica-g3c-ov 6b09240bd04d73f6d3250d238a0517e8914cf0be9f16d30f19eadf761d5ff0ee
 generate k1 da858eeb38b377b3230decf12267386dec6989ca4aa45f4fabedbb1cfd29c2cf
 generate kl 6057c6f4c73009a48825b447956e21a7524667773f5ad2a694bffc67f5e92420
 expected
@@ -381,25 +381,25 @@ end
 case 14-R10-log-order R10
 title findings, deviation, csr and publish lines interleave in log order; approve prints nothing
 input
-generate root-1 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
-approve root-1 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
-csr root-1 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
-generate Root_1 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+generate ica-g3b-dv 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
+approve ica-g3b-dv 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
+csr ica-g3b-dv 831b8a4327630edecef7989f3370e071c4d44f0351af6445db6af9b61383d761
+generate ICA_G3B_DV ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
 deviation frank
-generate root-2 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
-publish root-1
-approve root-2 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
-csr root-2 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
-generate root.2 e3071ae9768fa08ea6798dddc24765b00645d1646ca483161d9acacd70e940cc
-publish root-2
+generate ica-g3c-dv 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
+publish ica-g3b-dv
+approve ica-g3c-dv 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
+csr ica-g3c-dv 86000e8e1b0afc76ae98a4e086216227368123b7bd40532495ef4131e4233da9
+generate ica.g3c.dv e3071ae9768fa08ea6798dddc24765b00645d1646ca483161d9acacd70e940cc
+publish ica-g3c-dv
 expected
-csr root-1 ok
-similar Root_1 root-1
+csr ica-g3b-dv ok
+similar ICA_G3B_DV ica-g3b-dv
 deviation frank approved
-publish root-1 ok
-csr root-2 ok
-similar root.2 root-2
-publish root-2 ok
+publish ica-g3b-dv ok
+csr ica-g3c-dv ok
+similar ica.g3c.dv ica-g3c-dv
+publish ica-g3c-dv ok
 end
 case 14-R10-generate-findings-after-unapproved-deviation R10
 title duplicate and similar findings still print after an unapproved deviation
@@ -416,84 +416,84 @@ end
 case 14-E2E-incident-shape-s1 E2E
 title four keys, an approved deviation, a weak pair with a similar label used for one CSR, then an unapproved deviation (seed 1)
 input
-generate ecc-root-1 f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
-generate ecc-root-2 ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
-generate ecc-root-3 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
-generate ecc-root-4 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
-approve ecc-root-1 f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
-approve ecc-root-2 ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
-approve ecc-root-3 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
-approve ecc-root-4 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
+generate ica-g3b-dv f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
+generate ica-g3b-ov ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
+generate ica-g3b-ev 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
+generate ica-g3c-dv 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
+approve ica-g3b-dv f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
+approve ica-g3b-ov ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
+approve ica-g3b-ev 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
+approve ica-g3c-dv 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
 deviation grace
-generate ECC_Root_2 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-approve ecc-root-1 f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
-approve ecc-root-2 ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
-approve ecc-root-3 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
-approve ecc-root-4 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
-csr ecc-root-1 f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
-csr ecc-root-2 ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
-csr ecc-root-3 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
-csr ecc-root-4 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
-publish ecc-root-1
-publish ecc-root-2
-publish ecc-root-3
-publish ecc-root-4
+generate ICA_G3B_OV ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+approve ica-g3b-dv f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
+approve ica-g3b-ov ce508c1cee3addb70cca3fd1070cbadc24b22bc650180d0f35570a17a0f756cb
+approve ica-g3b-ev 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
+approve ica-g3c-dv 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
+csr ica-g3b-dv f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
+csr ica-g3b-ov ea5397c853863a1f8786a821aaae1d3aca3c6c4b1a176f2670e9fd6677aa9621
+csr ica-g3b-ev 1da853fc2cd8a15a37036b82accc11de7f599bc5e4e893a5b374e0e09a6b29dd
+csr ica-g3c-dv 2384ab0e59807a477f0b89395d4f6bd86cc5266b968882347ca3518a100505f3
+publish ica-g3b-dv
+publish ica-g3b-ov
+publish ica-g3b-ev
+publish ica-g3c-dv
 deviation none
-csr ecc-root-1 f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
-publish ecc-root-1
-publish ecc-root-9
+csr ica-g3b-dv f12b57259f2baf1293e23f45a9a790c750a81c13fa3f45e253d9ffaa24f50f30
+publish ica-g3b-dv
+publish ica-g3c-ov
 expected
 deviation grace approved
-similar ECC_Root_2 ecc-root-2
-csr ecc-root-1 ok
-csr ecc-root-2 MISMATCH ECC_Root_2
-csr ecc-root-3 ok
-csr ecc-root-4 ok
-publish ecc-root-1 ok
-publish ecc-root-2 BLOCKED
-publish ecc-root-3 ok
-publish ecc-root-4 ok
+similar ICA_G3B_OV ica-g3b-ov
+csr ica-g3b-dv ok
+csr ica-g3b-ov MISMATCH ICA_G3B_OV
+csr ica-g3b-ev ok
+csr ica-g3c-dv ok
+publish ica-g3b-dv ok
+publish ica-g3b-ov BLOCKED
+publish ica-g3b-ev ok
+publish ica-g3c-dv ok
 deviation none UNAPPROVED
-csr ecc-root-1 UNVERIFIED
-publish ecc-root-1 UNVERIFIED
-publish ecc-root-9 undefined
+csr ica-g3b-dv UNVERIFIED
+publish ica-g3b-dv UNVERIFIED
+publish ica-g3c-ov undefined
 end
 case 14-E2E-random-s1 E2E
 title a random valid ceremony of 20 lines (seed 1)
 input
 generate subca4 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
-csr eccroot2 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
-approve eccroot2 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
-csr eccroot1 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
-csr ecc-root-1 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
-csr ECC-ROOT-2 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
+csr icag3cov 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
+approve icag3cov 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
+csr icag3bdv 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
+csr ica-g3b-dv 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
+csr ICA-G3C-OV 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
 approve sub_ca_4 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
 csr sub_ca_4 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
 generate subca4 5e13bbcb348bf93b3b1a449ed03914a4352a68cce2ef3d0c4c21420d7f9e9500
-csr eccroot2 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
-publish eccroot2
-generate eccroot1 c2b217edb30b2e5e3e25a021b3769e35928997781e7b19ea43f098d59ffbfa30
+csr icag3cov 35d50e14e1d87903d326ef9aa634cfc33ab7110558a47fa8015e371256477753
+publish icag3cov
+generate icag3bdv c2b217edb30b2e5e3e25a021b3769e35928997781e7b19ea43f098d59ffbfa30
 generate subca4 9ac17ab75c15e6bf743e5a85b946a47ac3ec42b8662bd2fdfead2e792cd5625a
-publish ecc-root-2
+publish ica-g3c-ov
 approve subca4 c2b217edb30b2e5e3e25a021b3769e35928997781e7b19ea43f098d59ffbfa30
 deviation none
-csr ecc-root-1 c2b217edb30b2e5e3e25a021b3769e35928997781e7b19ea43f098d59ffbfa30
-approve eccroot2 5e13bbcb348bf93b3b1a449ed03914a4352a68cce2ef3d0c4c21420d7f9e9500
-csr ecc-root-1 9ac17ab75c15e6bf743e5a85b946a47ac3ec42b8662bd2fdfead2e792cd5625a
-csr ecc-root-1 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
+csr ica-g3b-dv c2b217edb30b2e5e3e25a021b3769e35928997781e7b19ea43f098d59ffbfa30
+approve icag3cov 5e13bbcb348bf93b3b1a449ed03914a4352a68cce2ef3d0c4c21420d7f9e9500
+csr ica-g3b-dv 9ac17ab75c15e6bf743e5a85b946a47ac3ec42b8662bd2fdfead2e792cd5625a
+csr ica-g3b-dv 215a1ed28d7f2148cd034251167603df947ae112221ab42aa5fc4d593510fe21
 expected
-csr eccroot2 NOT-APPROVED
-csr eccroot1 NOT-APPROVED
-csr ecc-root-1 NOT-APPROVED
-csr ECC-ROOT-2 NOT-APPROVED
+csr icag3cov NOT-APPROVED
+csr icag3bdv NOT-APPROVED
+csr ica-g3b-dv NOT-APPROVED
+csr ICA-G3C-OV NOT-APPROVED
 csr sub_ca_4 ok
 duplicate subca4
-csr eccroot2 MISMATCH unknown
-publish eccroot2 BLOCKED
+csr icag3cov MISMATCH unknown
+publish icag3cov BLOCKED
 duplicate subca4
-publish ecc-root-2 undefined
+publish ica-g3c-ov undefined
 deviation none UNAPPROVED
-csr ecc-root-1 UNVERIFIED
-csr ecc-root-1 UNVERIFIED
-csr ecc-root-1 UNVERIFIED
+csr ica-g3b-dv UNVERIFIED
+csr ica-g3b-dv UNVERIFIED
+csr ica-g3b-dv UNVERIFIED
 end

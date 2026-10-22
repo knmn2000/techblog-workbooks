@@ -28,6 +28,7 @@ REQUIREMENTS = [
     ("R3", "A chain anchored at a distrusted root, with no SPKI hit anywhere in it, is `blocked root <root-id>`"),
     ("R4", "When both could apply to the same chain, the SPKI block is reported, not the root distrust"),
     ("R5", "A blocklist or distrust entry for other chains' certificates does not block this one, and an entry affects only chains after it"),
+    ("R6", "A blocked key blocks every chain it appears in, including a cross-signed chain to a root that is not distrusted, where root distrust alone leaves the chain trusted"),
     ("E2E", "Several chains in one input, covering every verdict, judged independently"),
 ]
 EXPLAIN = "_lines=R1"
@@ -163,6 +164,28 @@ def main():
     w.block_spki("late-int")
     w.distrust_root("late-root")
     chain("after", [("leaf", "leaf-7", None), ("intermediate", "late-int", None), ("root", "root-7", "late-root")])
+    save()
+
+    # R6 - cross-signing: the same intermediate key certified under a second root. In the incident,
+    # Sectigo cross-signed the eight weak keys under another root, so a chain through the
+    # cross-certificate never reaches the distrusted root. Only the SPKI block stops it. Synthetic ids.
+    w, chain, expected, save = new_case(
+        "15-R6-cross-signed-key-blocked", "R6",
+        "one blocked intermediate key in two chains, one to the distrusted root and one through a cross-certificate to another root")
+    w.block_spki("cross-int")
+    w.distrust_root("root-issuer")
+    chain("own-root", [("leaf", "leaf-8", None), ("intermediate", "cross-int", None), ("root", "root-8", "root-issuer")])
+    chain("cross-signed", [("leaf", "leaf-9", None), ("intermediate", "cross-int", None), ("root", "root-9", "root-cross-signer")])
+    save()
+
+    w, chain, expected, save = new_case(
+        "15-R6-distrust-alone-misses-cross-sign", "R6",
+        "root distrust stops the chain to its own root and leaves the cross-signed chain trusted, until the key is blocked")
+    w.distrust_root("root-home")
+    chain("own-root", [("leaf", "leaf-10", None), ("intermediate", "shared-int", None), ("root", "root-10", "root-home")])
+    chain("cross-before", [("leaf", "leaf-11", None), ("intermediate", "shared-int", None), ("root", "root-11", "root-other")])
+    w.block_spki("shared-int")
+    chain("cross-after", [("leaf", "leaf-11", None), ("intermediate", "shared-int", None), ("root", "root-11", "root-other")])
     save()
 
     # E2E - several chains in one input: every verdict kind, judged independently.

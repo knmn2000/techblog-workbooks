@@ -86,6 +86,11 @@ order, as your `render/Outline` did when it drew curves in assignment 11:
 - A contour can start with an off-curve point, and can even consist only of off-curve points (then
   each of its on-curve points is an implied one).
 
+The blog finds each crossing with the functions from assignments 12 and 13. They count a
+segment's endpoints and keep t = 0 and t = 1, so a vertex on a scanline comes back from both of
+its edges, twice. If you call them, first apply the half-open rule below to choose which edges
+count at that row. Otherwise solve for the crossing from the edge itself, as this page shows.
+
 ### The even-odd rule
 
 Draw a ray from the point to the right and count how many times it crosses the outline. An odd count
@@ -117,7 +122,11 @@ piece then crosses a scanline at most once, and the half-open rule works for cur
   monotone: it only rises or only falls.
 - Use the same split point, with the same y, for both halves.
 - To find where a piece crosses scanline y, solve y(t) = y as a quadratic in t (linear when
-  P0.y − 2·P1.y + P2.y = 0) and keep the root in [0, 1].
+  P0.y − 2·P1.y + P2.y = 0). Take one root per piece: the one closest to [0, 1] (either one if
+  both are inside), clamped to [0, 1]. At a scanline through a split point, the quadratic
+  formula returns two equal roots, both in [0, 1], so keeping every root in [0, 1] counts that
+  crossing twice. Tests `14-R2-o` and `14-R2-8` have such rows. The clamp also covers a root
+  that a rounding error puts outside [0, 1].
 
 Crossings can lie far outside the canvas. Clamp x to the canvas before you convert it to an
 integer, because C++ doesn't define what happens when you convert a huge double to `int`. The
@@ -156,7 +165,7 @@ input:   canvas 205 195
 The star is one contour that crosses itself. A ray from the pentagon in the middle crosses the
 outline an even number of times, so the even-odd rule leaves the pentagon black:
 
-![expected picture for 14-R5-star](tests/14/expected/14-R5-star.png)
+![expected picture for 14-R5-star](../tests/14/expected/14-R5-star.png)
 
 ### Example 2: a vertex on a pixel centre (test `14-R4-diamond-half`)
 
@@ -175,7 +184,7 @@ the half-open rule the side corners count once (one edge above, one below) and t
 tips count twice or zero times. The result is a clean diamond with no stray
 horizontal line:
 
-![expected picture for 14-R4-diamond-half](tests/14/expected/14-R4-diamond-half.png)
+![expected picture for 14-R4-diamond-half](../tests/14/expected/14-R4-diamond-half.png)
 
 ### Example 3: crossing strokes (test `14-R5-ten`)
 
@@ -191,7 +200,7 @@ input:   canvas 234 238
 U+5341 (十) from Noto Sans JP is two overlapping rectangles. Even-odd leaves the small square where
 they cross empty. Assignment 16 fills it with the non-zero rule.
 
-![expected picture for 14-R5-ten](tests/14/expected/14-R5-ten.png)
+![expected picture for 14-R5-ten](../tests/14/expected/14-R5-ten.png)
 
 ## Constraints
 

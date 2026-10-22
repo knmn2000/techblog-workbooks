@@ -18,8 +18,10 @@ pass using this page alone.
 ## Source material
 
 - RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), sections 4.1.1.3 and 4.1.2
-- ITU-T X.690, section 8.1 (why re-encoding DER should give the same bytes, and why slicing the
-  original bytes avoids the risk that it doesn't)
+- ITU-T X.690, [Information technology - ASN.1 encoding rules: BER, CER and DER](https://www.itu.int/rec/T-REC-X.690),
+  clauses 10 ("Distinguished encoding rules") and 11 (the restrictions DER shares with CER): why
+  re-encoding DER should give the same bytes, and why slicing the original bytes avoids the risk
+  that it doesn't
 - FIPS 186-5, *Digital Signature Standard (DSS)*, section 6.4.2 (the ECDSA verification equation)
 
 ## Where this fits
@@ -52,6 +54,9 @@ its last content byte, tag and length included, and hash that slice.
 1. Hash `tbsCertificate`'s original bytes (above) with SHA-384, and read the digest as a
    big-endian number. Every certificate in this assignment is P-384, signed `ecdsa-with-SHA384`.
    A P-256 certificate would use SHA-256 instead, which is out of scope here (see Constraints).
+   A real verifier reads the hash from the certificate's `signatureAlgorithm` field and rejects
+   the certificate unless that field matches the `signature` field inside `tbsCertificate`
+   (RFC 5280, sections 4.1.1.2 and 4.1.2.3). This assignment fixes SHA-384 instead.
 2. `signatureValue` is a BIT STRING. Its content, after the unused-bits byte (`0` here), is DER
    again: `SEQUENCE { r INTEGER, s INTEGER }`. Parse it with your DER reader, as in assignment 05,
    to get `r` and `s`.
@@ -70,7 +75,8 @@ valid if x3 mod n == r
 `n` is the curve's order (its number of points), from the table below. `u1*G` and `u2*Q` are each
 a scalar multiplication (your `scalar_multiply` from assignment 03), and one more point addition
 adds the two results. Your `verify` in `ecc/ecdsa.py` already does all of this when you pass it
-`z`. Use your own code for the check and leave a cryptography library's verify function alone:
+`z`, along with the two checks the block above leaves out: it rejects `r` or `s` outside
+`[1, n-1]`, and a sum that lands on the point at infinity. Use your own code for the check and leave a cryptography library's verify function alone:
 writing the equation yourself is the point of this assignment.
 
 ### The curve
@@ -118,8 +124,10 @@ difference points to.
 - **R2** A certificate checked against the wrong issuer key is `invalid`.
 - **R3** A certificate whose signature has one flipped bit, anywhere in `r` or `s`, is `invalid`,
   though the rest of the certificate and the issuer's real key stay the same.
-- **R4** Your program slices `tbsCertificate`'s bytes right when the certificate carries real v3
-  extensions, which make the structure large enough that its own length needs DER's long form.
+- **R4** Your program slices `tbsCertificate`'s bytes right when the certificate carries v3
+  extensions. Every certificate in this assignment writes `tbsCertificate`'s length in the long
+  form with one length byte (`30 81 ..`), except one R4 certificate whose extensions push the
+  length past 255 bytes, so it takes two length bytes (`30 82 01 ..`).
 
 ## Examples
 
@@ -208,11 +216,9 @@ check_signature(cert_bytes, curve, issuer_x, issuer_y):
     s = decode_integer(sig_seq.children[1].content)
 
     z = int(sha384(tbs_bytes))
-    # your verify(curve, (issuer_x, issuer_y), z, r, s) from assignment 04 does the rest:
-    w = modinv(s, n)
-    u1, u2 = (z * w) % n, (r * w) % n
-    (x3, y3) = add_points(scalar_multiply(u1, G), scalar_multiply(u2, (issuer_x, issuer_y)))
-    return (x3 % n) == r
+    # verify from ecc/ecdsa.py (assignment 04) checks that r and s are in [1, n-1],
+    # computes u1*G + u2*Q, and rejects the point at infinity before comparing x mod n with r.
+    return verify(curve, (issuer_x, issuer_y), z, r, s)
 ```
 </details>
 
@@ -228,10 +234,10 @@ check_signature(cert_bytes, curve, issuer_x, issuer_y):
 A failing test looks like this:
 
 ```
-  R4  The TBS bytes are re-extracted correctly even when the certifica...    0 / 2   FAILED
+  R4  The TBS bytes are sliced correctly when the certificate has v3 ex... .    0 / 2   FAILED
       x 08-R4-with-extensions  a self-signed CA certificate with a BasicConstraints extension present
           line 1: expected `signature ext1 valid`, got `signature ext1 invalid`
-          likely cause: R4 - The TBS bytes are re-extracted correctly even when the certificate has v3 extensions (a non-trivial TBS structure)
+          likely cause: R4 - The TBS bytes are sliced correctly when the certificate has v3 extensions, including a tbsCertificate long enough to need two length bytes (30 82 ..)
           expected values from: cryptography 41.0.7: public_key.verify(signature, tbs_bytes, ec.ECDSA(hashes.SHA384())), independent of this workbook's modular-arithmetic reference
           reproduce: py -P tools/run_py.py solutions 08 build/cases/08/08-R4-with-extensions.in build/cases/08/08-R4-with-extensions.out
 ```

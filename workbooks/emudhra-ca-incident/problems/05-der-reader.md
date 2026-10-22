@@ -90,6 +90,11 @@ BER, the looser encoding that DER restricts, also allows an indefinite length: `
 length at all, ended by two zero bytes. DER forbids it and no test uses it, so you don't need to
 handle it.
 
+This reader doesn't enforce the rest of DER's strictness either. DER requires the length in the
+fewest bytes (X.690 10.1) and an INTEGER in the fewest bytes, with no unneeded leading `00` or
+`ff` byte (8.3.2). Your reader accepts `0x81 0x05` as a length of 5, and every test input
+follows both rules, so you don't need to check them. A strict DER parser rejects both.
+
 The content is the next `length` bytes. For a primitive node, those bytes are the value,
 decoded by type (below). For a constructed node, they are more complete TLV nodes, one after
 another, each one level deeper than its parent.
@@ -114,8 +119,10 @@ bits, only the top 4 count. You print the bytes the same way in both cases.
 
 "Any other type" covers the string types you meet in real certificates, such as PrintableString
 and UTF8String, which this assignment doesn't decode. It also covers a context-specific tag used
-for implicit tagging: the tag replaces a value's own tag instead of wrapping another TLV, so
-the node is primitive.
+for implicit tagging on a primitive type. An implicit tag replaces the value's own tag instead of
+wrapping another TLV, and the node keeps the form of the type underneath (X.690 8.14.3): an
+implicit tag on an OCTET STRING gives a primitive node, and an implicit tag on a SEQUENCE gives a
+constructed one, which you walk like any other constructed node.
 
 #### INTEGER
 

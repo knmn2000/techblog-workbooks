@@ -3,10 +3,11 @@
 // Problem: problems/12-segment-intersection.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 12 as `build/solutions/assignment_12.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 12`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 12 as `build/solutions/assignment_12
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 12` (`./check.sh 12` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   Read each `segments` line as four points: a1 and a2 for segment A, then b1 and b2 for

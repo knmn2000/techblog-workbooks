@@ -4,14 +4,14 @@ Status as of October 22, 2026. The incident became public five days ago and the 
 
 ## Established
 
-These points come from Mozilla's staff in Bugzilla bug 2083449 and from three outside reports (Scott Helme, Cisco Talos and BleepingComputer). Where they overlap they agree, and each point below names its source.
+These points come from Mozilla's staff and Chrome's root program in Bugzilla bug 2083449, from Google's post on Chrome's response, and from three outside reports (Scott Helme, Cisco Talos and BleepingComputer). Where they overlap they agree, and each point below names its source.
 
 ### The keys
 
 - Eight P-384 intermediate CA private keys were integers below 256. The values are 4, 56, 66, 115, 155, 156, 230 and 237. Dennis Jackson of Mozilla wrote "The 8 impacted keys all used integers less than 256" (Bugzilla comment 5), and Helme lists the same eight values.
 - Six of the eight are TLS issuing CAs (DV, OV and EV, in two generations called G3B and G3C). Two are code-signing CAs (Helme, Talos).
 - They come from a key generation ceremony on April 30, 2025 that produced 24 intermediates. All impacted keys are P-384 keys in series B and C. In comment 5, Jackson reported that the P-384 keys in series A and A-1 resisted recovery, and that he had not yet examined the RSA keys.
-- Sectigo cross-signed these keys under its AAA Certificate Services root in May 2025. Each key therefore appears in two certificates, 16 certificates for 8 keys (Helme).
+- Sectigo cross-signed these keys under its AAA Certificate Services root in May 2025. Each key therefore appears in two certificates, 16 certificates for 8 keys (Helme; Wayne lists the eight cross-certificates in comment 2). A chain through a cross-certificate ends at AAA Certificate Services and never reaches eMudhra's root. Sectigo wrote that Chrome and Mozilla had already removed that root and that Microsoft and Apple still trusted it (comment 6), and it revoked the cross-certificates on October 19 (comment 13).
 
 ### Why the weakness is cheap to find
 
@@ -22,10 +22,10 @@ These points come from Mozilla's staff in Bugzilla bug 2083449 and from three ou
 
 ### The response
 
-- On Saturday, October 17, a researcher who goes by Wayne reported the keys to Apple, Google, Microsoft, Mozilla and eMudhra (Helme; Bugzilla comment 2). Chrome blocked the intermediates that evening with a CRLSet update, and Mozilla blocked them a few hours later through OneCRL (Helme).
+- On Saturday, October 17, a researcher who goes by Wayne reported the keys to Apple, Google, Microsoft, Mozilla and eMudhra (Helme; Bugzilla comment 2). Chrome blocked the intermediates that evening with a CRLSet update, and Mozilla blocked them a few hours later through OneCRL (Helme). Google's post puts the CRLSet update at 19:45 UTC and says it blocked the SPKI hashes of the affected intermediates, which covers every certificate that carries those keys. Wayne reports that CRLSet sequence 10843, fetched at 22:46 UTC, listed the six TLS keys as revoked (comment 2).
 - Apple added protections on October 19 (BleepingComputer). Talos reports that Microsoft blocked the two code-signing certificates.
 - eMudhra revoked all eight intermediates.
-- Mozilla announced the emergency removal of trust in emSign ECC Root CA - G3, the root above these intermediates (Bugzilla comment 18). Chrome expects its root store change to land on October 27 (comment 30).
+- Mozilla announced the emergency removal of trust in emSign ECC Root CA - G3, the root above these intermediates (Bugzilla comment 18). Chrome expects its root store change to land on October 27 (comment 30). Google's post says the removal is there to support consumers of the Chrome Root Store that do not consume CRLSet updates.
 - Talos reports that Go released versions 1.27.3 and 1.26.10, which filter chains containing the SPKI hashes of the eight certificates, under CVE-2026-111943.
 
 ### Exploitation
@@ -37,6 +37,7 @@ No public source reports evidence that anyone recovered or used the keys, and no
 Everything in this section is eMudhra's account, from its statement (updated October 21) and its comments in Bugzilla. No independent party has confirmed it.
 
 - eMudhra says it generated the keys on Utimaco HSMs certified to FIPS 140-2 Level 3 (comments 10 and 11).
+- Update 3 of its statement names the failed step: "The problem was a flaw in one step of the ceremony procedure, not the absence of HSMs. During the ceremony, a key wrap/unwrap step produced a second, weak set of keys alongside the original strong keys."
 - In comment 11, eMudhra describes the cause in three pieces. First, "an approved deviation to our usual KGC to test a wrap/unwrap was introduced as these keys were meant for export for this instance". Second, "a flaw in the code resulted in the second pair of keys being created onboard which were weaker". Third, "these second pair of weaker keys were used by mistake to create the csr (because the key labels were similar)". It adds that a set of original ECC keys was "created onboard as expected".
 - The same comment acknowledges human errors in more than one step, and eMudhra says it will re-verify all its ceremonies.
 - On CRLs, eMudhra says "The CRL's were signed with the original private keys (which were supposed to be the correct keys with appropriate entropy)" and that "they were resigned with flawed keys".
@@ -106,7 +107,8 @@ Assignments 12 and 14 teach concepts: how to draw and check a private key, and w
 Read on October 22, 2026.
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), updated October 21
-- Mozilla, [Bugzilla bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comments 1 to 33
+- Google, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/), Chrome and Android Security Teams, October 20
+- Mozilla, [Bugzilla bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comments 0 to 34
 - Mozilla, [Bugzilla bug 1970728](https://bugzilla.mozilla.org/show_bug.cgi?id=1970728), eMudhra invalid CRL signatures
 - Scott Helme, [Eight bits of trust: eMudhra's CA keys cracked in milliseconds](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/)
 - Cisco Talos, [Compromised intermediate certificates](https://blog.talosintelligence.com/compromised-intermediate-certificates/)

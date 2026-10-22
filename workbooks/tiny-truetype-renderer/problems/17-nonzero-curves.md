@@ -97,8 +97,12 @@ y with its start's y.
 
 To find a crossing on a line, interpolate. For a curve piece, solve y(t) = scanline y, a
 quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and c = y0 − scanline y
-(linear when a = 0). After the split, a single root lies in [0, 1]; its x is
-(1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t also works, since each piece is monotone.
+(linear when a = 0). Take one root per piece: the one closest to [0, 1] (either one if
+both are inside), clamped to [0, 1]. A scanline through a split point gives two equal roots, both
+in [0, 1], so keeping every root in [0, 1] counts that crossing twice; 7 of this assignment's
+tests, such as `17-R1-o` and `17-R5-tangent`, have such rows. The clamp also covers a root that
+a rounding error puts outside [0, 1]. The crossing's x is (1−t)²·x0 + 2(1−t)t·x1 + t²·x2.
+Bisection on t also works, since each piece is monotone.
 
 For vertices and touching scanlines, treat every piece as half-open in y: it counts at scanline
 y when min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a curve's extreme
@@ -145,7 +149,7 @@ input:   canvas 133 133
 (The `points` line is one line in the real input.) All eight points are off-curve, so each
 on-curve point is an implied midpoint. The curves between them make a circle:
 
-![expected picture for 17-R2-all-off](tests/17/expected/17-R2-all-off.png)
+![expected picture for 17-R2-all-off](../tests/17/expected/17-R2-all-off.png)
 
 ### Example 2: two overlapping round shapes (test `17-R3-two-circles`)
 
@@ -163,14 +167,14 @@ input:   canvas 223 148
 overlap in the middle. The overlap has a count of 2, so the non-zero rule fills it; the even-odd
 rule would leave a hole.
 
-![expected picture for 17-R3-two-circles](tests/17/expected/17-R3-two-circles.png)
+![expected picture for 17-R3-two-circles](../tests/17/expected/17-R3-two-circles.png)
 
 ### Example 3: overlapping strokes in a real glyph (test `17-R3-a-hiragana`)
 
 Noto Sans JP draws U+3042 (あ) as overlapping curved strokes, as many variable fonts do. Its
 outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full input.
 
-![expected picture for 17-R3-a-hiragana](tests/17/expected/17-R3-a-hiragana.png)
+![expected picture for 17-R3-a-hiragana](../tests/17/expected/17-R3-a-hiragana.png)
 
 ## Constraints
 
@@ -184,9 +188,11 @@ outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full inpu
 
 <details><summary>Hint 1: where to start</summary>
 
-Combine your work from assignment 14 (`render/Scanline`: curves into edges, crossings per row)
-and assignment 16 (`render/NonZero`: counting with directions). The new part is giving each curve
-crossing the right direction.
+Run `.\check 17` first: if your `render/Scanline` from assignment 14 already splits curves and
+records each crossing's direction, your non-zero fill from assignment 16 may pass already.
+Otherwise combine the two: assignment 14's `render/Scanline` (curves into edges, crossings per
+row) and assignment 16's `render/NonZero` (counting with directions). The new part is giving
+each curve crossing the right direction.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
@@ -198,8 +204,9 @@ most once, with a direction you can read from its endpoints. Then fill as in ass
 
 <details><summary>Hint 3: the traps</summary>
 
-- After splitting, solve the piece's quadratic for the scanline y and keep the root in [0, 1]; if the
-  quadratic coefficient is 0, the equation is linear.
+- After splitting, solve the piece's quadratic for the scanline y and take one root: the one
+  closest to [0, 1], clamped to [0, 1]. Two equal roots come back when the scanline passes
+  through a split point. If the quadratic coefficient is 0, the equation is linear.
 - The direction of a curve piece is its end's y compared with its start's y, not the control point.
 - Insert implied midpoints and handle contours that start off-curve, as in assignment 14.
 - Fill where the count is not zero, of either sign.

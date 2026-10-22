@@ -14,7 +14,7 @@ correct program may choose (rounding the points to pixels before working out cur
 and implied points, more pieces per curve, truncating instead of rounding along a
 line) and keeps a case only if each of those passes the checker too.
 
-    py -P tools/gen_p11.py --ref build/ref/assignment_11.exe                    # tests/11 (seed 1)
+    py -P tools/gen_p11.py --ref build/ref/assignment_11                        # tests/11 (seed 1)
     py -P tools/gen_p11.py --seed 77 --out build/fresh/11             # what `.\\check 11 -Fresh` runs
 """
 

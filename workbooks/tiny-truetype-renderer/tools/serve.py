@@ -1,6 +1,7 @@
 """Opens the workbook in your browser, where Run and Submit really run your code.
 
-    .\\study                          (or double-click study.cmd; ./study.sh on macOS or Linux)
+    .\\study                          (or double-click study.cmd; on macOS double-click study.command;
+                                     ./study.sh on macOS or Linux)
     py -P tools/serve.py [--port 8787] [--no-browser]
 
 Starts a small web server that only this computer can reach (127.0.0.1), does the first-time
@@ -328,7 +329,7 @@ def main() -> int:
                     webbrowser.open(url)
                 return 0
     if server is None:
-        print(f"No free port between {args.port} and {args.port + 11}. Try:  .\\study --port 9000")
+        print(f"No free port between {args.port} and {args.port + 11}. Try:  {project.STUDY} --port 9000")
         return 1
     port = server.server_address[1]
     server.wb = wb
