@@ -11,9 +11,11 @@
 
 You can pass using this page alone. eMudhra's
 [Update 3](https://emudhra.com/en/post/certificate-security-incident#:~:text=An%20Update%20on%20Our%20Global%20TLS%20Intermediate%20CA%20Incident)
-says a Key Generation Ceremony on FIPS 140-2 Level 3 hardware generated the keys, and
-that "a flaw in one step of that process... produced a second, weak set of keys alongside the
-original strong keys." It doesn't say which step.
+says a Key Generation Ceremony on FIPS 140-2 Level 3 hardware security modules generated the keys,
+and names the step that failed: "The problem was a flaw in one step of the ceremony procedure, not
+the absence of HSMs. During the ceremony, a key wrap/unwrap step produced a second, weak set of keys
+alongside the original strong keys." The same update says eMudhra has not yet confirmed the exact
+root cause.
 
 On the Mozilla bug for the incident
 ([bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comment 11), eMudhra wrote
@@ -38,7 +40,7 @@ makes no claim about how they came about.
 - Mozilla Bugzilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): comment 11 is eMudhra's explanation (unverified), and other comments discuss it
 - BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/): the keys were P-384 private keys with values smaller than 256
 - Scott Helme, [Eight Bits of Trust](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the eight recovered values, listed against the eight intermediates
-- NIST, [FIPS 186-5: Digital Signature Standard (DSS)](https://csrc.nist.gov/pubs/fips/186-5/final), Appendix A (key pair generation with extra random bits, and by testing candidates)
+- NIST, [FIPS 186-5: Digital Signature Standard (DSS)](https://csrc.nist.gov/pubs/fips/186-5/final), Appendix A.2.1 (key pair generation using extra random bits) and A.2.2 (key pair generation by rejection sampling)
 - NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for the order `n` of P-256 and P-384
 - SECG, [SEC 1: Elliptic Curve Cryptography](https://www.secg.org/sec1-v2.pdf), section 3.2.1 (key pair generation)
 
@@ -107,6 +109,8 @@ Zero is below `B` as well, and the first row decides it: 0 is `out-of-range`. Th
 
 Let `L` be the bit length of `n` (256 for P-256, 384 for P-384) and let `B = 2^(L/2)`: `2^128`
 for P-256, `2^192` for P-384. A key is weak when it is below `B`, or when `n - d` is below `B`.
+This bound is the workbook's own. FIPS 186-5 and SEC 1 define no weak-key bound and reject only
+values outside 1 to `n - 1`.
 
 The second half of that rule comes from negation. The public key for `n - d` is the negation of
 the public key for `d`: the same x, with y replaced by `p - y`. An attacker who finds that a
@@ -136,8 +140,9 @@ passes this check.
 
 ### Generating a key
 
-A generator turns random bytes into a key by rejection sampling, the method FIPS 186-5 and SEC 1
-describe:
+A generator turns random bytes into a key by rejection sampling. FIPS 186-5 (Appendix A.2.2)
+tests a candidate only for range, and SEC 1 (section 3.2.1) asks for a random `d` from 1 to
+`n - 1`. Step 3 below adds the workbook's `weak` test to the range test:
 
 1. Draw as many random bytes as the order needs: 32 for P-256, 48 for P-384.
 2. Read them as one big-endian unsigned integer: the candidate.
@@ -316,12 +321,14 @@ author's code to compare with. Run on each of the eight incident keys, your `val
 returns `weak`: every one is below 256, far under `B = 2^192`. A ceremony that applied this check
 to every private key before using it, including one handed to the module or returned by an unwrap,
 would have flagged them. None of the sources above says whether eMudhra's software ran such a
-check.
+check. Inside an HSM the operators never see `d`, so a ceremony can run this check only if the
+module itself performs it. Otherwise the ceremony can run only assignment 13's lint, on the public
+key.
 
 The check says nothing about how those keys came to exist. It also passes a key with no obvious
 pattern that still came from a small set of inputs. A generator that draws and validates, as
 yours does, is necessary and not sufficient: assignment 14 checks the steps after generation, such
-as the wrap and unwrap that the Mozilla bug comment points to, where a key can change without any
+as the wrap/unwrap step that Update 3 and the Mozilla bug comment name, where a key can change without any
 check on one key noticing.
 
 Your generator draws from `os.urandom` unless the caller passes another source, which is how the

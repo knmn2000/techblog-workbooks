@@ -27,7 +27,7 @@ reference).
 | Project files | where the layout puts them, e.g. `src/font/Cmap.h` |
 | Reference | the same paths under `_spoilers/project/` |
 | Starters | the same paths under `starters/blank/` and `starters/boilerplate/` |
-| Generator | `tools/gen_pNN.py` (uses `tools/wbcore.py`) |
+| Generator | `tools/gen_pNN.py` (uses `tools/wb.py`) |
 | Generated tests | `tests/NN/cases.txt`, plus `tests/NN/data/` and, for pictures, `tests/NN/expected/` |
 
 Register every assignment in `workbook.json`, with its place in the project, before work starts:
@@ -86,7 +86,8 @@ book builder parses them):
    `output:` in fenced blocks copied from real cases (say once in the README that line endings and
    runs of spaces don't matter; the checker compares words), and a walkthrough of the one
    non-obvious step (a byte-by-byte table is ideal). Picture assignments embed the expected image:
-   `![expected picture for <id>](tests/NN/expected/<id>.png)`.
+   `![expected picture for <id>](../tests/NN/expected/<id>.png)` (relative to the page, so
+   the image also shows when you read the Markdown file).
 10. `## Constraints`: input limits, the guarantees about well-formed input, the number of tests and
     what they cover, the time limit.
 11. `## Hints`: four blocks, each
@@ -184,10 +185,10 @@ formatting rule the boilerplate handles (how to round numbers, how to print byte
 
 ## 5. The generator and the case file
 
-Use `tools/wbcore.py`: `wbcore.parse_args("NN")`, `wbcore.Cases(out, seed, compare, requirements,
+Use `tools/wb.py` (`import wb`): `wb.parse_args("NN")`, `wb.Cases(out, seed, compare, requirements,
 explain, source=...)`, `cases.add(id, req, title, input_lines, expected=... | expected_file=...)`,
-`cases.save()`. Domain helpers (file formats, sample data) go in a workbook-specific module next
-to it.
+`cases.save()`. In this workbook `wb.py` also holds the font helpers (reading glyph records,
+building test fonts, the reference runner), and the fill generators share `tools/fillgen.py`.
 
 The case file's header has:
 - `source` (default source of expected values; cases may override),

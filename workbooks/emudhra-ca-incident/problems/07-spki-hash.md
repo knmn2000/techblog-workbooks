@@ -9,26 +9,39 @@
 
 ## Read in the blog first
 
-Read Google's security blog post, ["Protecting Chrome and Android Users from Compromised
-eMudhra Intermediate CA Certificates"](https://security.googleblog.com/), for how Chrome blocked
-the compromised intermediates: by the SHA-256 hash of their SubjectPublicKeyInfo, pushed to every
-Chrome install through CRLSet, instead of by their serial numbers or their exact bytes. The post
-explains why the mechanism exists; this assignment computes the hash. You can pass using this
-page alone.
+eMudhra's statement doesn't say how browsers blocked the compromised keys. Google's post
+["Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates"](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/)
+(Chrome and Android Security Teams, October 20, 2026) does. At 19:45 UTC on October 17, Chrome
+landed a CRLSet update that blocks the Subject Public Key Info (SPKI) hashes of the affected
+intermediates, and because it blocks by SPKI, it protected Chrome users "against all certificates
+sharing those keys". This assignment computes that hash. You can pass using this page alone.
+
+Two other reports show the same choice. Cisco Talos
+[reports](https://blog.talosintelligence.com/compromised-intermediate-certificates/) that Go
+1.27.3 and 1.26.10 filter out chains containing the SPKI SHA-256 hashes of all eight compromised
+intermediate certificates. Scott Helme
+[reports](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/)
+that Sectigo cross-signed every one of the eight keys under its AAA Certificate Services root in
+May 2025, so each key sits in two certificates, one issued by eMudhra and one by Sectigo: 16
+certificates for 8 keys. A blocklist of certificate serial numbers or fingerprints needs an entry
+for each of the 16, and misses any certificate for the same key that it doesn't list. One SPKI
+hash per key covers both certificates.
 
 ## Source material
 
-- Google Security Blog, "Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates"
+- Chrome and Android Security Teams, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/), October 20, 2026: the CRLSet update that blocks the intermediates by SPKI hash
+- Cisco Talos, [Compromised intermediate certificates](https://blog.talosintelligence.com/compromised-intermediate-certificates/): Go's fix, which filters chains by SPKI hash
+- Scott Helme, [Eight bits of trust: eMudhra's CA keys cracked in milliseconds](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the Sectigo cross-signatures, 16 certificates for 8 keys
 - RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 4.1.2.7 (SubjectPublicKeyInfo)
 
 ## Where this fits
 
 Your `x509/certificate.py` from assignment 06 finds a certificate's subjectPublicKeyInfo field,
 and your `asn1/der.py` (assignment 05) records where each node's bytes start and end. Here, in
-`x509/spki.py`, you hash that field. Chrome used this hash to block the compromised eMudhra
-intermediates by their key, and the hash stays the same when a CA reissues a certificate for the
-same key. Assignment 13 checks a new key against a blocklist of known-compromised keys, and
-assignment 15 blocks whole chains by SPKI hashes like these.
+`x509/spki.py`, you hash that field. Chrome's CRLSet and Go's fix both name blocked keys by this
+hash, and the hash stays the same in every certificate that carries the key. Assignment 13
+checks a new key against a blocklist of known-compromised keys, and assignment 15 blocks whole
+chains by SPKI hashes like these.
 
 ## The problem
 
@@ -91,8 +104,8 @@ difference points to.
 - **R1** The SPKI hash is correct for several P-256 certificates.
 - **R2** The SPKI hash is correct for several P-384 certificates.
 - **R3** Two certificates that carry the same public key give the same hash, even when their
-  subject names, validity periods and serial numbers differ. The hash survives reissuance, which
-  is why Chrome blocked on it instead of on a certificate's serial number or fingerprint.
+  subject names, validity periods and serial numbers differ. The hash survives reissuance and
+  cross-signing, so one blocklist entry covers every certificate for the key.
 
 ## Examples
 

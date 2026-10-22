@@ -290,15 +290,15 @@ for i in 0 .. numGlyphs - 1:
 .\check 04 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+A failing test looks like this (here the offsets leave out where `glyf` starts):
 
 ```
-  R3  Short format: each uint16 entry is the offset / 2 ....................    0 / 2   FAILED
-      x 04-R3-short-x2  8 glyphs in a short loca: every offset is twice the stored value
-          glyph[0]: expected (id=0, offset=484, length=26), got (id=0, offset=484, length=13) - differs in length  (in `glyphs 8 loca short`)
-          likely cause: R5 - Length = next entry - this one (x2 if short); numGlyphs + 1 entries
+  R4  Offset = glyf table offset + loca entry (x2 when short) ..............    0 / 2   FAILED
+      x 04-R4-jetbrains-07  JetBrains Mono: '-', ' ', 'i', 'A', the glyphs of checkpoint 7's example
+          glyph[0]: expected (id=17, offset=115392, length=56), got (id=17, offset=1908, length=56) - differs in offset  (in `glyphs 12125 loca long`)
+          likely cause: R4 - Offset = glyf table offset + loca entry (x2 when short)
           expected values from: fontTools 4.67.0 maxp, head, loca and the glyf offset, cross-checked against a struct parse of loca
-          reproduce: build/solutions/assignment_04.exe build/cases/04/04-R3-short-x2.in build/cases/04/04-R3-short-x2.out
+          reproduce: build/solutions/assignment_04 build/cases/04/04-R4-jetbrains-07.in build/cases/04/04-R4-jetbrains-07.out
 ```
 
 ## After you pass: compare with the author's code

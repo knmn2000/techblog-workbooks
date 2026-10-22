@@ -159,13 +159,22 @@ output:  valid
 genuine (built so that the equation in steps 2 to 4 holds), so the answer is `valid`. A range
 check written as `r < n - 1` instead of `r <= n - 1` gets this case wrong and passes the others.
 
+The hash here is all zeros, so `z = 0` and `u1 = z*w mod n = 0`. `u1*G` is then `0*G`, the point
+at infinity, and `point` is `infinity + u2*Q = u2*Q`. Assignment 03's tests only used `d >= 1`,
+so check that your `scalar_multiply` returns infinity for a scalar of 0, and that your
+`add_points` treats infinity as "add nothing".
+
 ## Constraints
 
 - Every input line is `verify <pubx> <puby> <hash> <r> <s>`, all lowercase hex, with no `0x`
   prefix.
 - `pubx`, `puby` and `hash` are 96 hex characters (48 bytes) on every line. `r` and `s` can be
   shorter, down to 1 character for small values such as the R2 zero cases.
-- Every `pubx`, `puby` pair is a valid point on P-384.
+- Every `pubx`, `puby` pair is a valid point on P-384, so your program doesn't need to check it.
+  A real verifier validates the public key `Q` before using it (SEC 1, section 3.2.2): among
+  other checks, `Q` must lie on the curve and must not be the point at infinity. A weak key such
+  as `4G`, the public key for the eMudhra private key `d = 4`, passes those checks, because it is
+  an ordinary point on P-384.
 - There are 13 tests: 1 for R1 (itself 3 signatures from 3 different keys), 4 for R2, 3 for R3,
   1 for R4, 3 for R5, and one end-to-end test that mixes several of these in one batch, the way a
   verifier sees them while it checks a batch of certificates. Part of the set is random and
@@ -198,6 +207,8 @@ check whether the result is infinity or has `x mod n == r`.
 - `u1*G + u2*Q` can be the point at infinity, when `u1*G` and `u2*Q` are negations of each
   other. That's a different failure from an out-of-range `r` or `s`. Check for it and return
   `invalid`, so that your code doesn't crash reading the x of `None`.
+- `u1` is 0 when `z = 0`, as in Example 3. `0*G` is the point at infinity, and your
+  `scalar_multiply` has to return it without failing.
 - `r` and `s` in the input aren't zero-padded like the public key and hash. Parse them as hex the
   same way, without assuming a fixed width.
 </details>

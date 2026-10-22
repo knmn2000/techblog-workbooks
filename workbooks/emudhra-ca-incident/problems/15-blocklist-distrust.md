@@ -5,22 +5,35 @@
 **Tags**
 - *Language:* parsing a small log format · sets
 - *Library:* none needed
-- *Concepts:* SPKI pinning/blocking · root distrust · CRLSet-style revocation · response speed vs. blast radius
+- *Concepts:* SPKI pinning/blocking · root distrust · cross-signing · CRLSet-style revocation · response speed vs. blast radius
 
 ## Read in the blog first
 
-This page is complete on its own. eMudhra's
+This page is complete on its own. Google's post
+[Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/#:~:text=blocks%20by%20SPKI)
+(October 20, 2026) describes Chrome's response in two parts. At 19:45 UTC on October 17, Chrome
+landed a CRLSet update that blocked the SPKI hashes of the affected intermediate CAs, and the post
+says that because the update "blocks by SPKI, Chrome users were immediately protected against all
+certificates sharing those keys". Chrome also removes the root above them, emSign ECC Root CA - G3,
+from the Chrome Root Store, "to support other consumers of the Chrome Root Store that do not
+consume CRLSet updates"; the post expects that change to reach users on October 27. eMudhra's
 [Update 1](https://emudhra.com/en/post/certificate-security-incident#:~:text=Update%201)
-quotes Mozilla's response through OneCRL/NSS. Alongside the browser statements, Google's security
-blog post, "Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA
-Certificates," describes Chrome's response in two parts: blocking the compromised keys by their
-SPKI hash through Chrome's CRLSet, and, as a separate precaution, removing all trust in the
-affected root. This assignment models both mechanisms and the difference between them.
+quotes Mozilla's response through OneCRL and NSS.
+
+The weak keys also sat under a second root. Sectigo cross-signed the eight intermediates under its
+AAA Certificate Services root in May 2025, so each key appears in two certificates, 16 in all
+(Scott Helme; Mozilla bug 2083449, comment 2). A chain through a Sectigo cross-certificate ends at
+AAA Certificate Services and doesn't reach the emSign root, so distrusting the emSign root leaves
+it alone. A block by SPKI hash stops both copies of a key, because both certificates carry the
+same public key. This assignment models both mechanisms and the difference between them.
 
 ## Source material
 
+- Google, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/) (Chrome and Android Security Teams, October 20, 2026): the CRLSet update that blocked the intermediates' SPKI hashes, and the removal of emSign ECC Root CA - G3 from the Chrome Root Store
+- Mozilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): comment 0 (the OneCRL block, and eMudhra notifying Sectigo), comment 2 (CRLSet sequence 10843 lists the six TLS keys as revoked; the eight Sectigo cross-certificates), comment 6 (Sectigo on which root stores trust AAA Certificate Services), comment 13 (Sectigo revokes the cross-certificates), comment 30 (Chrome Root Store v43 and its expected date)
+- Scott Helme, [Eight bits of trust](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the Sectigo cross-signing, 16 certificates for 8 keys, and the CRLSet and OneCRL blocks
+- Cisco Talos, [Compromised intermediate certificates](https://blog.talosintelligence.com/compromised-intermediate-certificates/): Go's SPKI filter, and Microsoft's block of the two code-signing certificates
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 1 (quoting Mozilla's OneCRL/NSS response)
-- Google Security Blog, "Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates": Chrome's CRLSet-based SPKI blocking, and the separate decision to remove trust in the affected root
 - Assignment 13 (`problems/13-key-linter.md`): the blocklist idea this assignment extends across a whole chain
 
 ## Where this fits
@@ -48,6 +61,10 @@ blocked.
    that leads back to that root is blocked, including certificates whose own keys aren't on any
    blocklist. This is coarser, since it can affect certificates that were fine on their own, and
    it was the precautionary step in this incident.
+
+Root distrust reaches only the chains that end at the distrusted root. A cross-certificate puts the
+same key under a second root, and a chain through it ends at that second root. If the client still
+trusts the second root, root distrust leaves the chain trusted, and only an SPKI block stops it.
 
 The two mechanisms are independent, and either one blocks a chain on its own. If a chain's own
 certificates trigger both, report the SPKI block: it's the more specific, faster-acting
@@ -99,6 +116,8 @@ difference points to.
 - **R5** A blocklist or distrust entry meant for some other chain's certificates doesn't affect a
   chain whose own certificates don't match it, and an entry affects only the chains that come after
   it in the input.
+- **R6** A blocked key blocks every chain it appears in, including a cross-signed chain that ends
+  at a root that is not distrusted. With the root distrust alone, that chain stays `trusted`.
 
 ## Examples
 
@@ -134,6 +153,34 @@ The root is also on the distrust list, but the output reports the SPKI block. It
 specific finding: it names the key that's bad, which tells a responder more than "this whole root
 is under precautionary distrust".
 
+### Example 3: a cross-signed copy of a blocked key (test `15-R6-distrust-alone-misses-cross-sign`)
+
+```
+input:   distrusted-root root-home
+         chain own-root
+         cert leaf f04fcaed90842c2289cc99580382798a76cc64cb5b3260d7619ef836cc7136ec -
+         cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+         cert root de420ff5d0fdee7e5decf09a715ce8174acd2af25b278023f87df5117ecc8c8c root-home
+         chain cross-before
+         cert leaf 246e051559f96349b724a19295200eb13c0d9f7bd154e973d0704aadcb6cd480 -
+         cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+         cert root d448388dee04104134f164b8d89307fbab6e4ac6639b126233ad838fe9b074ca root-other
+         blocked-spki 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df
+         chain cross-after
+         cert leaf 246e051559f96349b724a19295200eb13c0d9f7bd154e973d0704aadcb6cd480 -
+         cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+         cert root d448388dee04104134f164b8d89307fbab6e4ac6639b126233ad838fe9b074ca root-other
+
+output:  chain own-root blocked root root-home
+         chain cross-before trusted
+         chain cross-after blocked spki intermediate
+```
+
+All three chains carry the intermediate key `4991a8...`. The first ends at `root-home`, which is
+distrusted. The second reaches the same key through a cross-certificate and ends at `root-other`,
+which the input doesn't distrust, so with only the root distrusted it is `trusted`. Once `blocked-spki` names
+the key, the third chain, identical to the second, is `blocked spki intermediate`.
+
 ## Constraints
 
 - `blocked-spki` and `distrusted-root` lines, and `chain`/`cert` blocks, may appear in any order,
@@ -141,8 +188,9 @@ is under precautionary distrust".
 - Every chain has exactly one `leaf`, at least one `intermediate`, and exactly one `root`, leaf to
   root in that order. An input has at most 8 chains.
 - Each case has a 10-second limit; this assignment does no heavy computation.
-- There are 9 tests: 1 for R1, 3 for R2 (one per role), 1 for R3, 1 for R4, 2 for R5, and 1
-  end-to-end case with five chains covering every verdict in one input. Part of the set is
+- There are 11 tests: 1 for R1, 3 for R2 (one per role), 1 for R3, 1 for R4, 2 for R5, 2 for R6
+  (a blocked key in a chain to the distrusted root and in a cross-signed chain to another root),
+  and 1 end-to-end case with five chains covering every verdict in one input. Part of the set is
   random and changes with `-Fresh`.
 
 ## Hints
@@ -172,6 +220,8 @@ certificate (a chain has only one) and checks its root id against the distrust s
   certificate's third field is the placeholder `-`, so don't compare it with the distrust set.
 - An entry in either set that matches nothing in a particular chain has no effect on that chain.
   Keep one chain's problem out of another chain's verdict.
+- The same key can sit under two roots. Check the blocklist on every chain, whatever root it ends
+  at.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -210,11 +260,25 @@ A failing test looks like this:
 
 ## After you pass: compare with the post
 
-Neither source describes a single "policy" the way this assignment states one. They describe two
-separate actions taken during the same incident. You gave the distinction between them a name: one
-mechanism that's surgical and fast, another that's broad and precautionary, and a rule for which
-one to report when both apply.
+Google's post describes two actions and publishes no code, so there is no author's code to compare
+with. It gives a reason for the second action: the root removal reaches consumers of the Chrome Root
+Store that don't take CRLSet updates. The rule for which block to report when both apply is this
+workbook's. The post doesn't state one.
 
-This is also the last assignment in the workbook about policy alone,
-with no cryptography. Assignment 16 is the capstone: it puts the earlier assignments' pieces
-together into one audit of a small, synthetic PKI.
+Root distrust also missed the Sectigo copies of the keys. A chain through a cross-certificate ends
+at AAA Certificate Services and never reaches emSign ECC Root CA - G3, which is what
+`15-R6-distrust-alone-misses-cross-sign` shows with synthetic ids: with only the root distrusted,
+the cross-signed chain is `trusted`. Sectigo wrote in the bug (comment 6) that Chrome and Mozilla
+had already removed AAA Certificate Services, and that Microsoft and Apple still trusted it. A
+client whose bundle still holds that root keeps the cross-signed path after its bundle drops the
+emSign root. It stops trusting the path only if it checks revocation and sees Sectigo's revocation
+of the cross-certificates on October 19 (comment 13), or if it blocks the keys themselves.
+
+Go is one non-browser client that got a key blocklist. Helme notes that tools such as Terraform
+and kubectl use Go, and that clients like them trust a CA bundle on disk and don't check
+revocation by default. Talos reports that Go 1.27.3 and 1.26.10 filter out chains containing the
+SPKI hashes of all eight intermediates (CVE-2026-111943), so programs built with those versions
+reject both copies of each key without a CRLSet.
+
+Assignment 16 puts the earlier assignments' pieces together into one audit of a small, synthetic
+PKI, and assignment 19 calls your `check_chain` once per client.

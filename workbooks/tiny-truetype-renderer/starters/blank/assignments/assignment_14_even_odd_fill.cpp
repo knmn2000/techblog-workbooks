@@ -3,10 +3,11 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 14 as `build/solutions/assignment_14.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 14`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 14 as `build/solutions/assignment_14
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 14` (`./check.sh 14` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   Read the `canvas`, `place` and `color` lines and each `outline` with its `ends` and

@@ -758,6 +758,17 @@ span.CodeMirror-selectedtext { background: none; }
   // creates, and earlier files it adds to.
   const PROJECT = DATA.project;
   const PROJECT_DIR = PROJECT.dir + '/';
+  // workbook.json writes commands for Windows, with {exe} where a program's name ends in .exe there.
+  // Show this computer's form: ./check.sh, ./study.sh and no .exe on macOS and Linux.
+  const SYSTEM = /Win/i.test(navigator.platform || navigator.userAgent) ? 'windows'
+    : /Mac/i.test(navigator.platform || navigator.userAgent) ? 'mac' : 'linux';
+  if (SYSTEM !== 'windows' && DATA.check.startsWith('.\\check ')) {
+    DATA.check = './check.sh ' + DATA.check.slice('.\\check '.length);
+    if (DATA.shell === 'PowerShell') DATA.shell = 'a terminal';
+  }
+  PROJECT.run = (PROJECT.run || '').replace('{exe}', SYSTEM === 'windows' ? '.exe' : '');
+  const STUDY_HOW = SYSTEM === 'windows' ? 'double-click <code>study.cmd</code>, or run <code>.\\study</code>'
+    : SYSTEM === 'mac' ? 'double-click <code>study.command</code>, or run <code>./study.sh</code>' : 'run <code>./study.sh</code>';
   const shortName = (path) => (path.startsWith(PROJECT_DIR) ? path.slice(PROJECT_DIR.length) : path);
   const draftKey = (path) => 'draft:' + path;  // the published book keeps your files in this browser
   const command = (id, extra) => DATA.check.replace('{id}', id) + (extra ? ' ' + extra : '');
@@ -837,7 +848,7 @@ span.CodeMirror-selectedtext { background: none; }
         ${LOCAL ? `<li><span>The Run button checks the selected example, and Submit runs every test. The verdict appears in the Test result tab, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
           : HOST ? `<li><span>Once the workbook is set up on your computer, Run and Submit check your code there. This copy shows the problems and the starter code. <button type="button" class="linkish" data-run-local>See how</button></span></li>`
           : `<li><span>The Submit button copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
-        <li><span>Paste the checker's output into the Test result tab. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
+        <li><span>Paste the checker's output into the Test result tab. Accepted marks the assignment solved. If you open the workbook with the study server instead (${STUDY_HOW}), Run and Submit build and run your code for you.</span></li>`}
         <li><span>An assignment's tests depend only on the earlier files it uses, because each test input carries what earlier assignments would produce.${LOCAL ? ' The Re-check solved button reruns your solved assignments and shows any that a later change broke.' : ''}</span></li>
         <li><span>If a test looks wrong, run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask Claude to review your disputes.</span></li>
       </ol></div>`;
@@ -1717,7 +1728,7 @@ span.CodeMirror-selectedtext { background: none; }
     el.hidden = false;
     el.className = 'live ' + (!live.online ? 'off' : LOCAL.problem ? 'warn' : 'on');
     el.textContent = !live.online ? 'Disconnected' : LOCAL.problem ? "Can't build yet" : 'Live';
-    el.title = !live.online ? 'The study server has stopped. Start it again (double-click study.cmd, or run .\\study), then reload this page.'
+    el.title = !live.online ? `The study server has stopped. Start it again (${STUDY_HOW.replace(/<\/?code>/g, '')}), then reload this page.`
       : LOCAL.problem || `Run and Submit build and check your project in ${LOCAL.folder}`;
   }
 
@@ -1952,7 +1963,7 @@ span.CodeMirror-selectedtext { background: none; }
       <span class="logo">${esc(DATA.title.trim().charAt(0).toUpperCase())}</span>
       <h1>See you again!</h1>
       <p>${esc(DATA.title)} has stopped. Your code is in <code>solutions/</code>.</p>
-      <p>To come back, double-click <code>study.cmd</code> or ask Claude to open your workbook.</p>
+      <p>To come back, ${STUDY_HOW}, or ask Claude to open your workbook.</p>
       <p class="bye-close" hidden>You can close this tab now.</p></div></div>`);
     // Browsers only let a page close tabs it opened itself; otherwise the message stays.
     setTimeout(() => { window.close(); setTimeout(() => { const note = document.querySelector('.bye-close'); if (note) note.hidden = false; }, 300); }, 1800);
@@ -2050,7 +2061,7 @@ span.CodeMirror-selectedtext { background: none; }
       case 'not-implemented': return `<code>${esc(r.function || 'A function')}</code> is still a TODO in your files. Write it and Submit again.`;
       case 'passed': return `This test passes. Submit runs all ${c.tests}.`;
       case 'failed': return 'This test fails. Its input, your output and the expected output are below.';
-      case 'offline': return "The study server has stopped, so nothing ran. Start it again (double-click <code>study.cmd</code>, or run <code>.\\study</code> in the workbook folder), then reload this page.";
+      case 'offline': return `The study server has stopped, so nothing ran. Start it again (${STUDY_HOW} in the workbook folder), then reload this page.`;
       default: return esc(r.message || 'The checker ran into a problem.');
     }
   }

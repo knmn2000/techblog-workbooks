@@ -46,7 +46,7 @@ REQUIREMENTS = [
     ("R5", "An intermediate in the chain lacks CA:true: not-a-ca"),
     ("R6", "An intermediate's path length constraint is violated by how many more intermediates follow it: path-too-long"),
     ("R7", "A certificate's validity window does not cover `now`: expired"),
-    ("E2E", "A realistic small set of chains, mirroring what let browsers reject paths through the revoked eMudhra intermediates"),
+    ("E2E", "A small set of chains, including one that verifies while its root is a trust anchor and fails once that root is distrusted"),
 ]
 EXPLAIN = "_lines=R1 trusted=R3 untrusted=R3"
 
@@ -282,8 +282,9 @@ def main():
             add_chain(f"09-E2E-random-{scenario}-s{args.seed}-{k}", "E2E", f"random chain signed by an unlisted root (seed {args.seed})",
                       f"r{k}", [rkey], [rcert], [], leaf)
 
-    # --- E2E: the incident shape - a chain through an intermediate that would be an eMudhra-like
-    # CA, once removed from the trust store its signer is no longer a recognised anchor ---
+    # --- E2E: root distrust - a chain through an intermediate under an eMudhra-like root, first
+    # with that root as an anchor, then with the root distrusted (no anchor). This models
+    # removing a root; blocking the intermediate itself is assignment 15's job. ---
     root_keyE = make_key()
     root_certE = make_cert("Public-Root", "Public-Root", root_keyE.public_key(), root_keyE, ca=True, serial=1)
     compromised_key = make_key()  # stands in for a weak/compromised intermediate key
@@ -291,12 +292,12 @@ def main():
     leafE_key = make_key()
     leafE_valid = make_cert("Leaf-Via-Compromised", "Compromised-Intermediate", leafE_key.public_key(), compromised_key, serial=3)
     add_chain("09-E2E-incident-before-distrust", "E2E",
-              "before distrust: a leaf through the (still trusted) intermediate verifies", "before",
+              "before distrust: a leaf through an intermediate whose root is a trust anchor verifies", "before",
               [root_keyE], [root_certE], [compromised_cert], leafE_valid)
-    # After the incident, the intermediate is removed from the trust store/root list entirely -
-    # modelled here as the leaf no longer chaining to any given anchor.
+    # The root is distrusted: it is no longer offered as an anchor, so the same chain no longer
+    # reaches one.
     add_chain("09-E2E-incident-after-distrust", "E2E",
-              "after distrust: the same leaf, but its issuing intermediate's signer is no longer an anchor", "after",
+              "after distrust: the same leaf and intermediate, with their root no longer a trust anchor", "after",
               [], [], [compromised_cert], leafE_valid)
 
     cases.save()

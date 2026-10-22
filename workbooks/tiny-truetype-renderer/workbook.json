@@ -14,7 +14,7 @@
       "third_party/stb_image_write.h": "third_party/stb/stb_image_write.h"
     },
     "build": "cmake --build build/solutions --target tiny_ttf",
-    "run": "build/solutions/tiny_ttf.exe fonts/JetBrainsMonoNerdFont-Bold.ttf \"Hello, TrueType!\" hello.png",
+    "run": "build/solutions/tiny_ttf{exe} fonts/JetBrainsMonoNerdFont-Bold.ttf \"Hello, TrueType!\" hello.png",
     "author": {
       "label": "Yohei Yamasaki's tiny-truetype-renderer",
       "url": "https://github.com/YohYamasaki/tiny-truetype-renderer",
@@ -57,7 +57,7 @@
       "src/render/Outline.cpp": "These files draw a glyph's outline on the canvas, with straight lines between its points and a marker on every point. In assignment 11 you add a second drawing, with the real curves, to the same files.",
       "src/font/CompoundGlyph.h": "This code turns any glyph into the simple outlines you draw it with. It reads a compound glyph's components, moves, scales or rotates each one, and resolves components nested at any depth. In assignment 18 you draw every character of a line of text through it, so your text renderer doesn't need to tell simple glyphs from compound ones.",
       "src/font/CompoundGlyph.cpp": "This code turns any glyph into the simple outlines you draw it with. It reads a compound glyph's components, moves, scales or rotates each one, and resolves components nested at any depth. In assignment 18 you draw every character of a line of text through it, so your text renderer doesn't need to tell simple glyphs from compound ones.",
-      "src/utils/Geometry.h": "This header holds the project's 2D maths: a point type, lerp, and the point at t on a quadratic Bezier curve. In assignment 11 you draw curves with it. Assignments 12, 13 and 15 add functions for where segments and curves meet and for a curve's lowest point, and the fills from assignment 14 on use them.",
+      "src/utils/Geometry.h": "This header holds the project's 2D maths: a point type, lerp, and the point at t on a quadratic Bezier curve. In assignment 11 you draw curves with it. Assignments 12, 13 and 15 add the blog's helpers for where segments and curves meet and for a curve's lowest point. The blog's fill uses them; your fills from assignment 14 on work out each crossing from its edge instead.",
       "src/render/Scanline.h": "It holds the steps both fill rules share: it turns an outline into edges in pixels and finds, row by row, where the line through the pixel centres crosses them. Your even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both run on it.",
       "src/render/Scanline.cpp": "It holds the steps both fill rules share: it turns an outline into edges in pixels and finds, row by row, where the line through the pixel centres crosses them. Your even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both run on it.",
       "src/render/EvenOdd.h": "It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16 adds the non-zero rule beside it, and the text renderer in assignment 18 uses that rule.",
@@ -75,7 +75,7 @@
     "creates": "build/solutions/build.ninja"
   },
   "build": "cmake --build build/solutions --target assignment_{id}",
-  "run": "build/solutions/assignment_{id}.exe {input} {output}",
+  "run": "build/solutions/assignment_{id}{exe} {input} {output}",
   "reference": {
     "snapshot": "build/ref-src",
     "setup": {
@@ -83,7 +83,7 @@
       "creates": "build/ref/build.ninja"
     },
     "build": "cmake --build build/ref --target assignment_{id}",
-    "run": "build/ref/assignment_{id}.exe {input} {output}"
+    "run": "build/ref/assignment_{id}{exe} {input} {output}"
   },
   "timeoutSeconds": 10,
   "book": {
@@ -458,9 +458,9 @@
     ],
     "launch": {
       "windows": "study.cmd",
-      "other": "python3 -P tools/serve.py"
+      "mac": "study.command",
+      "other": "./study.sh"
     },
-    "caveat": "This workbook was built and tested on Windows. Its build commands in workbook.json use .exe names, so on Linux or macOS they may need small changes.",
-    "promptNote": "This workbook was built on Windows, and its build and run commands in workbook.json use .exe names. On Linux or macOS, adapt them and tell me what you changed."
+    "caveat": "Checked on Windows and Linux. macOS uses the same commands as Linux; they haven't run on a Mac yet."
   }
 }

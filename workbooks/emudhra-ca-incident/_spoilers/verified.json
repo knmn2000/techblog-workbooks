@@ -153,16 +153,23 @@
   },
   "11": {
     "files": {
-      "_spoilers/project/assignments/assignment_11_sign_with_weak_key.py": "2b2ddfd8976c3b50cab591d99fdbafacaaee587190a11dde5af3b689e04d5054",
+      "_spoilers/project/assignments/assignment_11_sign_with_weak_key.py": "35409b99c1b0c1e4a8513a3058ebf2818b332270dea229f8a272706587e147e0",
       "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
       "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
       "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
       "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "46b67089cea551a3b1700a333a257ba317d48225ed530431da0d99178b48d0e9",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/chain.py": "5fc2af6ec52a05979df0c7d8044d723a9783f6c953e0f4857aba14bc5853303a",
       "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
-      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679"
     },
-    "passed": 21,
-    "total": 21,
+    "passed": 24,
+    "total": 24,
     "date": "2026-10-22"
   },
   "12": {
@@ -214,8 +221,8 @@
       "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
       "_spoilers/project/src/pkiaudit/pki/trust.py": "14ce05e8ae7fa0f3fdd991d437ecce3b428b44dadf644141747a398e2ebd01dc"
     },
-    "passed": 9,
-    "total": 9,
+    "passed": 11,
+    "total": 11,
     "date": "2026-10-22"
   },
   "16": {

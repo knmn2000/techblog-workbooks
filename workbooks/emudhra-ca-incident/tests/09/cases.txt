@@ -10,7 +10,7 @@ requirement R4 A certificate names the next one up as its issuer, but a differen
 requirement R5 An intermediate in the chain lacks CA:true: not-a-ca
 requirement R6 An intermediate's path length constraint is violated by how many more intermediates follow it: path-too-long
 requirement R7 A certificate's validity window does not cover `now`: expired
-requirement E2E A realistic small set of chains, mirroring what let browsers reject paths through the revoked eMudhra intermediates
+requirement E2E A small set of chains, including one that verifies while its root is a trust anchor and fails once that root is distrusted
 case 09-R1-two-level R1
 title a leaf signed directly by a trust anchor
 input
@@ -130,7 +130,7 @@ expected
 chain r1 untrusted unknown-anchor
 end
 case 09-E2E-incident-before-distrust E2E
-title before distrust: a leaf through the (still trusted) intermediate verifies
+title before distrust: a leaf through an intermediate whose root is a trust anchor verifies
 input
 chain before
 now 250601000000Z
@@ -141,7 +141,7 @@ expected
 chain before trusted
 end
 case 09-E2E-incident-after-distrust E2E
-title after distrust: the same leaf, but its issuing intermediate's signer is no longer an anchor
+title after distrust: the same leaf and intermediate, with their root no longer a trust anchor
 input
 chain after
 now 250601000000Z

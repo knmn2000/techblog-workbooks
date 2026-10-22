@@ -219,9 +219,8 @@ Without the swap you would step x from 50 to 52 and paint only 3 pixels, leaving
 
 ## Constraints
 
-- `w` and `h` are between 1 and 600. Rectangle sizes and line thicknesses are between 1 and 600.
-  Clip each rectangle's loops to the canvas rather than skipping pixels one by one: a thick line
-  stamps one rectangle per step, and most of a big stamp can lie outside the canvas.
+- `w` and `h` are between 1 and 600. Rectangle sizes and line thicknesses are between 1 and 600
+  (Hint 3 says what that means for speed).
 - Coordinates are between -1000 and 1000, so a line has at most a few thousand steps.
 - At most 15 colours appear in one picture, each far from the others and from black.
 - Each case has a 10-second limit. A correct solution takes milliseconds.
@@ -233,7 +232,7 @@ Without the swap you would step x from 50 to 52 and paint only 3 pixels, leaving
 <details><summary>Hint 1: where to start</summary>
 
 Get `set()` right first: it is the only function that touches the pixel array, so if it
-checks the bounds, nothing else has to. Then `drawRect()` is two loops calling `set()`, and
+checks the bounds, no shape can write outside the picture. Then `drawRect()` is two loops calling `set()`, and
 `drawLine()` is one loop calling `drawRect()`.
 </details>
 
@@ -254,6 +253,9 @@ per step, where `|slope| <= 1`. Swap x and y back when you stamp the square.
 - A zero-length line has `bx - ax == 0`. Don't divide by it; draw one square.
 - `w / 2` for the rectangle is integer division on purpose: it rounds down.
 - Loop `x <= bx`, not `x < bx`, or the last end goes missing.
+- A thick line stamps one rectangle per step, up to 600 x 600 pixels each, and most of a stamp
+  can lie outside the canvas. Start and stop the rectangle's loops at the canvas edges, so the
+  pixels outside cost nothing; `set()` would drop them anyway, one call at a time.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -264,8 +266,8 @@ set(x, y, c):
 
 drawRect(cx, cy, w, h, c):
     left = cx - w / 2;  top = cy - h / 2          # integer division
-    for y in top .. top + h - 1:
-        for x in left .. left + w - 1: set(x, y, c)
+    for y in max(top, 0) .. min(top + h, height) - 1:          # only the rows inside the canvas
+        for x in max(left, 0) .. min(left + w, width) - 1: set(x, y, c)
 
 drawLine(ax, ay, bx, by, t, c):
     steep = |by - ay| > |bx - ax|

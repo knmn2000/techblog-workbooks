@@ -19,7 +19,7 @@ certificate authority, or anyone about to trust a public key, could run before p
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
 - Assignment 10 (`problems/10-find-weak-key.md`): the weak-key search this assignment reuses
-- Google Security Blog, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://security.googleblog.com/): describes blocking specific compromised keys by their SPKI hash, the real-world version of this assignment's blocklist (assignment 15 models that mechanism)
+- Google, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/) (Chrome and Android Security Teams, October 20, 2026): Chrome's CRLSet update blocked the SPKI hashes of the affected intermediate CAs, the real-world version of this assignment's blocklist (assignment 15 models that mechanism)
 - SECG, [SEC 1: Elliptic Curve Cryptography](https://www.secg.org/sec1-v2.pdf), section 3.2.2 (public key validation)
 
 ## Where this fits

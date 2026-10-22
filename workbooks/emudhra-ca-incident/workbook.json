@@ -243,13 +243,14 @@
       "buildsOn": [
         "src/pkiaudit/ecc/modmath.py",
         "src/pkiaudit/ecc/curve.py",
-        "src/pkiaudit/ecc/curves.py"
+        "src/pkiaudit/ecc/curves.py",
+        "src/pkiaudit/pki/chain.py"
       ],
       "problem": "problems/11-sign-with-weak-key.md",
       "cases": "tests/11/cases.txt",
       "generator": "python3 -P tools/gen_p11.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_11_sign_with_weak_key.py": "Write the assignment 11 program, which reads `sign` lines and writes one `signature` line for each. It reads the curve name and the hex values of d, z and k as the Input section describes, signs with your `ecc/ecdsa.py`, and writes r and s in zero-padded lowercase hex in the Output format.",
+        "assignments/assignment_11_sign_with_weak_key.py": "Write the assignment 11 program, which reads `sign` and `forge` lines and answers each in input order. A `sign` line gets a `signature` line with r and s from your `ecc/ecdsa.py` in zero-padded lowercase hex. A `forge` line hashes its tbsCertificate with SHA-384, signs it with the weak key, assembles the certificate DER (tbsCertificate, the ecdsa-with-SHA384 algorithm, and the signature BIT STRING), and reports the certificate hex and the verdict of your `validate_chain` from assignment 09 on the forged leaf, the intermediate and the anchor, as the Input and Output sections describe.",
         "src/pkiaudit/ecc/ecdsa.py": "Add ECDSA signing to `ecc/ecdsa.py`, next to the verification you wrote in assignment 04: given a curve, a private key, a message hash and a nonce, compute the signature pair (r, s). Build it from your scalar multiplication in `ecc/curve.py` and your modular inverse in `ecc/modmath.py`. The Boilerplate's `ecc/ecdsa.py` from assignment 04 already declares it as `sign` under its assignment 11 marker; if you wrote the file your own way, add the function now."
       }
     },

@@ -99,7 +99,7 @@ The bits of `flags` are below; bits not listed don't affect the output:
 | 6 | `0x0040` | WE_HAVE_AN_X_AND_Y_SCALE | Two F2Dot14 follow: a, then d |
 | 7 | `0x0080` | WE_HAVE_A_TWO_BY_TWO | Four F2Dot14 follow: a, b, c, d |
 | 8 | `0x0100` | WE_HAVE_INSTRUCTIONS | Hinting instructions follow the last component; ignore them |
-| 11 | `0x0800` | SCALED_COMPONENT_OFFSET | a, b, c, d transform the offset too (see below) |
+| 11 | `0x0800` | SCALED_COMPONENT_OFFSET | The transform applies to the offset too; this workbook uses fontTools' rule (see below) |
 
 At most one of bits 3, 6 and 7 is set. With none of them, a = d = 1 and b = c = 0.
 
@@ -113,9 +113,31 @@ y' = b*x + d*y + f
 ```
 
 where a, b, c, d are the 2 x 2 part set by the scale flags (it scales, flips or rotates)
-and (e, f) is the offset, (argument1, argument2). If SCALED_COMPONENT_OFFSET is set, the
-offset goes through the 2 x 2 part first: e = a*argument1 + c*argument2 and
-f = b*argument1 + d*argument2.
+and (e, f) is the offset, (argument1, argument2).
+
+If SCALED_COMPONENT_OFFSET is set, the offset goes through the 2 x 2 part first:
+
+```
+e = a*argument1 + c*argument2
+f = b*argument1 + d*argument2
+```
+
+That is fontTools' reading of the flag, and fontTools computes this workbook's expected outputs.
+The OpenType specification says only that the offset is then in the component's coordinate
+system and that the transformation applies to it. Other implementations scale the offset
+without rotating it, so they place a rotated or flipped component elsewhere. For test
+`09-R5-scaled-offset-rot` (offset (50, 10), a = 0, b = 1, c = -1, d = 0):
+
+| Implementation | e | f | Offset in that test |
+|---|---|---|---|
+| fontTools (the tests) | a*argument1 + c*argument2 | b*argument1 + d*argument2 | (-10, 50) |
+| FreeType | hypot(a, c) * argument1 | hypot(b, d) * argument2 | (50, 10) |
+| Apple's *TrueType Reference Manual* | m * argument1 | n * argument2 | (50, 10) |
+
+Apple's m is max(|a|, |b|), doubled when |(|a| - |c|)| is at most 33/65536, and n is
+max(|c|, |d|), doubled when |(|b| - |d|)| is at most 33/65536. Apple's manual scales every
+component's offset this way and doesn't mention the flag. All three agree when b = c = 0 and a and d are positive, as in
+Example 1. Follow the fontTools row to pass.
 
 A component can itself be a compound glyph. In that case you place its own components with
 their own transforms first, then place the result with the outer transform, so transforms
@@ -132,7 +154,7 @@ difference points to.
   arguments, and the loop over MORE_COMPONENTS.
 - **R3** The three scale forms: one scale, separate x and y scales, and the full 2 x 2 matrix.
 - **R4** Every point goes through x' = a*x + c*y + e and y' = b*x + d*y + f.
-- **R5** With SCALED_COMPONENT_OFFSET, a, b, c, d transform the offset too.
+- **R5** With SCALED_COMPONENT_OFFSET, a, b, c, d transform the offset too (fontTools' rule).
 - **R6** Nested compound glyphs: inner transforms apply first, then outer ones.
 - **R7** Components come out depth first, in record order, and empty components add nothing.
 
@@ -170,8 +192,8 @@ output:  glyph 14 components 1
 ### Example 2: a rotation (test `09-R3-rotate`)
 
 Glyph 11's component record is `00 82 | 00 02 | 64 00 | 00 00 40 00 c0 00 00 00`: flags
-WE_HAVE_A_TWO_BY_TWO with byte arguments, glyph 2, offset (100, 0), and a = 0, b = 1, c = -1,
-d = 0. That gives x' = -y + 100 and y' = x, a quarter turn:
+0x0082, WE_HAVE_A_TWO_BY_TWO plus ARGS_ARE_XY_VALUES (bit 0 clear, so the arguments are bytes),
+glyph 2, offset (100, 0), and a = 0, b = 1, c = -1, d = 0. That gives x' = -y + 100 and y' = x, a quarter turn:
 
 ```
 input:   font tests/09/data/compound-test.ttf
@@ -227,10 +249,17 @@ each component.
 
 <details><summary>Hint 2: the approach</summary>
 
-Write one recursive function that takes a glyph id and the transform to apply, and appends
-outlines to a list. For a compound glyph, read all of its component records first (reading a
-component moves the file position elsewhere), then call the function again for each one with the
-combined transform. Keep a transform as six numbers a, b, c, d, e, f.
+Keep a transform as six numbers a, b, c, d, e, f. For a compound glyph, read all of its
+component records first (reading a component moves the file position elsewhere), then recurse
+for each one. The boilerplate's `resolveGlyph(reader, locations, id)` takes no transform, so
+choose one of two ways:
+- Recurse, then transform: resolve the component with `resolveGlyph` and apply the component's
+  transform to every point it returns.
+- Pass the transform down: write a private helper that takes a glyph id and the transform to
+  apply and appends outlines to a list, and have `resolveGlyph` call it with the identity
+  transform. The pseudocode in Hint 4 does this.
+
+Both give the same points.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
@@ -240,7 +269,8 @@ combined transform. Keep a transform as six numbers a, b, c, d, e, f.
 - Inner transforms apply first. Combining outer (A) after inner (B) gives
   a = A.a*B.a + A.c*B.b, b = A.b*B.a + A.d*B.b, c = A.a*B.c + A.c*B.d, d = A.b*B.c + A.d*B.d,
   e = A.a*B.e + A.c*B.f + A.e, f = A.b*B.e + A.d*B.f + A.f.
-- SCALED_COMPONENT_OFFSET changes only the offset, not the 2 x 2 part.
+- SCALED_COMPONENT_OFFSET changes only the offset, not the 2 x 2 part, and it rotates the offset
+  too (fontTools' rule, in "Placing a component").
 - Skip components that are empty glyphs instead of writing an empty outline.
 </details>
 
@@ -277,15 +307,15 @@ resolve(id, T, out):
 .\check 09 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+A failing test looks like this (here x' used b in place of c):
 
 ```
-  R2  Component records: flags, glyph id, signed 1- or 2-byte arguments... .    3 / 4   FAILED
-      x 09-R2-neg-bytes  neg_bytes: offset (-30, -5) stored as two signed bytes
-          points[0]: expected (x=-30, y=-5, curve=on), got (x=226, y=251, curve=on) - differs in x, y
+  R4  x' = a*x + c*y + e and y' = b*x + d*y + f for every point ............    1 / 2   FAILED
+      x 09-R4-shear  shear: 2x2 with c = 0.5: x' = x + 0.5*y (a shear)
+          points[2]: expected (x=70, y=80, curve=on), got (x=30, y=80, curve=on) - differs in x  (in `glyph 12 components 1`)
           likely cause: R4 - x' = a*x + c*y + e and y' = b*x + d*y + f for every point
           expected values from: fontTools 4.67.0
-          reproduce: build/solutions/assignment_09.exe build/cases/09/09-R2-neg-bytes.in build/cases/09/09-R2-neg-bytes.out
+          reproduce: build/solutions/assignment_09 build/cases/09/09-R4-shear.in build/cases/09/09-R4-shear.out
 ```
 
 ## After you pass: compare with the author's code
@@ -300,9 +330,10 @@ USE_MY_METRICS.
 The snippet differs from the current specifications in these places:
 - The snippet reads 1-byte arguments as unsigned, so a small negative offset like -30 becomes 226.
   JetBrains Mono has 48 such components, all in its ligature glyphs.
-- It scales the offset with Apple's older `m`/`n` rule for every component. The current
-  specifications only scale the offset when SCALED_COMPONENT_OFFSET is set. JetBrains Mono marks
-  its components UNSCALED_COMPONENT_OFFSET and uses no scales, so the two agree there.
+- It scales the offset by Apple's `m` and `n` for every component. The OpenType specification
+  scales the offset only when SCALED_COMPONENT_OFFSET is set, and fontTools, which this
+  workbook follows, then also rotates it. JetBrains Mono marks its components
+  UNSCALED_COMPONENT_OFFSET and uses no scales, so all three agree there.
 - For a nested compound glyph, `getCompoundSubComponents` doesn't pass its own matrix down to the
   inner components, so an outer offset or scale is lost. JetBrains Mono has no nested compound
   glyphs, but the tests do.

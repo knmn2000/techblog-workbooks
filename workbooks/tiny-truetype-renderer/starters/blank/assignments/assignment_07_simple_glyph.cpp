@@ -3,10 +3,11 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 07 as `build/solutions/assignment_07.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 07`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 07 as `build/solutions/assignment_07
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 07` (`./check.sh 07` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   For each `font` line, open that file with your `ByteReader`. For each `glyph` line,

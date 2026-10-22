@@ -9,16 +9,22 @@
 
 ## Read in the blog first
 
-This assignment is background that eMudhra's post leaves out. It is the mechanism behind the
-incident's visible effect: once browsers distrusted a CA's intermediate, certificates issued
-through it stopped verifying.
+This assignment is background that eMudhra's post leaves out: the check every verifier runs on a
+chain. It also shows the limit of that check. A chain signed with one of the recovered weak keys
+passes every check this validator does, because the signatures verify, the intermediate is a CA
+and the dates are in range. Assignments 10 to 16 build what catches it: recovering the key,
+linting keys before anyone trusts them, blocking keys and roots, and auditing a whole PKI.
 
 - For the full, general algorithm, read RFC 5280 section 6 ("Certification Path Validation
   Algorithm"). This assignment implements its core on a small scale.
 - For what happened, read eMudhra's own
   [statement on the incident](https://emudhra.com/en/post/certificate-security-incident): eight
-  intermediate CA certificates were found to have been issued with cryptographically weak keys,
-  and the major browsers revoked or distrusted them.
+  intermediate CA certificates carried weak keys. The intermediates were never trust anchors.
+  Scott Helme [reports](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/)
+  that Chrome blocked them with a CRLSet update and Mozilla through OneCRL a few hours later.
+  Both are blocklists the browser checks on top of path validation.
+  [Google's post](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/)
+  says the CRLSet update blocks the intermediates' keys by their SPKI hashes (assignment 07).
 
 You can pass using this page alone.
 
@@ -26,6 +32,8 @@ You can pass using this page alone.
 
 - RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 6 ("Certification Path Validation Algorithm")
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident)
+- Chrome and Android Security Teams, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/), October 20, 2026: the CRLSet block and the removal of emSign ECC Root CA - G3
+- Scott Helme, [Eight bits of trust: eMudhra's CA keys cracked in milliseconds](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the CRLSet and OneCRL blocks, and the forged chain that Windows rejected only with revocation checking on
 
 ## Where this fits
 
@@ -35,8 +43,9 @@ Your `x509/certificate.py` from assignment 06 reads a certificate's fields, and 
 incoming TLS certificate: walk up from the leaf to a key it already trusts, and decide whether
 to trust the leaf. Assignment 16 runs your checks over every chain in a PKI.
 
-Once the compromised eMudhra intermediates left the trust store, browsers rejected them the same
-way: the chains through them no longer reached a trusted key.
+With the eMudhra root as a trust anchor, this validator accepts a chain through a compromised
+intermediate, including one whose leaf an attacker signed with the recovered key. Browsers
+rejected those chains with a separate step, a blocklist, which assignment 15 builds.
 
 ## The problem
 
@@ -85,6 +94,24 @@ with one of these reasons:
 | `not-a-ca` | A certificate that signed another one in the chain isn't marked CA:TRUE |
 | `path-too-long` | More intermediates follow a certificate than its path length constraint allows |
 | `expired` | Some certificate's validity window does not cover `now`. This includes "not yet valid": the assignment doesn't tell the two directions apart |
+
+### What a real verifier also checks
+
+These four checks are the core of RFC 5280's path validation, and this assignment leaves the
+rest out. A real verifier also checks:
+
+- name chaining: each certificate's issuer name equals the subject name of the certificate above
+  it (RFC 5280 section 6.1.3, item (a)(4)). This assignment ignores names (Example 3);
+- revocation: no certificate in the chain is revoked (6.1.3, item (a)(3)), through CRLs, OCSP or
+  a browser's own blocklist such as CRLSet or OneCRL;
+- key usage: a CA certificate that carries a keyUsage extension has its keyCertSign bit set
+  (6.1.4, item (n));
+- critical extensions: a certificate with a critical extension the verifier doesn't recognise is
+  rejected (6.1.4, item (o)).
+
+Revocation was the incident's own gap. Scott Helme built a forged chain with one of the recovered
+keys. He reports that curl, Python and Node, which don't check revocation by default, accepted
+it, and that Windows accepted it unless he switched revocation checking on.
 
 ### Input
 
@@ -174,8 +201,9 @@ input:   chain c3
 output:  chain c3 untrusted unknown-anchor
 ```
 
-This certificate's issuer field says "Unknown-Root". The checks ignore names: what decides the
-verdict is that no given `anchor` key verifies its signature. The `anchor` line here belongs to a
+This certificate's issuer field says "Unknown-Root". The checks in this assignment ignore names
+(a real verifier doesn't; see "What a real verifier also checks"), so what decides the verdict is
+that no given `anchor` key verifies its signature. The `anchor` line here belongs to a
 different, unrelated root.
 
 ## Constraints
@@ -184,14 +212,18 @@ different, unrelated root.
 - Every chain has at least one certificate (the leaf) and at most three (the leaf plus two
   intermediates) in these tests.
 - Every time string, each certificate's `notBefore`/`notAfter` and each `now`, is UTCTime with a
-  two-digit year, so string comparison gives time order. That would fail across a change of
-  century; it holds here because every date in these tests falls in 2000-2099.
+  two-digit year, so string comparison gives time order. UTCTime covers 1950 to 2049: a year of
+  50 to 99 means 19YY, and 00 to 49 means 20YY (RFC 5280 section 4.1.2.5.1), and certificates
+  write dates from 2050 on as GeneralizedTime. String comparison would put 1999 (`99...`) after
+  2025 (`25...`). It holds here because every date in these tests falls between 2000 and 2049.
 - There are 13 tests: 1 each for R1-R5, 2 for R6 (one violation, one chain that meets its
   constraint), 2 for R7 (both directions) and 4 end-to-end chains. Two of the end-to-end chains
-  have the shape of the real incident. A leaf verifies through its intermediate while the
-  intermediate's signer is a recognised anchor, and stops verifying once that signer is no longer
-  offered as one. That models what distrusting an intermediate does to every certificate under
-  it. Part of the set is random and changes with `-Fresh`.
+  run the same leaf and intermediate twice: once with the root that signed the intermediate as a
+  trust anchor, where the chain verifies, and once without it, where it doesn't. Dropping the
+  anchor models distrusting a root, as Mozilla announced and Chrome did for emSign ECC Root CA - G3
+  after the incident. Google's post on the incident says Chrome removed that root for Chrome Root Store
+  consumers that don't take CRLSet updates. Blocking the weak intermediates, which were not anchors, is a different step, and
+  assignment 15 covers the difference. Part of the set is random and changes with `-Fresh`.
 
 ## Hints
 
