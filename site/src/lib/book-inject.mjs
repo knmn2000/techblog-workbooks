@@ -4,6 +4,7 @@
 // the dialog runLocally() opens: the same "git clone / ask your AI" panel as the workbook page.
 import { startPanelHtml, startPanelCss, startPanelJs } from './start-ui.mjs';
 import { href } from './paths.mjs';
+import { socialTags } from './social.mjs';
 
 const css = `
 ${startPanelCss}
@@ -19,7 +20,18 @@ body.wbs-open { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) { .wbs-dialog { animation: wbs-in 0.14s ease-out; } @keyframes wbs-in { from { opacity: 0; transform: translateY(6px); } } }
 `;
 
-export function injectIntoBook(html, w) {
+// `site` is the site's origin: a shared link to the book needs absolute URLs in its preview tags.
+export function injectIntoBook(html, w, site) {
+  // The book has no </head>, so the tags go right after its <title>.
+  const social = socialTags({
+    title: `${w.title} · Problem book`,
+    description: w.headline,
+    url: new URL(href(`/w/${w.slug}/book.html`), site).href,
+    image: new URL(href(`/og/${w.slug}.png`), site).href,
+  });
+  if (!html.includes('</title>')) throw new Error(`${w.slug}: the book has no <title>, so it can't be published`);
+  html = html.replace('</title>', () => `</title>\n  ${social}`);
+
   const host = { back: { href: href(`/w/${w.slug}/`), label: w.title } };
   const config = `<script>window.WORKBOOK_HOST = ${JSON.stringify(host).replace(/</g, '\\u003c')};</script>\n`;
   const marker = '<script type="application/json" id="book-data">';

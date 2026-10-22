@@ -13,7 +13,7 @@ const panel = startPanelHtml(w, { id: 'start', prefix: 'page', heading: 'Run it 
 const bookUrl = (id: string) => href(`/w/${w.slug}/book.html#p${id}`);
 const first = w.checkpoints[0];
 ---
-<Base title={`${w.title} · Workbooks`} description={w.headline}>
+<Base title={`${w.title} · Workbooks`} description={w.headline} image={`/og/${w.slug}.png`}>
   <nav class="crumb" aria-label="Breadcrumb"><a href={href('/')}>All workbooks</a><span aria-hidden="true">/</span><span>{w.title}</span></nav>
 
   <header class="head">
