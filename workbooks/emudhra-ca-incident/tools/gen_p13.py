@@ -5,7 +5,9 @@ reference solution performs:
   - off-curve points are perturbed from a real point and confirmed off-curve by
     tools/curves.py's `on_curve` (OpenSSL), independent of anything the reference computes;
   - weak keys are built from a small, explicit d using `curves.public_point` (OpenSSL), so the
-    generator knows for a fact that d <= WEAK_BOUND is the true private key;
+    generator knows for a fact that d <= WEAK_BOUND is the true private key. A negated weak key
+    is the public key of n - d, also from OpenSSL, and the generator checks that it equals d*G with
+    y replaced by p - y;
   - known-compromised keys are exact copies of coordinates the test itself puts on the
     blocklist, so the match is definitional: string/tuple equality, not a computation.
 A key's final expected reason, when more than one could apply, follows the priority this
@@ -25,15 +27,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # python -P leaves the
 import curves  # noqa: E402
 import wbcore  # noqa: E402
 
-LIB = f"cryptography {cryptography.__version__} (OpenSSL) for curve membership and real key points; exact coordinate match for the blocklist"
+LIB = (f"cryptography {cryptography.__version__} (OpenSSL) for curve membership and the public keys of d and n - d; "
+       "exact coordinate match for the blocklist")
 
 WEAK_BOUND = 4096  # see the problem page for why a toy linter uses a bound this small
 
 REQUIREMENTS = [
     ("R1", "A strong, valid key that is not blocklisted passes every check: `ok`"),
     ("R2", "An off-curve point fails with `off-curve`, checked before anything else"),
-    ("R3", "A key whose private key is at most the weak-key bound fails with `weak`"),
-    ("R4", "A key that is not weak but matches a `blocklist` entry declared earlier fails with `known-compromised`"),
+    ("R3", "A key equal to d*G or -(d*G) with 1 <= d <= 4096 fails with `weak`; 4097*G and -(4097*G) do not"),
+    ("R4", "A key that is not weak but matches a `blocklist` entry declared earlier fails with `known-compromised`; an entry for another point, the key's negation included, does not affect it"),
     ("R5", "Priority: off-curve is reported before known-compromised, and known-compromised before weak"),
     ("E2E", "Several keys and a growing blocklist in one input, each key getting its own verdict"),
 ]
@@ -54,6 +57,15 @@ def strong_point(rng, curve):
 def weak_point(curve, d):
     assert 1 <= d <= WEAK_BOUND
     return curves.public_point(curve, d)
+
+
+def negated_point(curve, d):
+    """-(d*G), as OpenSSL's public key for the private key n - d."""
+    c = curves.CURVES[curve]
+    x, y = curves.public_point(curve, d)
+    nx, ny = curves.public_point(curve, c["n"] - d)
+    assert (nx, ny) == (x, c["p"] - y), "the key n - d must give -(d*G)"
+    return nx, ny
 
 
 def off_curve_point(curve, x, y):
@@ -106,6 +118,18 @@ def main():
         cases.add(f"13-R3-just-over-bound-{tag(curve)}", "R3",
                    f"{curve}: d = {WEAK_BOUND + 1}, one past the weak-key bound: ok",
                    [key_line("a", curve, x, y)], ["ok a"])
+    # The negated key -(d*G) belongs to n - d, which the same search finds: weak up to the bound.
+    for curve in curves.CURVES:
+        for d in (1, 56, WEAK_BOUND):
+            x, y = negated_point(curve, d)
+            cases.add(f"13-R3-weak-neg-d{d}-{tag(curve)}", "R3",
+                       f"{curve}: -(d*G) for d = {d}, the private key n - {d} (at or inside the bound {WEAK_BOUND})",
+                       [key_line("a", curve, x, y)], ["fail a weak"])
+    for curve in curves.CURVES:
+        x, y = negated_point(curve, WEAK_BOUND + 1)
+        cases.add(f"13-R3-neg-just-over-bound-{tag(curve)}", "R3",
+                   f"{curve}: -(d*G) for d = {WEAK_BOUND + 1}, one past the weak-key bound: ok",
+                   [key_line("a", curve, x, y)], ["ok a"])
 
     # R4 - known-compromised: a strong key whose exact coordinates are on an earlier blocklist line.
     for curve in curves.CURVES:
@@ -121,6 +145,15 @@ def main():
                    f"{curve}: a blocklist entry for a different key must not flag this one",
                    [blocklist_line(curve, bx, by), key_line("a", curve, x, y)], ["ok a"])
 
+    # a blocklist entry for Q does not block -Q, which is a different key (both strong here).
+    for curve in curves.CURVES:
+        (x, y), _ = strong_point(rng, curve)
+        p = curves.CURVES[curve]["p"]
+        assert curves.on_curve(curve, x, p - y)
+        cases.add(f"13-R4-negation-not-blocklisted-{tag(curve)}", "R4",
+                   f"{curve}: the blocklist holds a strong key Q, and the key is -Q (same x, y replaced by p - y)",
+                   [blocklist_line(curve, x, y), key_line("a", curve, x, p - y)], ["ok a"])
+
     # R5 - priority: off-curve wins over known-compromised (same invalid coordinates, blocklisted anyway).
     for curve in curves.CURVES:
         (x, y), d = strong_point(rng, curve)
@@ -133,6 +166,13 @@ def main():
         x, y = weak_point(curve, 4)
         cases.add(f"13-R5-blocklist-beats-weak-{tag(curve)}", "R5",
                    f"{curve}: d = 4 (weak) whose coordinates are also blocklisted: known-compromised wins",
+                   [blocklist_line(curve, x, y), key_line("a", curve, x, y)], ["fail a known-compromised"])
+
+    # known-compromised wins over weak for a negated weak key too.
+    for curve in curves.CURVES:
+        x, y = negated_point(curve, 4)
+        cases.add(f"13-R5-blocklist-beats-weak-neg-{tag(curve)}", "R5",
+                   f"{curve}: -(4*G) (weak, private key n - 4) whose coordinates are also blocklisted: known-compromised wins",
                    [blocklist_line(curve, x, y), key_line("a", curve, x, y)], ["fail a known-compromised"])
 
     # E2E - several keys, a growing blocklist, every reason mixed, each key judged on its own.
@@ -153,6 +193,10 @@ def main():
         x, y = weak_point(curve, 56)
         lines.append(key_line("tiny", curve, x, y))
         expected.append("fail tiny weak")
+        # negated weak key: private key n - 115
+        x, y = negated_point(curve, 115)
+        lines.append(key_line("mirror", curve, x, y))
+        expected.append("fail mirror weak")
         # a second blocklist entry added mid-stream; a key matching it, declared after
         (bx2, by2), _ = strong_point(rng, curve)
         lines.append(blocklist_line(curve, bx2, by2))
@@ -166,7 +210,7 @@ def main():
         lines.append(key_line("last", curve, x, y))
         expected.append("ok last")
         cases.add(f"13-E2E-mixed-{tag(curve)}-s{args.seed}", "E2E",
-                   f"{curve}: six keys (clean, off-curve, weak, blocklisted now, blocklisted earlier, clean), seed {args.seed}",
+                   f"{curve}: seven keys (clean, off-curve, weak, negated weak, blocklisted now, blocklisted earlier, clean), seed {args.seed}",
                    lines, expected)
 
     cases.save()

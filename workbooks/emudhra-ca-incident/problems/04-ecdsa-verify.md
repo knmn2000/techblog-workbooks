@@ -1,6 +1,6 @@
 # 04 · Verify an ECDSA signature
 
-**Difficulty:** Medium · **Assignment** 4 of 16 · **Check:** `.\check 04`
+**Difficulty:** Medium · **Assignment** 4 of 19 · **Check:** `.\check 04`
 
 **Tags**
 - *Language:* big integers · parsing hex

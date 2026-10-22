@@ -1,6 +1,6 @@
 # 11 · Sign a certificate with a recovered key
 
-**Difficulty:** Hard · **Assignment** 11 of 16 · **Check:** `.\check 11`
+**Difficulty:** Hard · **Assignment** 11 of 19 · **Check:** `.\check 11`
 
 **Tags**
 - *Language:* big integers · modular arithmetic · parsing hex
@@ -214,7 +214,7 @@ have drawn a fresh one each time, and recovered the key from two signatures.
 A `k` that is a little less than uniformly random (biased, short, or predictable from a weak
 random number generator) lets an attacker recover `d` from a handful of real signatures with
 lattice methods, without ever seeing `k`. This attack differs from assignment 10's and is
-harder, but it starts from the same place: a key generation process that doesn't do its job.
+harder, but it starts from the same place: a secret number that is less random than it should be.
 
 eMudhra's incident involved a weak key, and both of these mistakes concern the nonce, so
 neither applies to it directly. Both teach assignment 10's lesson from another angle: in ECDSA,

@@ -7,7 +7,7 @@ requirement R1 A clean chain, with nothing blocklisted or distrusted anywhere in
 requirement R2 A cert whose SPKI hash is directly blocklisted blocks the chain: `blocked spki <role>`, naming that cert
 requirement R3 A chain anchored at a distrusted root, with no SPKI hit anywhere in it, is `blocked root <root-id>`
 requirement R4 When both could apply to the same chain, the SPKI block is reported, not the root distrust
-requirement R5 A blocklist or distrust set declared for other chains does not falsely block an unrelated chain
+requirement R5 A blocklist or distrust entry for other chains' certificates does not block this one, and an entry affects only chains after it
 requirement E2E Several chains in one input, covering every verdict, judged independently
 case 15-R1-trusted R1
 title a leaf, intermediate and root with nothing blocked or distrusted
@@ -91,6 +91,23 @@ cert root 5aef1fbca9562c21aa0e54fef79bf160700b4c3fa5a887d4460613acc9969a58 root-
 expected
 chain blocked-one blocked spki intermediate
 chain unrelated trusted
+end
+case 15-R5-entry-after-chain R5
+title a blocklist entry and a distrust entry come after the first chain's certs: they block only the second chain
+input
+chain before
+cert leaf 86953363cbc0a08ad261456322b29455bbc4367d3c5bd60342974795fb1c2ec7 -
+cert intermediate fc54c572544fce660b13ffd0be716914157c35e72072477c24b802bf72eeb8ac -
+cert root bb591d2295427d67225fe9b8b0104c8ee5b2215d3105ac100c5bc575ef24210c late-root
+blocked-spki fc54c572544fce660b13ffd0be716914157c35e72072477c24b802bf72eeb8ac
+distrusted-root late-root
+chain after
+cert leaf 2dc714ee8a8a3e5e63b6932461ec02fdcf5ed7b7ec3570a63fec28022c26b2fe -
+cert intermediate fc54c572544fce660b13ffd0be716914157c35e72072477c24b802bf72eeb8ac -
+cert root 5a983827d7920f4b45ed34e2a91cb9606d1696d654b5832312b892f6fa81c375 late-root
+expected
+chain before trusted
+chain after blocked spki intermediate
 end
 case 15-E2E-several-chains-s1 E2E
 title five chains in one input: trusted, SPKI-blocked, root-distrusted, both apply, and an unrelated trusted chain (seed 1)

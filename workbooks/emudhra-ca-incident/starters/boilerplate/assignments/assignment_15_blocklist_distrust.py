@@ -52,6 +52,10 @@ def main(input_path: str, output_path: str) -> None:
             words = line.split()
             if not words:
                 continue
+            if words[0] in ("blocked-spki", "distrusted-root"):
+                # An entry applies to the chains after it, so the chain before it is decided now.
+                finish()
+                chain_id = None
             if words[0] == "blocked-spki":  # blocked-spki <hash>
                 blocked_spki.add(words[1])
             elif words[0] == "distrusted-root":  # distrusted-root <root-id>

@@ -1,6 +1,6 @@
 # 05 · Read DER
 
-**Difficulty:** Medium · **Assignment** 5 of 16 · **Check:** `.\check 05`
+**Difficulty:** Medium · **Assignment** 5 of 19 · **Check:** `.\check 05`
 
 **Tags**
 - *Language:* bit manipulation · hex strings · recursion

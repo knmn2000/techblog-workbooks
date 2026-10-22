@@ -1,9 +1,9 @@
 """Test cases for assignment 16 (audit a PKI), the capstone.
 
 Three independent checks feed this assignment's three kinds of output line:
-- `key`: on-curve via curves.on_curve (OpenSSL), weak-key existence via curves.public_point
-  (OpenSSL) confirming the planted small d really is the key, known-compromised is definitional
-  (exact match against the blocklist this generator wrote).
+- `key`: on-curve via curves.on_curve (OpenSSL); weak means the key is one of OpenSSL's public
+  keys for the private keys d and n - d, d from 1 to the bound (curves.public_point); known-compromised is
+  definitional (exact match against the blocklist this generator wrote).
 - `chain`: `openssl verify`, exactly as assignment 09's oracle does (a self-signed cert stands in
   for each bare anchor key).
 - `exposed`: a second, differently-shaped computation of the same graph fact (a dict built by
@@ -56,6 +56,18 @@ ERROR_RE = re.compile(r"error (\d+) at \d+ depth lookup")
 
 def fmt_time(dt):
     return dt.strftime("%y%m%d%H%M%SZ")
+
+
+_SMALL_KEYS = {}
+
+
+def small_keys(curve, bound):
+    """The public keys of the private keys 1..bound and n - bound..n - 1, from OpenSSL."""
+    if (curve, bound) not in _SMALL_KEYS:
+        n = curves.CURVES[curve]["n"]
+        _SMALL_KEYS[curve, bound] = {curves.public_point(curve, k)
+                                     for d in range(1, bound + 1) for k in (d, n - d)}
+    return _SMALL_KEYS[curve, bound]
 
 
 def make_key(curve="P-384"):
@@ -217,8 +229,7 @@ class PKI:
             elif (curve, x, y) in blocklist:
                 reason = "known-compromised"
             else:
-                d = next((d for d in range(1, bound + 1) if curves.public_point(curve, d) == (x, y)), None)
-                reason = "weak" if d is not None else None
+                reason = "weak" if (x, y) in small_keys(curve, bound) else None
             lines.append(f"key {kid} {reason or 'ok'}")
         anchor_items = [(aid, self.anchor_keys[aid]) for aid in self.anchor_order]
         matched_anchors = {}
@@ -276,6 +287,16 @@ def main():
     p.cert("leaf-under-weak", "int-weak")
     p.chain("c1", ["leaf-under-weak", "int-weak"])
     add("16-R1-weak-d4", "R1", "an intermediate whose private key is 4 (the incident's own value)", p)
+
+    p = PKI()
+    p.anchor("root-m")
+    mirror_key = ec.derive_private_key(curves.CURVES["P-384"]["n"] - 4, ec.SECP384R1())
+    x4, y4 = weak_point("P-384", 4)
+    assert pubnum(mirror_key) == (x4, curves.CURVES["P-384"]["p"] - y4), "the key n - 4 must give -(4*G)"
+    p.cert("int-mirror", "root-m", ca=True, pub_key=mirror_key)
+    p.cert("leaf-under-mirror", "int-mirror")
+    p.chain("c1", ["leaf-under-mirror", "int-mirror"])
+    add("16-R1-weak-negated", "R1", "an intermediate whose private key is n - 4, so its public key is -(4*G)", p)
 
     p = PKI()
     p.anchor("rootB")
