@@ -49,7 +49,7 @@
     "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
     "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
     "author": "eMudhra",
-    "headline": "Find a weak CA key, then work through the response",
+    "headline": "Learn how to not f*ck up like eMudhra",
     "lede": "Based on the October 2026 eMudhra CA key incident, where eight intermediate keys were tiny integers. Each assignment has you write one part of the detection and response, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, recovering a weak key, then a key linter, a ceremony checker, blocklisting and a PKI audit. The root cause is not public yet, so assignments 12 and 14 model possible failure shapes and make no claim about what happened. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
     "credits": "Most expected outputs come from OpenSSL and the cryptography library. The book keeps your progress in this browser only.",
     "checkCommand": ".\\check {id}",
