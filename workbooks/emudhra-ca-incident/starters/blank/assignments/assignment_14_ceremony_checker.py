@@ -10,9 +10,8 @@
 #
 # Your job:
 #   Read the ceremony log line by line (see Input) and replay each step on one ceremony
-#   state from `pki/ceremony.py`. Write a `duplicate` line when a generate step reuses a
-#   label and a `publish` line for each publish step, interleaved in log order (see
-#   Output).
+#   state from `pki/ceremony.py`. Write the line each step produces, in log order, and
+#   nothing for a step that produces none (see Output).
 #
 # The other files of this assignment:
 #   You also write src/pkiaudit/pki/ceremony.py in this assignment; each one gives its job

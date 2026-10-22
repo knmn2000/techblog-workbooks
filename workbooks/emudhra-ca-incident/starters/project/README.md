@@ -30,7 +30,7 @@ In PowerShell, set the path with `$env:PYTHONPATH = "src"` first.
 
 | Where | What |
 |---|---|
-| `src/pkiaudit/ecc/` | Elliptic-curve maths: modular arithmetic, adding and multiplying points, the named curves, ECDSA signing and verifying, and key generation |
+| `src/pkiaudit/ecc/` | Elliptic-curve maths: modular arithmetic, adding and multiplying points, the named curves, ECDSA signing and verifying, and key validation and generation |
 | `src/pkiaudit/asn1/` | Reading DER, the binary encoding certificates use |
 | `src/pkiaudit/x509/` | Certificates: their fields, the hash of their public key, and checking their signatures |
 | `src/pkiaudit/pki/` | Decisions about a whole PKI: validating chains, linting keys, checking a key ceremony, distrust, and the audit |

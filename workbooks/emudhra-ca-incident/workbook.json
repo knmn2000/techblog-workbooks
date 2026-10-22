@@ -25,9 +25,9 @@
       "src/pkiaudit/x509/signature.py": "This module checks that an issuer's public key signed a certificate: it reads the signed tbsCertificate bytes and the signature, hashes the bytes with SHA-384 and runs your ECDSA verify. Assignment 09 checks every link of a chain with it, and assignment 16 does the same across a whole PKI.",
       "src/pkiaudit/pki/chain.py": "This module decides whether a verifier should trust a chain of certificates, leaf first, that ends at one of its trust anchors, and names the first check that fails if not. Assignment 16 runs it over every chain in a PKI to find the chains a bad key breaks.",
       "src/pkiaudit/attack/weak_key.py": "This module recovers a private key from its public key when the private key is small, by trying every value up to a bound. Assignment 13's linter calls it to flag a weak key before a CA trusts or publishes it.",
-      "src/pkiaudit/ecc/keys.py": "This module turns random bytes into a private key the way FIPS 186-5 and SEC 1 describe, so that every key from 1 to n - 1 is equally likely. It takes the random source as an argument, so the tests can replay recorded draws through it.",
+      "src/pkiaudit/ecc/keys.py": "This module validates a private key before it is used, and generates one by rejection sampling. A key must lie in 1 to n - 1 and sit at least 2^128 (P-256) or 2^192 (P-384) away from 0 and from n; a uniform draw fails that with probability about 2^-127 or 2^-191. The generator takes its random source as an argument, so the tests can replay recorded draws through it.",
       "src/pkiaudit/pki/lint.py": "It decides whether a public key is safe to trust: the point is on its curve, it is not on a blocklist of known-compromised keys, and its private key is not small enough to find by search. Assignment 16 lints every key in a PKI with it.",
-      "src/pkiaudit/pki/ceremony.py": "It replays the log of a key generation ceremony and follows each key from the step that made it to the step that publishes it, so a reused label or a key that changed on the way gets flagged. It needs none of your earlier modules, and no later assignment uses it.",
+      "src/pkiaudit/pki/ceremony.py": "It replays the log of a key generation ceremony and checks that each CSR carries the public key the witnesses approved, identifying keys by fingerprint and never by label. It flags labels that collide and deviations from the script. It needs none of your earlier modules, and no later assignment uses it.",
       "src/pkiaudit/pki/trust.py": "It decides whether a browser still trusts a certificate chain once some keys are blocked by their SPKI hash and some roots are distrusted, the two ways a browser withdraws trust after an incident. It needs none of your earlier modules, and no later assignment uses it.",
       "src/pkiaudit/pki/audit.py": "It audits a whole PKI file: a lint finding for every key, a verdict for every chain, and the chains each signing key would break if it leaked. The checker's program and the `pkiaudit audit` command both print its report.",
       "src/pkiaudit/__main__.py": "This is the finished command-line program. `pkiaudit audit <pki-file>`, or `python -m pkiaudit audit <pki-file>`, prints the audit report for a PKI file, using your `pki/audit.py`."
@@ -46,8 +46,8 @@
     "sourceUrl": "https://emudhra.com/en/post/certificate-security-incident",
     "sourceTitle": "eMudhra Statement on Recent Certificate Security Incident",
     "author": "eMudhra",
-    "headline": "How to not f*ck up like eMudhra",
-    "lede": "Each assignment has you write what one part of the incident calls for, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, then the checks that would have caught the weak key. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
+    "headline": "Find a weak CA key, then work through the response",
+    "lede": "Based on the October 2026 eMudhra CA key incident, where eight intermediate keys were tiny integers. Each assignment has you write one part of the detection and response, as files in a Python project of your own: the elliptic-curve maths, certificates and chains, recovering a weak key, then a key linter, a ceremony checker, blocklisting and a PKI audit. The root cause is not public yet, so assignments 12 and 14 model possible failure shapes and make no claim about what happened. The checker feeds your program test inputs and compares what it writes with answers from independent sources.",
     "credits": "Most expected outputs come from OpenSSL and the cryptography library. The book keeps your progress in this browser only.",
     "checkCommand": ".\\check {id}",
     "shell": "PowerShell"
@@ -251,7 +251,7 @@
       }
     },
     "12": {
-      "title": "Generate a key correctly",
+      "title": "Generate and validate a key",
       "solution": "solutions/assignments/assignment_12_generate_key.py",
       "files": [
         "src/pkiaudit/ecc/keys.py"
@@ -264,8 +264,8 @@
       "cases": "tests/12/cases.txt",
       "generator": "python3 -P tools/gen_p12.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_12_generate_key.py": "Write the assignment 12 program, which reads `draw` lines and writes one `key` line for each. For each line it gives your generator a random source that hands out the line's recorded blocks in order, as the Input section describes, and writes the accepted key in zero-padded lowercase hex in the Output format.",
-        "src/pkiaudit/ecc/keys.py": "Implement private-key generation by rejection sampling in `ecc/keys.py`: draw candidates from the random source you are given until one lies in the valid range for the curve's order, and return it. Ask for as many bytes as the order needs, and use the operating system's random source when the caller passes none."
+        "assignments/assignment_12_generate_key.py": "Write the assignment 12 program, which reads `validate` and `draw` lines and answers each in input order. A `validate` line gets `ok` or `reject` with a reason from your checks, and a `draw` line gets a random source that hands out its recorded blocks in order, as the Input section describes, and a `key` line with the accepted key in zero-padded lowercase hex.",
+        "src/pkiaudit/ecc/keys.py": "Write the private-key checks in `ecc/keys.py`: a function that returns the first reason a key is rejected, `out-of-range` before `weak`, or None for a usable key, with the bound from the Weak keys section of the problem page. Add a generator that draws candidates from the random source it is given, as many bytes as the order needs, and redraws until one passes the checks; it uses the operating system's random source when the caller passes none."
       }
     },
     "13": {
@@ -297,8 +297,8 @@
       "cases": "tests/14/cases.txt",
       "generator": "python3 -P tools/gen_p14.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_14_ceremony_checker.py": "Read the ceremony log line by line (see Input) and replay each step on one ceremony state from `pki/ceremony.py`. Write a `duplicate` line when a generate step reuses a label and a `publish` line for each publish step, interleaved in log order (see Output).",
-        "src/pkiaudit/pki/ceremony.py": "Write the ceremony state in `pki/ceremony.py`, which replays a key ceremony log one step at a time: generate, wrap, unwrap, fingerprint and publish. Give every generate step a new key identity, even when it reuses a label, and let wrap and unwrap pass the identity a label names on to another label. A publish reports `ok`, `undefined`, or a mismatch with the label the key was generated under (see Chains of custody)."
+        "assignments/assignment_14_ceremony_checker.py": "Read the ceremony log line by line (see Input) and replay each step on one ceremony state from `pki/ceremony.py`. Write the line each step produces, in log order, and nothing for a step that produces none (see Output).",
+        "src/pkiaudit/pki/ceremony.py": "Write the ceremony state in `pki/ceremony.py`, which replays a key ceremony log one step at a time: generate, approve, deviation, csr and publish. Identify each key by its public-key fingerprint and never by its label, and let the priorities under Output decide the line when several findings apply (see Identifying a key and Deviations)."
       }
     },
     "15": {

@@ -1,72 +1,164 @@
-# 12 · Generate a key correctly
+# 12 · Generate and validate a key
 
-**Difficulty:** Easy · **Assignment** 12 of 16 · **Check:** `.\check 12`
+**Difficulty:** Medium · **Assignment** 12 of 16 · **Check:** `.\check 12`
 
 **Tags**
 - *Language:* big integers · parsing hex · a loop with early return
 - *Library:* none needed. Python's built-in `int` handles 384-bit numbers
-- *Concepts:* uniformly random private keys · rejection sampling · FIPS 186-5 / SEC1 key generation
+- *Concepts:* private-key range · key validation · probability of a uniform draw · rejection sampling · FIPS 186-5 / SEC 1 key generation
 
 ## Read in the blog first
 
 You can pass using this page alone. eMudhra's
 [Update 3](https://emudhra.com/en/post/certificate-security-incident#:~:text=An%20Update%20on%20Our%20Global%20TLS%20Intermediate%20CA%20Incident)
-says the keys were generated in a Key Generation Ceremony on FIPS 140-2 Level 3 hardware, and
-that a later step "produced a second, weak set of keys alongside the original strong keys." It
-does not say what a correct key-generation step looks like. In this assignment you write one: the
-plain procedure every key generator must follow so that a number like the ones recovered in this
-incident can't come out of it.
+says a Key Generation Ceremony on FIPS 140-2 Level 3 hardware generated the keys, and
+that "a flaw in one step of that process... produced a second, weak set of keys alongside the
+original strong keys." It doesn't say which step.
 
-eMudhra has not confirmed the exact root cause. Assignment 14 models one plausible shape that
-would match their description, and this assignment doesn't depend on that question. It covers the
-standard, published procedure for turning random bytes into a private key, the one assignments
-01 to 03 assumed had already happened.
+On the Mozilla bug for the incident
+([bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comment 11), eMudhra wrote
+that a deviation from the ceremony, made to test wrapping and unwrapping, led to a code flaw
+that created a second, weak keypair onboard, and that this keypair was used by mistake. This
+workbook has not verified that account. Commenters on the bug, including Thor Simon and Jacob
+Durham, argue that an approved key generator inside the module would not output a P-384 private
+key below 256. Their argument implies a value supplied to the module, or a key object that came
+out of an unwrap. The root cause is unconfirmed, and this assignment doesn't depend on it.
+
+The public record does fix one thing: the keys themselves. Eight P-384 private keys were whole
+numbers below 256 (4, 56, 66, 115, 155, 156, 230 and 237), which a 48-byte encoding writes as 47
+zero bytes and one byte of value. Each was a valid point on the curve with a valid encoding, so
+every structural check on the public key passes. A recovery attempt like the one in assignment 10
+exposes them, and so does a check of the private key's size. You write that check and the
+generator that applies it. It models the kind of check that would have flagged these keys. It
+makes no claim about how they came about.
 
 ## Source material
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
-- NIST, [FIPS 186-5: Digital Signature Standard (DSS)](https://csrc.nist.gov/pubs/fips/186-5/final), Appendix A.2 (extra random bits and rejection methods for generating a per-key secret value)
+- Mozilla Bugzilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): comment 11 is eMudhra's explanation (unverified), and other comments discuss it
+- BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/): the keys were P-384 private keys with values smaller than 256
+- Scott Helme, [Eight Bits of Trust](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the eight recovered values, listed against the eight intermediates
+- NIST, [FIPS 186-5: Digital Signature Standard (DSS)](https://csrc.nist.gov/pubs/fips/186-5/final), Appendix A (key pair generation with extra random bits, and by testing candidates)
 - NIST, [SP 800-186: Recommendations for Discrete Logarithm-based Cryptography](https://csrc.nist.gov/pubs/sp/800/186/final), for the order `n` of P-256 and P-384
 - SECG, [SEC 1: Elliptic Curve Cryptography](https://www.secg.org/sec1-v2.pdf), section 3.2.1 (key pair generation)
 
 ## Where this fits
 
-Your `attack/weak_key.py` from assignment 10 asks whether a key is weak by searching for its
-private key, and assignment 13's linter asks the same question with rules. In `ecc/keys.py` you
-go one step earlier, to the generator that makes the key. A correct generator can't produce a
-weak key as long as it follows one rule every time: never hand out a candidate outside the valid
-range. Your generator reads the order `n` from the `Curve` type in your `ecc/curve.py`, and the
-program finds each curve in your `ecc/curves.py`.
+Your `attack/weak_key.py` from assignment 10 recovers a small private key from its public key,
+and assignment 13's linter runs that search, up to 4096, before it trusts a public key. That is
+the view of someone who has only the public key and can only search. In `ecc/keys.py` you take
+the view of the key's holder, who can compare the private key with a bound far beyond any
+search, and then you build a generator on that check. Assignment 14 turns to the steps around
+key creation, such as wrapping and unwrapping, which a check on one key can't see. The module
+reads the order `n` from the `Curve` type in your `ecc/curve.py` and finds each curve in your
+`ecc/curves.py`.
 
 ## The problem
 
-Write a program that turns recorded random draws into private keys, the way a correct key
-generator does.
+Write a program that checks candidate private keys and generates a key from recorded random
+draws. It answers each input line in order: a verdict for a candidate, the accepted key for a
+draw.
 
-A private key for an elliptic curve is a whole number `d` with `1 <= d <= n - 1`, where `n` is
-the curve's order: the number of points that `G` generates (see the table below). A key
-generator gets raw bytes from its random number source and has to turn them into a number in that
-range. It must not favor small numbers, large numbers or any other pattern an attacker could
-exploit.
+### Input
 
-### Rejection sampling
+The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
+Each line of the input is one of:
 
-The standard method, from FIPS 186-5 and SEC 1, is rejection sampling:
+| Line | Meaning |
+|---|---|
+| `validate <label> <curve> <hex>` | A candidate private key to check. |
+| `draw <label> <curve> <hex-block> [<hex-block> ...]` | The blocks a key generator drew from its random source, in the order it drew them. |
 
-1. Draw as many random bytes as the curve's order needs: 32 bytes for P-256, 48 for P-384. That
-   covers every value below `n`, with no bits to spare.
-2. Read those bytes as one big-endian unsigned integer: the candidate.
-3. If the candidate is `0`, or `n` or greater, reject it and draw a fresh set of random bytes
-   (step 1 again).
+- `label` is a word with no spaces.
+- `curve` is `P-256` or `P-384`.
+- Every `hex` and `hex-block` is lowercase hexadecimal with no `0x` prefix, zero-padded to the
+  curve's byte length (64 hex characters for P-256, 96 for P-384), and read as one big-endian
+  unsigned integer. The value 4 on P-384 is 94 zeros followed by `04`.
+- On a `draw` line, a correct generator rejects every block except the last and accepts the last.
+
+### Output
+
+For each line, in input order, write one line:
+
+```
+ok <label>                 validate: the key passes both checks
+reject <label> <reason>    validate: the key fails; <reason> is the first check it fails
+key <label> <d>            draw: the first block that passes, as the private key
+```
+
+`<reason>` is `out-of-range` or `weak`, as "The checks" below defines them. `<d>` is lowercase
+hexadecimal, zero-padded to the curve's byte length. Copy `<label>` from the input unchanged. The
+checker ignores extra whitespace.
+
+### The checks
+
+Your program rejects a key `d` for the first reason in this table that applies, so run the
+checks in this order:
+
+| Reason | Applies when |
+|---|---|
+| `out-of-range` | `d` is 0, or `n` or more. A private key is a whole number from 1 to `n - 1`, where `n` is the curve's order. |
+| `weak` | `d` is below `B`, or `n - d` is below `B`. "Weak keys" below defines `B`. |
+
+Zero is below `B` as well, and the first row decides it: 0 is `out-of-range`. The same holds for
+`n` and every larger value, where `n - d` is zero or negative.
+
+### Weak keys
+
+Let `L` be the bit length of `n` (256 for P-256, 384 for P-384) and let `B = 2^(L/2)`: `2^128`
+for P-256, `2^192` for P-384. A key is weak when it is below `B`, or when `n - d` is below `B`.
+
+The second half of that rule comes from negation. The public key for `n - d` is the negation of
+the public key for `d`: the same x, with y replaced by `p - y`. An attacker who finds that a
+public key is `4*G` gets the key for `n - 4` by flipping the sign, so the check treats `n - 4`
+like 4. Assignment 10's search matches a point as given, so it needs one extra comparison
+against the flipped point to see this.
+
+A generator that draws uniformly over 1 to `n - 1` gives a key below a bound `b` with probability
+about `b / n`. For `B` that is about 2^-128 on P-256 and 2^-192 on P-384. Adding the top end
+doubles each figure, so a uniform key is weak with probability about 2^-127 on P-256 and 2^-191
+on P-384. A CA that made 2^64 keys would meet a weak one with probability about 2^-63 on P-256
+and 2^-127 on P-384, so a correct generator does not trip the check in practice.
+
+The eight incident keys are all below 256. A uniform P-384 key is below 256 with probability
+about 2^-376, and below 2^128, a far looser bound, with probability about 2^-256. A key that
+small was not drawn uniformly, whatever produced it.
+
+`B` is a statistical bound and says nothing about attack cost. Searching 2^128 values is out of
+reach, so a key one below `B` may be impossible to find. The check flags a key that no uniform
+draw would produce, and whatever produces such keys has failed.
+
+You hold `d`, so the comparison costs one subtraction at any bound. The search in assignments 10
+and 13 walks one point at a time and stops at 4096 in assignment 13.
+
+A key picked from a small set but written as a large number, such as a hash of a short passphrase,
+passes this check.
+
+### Generating a key
+
+A generator turns random bytes into a key by rejection sampling, the method FIPS 186-5 and SEC 1
+describe:
+
+1. Draw as many random bytes as the order needs: 32 for P-256, 48 for P-384.
+2. Read them as one big-endian unsigned integer: the candidate.
+3. Run the checks from "The checks". If the checks reject the candidate for any reason, discard it
+   and go back to step 1.
 4. Otherwise accept the candidate. It is `d`.
 
-The method adds no bias: every candidate in range is equally likely to be drawn, and the
-generator throws away any candidate out of range. Reducing an out-of-range candidate modulo `n`
-instead would make small values of `d` more likely, among other problems.
+Your generator gets its randomness from a function it calls with the number of bytes it wants,
+and it uses `os.urandom` when the caller passes none. For the tests, the program passes a
+function that returns the blocks of a `draw` line in order, so each answer is exact and
+reproducible.
 
-Your generator gets its candidates by calling the random source it is given, with the number of
-bytes it wants. For the tests, the program passes it a source that returns recorded blocks in
-the order they were drawn, so each answer is exact and reproducible.
+A real draw is out of range with probability about 2^-32 on P-256 and 2^-194 on P-384, because `n`
+is close to 2^L. A real draw is weak with the probabilities above. The generator redraws about
+once in 2^32 keys on P-256, and the tests feed it draws that make it redraw. Excluding the weak
+values removes about 2^-127 of the probability on P-256, a change no measurement can see.
+
+Reducing the candidate modulo `n` instead of rejecting it makes every value below `2^L - n`
+(about 2^224 on P-256, 2^190 on P-384) twice as likely. On P-384 that moves each such value's
+chance from about 2^-384 to about 2^-383. That bias is far too small to measure, and a value like
+4 stays as unlikely as any other.
 
 ### The curves
 
@@ -74,36 +166,10 @@ the order they were drawn, so each answer is exact and reproducible.
 |---|---|---|
 | `n` (order) | `ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551` | `ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973` |
 | bytes per candidate | 32 | 48 |
+| `L`, the bit length of `n` | 256 | 384 |
+| `B` | `2^128` (a 1 followed by 32 hex zeros) | `2^192` (a 1 followed by 48 hex zeros) |
 
-All numbers are in hexadecimal.
-
-### Input
-
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-Each line of the input is:
-
-```
-draw <label> <curve> <hex-block> [<hex-block> ...]
-```
-
-- `label` is a word with no spaces.
-- `curve` is `P-256` or `P-384`.
-- Each `hex-block` is one candidate: lowercase hexadecimal with no `0x` prefix, zero-padded to
-  the curve's byte length (64 hex characters for P-256, 96 for P-384).
-- The blocks come in the order they were drawn. A correct generator must reject every block
-  except the last, and must accept the last one.
-
-### Output
-
-For each `draw` line, in input order, write one line:
-
-```
-key <label> <d>
-```
-
-Copy `<label>` from the input unchanged. `<d>` is the accepted private key in lowercase
-hexadecimal, zero-padded to the curve's byte length (64 hex characters for P-256, 96 for P-384).
-The checker ignores extra whitespace.
+All numbers in the `n` row are in hexadecimal.
 
 ## Requirements
 
@@ -111,95 +177,115 @@ Each test checks one of these requirements. If tests fail, the checker's report 
 pass for each requirement, and it may add a `likely cause` line that names the requirement the
 difference points to.
 
-- **R1** A single draw, accepted with no rejections, gives that `d`.
-- **R2** The generator rejects a draw of `0` and moves on to the next draw in the list.
-- **R3** The generator rejects a draw of `n` or anything above it. It accepts a draw of `n - 1`,
-  the largest private key there is.
-- **R4** Several draws in a row fail, for different reasons, before the generator accepts one.
-- **R5** Both curves work. Each uses its own `n` and its own byte length; a program that mixes
-  them up (for example, padding a P-256 key to 48 bytes, or comparing a P-384 candidate with
-  P-256's `n`) fails here.
+- **R1** A key from `B` to `n - B`, both ends included, gets `ok`.
+- **R2** Zero and any value of `n` or more get `out-of-range`. Zero gets it although it is also below `B`.
+- **R3** A key below `B` gets `weak`, including the eight values from the incident. `B - 1` is the largest of them.
+- **R4** A key above `n - B` gets `weak`, because `d` and `n - d` are as easy to guess as each other. `n - 1` is the largest of them.
+- **R5** Each curve uses its own order, byte length and `B`: `2^128` for P-256 and `2^192` for P-384. The same number can get `ok` on one curve and `weak` on the other.
+- **R6** For a `draw` line, the generator draws, validates and redraws after every rejection, whatever its reason, and the answer is the first block that passes.
+- **E2E** One input mixes `validate` and `draw` lines on both curves, with every verdict.
 
 ## Examples
 
-### Example 1: four rejections, then acceptance (test `12-R4-many-rejects-p256`)
+### Example 1: a private key of 4 (test `12-R3-d4-p384`)
 
 ```
-input:   draw k P-256 0000000000000000000000000000000000000000000000000000000000000000 ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551 ffffffff552b82f7be3edc0a1ef2a4f008c7385e833d1342acfa32b0fa7a7881 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff 6c0f3459f79b17aeefba91fc803468b6b610a9f7f9270f4fb8b333a8e5446dd4
+input:   validate v0 P-384 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004
 
-output:  key k 6c0f3459f79b17aeefba91fc803468b6b610a9f7f9270f4fb8b333a8e5446dd4
+output:  reject v0 weak
 ```
 
-The input is one line with five 64-digit blocks. The test's draws, in order:
+The value is 4, one of the eight private keys of the incident. It is in `1 .. n - 1`, so
+`out-of-range` doesn't apply. It is below `B = 2^192`, so it is `weak`. A uniform P-384 draw
+lands there with probability about 2^-376.
 
-- all zeros: rejected;
-- `n` itself: rejected, because a key must be below `n`;
-- a value above `n`: rejected;
-- all `ff`: rejected;
-- a value in `[1, n-1]`: accepted, and it is `d`.
-
-### Example 2: the boundary that must be accepted (test `12-R3-n-minus-1-p384`)
+### Example 2: the largest possible key (test `12-R4-n-minus-1-p256`)
 
 ```
-input:   draw k P-384 ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52972
+input:   validate v0 P-256 ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632550
 
-output:  key k ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52972
+output:  reject v0 weak
 ```
 
-The candidate is `n - 1` for P-384, the largest number a private key can be. The generator must
-accept it on the first draw.
+The value is `n - 1`, the top of the range `out-of-range` allows. Its public key is `-G`, the point
+`G` with y replaced by `p - y`, so the key is as guessable as 1. `n - d = 1` is below `B`, which
+makes it `weak`.
+
+### Example 3: a draw that stops at the bound (test `12-R6-accept-edge-p256`)
+
+```
+input:   draw k P-256 00000000000000000000000000000000ffffffffffffffffffffffffffffffff 0000000000000000000000000000000100000000000000000000000000000000
+
+output:  key k 0000000000000000000000000000000100000000000000000000000000000000
+```
+
+The first block is `2^128 - 1`, one below `B`, so it is `weak` and the generator draws again. The
+second block is `2^128` itself. It is not below `B`, and `n - d` is far above `B`, so the
+generator accepts it.
 
 ## Constraints
 
-- Every line is a `draw` line; there are no blank lines.
-- A `draw` line has at most 6 candidates. Labels have no spaces. An input has at most 10 `draw`
-  lines.
-- Each case has a 10-second limit. This assignment does no point arithmetic, only integer
-  comparisons, so it finishes in milliseconds.
-- There are 14 tests: 2 for R1, 2 for R2, 6 for R3 (including both boundary directions), 2 for R4,
-  1 for R5 and 1 end-to-end case mixing both curves and every kind of rejection. Part of the set
-  changes with `-Fresh`.
+- Every line is a `validate` or a `draw` line; there are no blank lines. An input has at most 10
+  lines, and a `draw` line has at most 8 blocks.
+- Each case has a 10-second limit. The program does integer comparisons only and finishes in
+  milliseconds.
+- There are 42 tests: 6 for R1, 6 for R2, 8 for R3, 7 for R4, 4 for R5, 10 for R6 and 1
+  end-to-end case. They include `0`, `1`, `n - 1`, `n`, `B - 1`, `B`, `n - B` and `n - B + 1` on
+  both curves, and the eight incident values. Part of the set is random and changes with
+  `-Fresh`.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Your generator gets its randomness by calling the `random_bytes` function it is given, and in
-the tests that function returns the input's blocks in the order they were drawn. Your work is the
-accept/reject rule, applied to each candidate in turn, stopping at the first one accepted.
+Write the validation as one function that takes the curve and a number and returns the reason
+for rejection, or `None`. The `validate` lines call it, and the generator calls it on
+each candidate it draws. The generator's only extra job is the loop.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Work out the byte length of the curve's `n` (32 for P-256, 48 for P-384) and ask `random_bytes`
-for that many bytes. Read them as one big-endian, non-negative integer
-(`int.from_bytes(block, "big")` in Python) and compare it with `curve.n`. Return the first
-candidate from 1 to `n - 1`, and draw again after any other. If you parse the hex yourself, hex
-text read left to right is already big-endian.
+Compute `B` from the curve: `1 << (n.bit_length() // 2)` is `2^128` for P-256 and `2^192` for
+P-384. Return `out-of-range` when `d < 1` or `d >= n`. Otherwise return `weak` when `d < B` or
+`n - d < B`, and `None` after that. In the generator, ask the random source for as many bytes as
+`n` needs (`(n.bit_length() + 7) // 8`), read them with `int.from_bytes(block, "big")`, and
+return the first candidate that validates. If you parse the hex yourself, hex text read left to
+right is already big-endian.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- At the low end, reject only `0`. A candidate of `1` is a valid private key, weak as it is, and
-  this assignment accepts it.
-- The upper bound is exclusive: reject `n` itself; `n - 1` is the largest value to accept.
-- Each curve has its own `n` and its own byte length (32 bytes for P-256, 48 for P-384). Don't
-  share one table entry between them.
+- Zero is below `B` too. Test the range first, or zero comes out as `weak`.
+- `n` and every value above it is `out-of-range`. A test of `n - d < B` alone calls it `weak`,
+  because `n - d` is zero or negative there.
+- `d = B` passes the check and `B - 1` is weak. The mirror image is `n - B` (passes) and
+  `n - B + 1` (weak).
+- Checking only `d < B` misses the top end: `n - 1` and `n - 4` have public keys `-G` and `-4G`.
+- Each curve has its own `n`, byte length and `B`. Taking `B` from one curve for both makes a
+  P-384 key below `2^192` look fine, or a P-256 key look weak.
+- The generator redraws after a `weak` candidate as well as an `out-of-range` one.
 - Print `d` in hex, zero-padded to the curve's byte length, not in decimal.
-- Stop at the first accepted candidate. Real data has no blocks after it (there is nothing left
-  to draw once one is accepted), but don't make your code depend on that.
+- Stop at the first accepted candidate. Real data has no blocks after it, but don't make your
+  code depend on that.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
-generate_private_key(curve, blocks):
-    n = ORDER[curve]
-    for hexblock in blocks:
-        candidate = int(hexblock, base=16)
-        if 1 <= candidate <= n - 1:
+validate_private_key(curve, d):
+    n = curve.n
+    B = 2 ^ (bit_length(n) / 2)          # integer division
+    if d < 1 or d >= n:
+        return "out-of-range"
+    if d < B or n - d < B:
+        return "weak"
+    return None
+
+generate_private_key(curve, random_bytes):
+    loop:
+        candidate = big-endian integer of random_bytes(byte length of n)
+        if validate_private_key(curve, candidate) is None:
             return candidate
-    # every block in the real input eventually hits this; the test data guarantees it
 ```
 </details>
 
@@ -207,7 +293,7 @@ generate_private_key(curve, blocks):
 
 ```
 .\check 12                              run every test
-.\check 12 -Case 12-R3-n-minus-1-p384   one test, showing its full input, expected output and your output
+.\check 12 -Case 12-R4-n-minus-1-p256   one test, showing its full input, expected output and your output
 .\check 12 -Fresh                       a new set of tests (new random seed), to confirm on data you haven't seen
 .\check 12 -Dispute <id> "why"          set aside a test you believe is wrong; you won't be blocked
 ```
@@ -215,23 +301,29 @@ generate_private_key(curve, blocks):
 A failing test looks like this:
 
 ```
-  R3  A draw of exactly n (or any value at or above it) is rejected; a ... .    4 / 6   FAILED
-      x 12-R3-n-exact-p256  P-256: a draw of exactly n (the order) must be rejected
-          line 1: expected `key k afbd67f9619699cfe1988ad9f06c144a025b413f8a9a021fa648a7dd06839eb9`, got `key k ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551`
-          likely cause: R3 - A draw of exactly n (or any value at or above it) is rejected; a draw of n - 1 is accepted (the largest valid key)
-          expected values from: FIPS 186-5 / SEC1 rejection sampling: accept iff 1 <= candidate <= n - 1 (n from tools/curves.py)
-          reproduce: py -P tools/run_py.py solutions 12 build/cases/12/12-R3-n-exact-p256.in build/cases/12/12-R3-n-exact-p256.out
+  R4  A key above n - B gets `weak`, because d and n - d are as easy to gue... .    0 / 7   FAILED
+      x 12-R4-n-minus-1-p256  P-256: d = n - 1 (the public key is -G) is weak
+          line 1: expected `reject v0 weak`, got `ok v0`
+          likely cause: R4 - A key above n - B gets `weak`, because d and n - d are as easy to guess as each other; n - 1 is the largest of them
+          expected values from: Python integers and the published curve orders (SEC 2 / FIPS 186-5); OpenSSL (cryptography) confirms the order, and that d and n - d give negated public keys
+          reproduce: py -P tools/run_py.py solutions 12 build/cases/12/12-R4-n-minus-1-p256.in build/cases/12/12-R4-n-minus-1-p256.out
 ```
 
 ## After you pass: compare with the post
 
-The post describes the outcome of a ceremony step going wrong, and not the mechanics of correct
-key generation, so there is no author's code to compare with. You wrote the textbook procedure a
-Key Generation Ceremony should follow at the moment it chooses a private key. The reference
-`ecc/keys.py` draws from `os.urandom` unless the caller passes another source, which is how the
-program replays the recorded blocks.
+The post describes the outcome of a ceremony step going wrong and gives no code, so there is no
+author's code to compare with. Run on each of the eight incident keys, your `validate_private_key`
+returns `weak`: every one is below 256, far under `B = 2^192`. A ceremony that applied this check
+to every private key before using it, including one handed to the module or returned by an unwrap,
+would have flagged them. None of the sources above says whether eMudhra's software ran such a
+check.
 
-This assignment computes no public key. A generator that follows this
-rule can still feed a broken step afterwards, such as the wrap/unwrap step assignment 14 models.
-Getting this part right is necessary, and on its own it isn't enough. A Key Generation Ceremony
-has that shape: several steps, and each one has to be correct on its own.
+The check says nothing about how those keys came to exist. It also passes a key with no obvious
+pattern that still came from a small set of inputs. A generator that draws and validates, as
+yours does, is necessary and not sufficient: assignment 14 checks the steps after generation, such
+as the wrap and unwrap that the Mozilla bug comment points to, where a key can change without any
+check on one key noticing.
+
+Your generator draws from `os.urandom` unless the caller passes another source, which is how the
+program replays the recorded blocks. Its weak check fires with probability about 2^-127
+on P-256 random data and costs one comparison per key.

@@ -1,5 +1,5 @@
 # ======================================================================================
-# Assignment 12: Generate a key correctly
+# Assignment 12: Generate and validate a key
 # Problem: problems/12-generate-key.md (and in the problem book, with its Start here card)
 #
 # Why this file exists:
@@ -9,10 +9,11 @@
 #   expected one. Run `.\check 12`, or use Run and Submit in the book.
 #
 # Your job:
-#   Write the assignment 12 program, which reads `draw` lines and writes one `key` line
-#   for each. For each line it gives your generator a random source that hands out the
-#   line's recorded blocks in order, as the Input section describes, and writes the
-#   accepted key in zero-padded lowercase hex in the Output format.
+#   Write the assignment 12 program, which reads `validate` and `draw` lines and answers
+#   each in input order. A `validate` line gets `ok` or `reject` with a reason from your
+#   checks, and a `draw` line gets a random source that hands out its recorded blocks in
+#   order, as the Input section describes, and a `key` line with the accepted key in
+#   zero-padded lowercase hex.
 #
 # The other files of this assignment:
 #   You also write src/pkiaudit/ecc/keys.py in this assignment; each one gives its job at
