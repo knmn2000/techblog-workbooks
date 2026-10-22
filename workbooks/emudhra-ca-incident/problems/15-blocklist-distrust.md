@@ -1,6 +1,6 @@
 # 15 · Block and distrust
 
-**Difficulty:** Easy · **Assignment** 15 of 16 · **Check:** `.\check 15`
+**Difficulty:** Easy · **Assignment** 15 of 19 · **Check:** `.\check 15`
 
 **Tags**
 - *Language:* parsing a small log format · sets
@@ -30,8 +30,8 @@ next step, at the scale of a browser's trust store: once someone knows that a ke
 the browser withdraws trust in it for every certificate it signed.
 
 The SPKI hash is the value your `x509/spki.py` computes in assignment 07. Here the input gives it
-to you, so your new `pki/trust.py` needs none of your earlier modules, and no later assignment uses
-it.
+to you, so your new `pki/trust.py` needs none of your earlier modules. Assignment 19 calls your `check_chain`
+once per client.
 
 ## The problem
 
@@ -97,7 +97,8 @@ difference points to.
 - **R4** When a chain's own certificates trigger both mechanisms (an SPKI hit and a distrusted
   root), the output reports the SPKI block, not the root distrust.
 - **R5** A blocklist or distrust entry meant for some other chain's certificates doesn't affect a
-  chain whose own certificates don't match it.
+  chain whose own certificates don't match it, and an entry affects only the chains that come after
+  it in the input.
 
 ## Examples
 
@@ -140,7 +141,7 @@ is under precautionary distrust".
 - Every chain has exactly one `leaf`, at least one `intermediate`, and exactly one `root`, leaf to
   root in that order. An input has at most 8 chains.
 - Each case has a 10-second limit; this assignment does no heavy computation.
-- There are 8 tests: 1 for R1, 3 for R2 (one per role), 1 for R3, 1 for R4, 1 for R5, and 1
+- There are 9 tests: 1 for R1, 3 for R2 (one per role), 1 for R3, 1 for R4, 2 for R5, and 1
   end-to-end case with five chains covering every verdict in one input. Part of the set is
   random and changes with `-Fresh`.
 

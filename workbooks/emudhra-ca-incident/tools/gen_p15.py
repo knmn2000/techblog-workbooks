@@ -27,7 +27,7 @@ REQUIREMENTS = [
     ("R2", "A cert whose SPKI hash is directly blocklisted blocks the chain: `blocked spki <role>`, naming that cert"),
     ("R3", "A chain anchored at a distrusted root, with no SPKI hit anywhere in it, is `blocked root <root-id>`"),
     ("R4", "When both could apply to the same chain, the SPKI block is reported, not the root distrust"),
-    ("R5", "A blocklist or distrust set declared for other chains does not falsely block an unrelated chain"),
+    ("R5", "A blocklist or distrust entry for other chains' certificates does not block this one, and an entry affects only chains after it"),
     ("E2E", "Several chains in one input, covering every verdict, judged independently"),
 ]
 EXPLAIN = "_lines=R1"
@@ -153,6 +153,16 @@ def main():
     w.distrust_root("totally-unrelated-root")  # never the root of any chain below: pure noise data
     chain("blocked-one", [("leaf", "leaf-4", None), ("intermediate", "other-chain-int", None), ("root", "root-4", "some-other-root")])
     chain("unrelated", [("leaf", "leaf-5", None), ("intermediate", "int-5", None), ("root", "root-5", "root-gamma")])
+    save()
+
+    # R5 - an entry affects only the chains after it, even when it comes before the next `chain` line.
+    w, chain, expected, save = new_case(
+        "15-R5-entry-after-chain", "R5",
+        "a blocklist entry and a distrust entry come after the first chain's certs: they block only the second chain")
+    chain("before", [("leaf", "leaf-6", None), ("intermediate", "late-int", None), ("root", "root-6", "late-root")])
+    w.block_spki("late-int")
+    w.distrust_root("late-root")
+    chain("after", [("leaf", "leaf-7", None), ("intermediate", "late-int", None), ("root", "root-7", "late-root")])
     save()
 
     # E2E - several chains in one input: every verdict kind, judged independently.

@@ -88,15 +88,18 @@ The workbook teaches how to detect weak CA keys and what the response involves. 
 | Assignment | What it covers | Relation to the incident |
 |---|---|---|
 | 01 to 09 | Modular arithmetic, elliptic curves, ECDSA, DER, certificates, SPKI hashes, chain validation | Background that every later assignment uses |
-| 10 Find a weak private key | Recovering a private key below a bound by enumeration | Matches the established facts: values below 256, recovered in well under a second |
+| 10 Find a weak private key | Recovering a private key below a bound by enumeration, for the key and its negation | Matches the established facts: values below 256, recovered in well under a second |
 | 11 Sign with a weak key | What an attacker can do with a recovered CA key | Matches the established facts, and the forged-chain demonstration in Helme's report |
-| 12 Generate a key correctly | Uniform private keys by rejection sampling | A model of correct generation. It makes no claim about how eMudhra's keys were generated |
+| 12 Generate and validate a key | Range and small-value checks on a private key before use, and rejection sampling | A model of correct generation and validation. The check flags values like the incident's; it makes no claim about how eMudhra's keys were generated |
 | 13 Lint a public key | The check that finds a small private key before a CA trusts or publishes it | Matches the established facts: only trying to recover the key exposes it |
 | 14 Check a key ceremony | Following a key's identity from generation to publication | A model of one possible failure shape, drawn from eMudhra's unconfirmed account. It makes no claim about what happened |
 | 15 Block and distrust | Blocking keys by SPKI hash and distrusting a root | Matches the established response by Mozilla, Chrome, Apple, Microsoft and Go |
 | 16 Audit a PKI | Which chains break when a signing key leaks | The same question the response raised: which chains depend on each affected key |
+| 17 Find a weak key in square-root time | Baby-step giant-step, which searches a bound of N in about the square root of N steps | Jackson names this method as one way to recover the keys |
+| 18 Verify a revocation list's signature | Checking a CRL against its issuer's key, and halting the issuer when it fails | A detection practice. eMudhra ties its invalid CRL signatures to the same key mix-up, and Jackson questions the link |
+| 19 Decide what each client accepts | Which clients still accept a chain, given their revocation, blocklist, bundle and CT settings | Matches Helme's report that several non-browser clients accepted a forged chain with default settings |
 
-Assignments 12 and 14 teach concepts: how to draw a private key, and why a ceremony has to track which key each step produces. If eMudhra's published analysis describes a different failure, those two assignments still teach the same concepts as models, and their framing will change to match.
+Assignments 12 and 14 teach concepts: how to draw and check a private key, and why a ceremony has to track which key each step produces. If eMudhra's published analysis describes a different failure, those two assignments still teach the same concepts as models, and their framing will change to match.
 
 ## Sources
 

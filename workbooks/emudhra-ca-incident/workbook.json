@@ -24,13 +24,16 @@
       "src/pkiaudit/x509/spki.py": "This module computes a key's SPKI hash, the SHA-256 of a certificate's subjectPublicKeyInfo bytes, which is how browsers name a key they block. The hash stays the same in every certificate that carries the key, and assignment 15 blocks whole chains by hashes like these.",
       "src/pkiaudit/x509/signature.py": "This module checks that an issuer's public key signed a certificate: it reads the signed tbsCertificate bytes and the signature, hashes the bytes with SHA-384 and runs your ECDSA verify. Assignment 09 checks every link of a chain with it, and assignment 16 does the same across a whole PKI.",
       "src/pkiaudit/pki/chain.py": "This module decides whether a verifier should trust a chain of certificates, leaf first, that ends at one of its trust anchors, and names the first check that fails if not. Assignment 16 runs it over every chain in a PKI to find the chains a bad key breaks.",
-      "src/pkiaudit/attack/weak_key.py": "This module recovers a private key from its public key when the private key is small, by trying every value up to a bound. Assignment 13's linter calls it to flag a weak key before a CA trusts or publishes it.",
+      "src/pkiaudit/attack/weak_key.py": "This module recovers a private key from its public key when the private key is a small d or n - d, by trying every d up to a bound. Assignment 13's linter calls it to flag a weak key before a CA trusts or publishes it.",
       "src/pkiaudit/ecc/keys.py": "This module validates a private key before it is used, and generates one by rejection sampling. A key must lie in 1 to n - 1 and sit at least 2^128 (P-256) or 2^192 (P-384) away from 0 and from n; a uniform draw fails that with probability about 2^-127 or 2^-191. The generator takes its random source as an argument, so the tests can replay recorded draws through it.",
       "src/pkiaudit/pki/lint.py": "It decides whether a public key is safe to trust: the point is on its curve, it is not on a blocklist of known-compromised keys, and its private key is not small enough to find by search. Assignment 16 lints every key in a PKI with it.",
       "src/pkiaudit/pki/ceremony.py": "It replays the log of a key generation ceremony and checks that each CSR carries the public key the witnesses approved, identifying keys by fingerprint and never by label. It flags labels that collide and deviations from the script. It needs none of your earlier modules, and no later assignment uses it.",
-      "src/pkiaudit/pki/trust.py": "It decides whether a browser still trusts a certificate chain once some keys are blocked by their SPKI hash and some roots are distrusted, the two ways a browser withdraws trust after an incident. It needs none of your earlier modules, and no later assignment uses it.",
+      "src/pkiaudit/pki/trust.py": "It decides whether a browser still trusts a certificate chain once some keys are blocked by their SPKI hash and some roots are distrusted, the two ways a browser withdraws trust after an incident. It needs none of your earlier modules, and assignment 19 reuses its `check_chain`.",
       "src/pkiaudit/pki/audit.py": "It audits a whole PKI file: a lint finding for every key, a verdict for every chain, and the chains each signing key would break if it leaked. The checker's program and the `pkiaudit audit` command both print its report.",
-      "src/pkiaudit/__main__.py": "This is the finished command-line program. `pkiaudit audit <pki-file>`, or `python -m pkiaudit audit <pki-file>`, prints the audit report for a PKI file, using your `pki/audit.py`."
+      "src/pkiaudit/__main__.py": "This is the finished command-line program. `pkiaudit audit <pki-file>`, or `python -m pkiaudit audit <pki-file>`, prints the audit report for a PKI file, using your `pki/audit.py`.",
+      "src/pkiaudit/pki/client_policy.py": "This module decides, for one certificate chain and one client, whether the client accepts it. A client is four switches: whether it holds the SPKI blocklist, whether its root bundle is updated, how much of the chain it checks for revocation and whether it requires Certificate Transparency. It reuses your `check_chain` from assignment 15 for the blocklist and the root distrust, and no later assignment uses it.",
+      "src/pkiaudit/pki/crl.py": "This module reads a certificate revocation list (CRL) and checks its signature against the key its issuer publishes. It keeps one state per issuer: once a list fails, or verifies only under a weak key, that issuer's lists stay halted until its published key changes. It reuses your signature check from assignment 08 and your key linter from assignment 13.",
+      "src/pkiaudit/attack/bsgs.py": "This module finds a small private key with about 2 * sqrt(bound) point additions, where assignment 10's loop spends one per candidate. It stores a table of baby steps, walks giant steps from the public key in both directions, and its `plan` function says what a table size costs in steps. No later assignment uses it."
     }
   },
   "build": "python -P tools/run_py.py --compile solutions",
@@ -227,8 +230,8 @@
       "cases": "tests/10/cases.txt",
       "generator": "python3 -P tools/gen_p10.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_10_find_weak_key.py": "Write the assignment 10 program, which reads `bound` and `key` lines and writes one verdict per key. It searches each key with the latest bound and the curve named on its line, as the Input section describes, and writes `weak <label> <d>` or `none <label>` in the Output format.",
-        "src/pkiaudit/attack/weak_key.py": "Implement the small-key search in `attack/weak_key.py`: given a curve, a public key and a bound, find the private key from 1 to the bound whose multiple of the generator equals the key, or report that there is none. Step through the multiples with your point addition from `ecc/curve.py`, one addition per step."
+        "assignments/assignment_10_find_weak_key.py": "Write the assignment 10 program, which reads `bound` and `key` lines and writes one verdict per key. It searches each key with the latest bound and the curve named on its line, as the Input section describes, and writes a `weak` line, with `d` or `-d`, or a `none` line in the Output format.",
+        "src/pkiaudit/attack/weak_key.py": "Implement the small-key search in `attack/weak_key.py`: given a curve, a public key and a bound, find the d from 1 to the bound whose multiple of the generator equals the key (answer d) or the key's negation (answer -d), or report that there is none. Step through the multiples with your point addition from `ecc/curve.py`, one addition per step, and compare each with both points."
       }
     },
     "11": {
@@ -284,7 +287,7 @@
       "generator": "python3 -P tools/gen_p13.py --seed {seed} --out {out}",
       "jobs": {
         "assignments/assignment_13_key_linter.py": "Read the input line by line (see Input): add each `blocklist` line's curve and point to a blocklist that grows as you read, and lint each `key` line's point, on its curve, against the blocklist so far. Write `ok <label>` or `fail <label> <finding>` for each key, in input order (see Output).",
-        "src/pkiaudit/pki/lint.py": "Write the key linter in `pki/lint.py`: a test that a point satisfies its curve's equation, and a function that runs the three checks in their order and returns the first finding, or None for a good key. For the weak check, call your weak-key search from assignment 10 with the bound of 4096 (see The three checks)."
+        "src/pkiaudit/pki/lint.py": "Write the key linter in `pki/lint.py`: a test that a point satisfies its curve's equation, and a function that runs the three checks in their order and returns the first finding, or None for a good key. For the weak check, call your weak-key search from assignment 10 with the bound of 4096; it finds d*G and -(d*G) alike (see The three checks)."
       }
     },
     "14": {
@@ -336,6 +339,62 @@
         "assignments/assignment_16_audit_pki.py": "Open the input file, which holds a whole PKI file (see Input), and audit it with your `read_pki` and `audit` from `pki/audit.py`. Write the report's lines to the output file (see Output).",
         "src/pkiaudit/pki/audit.py": "Write the PKI audit in `pki/audit.py`, from reading a PKI file to the lines of its report. Read the `blocklist`, `anchor`, `cert` and `chain` lines (see Input), then lint every key with your `lint_key` from assignment 13 against the whole blocklist, wherever its lines appear in the file, and validate every chain against all the anchors with your `validate_chain` from assignment 09, with no current time. Work out which chains depend on each signing key (see The three things you report), then write the report's `key`, `chain` and `exposed` lines (see Output).",
         "src/pkiaudit/__main__.py": "Write the `pkiaudit audit <pki-file>` command: read the command line with `argparse`, audit the file with your `pki/audit.py` and print the report, one line at a time. The checker doesn't run it, and the Boilerplate already contains it. Try it on the sample PKI with `py -P tools/run_py.py solutions -m pkiaudit audit solutions/examples/sample.pki`."
+      }
+    },
+    "17": {
+      "title": "Find a weak key in square-root time",
+      "solution": "solutions/assignments/assignment_17_baby_step_giant_step.py",
+      "files": [
+        "src/pkiaudit/attack/bsgs.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/ecc/curve.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
+      "problem": "problems/17-baby-step-giant-step.md",
+      "cases": "tests/17/cases.txt",
+      "generator": "python3 -P tools/gen_p17.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_17_baby_step_giant_step.py": "Read the `bound`, `table`, `key` and `plan` lines (see Input) and answer each `key` and `plan` line with your `attack/bsgs.py`. Write one line per `key` or `plan` line, in input order, as Output shows, with a minus sign before `d` for a negated key.",
+        "src/pkiaudit/attack/bsgs.py": "Implement baby-step giant-step in `attack/bsgs.py`: a table from the x of each `j*G`, for `j` from 1 to `m`, to `j` and y, and a walk from the public key in steps of `2m*G`, down and then up, that looks up each point's x and compares y. Write `plan` too, which returns the table size and the number of giant points for a bound and a table limit, in exact integers (see The search)."
+      }
+    },
+    "18": {
+      "title": "Verify a revocation list's signature",
+      "solution": "solutions/assignments/assignment_18_crl_signature.py",
+      "files": [
+        "src/pkiaudit/pki/crl.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/asn1/der.py",
+        "src/pkiaudit/x509/certificate.py",
+        "src/pkiaudit/x509/signature.py",
+        "src/pkiaudit/pki/lint.py",
+        "src/pkiaudit/ecc/curves.py"
+      ],
+      "problem": "problems/18-crl-signature.md",
+      "cases": "tests/18/cases.txt",
+      "generator": "python3 -P tools/gen_p18.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_18_crl_signature.py": "Read the input's `key` and `crl` lines in order (see Input) and check each CRL with your `pki/crl.py`. Write one `crl <label> ok` or `crl <label> halt <reason>` line per `crl` line, as Output shows.",
+        "src/pkiaudit/pki/crl.py": "Write `read_crl`, which finds a CRL's issuer commonName, its signed bytes and its signature, and a `CrlWatch` that remembers each issuer's published key and whether the issuer is halted. Check each CRL by the four rules in their order (see The four rules), with your `check_signature` from assignment 08 and your `lint_key` from assignment 13."
+      }
+    },
+    "19": {
+      "title": "Decide what each client accepts",
+      "solution": "solutions/assignments/assignment_19_client_policy.py",
+      "files": [
+        "src/pkiaudit/pki/client_policy.py"
+      ],
+      "buildsOn": [
+        "src/pkiaudit/pki/trust.py"
+      ],
+      "problem": "problems/19-client-policy.md",
+      "cases": "tests/19/cases.txt",
+      "generator": "python3 -P tools/gen_p19.py --seed {seed} --out {out}",
+      "jobs": {
+        "assignments/assignment_19_client_policy.py": "Read the input line by line (see Input): keep the `client` lines in order, add `blocked-spki`, `distrusted-root`, `revoked` and `logged` lines to four growing sets, and gather the `cert` lines of each `chain` block. Decide each chain once its last `cert` line is read, before a later fact line can reach it, and write one `verdict` line for each chain and client, in the order Output gives.",
+        "src/pkiaudit/pki/client_policy.py": "Write `decide` in `pki/client_policy.py`: given a chain with its certificate names, one client's four switches and the facts read so far, return why the client rejects the chain, or None when it accepts it. Call your `check_chain` from assignment 15 first, with only the sets this client holds, then check revocation and Certificate Transparency (see The order of the checks)."
       }
     }
   },

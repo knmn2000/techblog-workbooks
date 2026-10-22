@@ -1,6 +1,6 @@
 # 16 · Audit a PKI
 
-**Difficulty:** Hard · **Assignment** 16 of 16 (capstone) · **Check:** `.\check 16`
+**Difficulty:** Hard · **Assignment** 16 of 19 (capstone) · **Check:** `.\check 16`
 
 **Tags**
 - *Language:* graphs built from dictionaries · structured state
@@ -42,8 +42,8 @@ for every key that signs something, the chains that depend on it.
 ### The three things you report
 
 1. Lint every key, anchors included, with assignment 13's three checks in the same priority
-   order: off-curve, known-compromised (on the blocklist), and weak (a small private key, found by
-   assignment 10's bounded search). In assignment 13 the blocklist grew as the program read. Here
+   order: off-curve, known-compromised (on the blocklist), and weak (a private key `d` or `n - d`
+   with `d` at most 4096, found by assignment 10's bounded search). In assignment 13 the blocklist grew as the program read. Here
    every `blocklist` line applies to every key in the file, including keys declared before it.
 2. Validate every chain with three of assignment 09's four checks, in the same order:
    signatures, CA permission and path length. The input has no `now` line, so there is no time to
@@ -210,8 +210,8 @@ same reason, one level further up.
   this assignment's new idea is blast radius.
 - Each case has a 10-second limit. The bounded search that linting uses (assignment 10's) has the
   same budget as in assignment 13.
-- There are 12 tests: the examples above, both curves, a key that's both weak and blocklisted
-  (R1), the `not-a-ca`, `path-too-long` and `unknown-anchor` reasons reached through this
+- There are 13 tests: the examples above, both curves, an intermediate whose private key is
+  `n - 4` and a key that's both weak and blocklisted (R1), the `not-a-ca`, `path-too-long` and `unknown-anchor` reasons reached through this
   assignment's "any anchor" rule (R2), a 2-level chain confirming that a leaf gets no `exposed`
   line (R3), and an end-to-end PKI shaped like the real incident: one root, a weak intermediate
   signing two leaves, and a strong intermediate signing a third. Part of the set is random and
@@ -300,7 +300,7 @@ for each declared key, in order:
 A failing test looks like this:
 
 ```
-  R1  Every key is linted (anchors included), in input order: off-curve... .    4 / 5   FAILED
+  R1  Every key is linted (anchors included), in input order: off-curve... .    5 / 6   FAILED
       x 16-R1-priority  a key that is both weak (d=56) and on the blocklist: known-compromised wins (checked first)
           line 2: expected `key weak-and-blocked known-compromised`, got `key weak-and-blocked weak`
           likely cause: R1 - Every key is linted (anchors included), in input order: off-curve, known-compromised, weak or ok, in that priority, by the same rules as assignment 13
@@ -314,8 +314,10 @@ To run the finished command on the sample PKI in your project, use
 ## After you pass: what this assignment doesn't do
 
 A real relying party does more than this. It checks revocation (OCSP, CRLs, OneCRL), enforces
-Certificate Transparency, and applies name constraints and extended key usage, and this workbook
-covers none of them. The part of the lesson you built here holds whichever of these mechanisms
+Certificate Transparency, and applies name constraints and extended key usage. This assignment
+covers none of them, and the three assignments after it cover part: 17 searches far larger bounds
+for a weak key, 18 checks the signature on a revocation list, and 19 works out which clients still
+accept a chain once revocation, blocklists and CT disagree. The part of the lesson you built here holds whichever of these mechanisms
 catches a weak key in the end: an incident response needs to know which chains a bad key reaches,
 as well as that it is bad. That's the work eMudhra, Mozilla and Chrome all did within hours of the
 real disclosure.
@@ -323,4 +325,5 @@ real disclosure.
 You've now rebuilt, from modular arithmetic up, the reasoning that made eight weak intermediate
 keys a same-day incident: the maths that makes a key pair work, the format that carries a key
 between systems, the chain that decides whether to trust it, the search that breaks a bad one,
-and the checks that find it before anyone trusts it.
+and the checks that find it before anyone trusts it. Assignments 17 to 19 go further, and the
+project is complete without them.

@@ -36,7 +36,7 @@ from pkiaudit.ecc.curves import CURVES
 
 
 def main(input_path: str, output_path: str) -> None:
-    """Writes `weak <label> <d>` or `none <label>` for each key, searching up to the latest bound."""
+    """Writes `weak <label> <d>`, `weak <label> -<d>` or `none <label>` for each key, up to the latest bound."""
     bound = 0
     lines = []
     with open(input_path, encoding="utf-8") as f:
@@ -49,7 +49,7 @@ def main(input_path: str, output_path: str) -> None:
             elif words[0] == "key":  # key <label> <curve> <x> <y>, coordinates in hex
                 label, curve = words[1], CURVES[words[2]]
                 d = find_private_key(curve, (int(words[3], 16), int(words[4], 16)), bound)
-                lines.append(f"none {label}" if d is None else f"weak {label} {d}")
+                lines.append(f"none {label}" if d is None else f"weak {label} {d}")  # d < 0 prints as -<d>
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
