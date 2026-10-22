@@ -10,7 +10,7 @@ workbook, or there's a post you'd love to see here, [contributions are welcome](
 The workbooks come from [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook),
 a Claude Code plugin that reads a post and builds the assignments, tests and problem book.
 
-Browse them on the site, [knmn2000.github.io/techblog-workbooks](https://knmn2000.github.io/techblog-workbooks/):
+Browse them on the site, [workbooks.2mbproblems.com](https://workbooks.2mbproblems.com/):
 every workbook's assignments, the project you build, how to set it up, and a read-only copy of its
 problem book. The site's source is in [`site/`](site), and it republishes on every push.
 

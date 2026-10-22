@@ -23,7 +23,7 @@ of that itself, so a change to the template can't break the site.
 
 ```
 npm install
-npm run dev        # http://127.0.0.1:4321/techblog-workbooks/
+npm run dev        # http://127.0.0.1:4321/
 npm run build      # writes dist/
 ```
 
@@ -31,9 +31,8 @@ npm run build      # writes dist/
 
 `.github/workflows/pages.yml` publishes to GitHub Pages on every push to `main`: it rebuilds each
 workbook's book from its sources, builds the site, and deploys it to
-`https://knmn2000.github.io/techblog-workbooks/`. Turn it on once in the repository's settings:
+`https://workbooks.2mbproblems.com/`. Turn it on once in the repository's settings:
 under Settings > Pages > Build and deployment, set Source to GitHub Actions.
 
-For a custom domain, add it on the same settings page, point a `CNAME` record at
-`knmn2000.github.io`, and set `SITE_BASE: /` and `SITE_URL: https://<your-domain>` as environment
-variables of the build step in the workflow.
+The custom domain is set on the same settings page, with a `CNAME` record at `knmn2000.github.io`.
+The build step in the workflow sets `SITE_BASE: /` and `SITE_URL: https://workbooks.2mbproblems.com`.
