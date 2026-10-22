@@ -1,6 +1,6 @@
 # Build a PKI auditor yourself
 
-*Find a weak CA key, then work through the response.*
+*Learn how to not f\*ck up like eMudhra.*
 
 LeetCode-style assignments built around the October 2026 eMudhra certificate authority key incident
 ([eMudhra's statement](https://emudhra.com/en/post/certificate-security-incident)). Eight of eMudhra's
