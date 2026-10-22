@@ -39,7 +39,7 @@ no claim about what their software did.
 ## Source material
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3 ("How it happened", and the statement that the root cause is not yet confirmed)
-- Mozilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): eMudhra's account in comments 10 and 11, questions to eMudhra in comments 31 to 33
+- Mozilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): eMudhra's account in comments 10 and 11, Chrome's root program's questions in comment 30, other questions to eMudhra in comments 31 to 33
 - Hacker News, [thread 50166579](https://news.ycombinator.com/item?id=50166579)
 - Assignment 07 (`problems/07-spki-hash.md`): hashing a public key to get a name for it that survives reissuance
 - Assignment 13 (`problems/13-key-linter.md`): the check on the key itself
@@ -108,7 +108,7 @@ the one listed first below.
 |---|---|
 | `UNVERIFIED` | An earlier step was `deviation none`. |
 | `NOT-APPROVED` | The ceremony holds no approval for this exact label. |
-| `MISMATCH <key-label>` | The fingerprint approved for the label differs from the CSR's. `<key-label>` is the label of the earliest `generate` line with the CSR's fingerprint, or `unknown` when no `generate` line has it. |
+| `MISMATCH <key-label>` | The fingerprint approved for the label differs from the CSR's. `<key-label>` is the label of the `generate` line with the CSR's fingerprint (no two `generate` lines share one, see Constraints), or `unknown` when no `generate` line has it. |
 | `ok` | The approved fingerprint equals the CSR's. |
 
 `publish` status, first rule that applies:
@@ -289,7 +289,7 @@ check their statuses in the order the tables list them and stop at the first tha
 - A `csr` compares fingerprints. Comparing labels passes a CSR that uses a different key under the same label.
 - A `generate` writes at most one line, and `duplicate` wins over `similar`, even when the label is also similar to an older one.
 - Approvals use exact labels, so `Root-1` and `root-1` differ there. Only the `generate` check normalises.
-- `MISMATCH` names the label of the earliest `generate` with the CSR's fingerprint. It doesn't name the approved key or the label on the `csr` line.
+- `MISMATCH` names the label of the `generate` line with the CSR's fingerprint. It doesn't name the approved key or the label on the `csr` line.
 - A failed `csr` still replaces the stored result of an earlier `ok` for its label, because `publish` follows the latest one.
 - An approved deviation clears approvals and writes a line. `deviation none` sets the flag, and nothing later clears it.
 - `approve` writes nothing, and `generate` findings still appear after `deviation none`.
@@ -318,7 +318,7 @@ for step in log:
     csr(label, fp):
         if unverified: status = "UNVERIFIED"
         else if label not in approved: status = "NOT-APPROVED"
-        else if approved[label] != fp: status = "MISMATCH " + (label of the earliest generated entry with fp, or "unknown")
+        else if approved[label] != fp: status = "MISMATCH " + (label of the generated entry with fp, or "unknown")
         else: status = "ok"
         csr_ok[label] = (status == "ok")
         emit "csr " + label + " " + status
@@ -344,13 +344,17 @@ A failing test looks like this, from a solution that writes `ok` when a `generat
 label carries the CSR's key:
 
 ```
-  R2  A CSR with a different fingerprint is `MISMATCH <label>`, naming ... .    3 / 4   FAILED
+  R2  A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, ... .    3 / 4   FAILED
       x 14-R2-identical-labels-different-keys  two keys share one label; the CSR uses the unapproved one, so only the finger...
           line 2: expected `csr ecc-root-1 MISMATCH ecc-root-1`, got `csr ecc-root-1 ok`  (in `duplicate ecc-root-1`)
-          likely cause: R2 - A CSR with a different fingerprint is `MISMATCH <label>`, naming the label of the `generate` line with that fingerprint (`unknown` if none)
+          likely cause: R2 - A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, naming the label of the `generate` line with that fingerprint, or `unknown`
           expected values from: definitional: fingerprint = sha256 of the uncompressed P-384 public point, computed by hashlib from OpenSSL's d*G; expected lines follow the page's rules
           reproduce: py -P tools/run_py.py solutions 14 build/cases/14/14-R2-identical-labels-different-keys.in build/cases/14/14-R2-identical-labels-different-keys.out
 ```
+
+The checker groups output lines by the word the first expected line starts with, and `(in ...)`
+names the most recent line in that group. Here that word is `duplicate`, so the note points at
+the `duplicate ecc-root-1` line above the failing `csr` line. The failing line is still line 2.
 
 ## After you pass: compare with the post
 

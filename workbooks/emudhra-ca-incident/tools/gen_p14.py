@@ -38,16 +38,16 @@ LIB = ("definitional: fingerprint = sha256 of the uncompressed P-384 public poin
        "from OpenSSL's d*G; expected lines follow the page's rules")
 
 REQUIREMENTS = [
-    ("R1", "A CSR whose public-key fingerprint equals the one approved for its label is `ok`, and its publish is `ok`"),
-    ("R2", "A CSR with a different fingerprint is `MISMATCH <label>`, naming the label of the `generate` line with that fingerprint (`unknown` if none)"),
-    ("R3", "A CSR under a label with no current approval is `NOT-APPROVED`; a new approval for a label replaces its old one"),
-    ("R4", "An approved deviation clears every approval, so a CSR needs a fresh `approve` after it"),
-    ("R5", "An unapproved deviation (`none`) makes every later `csr` and `publish` `UNVERIFIED`, for good"),
-    ("R6", "A `publish` is `undefined` with no CSR under its label, `BLOCKED` when the latest CSR was not ok, else `ok`"),
-    ("R7", "A `generate` that reuses an earlier `generate` label as written is `duplicate <label>`"),
-    ("R8", "A `generate` whose label matches an earlier label after lowercasing and removing `-`, `_` and `.` is `similar <label> <earlier-label>`"),
-    ("R9", "When several findings apply to one event, the line shows the highest-priority one"),
-    ("R10", "Output follows log order: one line per `deviation`, `csr` and `publish`, findings only for `generate`, none for `approve`"),
+    ("R1", "A `csr` whose fingerprint equals the one approved for its label writes `ok`, and its `publish` writes `ok`"),
+    ("R2", "A `csr` whose fingerprint differs from the approved one writes `MISMATCH <key-label>`, naming the label of the `generate` line with that fingerprint, or `unknown`"),
+    ("R3", "A `csr` under a label with no current approval writes `NOT-APPROVED`; labels match as written, and a later `approve` replaces an earlier one"),
+    ("R4", "An approved deviation clears every approval, so a `csr` needs a new `approve` after it"),
+    ("R5", "After `deviation none`, every later `csr` and `publish` writes `UNVERIFIED`, and nothing later restores verification"),
+    ("R6", "A `publish` writes `undefined` when no `csr` used its label, `BLOCKED` when the latest `csr` under the label did not write `ok`, and `ok` otherwise"),
+    ("R7", "A `generate` whose label an earlier `generate` already used writes `duplicate <label>`"),
+    ("R8", "A `generate` whose label equals an earlier `generate` label after lowercasing and removing `-`, `_` and `.` writes `similar <label> <earlier-label>`"),
+    ("R9", "When several findings apply to one step, the step writes only the first in the priority order"),
+    ("R10", "The output follows log order: one line per `deviation`, `csr` and `publish`, a line per `generate` only when it has a finding, and nothing for `approve`"),
     ("E2E", "A longer ceremony mixing every event kind, with a substituted weak key, similar labels and deviations"),
 ]
 EXPLAIN = "_lines=R10 duplicate=R7 similar=R8"
