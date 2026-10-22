@@ -1,6 +1,6 @@
 # 07 · Hash the public key (SPKI)
 
-**Difficulty:** Easy · **Assignment** 7 of 16 · **Check:** `.\check 07`
+**Difficulty:** Easy · **Assignment** 7 of 19 · **Check:** `.\check 07`
 
 **Tags**
 - *Language:* byte slicing · `hashlib.sha256` (or your language's SHA-256)

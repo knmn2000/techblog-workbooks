@@ -1,6 +1,6 @@
 # 03 · Multiply a point by a number
 
-**Difficulty:** Medium · **Assignment** 3 of 16 · **Check:** `.\check 03`
+**Difficulty:** Medium · **Assignment** 3 of 19 · **Check:** `.\check 03`
 
 **Tags**
 - *Language:* big integers · bit shifting · a loop

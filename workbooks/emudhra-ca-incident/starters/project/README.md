@@ -33,8 +33,8 @@ In PowerShell, set the path with `$env:PYTHONPATH = "src"` first.
 | `src/pkiaudit/ecc/` | Elliptic-curve maths: modular arithmetic, adding and multiplying points, the named curves, ECDSA signing and verifying, and key validation and generation |
 | `src/pkiaudit/asn1/` | Reading DER, the binary encoding certificates use |
 | `src/pkiaudit/x509/` | Certificates: their fields, the hash of their public key, and checking their signatures |
-| `src/pkiaudit/pki/` | Decisions about a whole PKI: validating chains, linting keys, checking a key ceremony, distrust, and the audit |
-| `src/pkiaudit/attack/` | Recovering a private key that was generated too small |
+| `src/pkiaudit/pki/` | Decisions about a whole PKI: validating chains, linting keys, checking a key ceremony, distrust, the audit, revocation list signatures, and what each client accepts |
+| `src/pkiaudit/attack/` | Recovering a private key that was generated too small, by enumeration and by baby-step giant-step |
 | `src/pkiaudit/__main__.py` | The `pkiaudit audit` command |
 | `examples/` | A sample PKI to audit |
 | `assignments/` | One small program per step, each checking that step against test cases |

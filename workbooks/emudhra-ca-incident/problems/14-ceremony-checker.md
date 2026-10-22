@@ -1,6 +1,6 @@
 # 14 · Check a key ceremony
 
-**Difficulty:** Medium · **Assignment** 14 of 16 · **Check:** `.\check 14`
+**Difficulty:** Medium · **Assignment** 14 of 19 · **Check:** `.\check 14`
 
 **Tags**
 - *Language:* parsing a small log format · dictionaries · string normalisation

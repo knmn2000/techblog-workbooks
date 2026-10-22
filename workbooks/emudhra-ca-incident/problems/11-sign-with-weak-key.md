@@ -1,6 +1,6 @@
 # 11 · Sign a certificate with a recovered key
 
-**Difficulty:** Hard · **Assignment** 11 of 16 · **Check:** `.\check 11`
+**Difficulty:** Hard · **Assignment** 11 of 19 · **Check:** `.\check 11`
 
 **Tags**
 - *Language:* big integers · modular arithmetic · parsing hex

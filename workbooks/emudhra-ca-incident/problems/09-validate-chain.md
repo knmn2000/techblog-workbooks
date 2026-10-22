@@ -1,6 +1,6 @@
 # 09 · Validate a certificate chain
 
-**Difficulty:** Hard · **Assignment** 9 of 16 · **Check:** `.\check 09`
+**Difficulty:** Hard · **Assignment** 9 of 19 · **Check:** `.\check 09`
 
 **Tags**
 - *Language:* loops over lists · structured state

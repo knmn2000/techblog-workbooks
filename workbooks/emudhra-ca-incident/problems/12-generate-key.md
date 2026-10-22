@@ -1,6 +1,6 @@
 # 12 · Generate and validate a key
 
-**Difficulty:** Medium · **Assignment** 12 of 16 · **Check:** `.\check 12`
+**Difficulty:** Medium · **Assignment** 12 of 19 · **Check:** `.\check 12`
 
 **Tags**
 - *Language:* big integers · parsing hex · a loop with early return
@@ -111,8 +111,8 @@ for P-256, `2^192` for P-384. A key is weak when it is below `B`, or when `n - d
 The second half of that rule comes from negation. The public key for `n - d` is the negation of
 the public key for `d`: the same x, with y replaced by `p - y`. An attacker who finds that a
 public key is `4*G` gets the key for `n - 4` by flipping the sign, so the check treats `n - 4`
-like 4. Assignment 10's search matches a point as given, so it needs one extra comparison
-against the flipped point to see this.
+like 4. Assignment 10's search makes that comparison against the flipped point at every step,
+and reports the public key of `n - 4` as `-4`.
 
 A generator that draws uniformly over 1 to `n - 1` gives a key below a bound `b` with probability
 about `b / n`. For `B` that is about 2^-128 on P-256 and 2^-192 on P-384. Adding the top end

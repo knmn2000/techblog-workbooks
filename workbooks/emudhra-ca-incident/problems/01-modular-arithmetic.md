@@ -1,6 +1,6 @@
 # 01 · Modular arithmetic
 
-**Difficulty:** Easy · **Assignment** 1 of 16 · **Check:** `.\check 01`
+**Difficulty:** Easy · **Assignment** 1 of 19 · **Check:** `.\check 01`
 
 **Tags**
 - *Language:* big integers · bit shifting · a loop

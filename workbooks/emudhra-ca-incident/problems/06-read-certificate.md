@@ -1,6 +1,6 @@
 # 06 · Read a certificate
 
-**Difficulty:** Medium · **Assignment** 6 of 16 · **Check:** `.\check 06`
+**Difficulty:** Medium · **Assignment** 6 of 19 · **Check:** `.\check 06`
 
 **Tags**
 - *Language:* recursion · byte slicing

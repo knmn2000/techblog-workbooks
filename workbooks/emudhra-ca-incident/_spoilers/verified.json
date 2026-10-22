@@ -138,17 +138,17 @@
   },
   "10": {
     "files": {
-      "_spoilers/project/assignments/assignment_10_find_weak_key.py": "4eb44374ada43e9ed0a389ea8de54bfa7e66403ffc5ba740aa7e8c55e4e469ef",
+      "_spoilers/project/assignments/assignment_10_find_weak_key.py": "f564ba8817dc01b1c8c7ce61cdd3ef163a48ebd91054cfa9c04658644664add5",
       "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
       "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
-      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "9d4e140de0ba391a1002ceac867306561177f3f48961af9dc5e30012a9b312a4",
       "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
       "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
       "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
       "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
-    "passed": 36,
-    "total": 36,
+    "passed": 42,
+    "total": 42,
     "date": "2026-10-22"
   },
   "11": {
@@ -186,14 +186,14 @@
       "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
       "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
       "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
-      "_spoilers/project/src/pkiaudit/pki/lint.py": "c6ab9b53b841b9d6076b4ebeed9d95873490e768ec51245adfad42d1c08f1fe8",
+      "_spoilers/project/src/pkiaudit/pki/lint.py": "5804bbf8877e40b4e96a14031e77c504c376ac556621a59f4f7fed1d98884a86",
       "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
       "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
-      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "9d4e140de0ba391a1002ceac867306561177f3f48961af9dc5e30012a9b312a4",
       "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
-    "passed": 24,
-    "total": 24,
+    "passed": 36,
+    "total": 36,
     "date": "2026-10-22"
   },
   "14": {
@@ -209,13 +209,13 @@
   },
   "15": {
     "files": {
-      "_spoilers/project/assignments/assignment_15_blocklist_distrust.py": "a0ce4063b1fafe7daef8c2025e5fbb61cc5f246e5833bc63ec2fe62c97351633",
+      "_spoilers/project/assignments/assignment_15_blocklist_distrust.py": "82aadb36f2934df452cea9144fed0c78cdb7403fd907eae0814963003a53a840",
       "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
       "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
       "_spoilers/project/src/pkiaudit/pki/trust.py": "14ce05e8ae7fa0f3fdd991d437ecce3b428b44dadf644141747a398e2ebd01dc"
     },
-    "passed": 8,
-    "total": 8,
+    "passed": 9,
+    "total": 9,
     "date": "2026-10-22"
   },
   "16": {
@@ -228,19 +228,70 @@
       "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
       "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
       "_spoilers/project/src/pkiaudit/pki/chain.py": "5fc2af6ec52a05979df0c7d8044d723a9783f6c953e0f4857aba14bc5853303a",
-      "_spoilers/project/src/pkiaudit/pki/lint.py": "c6ab9b53b841b9d6076b4ebeed9d95873490e768ec51245adfad42d1c08f1fe8",
+      "_spoilers/project/src/pkiaudit/pki/lint.py": "5804bbf8877e40b4e96a14031e77c504c376ac556621a59f4f7fed1d98884a86",
       "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
       "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
       "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417",
       "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
       "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
-      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "da578b9a000e6a3eff24f732d8956fbb8b096a9700da18cb5d7781c3eed84da3",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "9d4e140de0ba391a1002ceac867306561177f3f48961af9dc5e30012a9b312a4",
       "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
       "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
       "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "46b67089cea551a3b1700a333a257ba317d48225ed530431da0d99178b48d0e9"
     },
-    "passed": 12,
-    "total": 12,
+    "passed": 13,
+    "total": 13,
+    "date": "2026-10-22"
+  },
+  "17": {
+    "files": {
+      "_spoilers/project/assignments/assignment_17_baby_step_giant_step.py": "9501b06079e1907246bcf4666cd11d7406fe4cfbf59013c53ebc511c50574ad2",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
+      "_spoilers/project/src/pkiaudit/attack/bsgs.py": "35874fc2597f2cc77701e98ce91ca12e5ba50ee614736df8184f83021acecc23",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
+    },
+    "passed": 48,
+    "total": 48,
+    "date": "2026-10-22"
+  },
+  "18": {
+    "files": {
+      "_spoilers/project/assignments/assignment_18_crl_signature.py": "237ee03e05dd44be6a87f60e7216e05203e5da4ae578336d697a33ceb03f3ba7",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
+      "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/crl.py": "9238a5cc92d5075a99a989be5f337a8a7ac2cf90dc3d27b41f89e00e3a88d921",
+      "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
+      "_spoilers/project/src/pkiaudit/asn1/__init__.py": "c4370c21be28872ee403a894e972070c7421d947eeb71c8d9cc850e1c71e4dc1",
+      "_spoilers/project/src/pkiaudit/asn1/der.py": "cdd9a467e2ddf64d50d92a674b042eb218b5c391cef564b554f620205f8d8679",
+      "_spoilers/project/src/pkiaudit/pki/lint.py": "5804bbf8877e40b4e96a14031e77c504c376ac556621a59f4f7fed1d98884a86",
+      "_spoilers/project/src/pkiaudit/x509/__init__.py": "1a4dda71fc984cd5c74b3bc38297768de92141c0165b1886328b79bd7738b1dc",
+      "_spoilers/project/src/pkiaudit/x509/certificate.py": "2f7b8bdc5062b47d83e40ab8c7a4633e269a1b662f58713f5615cdf3e1911217",
+      "_spoilers/project/src/pkiaudit/x509/signature.py": "81d10267f1d3ee0f42fa870c4bcaee4b1e201961ff43c1c74939ae7dbb95f871",
+      "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417",
+      "_spoilers/project/src/pkiaudit/attack/__init__.py": "232ed8d4f3e9d4a5e2adc92df1e1ecec18b892e6ac697605eb986e39f0d54ca1",
+      "_spoilers/project/src/pkiaudit/attack/weak_key.py": "9d4e140de0ba391a1002ceac867306561177f3f48961af9dc5e30012a9b312a4",
+      "_spoilers/project/src/pkiaudit/ecc/ecdsa.py": "46b67089cea551a3b1700a333a257ba317d48225ed530431da0d99178b48d0e9"
+    },
+    "passed": 29,
+    "total": 29,
+    "date": "2026-10-22"
+  },
+  "19": {
+    "files": {
+      "_spoilers/project/assignments/assignment_19_client_policy.py": "a8c74e3b58f592c83e21ccb86f4801a91b53da93e87aed5ca0ca9cdf333b036d",
+      "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
+      "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
+      "_spoilers/project/src/pkiaudit/pki/client_policy.py": "458a175c7f475383acbb87f4efc4902040f7ce80ac8889e42443d90b7c6f73f3",
+      "_spoilers/project/src/pkiaudit/pki/trust.py": "14ce05e8ae7fa0f3fdd991d437ecce3b428b44dadf644141747a398e2ebd01dc"
+    },
+    "passed": 38,
+    "total": 38,
     "date": "2026-10-22"
   }
 }

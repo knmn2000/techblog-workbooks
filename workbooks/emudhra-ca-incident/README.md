@@ -14,7 +14,9 @@ The workbook covers the established facts: how to find weak CA keys, and what an
 involves. You build the maths that makes a key pair work, parse and validate certificates by hand,
 recover a weak key yourself, sign with it, and then build detection and response tools: a key
 validator and generator, a key linter that finds small private keys, a ceremony
-checker, SPKI blocklisting and an audit of a whole PKI. Assignments 12 and 14 are models of
+checker, SPKI blocklisting and an audit of a whole PKI. Assignments 17 to 19 go further: a faster
+search for weak keys, checking a revocation list's signature, and which clients still accept a
+chain after the response. Assignments 12 and 14 are models of
 possible failure shapes in key generation and key ceremonies. They make no claim about what
 happened at eMudhra. Each assignment adds modules to a Python project of your own. After the last
 one, `solutions/` holds `pkiaudit`, a working PKI auditor you can put on GitHub as it is.
@@ -36,6 +38,14 @@ the example test cases.
 | 07 | Hash the public key (SPKI) | 15 | Block and distrust |
 | 08 | Check a certificate's signature | 16 | Audit a PKI |
 
+Going further, after the capstone:
+
+| # | Assignment |
+|---|---|
+| 17 | Find a weak key in square-root time |
+| 18 | Verify a revocation list's signature |
+| 19 | Decide what each client accepts |
+
 ## Start here
 
 Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
@@ -52,11 +62,12 @@ solutions/
   src/pkiaudit/ecc/     modmath (01), curve and curves (02, 03), ecdsa (04, 11), keys (12)
   src/pkiaudit/asn1/    der (05)
   src/pkiaudit/x509/    certificate (06), spki (07), signature (08)
-  src/pkiaudit/pki/     chain (09), lint (13), ceremony (14), trust (15), audit (16)
-  src/pkiaudit/attack/  weak_key (10)
+  src/pkiaudit/pki/     chain (09), lint (13), ceremony (14), trust (15), audit (16), crl (18),
+                        client_policy (19)
+  src/pkiaudit/attack/  weak_key (10), bsgs (17)
   src/pkiaudit/__main__.py   the pkiaudit command (16)
   examples/sample.pki   a small PKI to audit
-  assignments/          assignment_01_modular_arithmetic.py ... assignment_16_audit_pki.py: one
+  assignments/          assignment_01_modular_arithmetic.py ... assignment_19_client_policy.py: one
                         program per assignment, which the checker runs; you write these too
 ```
 

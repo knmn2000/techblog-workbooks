@@ -11,8 +11,8 @@
 # Your job:
 #   Write the assignment 10 program, which reads `bound` and `key` lines and writes one
 #   verdict per key. It searches each key with the latest bound and the curve named on its
-#   line, as the Input section describes, and writes `weak <label> <d>` or `none <label>`
-#   in the Output format.
+#   line, as the Input section describes, and writes a `weak` line, with `d` or `-d`, or a
+#   `none` line in the Output format.
 #
 # The other files of this assignment:
 #   You also write src/pkiaudit/attack/weak_key.py in this assignment; each one gives its
