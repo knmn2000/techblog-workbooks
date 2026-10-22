@@ -177,52 +177,52 @@ def main():
     # R1 - matching approval and CSR.
     def r1(c):
         (a, b), _ = keys(2)
-        c.generate("ecc-root-1", a)
-        c.generate("ecc-root-2", b)
-        c.approve("ecc-root-1", a)
-        c.approve("ecc-root-2", b)
-        c.csr("ecc-root-1", a)
-        c.csr("ecc-root-2", b)
-        c.publish("ecc-root-1")
-        c.publish("ecc-root-2")
+        c.generate("ica-g3b-dv", a)
+        c.generate("ica-g3b-ov", b)
+        c.approve("ica-g3b-dv", a)
+        c.approve("ica-g3b-ov", b)
+        c.csr("ica-g3b-dv", a)
+        c.csr("ica-g3b-ov", b)
+        c.publish("ica-g3b-dv")
+        c.publish("ica-g3b-ov")
     scenario("14-R1-clean-two-keys", "R1", "two keys generated, approved, turned into CSRs and published: ok", r1,
-             ["csr ecc-root-1 ok", "csr ecc-root-2 ok", "publish ecc-root-1 ok", "publish ecc-root-2 ok"])
+             ["csr ica-g3b-dv ok", "csr ica-g3b-ov ok", "publish ica-g3b-dv ok", "publish ica-g3b-ov ok"])
 
     def r1b(c):
         (a,), (w,) = keys(1, (4,))
-        c.generate("root-key-a", a)
-        c.generate("root-key-b", w)  # private value 4: anyone can recover it
-        c.approve("root-key-b", w)   # the witnesses approved the weak key themselves
-        c.csr("root-key-b", w)
-        c.publish("root-key-b")
+        c.generate("ica-g3c-dv", a)
+        c.generate("ica-g3c-ov", w)  # private value 4: anyone can recover it
+        c.approve("ica-g3c-ov", w)   # the witnesses approved the weak key themselves
+        c.csr("ica-g3c-ov", w)
+        c.publish("ica-g3c-ov")
     scenario("14-R1-approved-weak-key-passes", "R1",
              "the key the witnesses approved is itself weak (private value 4): nothing here can tell, ok", r1b,
-             ["csr root-key-b ok", "publish root-key-b ok"])
+             ["csr ica-g3c-ov ok", "publish ica-g3c-ov ok"])
 
     # R2 - the CSR's key is not the approved one.
     def r2(c):
         (s,), (w,) = keys(1, (4,))
-        c.generate("ecc-root-1", s)
-        c.approve("ecc-root-1", s)
+        c.generate("ica-g3b-dv", s)
+        c.approve("ica-g3b-dv", s)
         c.deviation("alice")
-        c.generate("ECC_Root_1", w)  # a second pair appears onboard
-        c.approve("ecc-root-1", s)   # re-verified after the deviation
-        c.csr("ecc-root-1", w)       # the operator used the weak pair
-        c.publish("ecc-root-1")
+        c.generate("ICA_G3B_DV", w)  # a second pair appears onboard
+        c.approve("ica-g3b-dv", s)   # re-verified after the deviation
+        c.csr("ica-g3b-dv", w)       # the operator used the weak pair
+        c.publish("ica-g3b-dv")
     scenario("14-R2-weak-pair-substituted", "R2",
              "a second pair with a similar label appears after an approved deviation and its key is used for the CSR", r2,
-             ["deviation alice approved", "similar ECC_Root_1 ecc-root-1", "csr ecc-root-1 MISMATCH ECC_Root_1",
-              "publish ecc-root-1 BLOCKED"])
+             ["deviation alice approved", "similar ICA_G3B_DV ica-g3b-dv", "csr ica-g3b-dv MISMATCH ICA_G3B_DV",
+              "publish ica-g3b-dv BLOCKED"])
 
     def r2b(c):
         (s,), (w,) = keys(1, (4,))
-        c.generate("ecc-root-1", s)
-        c.generate("ecc-root-1", w)  # same label, different key
-        c.approve("ecc-root-1", s)
-        c.csr("ecc-root-1", w)
+        c.generate("ica-g3b-dv", s)
+        c.generate("ica-g3b-dv", w)  # same label, different key
+        c.approve("ica-g3b-dv", s)
+        c.csr("ica-g3b-dv", w)
     scenario("14-R2-identical-labels-different-keys", "R2",
              "two keys share one label; the CSR uses the unapproved one, so only the fingerprint tells them apart", r2b,
-             ["duplicate ecc-root-1", "csr ecc-root-1 MISMATCH ecc-root-1"])
+             ["duplicate ica-g3b-dv", "csr ica-g3b-dv MISMATCH ica-g3b-dv"])
 
     def r2c(c):
         (s, outside), _ = keys(2)
@@ -247,14 +247,14 @@ def main():
     # R3 - no current approval for the label.
     def r3(c):
         (a, b), _ = keys(2)
-        c.generate("root-1", a)
-        c.generate("root-2", b)
-        c.approve("root-2", b)
-        c.csr("root-1", a)  # never approved
-        c.csr("Root-2", b)  # approved under root-2: labels match exactly, letter case included
+        c.generate("ica-g3b-ev", a)
+        c.generate("ica-g3c-ev", b)
+        c.approve("ica-g3c-ev", b)
+        c.csr("ica-g3b-ev", a)  # never approved
+        c.csr("ICA-G3C-EV", b)  # approved under ica-g3c-ev: labels match exactly, letter case included
     scenario("14-R3-no-approval-for-label", "R3",
              "a label never approved, and a label that differs from an approved one only in letter case", r3,
-             ["csr root-1 NOT-APPROVED", "csr Root-2 NOT-APPROVED"])
+             ["csr ica-g3b-ev NOT-APPROVED", "csr ICA-G3C-EV NOT-APPROVED"])
 
     def r3b(c):
         (a, b), _ = keys(2)
@@ -414,21 +414,21 @@ def main():
     # R8 - similar labels after normalisation.
     def r8(c):
         ks = [strong_key(rng) for _ in range(5)]
-        c.generate("ecc-root-1", ks[0])
-        c.generate("ECC-ROOT-1", ks[1])  # case
-        c.generate("ecc_root_1", ks[2])  # separator
-        c.generate("ecc.root.1", ks[3])  # another separator
-        c.generate("eccroot1", ks[4])    # no separators
+        c.generate("ica-g3b-ov", ks[0])
+        c.generate("ICA-G3B-OV", ks[1])  # case
+        c.generate("ica_g3b_ov", ks[2])  # separator
+        c.generate("ica.g3b.ov", ks[3])  # another separator
+        c.generate("icag3bov", ks[4])    # no separators
     scenario("14-R8-case-and-separators", "R8", "case, underscore, dot and missing separators all match the first label", r8,
-             ["similar ECC-ROOT-1 ecc-root-1", "similar ecc_root_1 ecc-root-1", "similar ecc.root.1 ecc-root-1",
-              "similar eccroot1 ecc-root-1"])
+             ["similar ICA-G3B-OV ica-g3b-ov", "similar ica_g3b_ov ica-g3b-ov", "similar ica.g3b.ov ica-g3b-ov",
+              "similar icag3bov ica-g3b-ov"])
 
     def r8b(c):
         ks = [strong_key(rng) for _ in range(6)]
-        c.generate("ecc-root-1", ks[0])
-        c.generate("ecc-root-10", ks[1])  # digits are kept
-        c.generate("ecc-root-l", ks[2])   # letter l is not digit 1
-        c.generate("ecc-rootx1", ks[3])   # an extra letter
+        c.generate("ica-g3b-ov", ks[0])
+        c.generate("ica-g3b-ov2", ks[1])  # digits are kept
+        c.generate("ica-g3b-0v", ks[2])   # digit 0 is not letter o
+        c.generate("ica-g3c-ov", ks[3])   # one letter differs
         c.generate("k1", ks[4])
         c.generate("kl", ks[5])
     scenario("14-R8-not-similar", "R8",
@@ -488,20 +488,20 @@ def main():
     # R10 - output follows log order.
     def r10(c):
         (a, b, d), (w,) = keys(3, (4,))
-        c.generate("root-1", a)
-        c.approve("root-1", a)
-        c.csr("root-1", a)
-        c.generate("Root_1", w)
+        c.generate("ica-g3b-dv", a)
+        c.approve("ica-g3b-dv", a)
+        c.csr("ica-g3b-dv", a)
+        c.generate("ICA_G3B_DV", w)
         c.deviation("frank")
-        c.generate("root-2", b)
-        c.publish("root-1")
-        c.approve("root-2", b)
-        c.csr("root-2", b)
-        c.generate("root.2", d)
-        c.publish("root-2")
+        c.generate("ica-g3c-dv", b)
+        c.publish("ica-g3b-dv")
+        c.approve("ica-g3c-dv", b)
+        c.csr("ica-g3c-dv", b)
+        c.generate("ica.g3c.dv", d)
+        c.publish("ica-g3c-dv")
     scenario("14-R10-log-order", "R10", "findings, deviation, csr and publish lines interleave in log order; approve prints nothing", r10,
-             ["csr root-1 ok", "similar Root_1 root-1", "deviation frank approved", "publish root-1 ok",
-              "csr root-2 ok", "similar root.2 root-2", "publish root-2 ok"])
+             ["csr ica-g3b-dv ok", "similar ICA_G3B_DV ica-g3b-dv", "deviation frank approved", "publish ica-g3b-dv ok",
+              "csr ica-g3c-dv ok", "similar ica.g3c.dv ica-g3c-dv", "publish ica-g3c-dv ok"])
 
     def r10b(c):
         (a, b), _ = keys(2)
@@ -519,13 +519,13 @@ def main():
         bad = seed % n
         intended = [strong_key(rng) for _ in range(n)]
         weak = weak_key(4)
-        names = [f"ecc-root-{i + 1}" for i in range(n)]
+        names = ["ica-g3b-dv", "ica-g3b-ov", "ica-g3b-ev", "ica-g3c-dv"]
         for name, key in zip(names, intended):
             c.generate(name, key)
         for name, key in zip(names, intended):
             c.approve(name, key)
         c.deviation("grace")                                  # an approved deviation: clears approvals
-        c.generate(f"ECC_Root_{bad + 1}", weak)               # the second, weaker pair
+        c.generate(names[bad].upper().replace("-", "_"), weak)               # the second, weaker pair
         for name, key in zip(names, intended):
             c.approve(name, key)                              # re-verified after the deviation
         for i, name in enumerate(names):
@@ -535,7 +535,7 @@ def main():
         c.deviation("none")                                   # a later, unapproved departure
         c.csr(names[0], intended[0])
         c.publish(names[0])
-        c.publish("ecc-root-9")
+        c.publish("ica-g3c-ov")
     scenario(f"14-E2E-incident-shape-s{args.seed}", "E2E",
              f"four keys, an approved deviation, a weak pair with a similar label used for one CSR, then an unapproved "
              f"deviation (seed {args.seed})", lambda c: incident(c, args.seed))
@@ -548,7 +548,7 @@ def main():
             weak = [weak_key(d) for d in r.sample(range(2, 4097), 2)]
             pool = strong + weak
             r.shuffle(pool)
-            base = ["ecc-root-1", "ecc-root-2", "ica-3", "sub.ca.4"]
+            base = ["ica-g3b-dv", "ica-g3c-ov", "ica-3", "sub.ca.4"]
             variants = []
             for b in base:
                 variants += [b, b.upper(), b.replace("-", "_").replace(".", "_"), b.replace("-", "").replace(".", "")]

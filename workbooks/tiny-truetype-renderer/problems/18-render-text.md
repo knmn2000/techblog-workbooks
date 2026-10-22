@@ -131,7 +131,7 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
 JetBrains Mono is a monospaced font: every advance width is 600 font units, so each character
 moves the pen 600 × 0.07 = 42 pixels.
 
-![expected picture for 18-E2E-hello](tests/18/expected/18-E2E-hello.png)
+![expected picture for 18-E2E-hello](../tests/18/expected/18-E2E-hello.png)
 
 ### Example 2: two lines, two colours (test `18-R6-two-lines`)
 
@@ -146,7 +146,7 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
          text second line
 ```
 
-![expected picture for 18-R6-two-lines](tests/18/expected/18-R6-two-lines.png)
+![expected picture for 18-R6-two-lines](../tests/18/expected/18-R6-two-lines.png)
 
 ### Example 3: a character the font doesn't have (test `18-R2-unmapped`)
 
@@ -162,7 +162,7 @@ The middle character, U+0378 (bytes `cd b8` in UTF-8), isn't in JetBrains Mono's
 program draws glyph 0 in its place, a box with a slash. The pen still moves on by glyph 0's
 advance width.
 
-![expected picture for 18-R2-unmapped](tests/18/expected/18-R2-unmapped.png)
+![expected picture for 18-R2-unmapped](../tests/18/expected/18-R2-unmapped.png)
 
 ## Constraints
 
@@ -221,7 +221,14 @@ return penX
 
 ## After you pass: compare with the author's code
 
-The blog's final program loads the font once in a `FontParser`, converts the string to code points
-with a small `utf8ToCodepoints` helper, asks the parser for each glyph and renders it with the
-non-zero renderer, moving a start x by each glyph's metrics. That program draws the pictures at the
-end of the blog.
+The post ends after filling one glyph; the code that draws a whole string is in
+[the author's repository](https://github.com/YohYamasaki/tiny-truetype-renderer). Its `main.cpp`
+loads the font once in a `FontParser`, converts the string to code points with a small
+`utf8ToCodepoints` helper and calls `FontParser::getGlyphs`, which looks up each glyph and adds
+up the advance widths times the scale. `FrameBufferCanvas::renderGlyphs` then draws the glyphs.
+
+The repository's code differs from this assignment in two places:
+- `FontParser::getGlyph` throws "Glyph not found" for a character the font doesn't map. This
+  assignment draws glyph 0 instead (requirement R2, test `18-R2-unmapped`).
+- `main.cpp` works out the scale itself, as the canvas height (800 pixels) divided by
+  ascent − descent from `hhea`. Here each `pen` line gives the scale.

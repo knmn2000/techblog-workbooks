@@ -34,7 +34,7 @@ REQUIREMENTS = [
     ("R1", "A self-signed certificate, verified against its own public key, is valid"),
     ("R2", "A certificate verified against the wrong issuer key is invalid"),
     ("R3", "A certificate whose signature bytes have been tampered with (one flipped bit in r or s) is invalid"),
-    ("R4", "The TBS bytes are re-extracted correctly even when the certificate has v3 extensions (a non-trivial TBS structure)"),
+    ("R4", "The TBS bytes are sliced correctly when the certificate has v3 extensions, including a tbsCertificate long enough to need two length bytes (30 82 ..)"),
     ("E2E", "A small set of certificates mixing valid, wrong-key and tampered signatures"),
 ]
 EXPLAIN = "_lines=R1 valid=R2 invalid=R3"

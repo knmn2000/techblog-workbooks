@@ -8,6 +8,7 @@ requirement R2 A cert whose SPKI hash is directly blocklisted blocks the chain: 
 requirement R3 A chain anchored at a distrusted root, with no SPKI hit anywhere in it, is `blocked root <root-id>`
 requirement R4 When both could apply to the same chain, the SPKI block is reported, not the root distrust
 requirement R5 A blocklist or distrust entry for other chains' certificates does not block this one, and an entry affects only chains after it
+requirement R6 A blocked key blocks every chain it appears in, including a cross-signed chain to a root that is not distrusted, where root distrust alone leaves the chain trusted
 requirement E2E Several chains in one input, covering every verdict, judged independently
 case 15-R1-trusted R1
 title a leaf, intermediate and root with nothing blocked or distrusted
@@ -108,6 +109,45 @@ cert root 5a983827d7920f4b45ed34e2a91cb9606d1696d654b5832312b892f6fa81c375 late-
 expected
 chain before trusted
 chain after blocked spki intermediate
+end
+case 15-R6-cross-signed-key-blocked R6
+title one blocked intermediate key in two chains, one to the distrusted root and one through a cross-certificate to another root
+input
+blocked-spki 982bd817557fe6632c7aa8ad933588dd8eee0366ee54d98ab2296ac321f3b2d3
+distrusted-root root-issuer
+chain own-root
+cert leaf 092cadc7eba492520cd931988dfc79ec5a331e15c131258d7faac50b3368afb8 -
+cert intermediate 982bd817557fe6632c7aa8ad933588dd8eee0366ee54d98ab2296ac321f3b2d3 -
+cert root 92a1f19548393fe90ba64a83a4bfc7f6b5506562376b3f9f5e4460ec9c3c0fba root-issuer
+chain cross-signed
+cert leaf e4e1f55ab60b2c8be58c79e70e1286e4d993d546da90dfd0df86ea70daa545af -
+cert intermediate 982bd817557fe6632c7aa8ad933588dd8eee0366ee54d98ab2296ac321f3b2d3 -
+cert root e32cd8944c0f5f71101ee900fee51af995218d6853c711793ba32085ae00ea3f root-cross-signer
+expected
+chain own-root blocked spki intermediate
+chain cross-signed blocked spki intermediate
+end
+case 15-R6-distrust-alone-misses-cross-sign R6
+title root distrust stops the chain to its own root and leaves the cross-signed chain trusted, until the key is blocked
+input
+distrusted-root root-home
+chain own-root
+cert leaf f04fcaed90842c2289cc99580382798a76cc64cb5b3260d7619ef836cc7136ec -
+cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+cert root de420ff5d0fdee7e5decf09a715ce8174acd2af25b278023f87df5117ecc8c8c root-home
+chain cross-before
+cert leaf 246e051559f96349b724a19295200eb13c0d9f7bd154e973d0704aadcb6cd480 -
+cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+cert root d448388dee04104134f164b8d89307fbab6e4ac6639b126233ad838fe9b074ca root-other
+blocked-spki 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df
+chain cross-after
+cert leaf 246e051559f96349b724a19295200eb13c0d9f7bd154e973d0704aadcb6cd480 -
+cert intermediate 4991a86aee63e9d1e8d8a3d184b67b03e2c24ceb137b36e817cf7319cbf834df -
+cert root d448388dee04104134f164b8d89307fbab6e4ac6639b126233ad838fe9b074ca root-other
+expected
+chain own-root blocked root root-home
+chain cross-before trusted
+chain cross-after blocked spki intermediate
 end
 case 15-E2E-several-chains-s1 E2E
 title five chains in one input: trusted, SPKI-blocked, root-distrusted, both apply, and an unrelated trusted chain (seed 1)

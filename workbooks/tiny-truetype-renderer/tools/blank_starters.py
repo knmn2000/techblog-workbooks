@@ -58,10 +58,17 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
                  f"Problem: {meta['problem']} (and in the problem book, with its Start here card)"]]
     if path == entry:
         run = config["run"].replace("{id}", cid).replace("{input}", "<input-file>").replace("{output}", "<output-file>")
+        # The starters serve every system: show the program's name without {exe}, and both check commands.
+        exe_note = " (its name ends in .exe on Windows)" if "{exe}" in run else ""
         check = config.get("book", {}).get("checkCommand", ".\\check {id}").replace("{id}", cid)
-        why = (f"The checker runs this program for assignment {cid} as `{run}`. It reads a test input, "
-               f"calls your code and writes the answer to the output file, and the checker compares that "
-               f"answer with the expected one. Run `{check}`, or use Run and Submit in the book.")
+        if check.startswith(".\\check "):
+            check = f"{check}` (`./check.sh {cid}` on macOS or Linux)"
+        else:
+            check += "`"
+        why = (f"The checker runs this program for assignment {cid} as `{run.replace('{exe}', '')}`{exe_note}. "
+               f"It reads a test input, calls your code and writes the answer to the output file, and the "
+               f"checker compares that answer with the expected one. Run `{check}, or use Run and Submit in "
+               f"the book.")
     else:
         why = config["project"].get("purposes", {}).get(path, "")
         later = sorted(c for c, m in config["checkpoints"].items() if path in m.get("extends", []))

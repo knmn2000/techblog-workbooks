@@ -3,10 +3,11 @@
 // Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The checker runs this program for assignment 01 as `build/solutions/assignment_01.exe
-//   <input-file> <output-file>`. It reads a test input, calls your code and writes the
-//   answer to the output file, and the checker compares that answer with the expected one.
-//   Run `.\check 01`, or use Run and Submit in the book.
+//   The checker runs this program for assignment 01 as `build/solutions/assignment_01
+//   <input-file> <output-file>` (its name ends in .exe on Windows). It reads a test input,
+//   calls your code and writes the answer to the output file, and the checker compares
+//   that answer with the expected one. Run `.\check 01` (`./check.sh 01` on macOS or
+//   Linux), or use Run and Submit in the book.
 //
 // Your job:
 //   The Boilerplate gives you this program finished. You fill in the TODOs in this

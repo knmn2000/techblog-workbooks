@@ -271,7 +271,8 @@ its glyph id. `count` is then the size of the map.
   format 4.
 - Don't take the first format 12 subtable you find. The (3, 10) subtable often holds the same
   mappings, but the spec doesn't require it, and two tests contain decoys with different
-  mappings.
+  mappings. This assignment reads only (0, 4); a complete renderer would also accept a format 12
+  subtable under (3, 10), Windows' record for the full Unicode range.
 - The range includes `endCharCode`: loop with `<=`, not `<`.
 - Keep code points in 32-bit (or wider) variables everywhere. A `uint16_t` key turns U+1F600
   into U+F600. If your loop counter has the same type as `endCharCode`, `c <= end` can never
@@ -337,4 +338,5 @@ The loop doesn't stop at the first match, so if a font had two
 trades memory for simpler code: a font that maps most of Unicode would need over a million
 map entries, while the sorted groups with a binary search stay small. Many fonts that cover
 only the BMP have a format 4 subtable and no format 12 one (like test `03-R6-format4-only`).
-A complete renderer would read format 4 as a fallback.
+A complete renderer would read format 4 as a fallback, and would also accept a format 12
+subtable under (3, 10) when the font has no (0, 4) record.

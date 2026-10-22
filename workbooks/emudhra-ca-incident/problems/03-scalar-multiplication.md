@@ -72,6 +72,12 @@ return result
 assignment 02, run on a much bigger curve. `result` starts at infinity, so the first addition
 (when the lowest bit is 1) gives back `addend` unchanged.
 
+Double-and-add takes longer for some values of `d` than for others: each 1 bit costs a point
+addition that a 0 bit skips. Here `d` is public test input, so the timing gives nothing away.
+Assignment 11 runs a secret nonce through `scalar_multiply` to sign, and there anyone who can
+time the signing learns something about the nonce's bits, which can be enough to recover the
+private key. Cryptography libraries use constant-time scalar multiplication for secret values.
+
 ### The curves
 
 | | P-256 | P-384 |
@@ -209,20 +215,22 @@ is 0. `result` is the answer.
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
-scalar_multiply(curve, d):
-    (p, a, G) = curve's parameters
+scalar_multiply(curve, k, point):
     result = infinity
-    addend = G
-    while d > 0:
-        if d & 1:
-            result = add(result, addend)
-        addend = add(addend, addend)
-        d = d >> 1
+    addend = point
+    while k > 0:
+        if k & 1:
+            result = add_points(curve, result, addend)
+        addend = add_points(curve, addend, addend)
+        k = k >> 1
     return result
 ```
 
-(`add` is your `add_points` from assignment 02, which takes `p` and `a` from the curve and handles
-infinity on either side.)
+(`add_points` is yours from assignment 02, which takes `p` and `a` from the curve and handles
+infinity on either side.) This assignment's program calls `scalar_multiply(curve, d, curve.g)`.
+Take the point as an argument anyway: assignment 04 also multiplies the public key `Q`, as
+`u2*Q`. With `k = 0` the loop never runs and the function returns infinity, which assignment 04
+needs too.
 </details>
 
 ## Checking your solution
