@@ -167,16 +167,16 @@
   },
   "12": {
     "files": {
-      "_spoilers/project/assignments/assignment_12_generate_key.py": "aad635767d8d06ed8aaf511fe58264074c284f929f7a6cdc65e52017f7089802",
+      "_spoilers/project/assignments/assignment_12_generate_key.py": "9e3aaa0f485aa38a1b7e0a461404d4b3d22452e3748c9ca299c5d18c636d56bf",
       "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
       "_spoilers/project/src/pkiaudit/ecc/__init__.py": "0c29c0379ad10ad4c394a85a21cbe263e26f2d2ebfb4cd55b65f14d1d72e6e94",
       "_spoilers/project/src/pkiaudit/ecc/curves.py": "2b4aa956266f89fa0102dbac65611a2a047da3cfae53a69b9bf58c97e96339b1",
-      "_spoilers/project/src/pkiaudit/ecc/keys.py": "7632309c6ecfffe7442766d5a98447b20f160faf656eac2dc41ec6a78fdeab86",
+      "_spoilers/project/src/pkiaudit/ecc/keys.py": "47b2d2fbe438d4c8f5e5d746ddec6c79589eeaee30f6826c2b4430c55fc5b5ec",
       "_spoilers/project/src/pkiaudit/ecc/curve.py": "6b30901d0faf643a9b75476afaa645516512d48a5616fab0b4247dded1b8a37a",
       "_spoilers/project/src/pkiaudit/ecc/modmath.py": "2b173ec0c40ddb6db9f8a25df32cd0aa8b31a92f474aae8a3fd5b719fb926417"
     },
-    "passed": 14,
-    "total": 14,
+    "passed": 42,
+    "total": 42,
     "date": "2026-10-22"
   },
   "13": {
@@ -198,13 +198,13 @@
   },
   "14": {
     "files": {
-      "_spoilers/project/assignments/assignment_14_ceremony_checker.py": "08319e409620aa71385cc549ffa868af35bff1ed412e9961c97f57d4d1a5b24e",
+      "_spoilers/project/assignments/assignment_14_ceremony_checker.py": "661e119609dfac21dd40ae68fd9982759b54ca2f33949805da1c029e0391a427",
       "_spoilers/project/src/pkiaudit/__init__.py": "0c526a2b23a6683223e0ff962023e74dfcdde3cac3c924959f337943086dd597",
       "_spoilers/project/src/pkiaudit/pki/__init__.py": "32dafb2b7b21ddd34cf8740295cbea7aec009336ce1f4fbe18c403b5090eafa3",
-      "_spoilers/project/src/pkiaudit/pki/ceremony.py": "1e61dbffde847cedb168102a4d82304094f46e5775a13e8f0bf0c23b012a5922"
+      "_spoilers/project/src/pkiaudit/pki/ceremony.py": "88e458d87a596831265744f3eca27f8357dcd00c115838ccd3305cfe8966cc1f"
     },
-    "passed": 10,
-    "total": 10,
+    "passed": 30,
+    "total": 30,
     "date": "2026-10-22"
   },
   "15": {

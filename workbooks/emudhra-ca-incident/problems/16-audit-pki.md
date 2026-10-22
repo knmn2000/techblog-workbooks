@@ -323,4 +323,4 @@ real disclosure.
 You've now rebuilt, from modular arithmetic up, the reasoning that made eight weak intermediate
 keys a same-day incident: the maths that makes a key pair work, the format that carries a key
 between systems, the chain that decides whether to trust it, the search that breaks a bad one,
-and the checks that would have caught it first.
+and the checks that find it before anyone trusts it.
