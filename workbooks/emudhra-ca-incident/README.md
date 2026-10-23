@@ -48,7 +48,7 @@ Going further, after the capstone:
 
 ## Start here
 
-Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
+Ask your coding assistant to "set up my workbook": it checks the tools, asks which language you'd like (this
 workbook's project is Python), creates the project and opens the book. Or double-click
 `study.cmd` (or run `.\study` in PowerShell, `./study.sh` on macOS or Linux): the book opens with
 Run and Submit working, and offers to create the project if there isn't one yet. Leave its window
@@ -120,7 +120,7 @@ requirement behind it, where the expected value came from, and the command that 
 ## If you think a test is wrong
 
 Run `.\check 06 -Dispute <test-id> "your reason"`. That test stops counting and you can carry on;
-the verdict reads `Accepted (1 disputed)`. Then ask Claude to "review my disputes". Claude
+the verdict reads `Accepted (1 disputed)`. Then ask your coding assistant to "review my disputes". It
 rechecks the expected value against its independent source and either fixes the test or shows
 you why it's right. The checker keeps disputes in `disputes.json`.
 
@@ -129,7 +129,7 @@ you why it's right. The checker keeps disputes in `disputes.json`.
 The checker reads only your program's output, so you can write the project in any language. This
 workbook's project, its starters and its reference are Python.
 
-To work in another language, ask Claude. It shows which languages you have installed
+To work in another language, ask your coding assistant. It shows which languages you have installed
 (`py -P tools/langs.py` lists them) and how to install the others, keeps your Python project in a
 folder of its own, and sets up a project in the new language with the same layout in that
 language's style. It creates nothing for languages you don't choose.

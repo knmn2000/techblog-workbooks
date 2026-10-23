@@ -375,7 +375,7 @@ def dispute(checkpoint: str, case_file: CaseFile, test_id: str, reason: str) -> 
                      "opened": date.today().isoformat(), "status": "open"})
     (ROOT / "disputes.json").write_text(json.dumps(disputes, indent=2) + "\n", encoding="utf-8")
     print(f"Set aside {test_id}: it won't count while the dispute is open.\n"
-          f"Ask Claude to \"review my disputes\": Claude checks the test, then fixes it or shows you why it's right.")
+          f"Ask your coding assistant to \"review my disputes\": it checks the test, then fixes it or shows you why it's right.")
     return 0
 
 
@@ -415,7 +415,7 @@ def not_started(checkpoint: str, meta: dict, config: dict):
     folder = config["project"]["dir"]
     if not project.exists(config):
         print(f"There's no project yet: {folder}/ doesn't exist.\n"
-              "Ask Claude to set up your workbook, or run:  py -P tools/project.py setup")
+              "Ask your coding assistant to set up your workbook, or run:  py -P tools/project.py setup")
         return finish(2, verdict="no-project")
     created = project.start(config, checkpoint)
     entry = project.entry(config, checkpoint)

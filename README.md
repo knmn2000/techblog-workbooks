@@ -8,7 +8,8 @@ There are two workbooks so far, and more are on their way. If you've turned a po
 workbook, or there's a post you'd love to see here, [contributions are welcome](#contributing).
 
 The workbooks come from [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook),
-a Claude Code plugin that reads a post and builds the assignments, tests and problem book.
+an Agent Skill that any skills-aware coding agent can run: it reads a post and builds the
+assignments, tests and problem book.
 
 Browse them on the site, [workbooks.2mbproblems.com](https://workbooks.2mbproblems.com/):
 every workbook's assignments, the project you build, how to set it up, and a read-only copy of its
@@ -43,7 +44,7 @@ git clone https://github.com/knmn2000/techblog-workbooks
 cd techblog-workbooks/workbooks/tiny-truetype-renderer   # or workbooks/emudhra-ca-incident
 ```
 
-Then, with the plugin installed, ask Claude Code to "set up my workbook": it checks the tools,
+Then, with the skill installed, ask your coding agent to "set up my workbook": it checks the tools,
 asks which language you want, offers to install anything missing, creates your project and opens
 the book. Or double-click `study.cmd` in that folder (or run `.\study`): it opens the problem
 book in your browser, with Run and Submit running your code from the page, and offers to create
@@ -65,14 +66,14 @@ on your PATH and the `cryptography` package for fresh test sets).
 ## How checking works
 
 The checker reads only your output. Each assignment's program runs as
-`<program> <input-file> <output-file>`, so you choose the structure and the libraries. Claude asks
-which language you want when you set a workbook up (C, C++, Go, Rust, Python, JavaScript,
+`<program> <input-file> <output-file>`, so you choose the structure and the libraries. Your agent
+asks which language you want when you set a workbook up (C, C++, Go, Rust, Python, JavaScript,
 TypeScript or Lua) and sets up only that one.
 
 Expected answers come from an independent source, never from the reference solution. In the
 TrueType workbook most come from [fontTools](https://github.com/fonttools/fonttools); in the
 certificate workbook most come from `openssl` and the `cryptography` library. Before an assignment
-ships, Claude checks the checks: the reference solution passes, planted bugs fail (including any
+ships, the skill checks the checks: the reference solution passes, planted bugs fail (including any
 bug in the post's own code), different-but-correct solutions pass, and a separate solver passes
 using only the problem page.
 
@@ -95,13 +96,13 @@ The book follows your system's light or dark theme:
 
 ## Contributing
 
-To add a workbook, install [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook)
-in Claude Code and ask it to turn a post into a workbook. Put the result in
+To add a workbook, install the [tech-blog-to-workbook](https://github.com/knmn2000/tech-blog-to-workbook)
+skill in your coding agent and ask it to turn a post into a workbook. Put the result in
 `workbooks/<short-name>/`, add a row to the table above, and open a pull request. The site picks
 the workbook up by itself; its `workbook.json` `site` block says what to install and how to start
 it. Before you open the pull request, check that:
 
-- every assignment passes the plugin's checks (reference Accepted, planted bugs fail, an
+- every assignment passes the skill's checks (reference Accepted, planted bugs fail, an
   independent solver passes from the page alone);
 - `py -P tools/blank_starters.py` has run, `solutions/` isn't committed (the workbook creates a
   learner's project when they set it up), and `tools/build_book.py` has rebuilt the book with no

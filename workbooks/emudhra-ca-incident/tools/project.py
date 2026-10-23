@@ -87,7 +87,7 @@ def setup(config: dict, language: str = "") -> list:
     spec = config["project"]
     if language and language.lower() not in (spec["language"], *spec.get("aliases", [])):
         raise ValueError(f"this workbook's project is set up for {spec['languageLabel']}; "
-                         "to work in another language, ask Claude to set it up")
+                         "to work in another language, ask your coding assistant to set it up")
     created = []
     skeleton = STARTERS / "project"
     sources = {p.relative_to(skeleton).as_posix(): p for p in sorted(skeleton.rglob("*")) if p.is_file()}

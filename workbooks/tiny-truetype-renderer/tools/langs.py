@@ -3,7 +3,7 @@
     py -P tools/langs.py          list them, with what's installed on this computer
 
 A workbook's project is set up in one language (workbook.json "project"). When a learner wants
-another, Claude asks which, checks it here, offers to install what's missing, and sets up a
+another, the coding assistant asks which, checks it here, offers to install what's missing, and sets up a
 project in that language (see the blog-to-leetcode skill). The checker also uses parse_errors()
 below to point the book at the line of each compiler error.
 """

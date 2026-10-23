@@ -28,7 +28,7 @@ files, and the example test cases.
 
 ## Start here
 
-Ask Claude to "set up my workbook": it checks the tools, asks which language you'd like (this
+Ask your coding assistant to "set up my workbook": it checks the tools, asks which language you'd like (this
 workbook's project is C++), creates the project and opens the book. Or double-click `study.cmd`
 on Windows or `study.command` on macOS (or run `.\study` in PowerShell, `./study.sh` on macOS or
 Linux): the book opens with Run and Submit working, and offers to create the C++ project if there
@@ -108,7 +108,7 @@ line or fill algorithm passes. Missing shapes, stray lines and holes in the wron
 ## If you think a test is wrong
 
 Run `.\check 07 -Dispute <test-id> "your reason"`. That test stops counting and you can carry on;
-the verdict reads `Accepted (1 disputed)`. Then ask Claude to "review my disputes". Claude
+the verdict reads `Accepted (1 disputed)`. Then ask your coding assistant to "review my disputes". It
 rechecks the expected value against its independent source and either fixes the test or shows
 you why it's right. The checker keeps disputes in `disputes.json`.
 
@@ -117,7 +117,7 @@ you why it's right. The checker keeps disputes in `disputes.json`.
 The checker reads only your program's output, so you can write the project in any language. This
 workbook's project, its starters and its reference are C++.
 
-To work in another language, ask Claude. It shows which languages you have installed
+To work in another language, ask your coding assistant. It shows which languages you have installed
 (`py -P tools/langs.py` lists them; `python3` in place of `py` on macOS or Linux) and how to install the others, keeps your C++ project in a
 folder of its own, and sets up a project in the new language, with its own build file and the same
 layout in that language's style. It creates nothing for languages you don't choose.

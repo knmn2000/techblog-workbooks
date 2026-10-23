@@ -44,7 +44,7 @@ export function startPanelHtml(w, { id = '', prefix = 'p', heading = 'Solve it o
     </ol>
   </div>`,
     ai: `<div class="wbs-pane" data-pane="ai"${order[0] === 'ai' ? '' : ' hidden'}>
-    <p class="wbs-note">Paste this into Claude Code, Codex, Cursor or any coding assistant. It clones the workbook, checks the tools it needs (asking before installing anything), sets up your project and starts the book. The prompt tells it not to solve anything for you.</p>
+    <p class="wbs-note">Paste this into any coding assistant, such as Codex, Cursor, Gemini CLI, GitHub Copilot or Claude Code. It clones the workbook, checks the tools it needs (asking before installing anything), sets up your project and starts the book. The prompt tells it not to solve anything for you.</p>
     ${term('prompt', `<pre class="wbs-wrap">${esc(aiPrompt(w))}</pre>`)}
   </div>`,
   };

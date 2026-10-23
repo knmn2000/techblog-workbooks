@@ -1,5 +1,4 @@
 <title>{{TITLE}}</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -692,7 +691,7 @@ span.CodeMirror-selectedtext { background: none; }
       <section class="panel code" aria-label="Code">
         <div class="panel-head"><span class="ptab static"><svg class="ico-code" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/></svg>Code</span><span class="sep" id="tree-sep" hidden></span><button class="ptab" type="button" id="tree-btn" aria-pressed="false" hidden title="Your project: every file, and the assignment it belongs to"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Files</button></div>
         <div class="code-tools">
-          <span class="lang" id="lang" title="Your project's language. To switch, ask Claude: it keeps this project and starts a new one beside it."></span>
+          <span class="lang" id="lang" title="Your project's language. To switch, ask your coding assistant: it keeps this project and starts a new one beside it."></span>
           <div class="seg small" id="kind" role="group" aria-label="Starter code">
             <button type="button" data-kind="boilerplate" aria-pressed="true" title="You get the input/output code and the declarations, and fill in each TODO">Boilerplate</button>
             <button type="button" data-kind="blank" aria-pressed="false" title="Each file starts with only a comment giving your job; you write the rest, includes and input/output too">From scratch</button>
@@ -839,7 +838,7 @@ span.CodeMirror-selectedtext { background: none; }
           : `<li><span>The Submit button copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
         <li><span>Paste the checker's output into the Test result tab. Accepted marks the assignment solved. If you open the workbook with <code>study</code> (double-click <code>study.cmd</code>) instead, Run and Submit build and run your code for you.</span></li>`}
         <li><span>An assignment's tests depend only on the earlier files it uses, because each test input carries what earlier assignments would produce.${LOCAL ? ' The Re-check solved button reruns your solved assignments and shows any that a later change broke.' : ''}</span></li>
-        <li><span>If a test looks wrong, run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask Claude to review your disputes.</span></li>
+        <li><span>If a test looks wrong, run <code>${esc(command(first, '-Dispute <test-id> "why"'))}</code> to set it aside, then ask your coding assistant to review your disputes.</span></li>
       </ol></div>`;
     if (CPS.length && done.length === CPS.length) renderFinish();
   }
@@ -1818,7 +1817,7 @@ span.CodeMirror-selectedtext { background: none; }
     if (box.hidden) return;
     box.innerHTML = `<div><h2>Set up your project first</h2>
       <p>Your code goes in <code>${esc(PROJECT_DIR)}</code>, a ${esc(PROJECT.label)} project with its own build file and README that you can put on GitHub when you finish. The folder doesn't exist yet.</p>
-      <p>Ask Claude to set up your workbook (it asks which language you'd like), or make the ${esc(PROJECT.label)} project now:</p>
+      <p>Ask your coding assistant to set up your workbook (it asks which language you'd like), or make the ${esc(PROJECT.label)} project now:</p>
       <button class="btn green" type="button" id="setup-project">Set up the ${esc(PROJECT.label)} project</button></div>`;
     showSaved();
   }
@@ -1952,7 +1951,7 @@ span.CodeMirror-selectedtext { background: none; }
       <span class="logo">${esc(DATA.title.trim().charAt(0).toUpperCase())}</span>
       <h1>See you again!</h1>
       <p>${esc(DATA.title)} has stopped. Your code is in <code>solutions/</code>.</p>
-      <p>To come back, double-click <code>study.cmd</code> or ask Claude to open your workbook.</p>
+      <p>To come back, double-click <code>study.cmd</code> or ask your coding assistant to open your workbook.</p>
       <p class="bye-close" hidden>You can close this tab now.</p></div></div>`);
     // Browsers only let a page close tabs it opened itself; otherwise the message stays.
     setTimeout(() => { window.close(); setTimeout(() => { const note = document.querySelector('.bye-close'); if (note) note.hidden = false; }, 300); }, 1800);
@@ -2046,7 +2045,7 @@ span.CodeMirror-selectedtext { background: none; }
       case 'not-started': return r.empty
         ? `<code>${esc(c.entry)}</code> is empty, so there was nothing to check. Write the program in it.`
         : `<code>${esc(c.entry)}</code> is still the blank starter, so there was nothing to check. Write it, or pick Boilerplate above the editor for ready-made input/output code.`;
-      case 'no-project': return 'There is no project yet, so there was nothing to build. Set it up above the editor, or ask Claude to set up your workbook.';
+      case 'no-project': return 'There is no project yet, so there was nothing to build. Set it up above the editor, or ask your coding assistant to set up your workbook.';
       case 'not-implemented': return `<code>${esc(r.function || 'A function')}</code> is still a TODO in your files. Write it and Submit again.`;
       case 'passed': return `This test passes. Submit runs all ${c.tests}.`;
       case 'failed': return 'This test fails. Its input, your output and the expected output are below.';
@@ -2186,7 +2185,7 @@ span.CodeMirror-selectedtext { background: none; }
       + `<div class="live-actions"><button class="btn" type="button" id="live-fresh">Run a fresh set of tests</button>`
       + (solvedCount ? `<button class="btn" type="button" id="recheck-all" title="Runs every assignment you've solved again, to find any that a change to an earlier file broke">Re-check solved (${solvedCount})</button>` : '') + '</div>'
       + `<details class="more"><summary>If a test looks wrong</summary><div>${cmdRow(command(c.id, '-Dispute <test-id> "why"'))}
-        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside so it stops counting, then ask Claude to review your disputes.</p></div></details>`;
+        <p class="note" style="margin-top:8px">Run this in the workbook folder to set the test aside so it stops counting, then ask your coding assistant to review your disputes.</p></div></details>`;
   }
   if (LOCAL) {
     $('#result').addEventListener('click', (e) => {

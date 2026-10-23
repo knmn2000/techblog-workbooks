@@ -247,9 +247,9 @@ the checker's output, the READMEs and a collection site's pages. The rules below
 
 Every page and README also gets a pass with the
 [avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) skill (MIT) in edit mode,
-technical context, keeping the page's plain technical voice. Install it once as a user skill
-(`~/.claude/skills/avoid-ai-writing`, with its `bin/avoid-ai-writing.js` detector), and read its
-`SKILL.md` and `references/patterns.md` in full before the pass, as it asks. Its editing contract
+technical context, keeping the page's plain technical voice. Install it once as a skill for your agent
+(it brings its `bin/avoid-ai-writing.js` detector; `scripts/aiw_scan.py` says where it looks), and
+read its `SKILL.md` and `references/patterns.md` in full before the pass, as it asks. Its editing contract
 fits workbooks: code blocks, test ids, links, tables of formats and anything the tests check are
 protected, and a rewrite never adds facts.
 
