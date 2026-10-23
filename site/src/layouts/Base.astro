@@ -1,8 +1,9 @@
 ---
 import { href } from '../lib/paths.mjs';
 import { socialTags } from '../lib/social.mjs';
+import { SKILL_INSTALL_URL } from '../lib/workbooks.mjs';
 interface Props { title: string; description?: string; image?: string; }
-const { title, description = 'We turn tech blog posts and papers into byte-sized coding assignments. Solve them one at a time and you build what the post describes.', image = '/og.png' } = Astro.props;
+const { title, description = 'Each workbook splits a technical post into coding assignments that add up to one project.', image = '/og.png' } = Astro.props;
 // Link previews need absolute URLs; Astro.site is the custom domain (astro.config.mjs).
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const social = socialTags({ title, description, url: canonical, image: new URL(href(image), Astro.site).href });
@@ -69,6 +70,8 @@ const social = socialTags({ title, description, url: canonical, image: new URL(h
     .topbar nav { margin-left: auto; display: flex; gap: 6px; align-items: center; }
     .topbar nav a { color: var(--text-2); padding: 5px 10px; border-radius: 6px; font-weight: 500; }
     .topbar nav a:hover { background: var(--fill); color: var(--text); text-decoration: none; }
+    .topbar nav a.nav-cta { background: var(--brand); color: #1a1a1a; font-weight: 600; padding: 6px 12px; margin-right: 4px; white-space: nowrap; }
+    .topbar nav a.nav-cta:hover { background: color-mix(in srgb, var(--brand) 88%, #fff); color: #1a1a1a; }
     .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 6px; background: none; color: var(--text-2); cursor: pointer; }
     .icon-btn:hover { background: var(--fill); color: var(--text); }
     .icon-btn svg { width: 17px; height: 17px; }
@@ -85,6 +88,8 @@ const social = socialTags({ title, description, url: canonical, image: new URL(h
     footer { color: var(--text-3); font-size: 12px; border-top: 1px solid var(--line); background: var(--layer); }
     footer .wrap { display: flex; gap: 8px 24px; flex-wrap: wrap; justify-content: space-between; padding-block: 22px 28px; }
     @media (max-width: 720px) { .hide-sm { display: none !important; } main { padding-block: 22px 48px; } .topbar nav a.opt-nav { display: none; } }
+    /* On a phone the nav keeps the install button and the theme switch. */
+    @media (max-width: 480px) { .topbar nav a.opt-nav-xs { display: none; } }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
   </style>
 </head>
@@ -93,8 +98,9 @@ const social = socialTags({ title, description, url: canonical, image: new URL(h
     <div class="wrap">
       <a class="brand" href={href('/')}><i><svg viewBox="0 0 32 32"><path d="M6 8h20M6 16h20M6 24h12" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/></svg></i>Workbooks</a>
       <nav>
+        <a class="nav-cta" href={SKILL_INSTALL_URL}>Install the skill</a>
         <a class="opt-nav" href="https://github.com/knmn2000/techblog-workbooks#contributing">Contribute</a>
-        <a href="https://github.com/knmn2000/techblog-workbooks">GitHub</a>
+        <a class="opt-nav-xs" href="https://github.com/knmn2000/techblog-workbooks">GitHub</a>
         <button class="icon-btn" id="theme" type="button" title="Switch light and dark theme" aria-label="Switch light and dark theme">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>

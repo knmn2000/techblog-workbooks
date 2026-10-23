@@ -14,7 +14,7 @@ export function launchText(w) {
   ].join('\n');
 }
 
-function term(label, body) {
+export function term(label, body) {
   return `<div class="wbs-term" data-term><div class="wbs-term-head"><span>${esc(label)}</span><button class="wbs-copy" type="button">Copy</button></div>${body}</div>`;
 }
 

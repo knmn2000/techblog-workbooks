@@ -9,6 +9,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 export const REPO_URL = 'https://github.com/knmn2000/techblog-workbooks';
 export const REPO_NAME = 'techblog-workbooks';
+// The skill that makes the workbooks, its install instructions, and its one-line install.
+export const SKILL_URL = 'https://github.com/knmn2000/tech-blog-to-workbook';
+export const SKILL_INSTALL_URL = `${SKILL_URL}#install`;
+export const SKILL_INSTALL_CMD = 'npx skills add knmn2000/tech-blog-to-workbook --skill blog-to-leetcode';
 
 function collectionDir() {
   const dir = path.resolve(process.env.WORKBOOKS_DIR ?? path.join(root, '..'));

@@ -1,17 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
 import CheckpointMap from '../components/CheckpointMap.astro';
-import { loadWorkbooks } from '../lib/workbooks.mjs';
+import { loadWorkbooks, REPO_URL, SKILL_URL, SKILL_INSTALL_URL, SKILL_INSTALL_CMD } from '../lib/workbooks.mjs';
 import { href } from '../lib/paths.mjs';
+import { term, startPanelCss, startPanelJs } from '../lib/start-ui.mjs';
 
 const workbooks = loadWorkbooks();
+const installTerm = term('bash', `<pre>${SKILL_INSTALL_CMD.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre>`);
 const languages = [...new Set(workbooks.map((w) => w.language))].sort();
 const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5', JavaScript: '#f1e05a', TypeScript: '#3178c6', Rust: '#dea584', Go: '#00add8' };
 ---
 <Base title="Workbooks: Don't just read tech blogs. Learn by building.">
   <section class="hero">
     <h1>Don't just read tech blogs. Learn by building.</h1>
-    <p class="lede">We turn blog posts, papers, book chapters, or any concept you can think of, into <em>byte</em>-sized coding assignments. Solve them one at a time, and by the last one you've built the thing yourself and know how it works.</p>
+    <p class="lede">Each workbook splits a technical post into coding assignments that add up to one project.</p>
   </section>
 
   <section class="card list" aria-label="Workbooks">
@@ -49,7 +51,23 @@ const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5',
     <p id="none" class="none" hidden>No workbook matches. <a href="https://github.com/knmn2000/techblog-workbooks/issues">Suggest a post</a> you'd like to see.</p>
   </section>
 
-  <p class="more">More workbooks are on their way. <a href="https://github.com/knmn2000/techblog-workbooks#contributing">Turn a post into one</a> or <a href="https://github.com/knmn2000/techblog-workbooks/issues">suggest a post</a>.</p>
+  <section class="card make" aria-labelledby="make-h">
+    <div>
+      <h2 id="make-h">Turn a post you like into a workbook</h2>
+      <p>The workbooks here come from <a href={SKILL_URL}>tech-blog-to-workbook</a>, an open-source skill for coding agents such as Codex, Cursor, Gemini CLI, GitHub Copilot and Claude Code. Install it and give your agent a link to a post: it writes the assignments and builds the problem book. Then <a href={`${REPO_URL}#contributing`}>add yours to the collection</a> with a pull request.</p>
+      <div class="make-actions">
+        <a class="btn primary" href={SKILL_INSTALL_URL}>Install the skill</a>
+        <a class="btn" href={`${REPO_URL}/issues`}>Suggest a post</a>
+      </div>
+    </div>
+    <div class="wbs-start">
+      <Fragment set:html={installTerm} />
+      <p class="make-note">This is the quickest install: it asks which of your agents to add the skill to, and needs Node 22.20 or newer. The README lists the other ways.</p>
+    </div>
+  </section>
+
+  <style is:global set:html={startPanelCss}></style>
+  <script is:inline set:html={startPanelJs}></script>
 
   <script is:inline>
     (function () {
@@ -72,7 +90,6 @@ const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5',
   .hero { padding: 4px 0 28px; }
   h1 { font-size: clamp(26px, 4.4vw, 38px); line-height: 1.12; margin: 0 0 12px; letter-spacing: -0.025em; font-weight: 700; max-width: 18em; }
   .lede { max-width: 640px; color: var(--text-2); margin: 0; font-size: 16px; line-height: 1.6; }
-  .lede em { color: var(--text); }
   .list { overflow: hidden; }
   .tools { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   .search { flex: 1 1 220px; min-width: 0; position: relative; display: block; }
@@ -97,6 +114,11 @@ const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5',
   .lang i { width: 10px; height: 10px; border-radius: 50%; }
   .cps { min-width: 150px; }
   .none { padding: 28px; text-align: center; color: var(--text-2); margin: 0; }
-  .more { color: var(--text-2); margin-top: 20px; }
+  .make { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px 36px; align-items: center; margin-top: 20px; padding: 22px 24px; border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); background: color-mix(in srgb, var(--brand) 6%, var(--layer)); }
+  .make h2 { font-size: 18px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .make p { color: var(--text-2); margin: 0; max-width: 64ch; }
+  .make-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .make .make-note { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+  @media (max-width: 860px) { .make { grid-template-columns: minmax(0, 1fr); padding: 18px; } }
   @media (prefers-reduced-motion: reduce) { tbody tr { transition: none; } }
 </style>
