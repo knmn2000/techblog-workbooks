@@ -24,7 +24,11 @@ that created a second, weak keypair onboard, and that this keypair was used by m
 workbook has not verified that account. Commenters on the bug, including Thor Simon and Jacob
 Durham, argue that an approved key generator inside the module would not output a P-384 private
 key below 256. Their argument implies a value supplied to the module, or a key object that came
-out of an unwrap. The root cause is unconfirmed, and this assignment doesn't depend on it.
+out of an unwrap. Utimaco, which made the HSM behind the weak keys, says the same of its product on
+October 23: its HSMs give an application no way to request an EC private key with a chosen or
+reduced-entropy value, and it believes a scripting error created alternative keys and used them
+in place of the keys the HSM generated. The root cause is unconfirmed, and this assignment doesn't
+depend on it.
 
 The public record does fix one thing: the keys themselves. Eight P-384 private keys were whole
 numbers below 256 (4, 56, 66, 115, 155, 156, 230 and 237), which a 48-byte encoding writes as 47
@@ -38,6 +42,7 @@ makes no claim about how they came about.
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
 - Mozilla Bugzilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): comment 11 is eMudhra's explanation (unverified), and other comments discuss it
+- Utimaco, [Compromised private keys in eMudhra certificates](https://utimaco.com/news/blog-posts/compromised-private-keys-emudhra-certificates) (October 23, 2026): the HSM vendor's account of how its HSMs generate EC keys
 - BleepingComputer, [Mozilla, Google, Apple block compromised eMudhra CA certificates](https://www.bleepingcomputer.com/news/security/mozilla-google-apple-block-compromised-emudhra-ca-certificates/): the keys were P-384 private keys with values smaller than 256
 - Scott Helme, [Eight Bits of Trust](https://scotthelme.co.uk/eight-bits-of-trust-emudhras-ca-keys-cracked-in-milliseconds/): the eight recovered values, listed against the eight intermediates
 - NIST, [FIPS 186-5: Digital Signature Standard (DSS)](https://csrc.nist.gov/pubs/fips/186-5/final), Appendix A.2.1 (key pair generation using extra random bits) and A.2.2 (key pair generation by rejection sampling)

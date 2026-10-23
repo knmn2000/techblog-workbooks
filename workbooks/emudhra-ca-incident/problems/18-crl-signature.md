@@ -21,8 +21,16 @@ Dennis Jackson of Mozilla questions the link. In
 [comment 5](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449#c5), he cites an Internet
 Archive snapshot that shows the six P-384 CRLs failing verification since May 23, 2025. eMudhra
 dated the faulty CRLs to May 29, the day it created the A-1 certificates. Jackson writes that if
-the snapshot is accurate, it suggests the mismatch is unrelated to creating the A-1 series. This
-assignment doesn't settle the question. It builds the check that flags a CRL whose signature
+the snapshot is accurate, it suggests the mismatch is unrelated to creating the A-1 series.
+
+Ryan Hurst worked back from the signatures on the five distinct CRLs that eMudhra attached to bug
+1970728 to the public keys that could have made them. None of those keys matches the key in the
+CA's certificate or any key in the 10,313 CA certificates in CCADB. He concludes that in June 2025
+each of these CAs had two keys: a normal one that eMudhra's systems signed with, and the weak one
+its certificate named. Hurst calls the failing CRL signatures the first symptom of the weak keys,
+about 16 months before Wayne reported them. Hurst's analysis supports eMudhra's link between the two
+problems, and Jackson's question about the dates is still open. This assignment doesn't settle
+either. It builds the check that flags a CRL whose signature
 fails, and one rule for what a CA or a client does next.
 
 ## Source material
@@ -30,6 +38,7 @@ fails, and one rule for what a CA or a client does next.
 - RFC 5280, [Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280), section 5.1 (the CRL's fields) and section 5.1.2.1 (the optional version)
 - Mozilla, [Bugzilla bug 1970728](https://bugzilla.mozilla.org/show_bug.cgi?id=1970728), "eMudhra: Invalid CRL signatures". In comment 2, eMudhra lists "automated post-signing signature validation checks in CRL publishing steps" among its fixes.
 - Mozilla, [Bugzilla bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449), comments 5 and 11 (above) and comment 30, where Chrome's root program asks "why did eMudhra simply re-sign the CRLs with that second key rather than halting operations"
+- Ryan Hurst, [The Private Key Was Four](https://unmitigatedrisk.com/2026/10/the-private-key-was-four/) (October 22, 2026), section "The CRLs that told the truth": the keys recovered from the 2025 CRL signatures
 - `docs/what-we-know.md`, section "Whether the CRL problem shares the cause"
 - Assignment 08 (`problems/08-certificate-signature.md`): the signature check this assignment reuses
 

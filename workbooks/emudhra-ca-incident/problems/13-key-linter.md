@@ -15,10 +15,21 @@ says the weak keys went undetected for about 18 months, across two audit cycles.
 what an audit would check. This assignment gives one answer: the small set of checks that a
 certificate authority, or anyone about to trust a public key, could run before publishing it.
 
+A check of this kind found the keys. Ryan Hurst reports that on October 17, 2026, the researcher
+Wayne ran Google's paranoid_crypto over the CA certificates in CCADB, the database where CAs
+disclose their intermediates. Its test for EC private values that fit in 32 bits flagged the eight
+keys 27 minutes after he started. Hurst then tested the EC keys of all 10,313 CA certificates in
+CCADB for a private value below 65,536. The scan took 0.3 seconds and returned the 16 certificates
+that carry the eight keys, with no false positives. He also notes that standard public-key
+validation looks only at the point, so it passes all eight keys. Your curve check below behaves
+the same way, which is why the linter needs the weak-key search as well.
+
 ## Source material
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3
 - Assignment 10 (`problems/10-find-weak-key.md`): the weak-key search this assignment reuses
+- Ryan Hurst, [The Private Key Was Four](https://unmitigatedrisk.com/2026/10/the-private-key-was-four/) (October 22, 2026): how paranoid_crypto found the keys, and his scan of every CA certificate in CCADB
+- Google, [paranoid_crypto](https://github.com/google/paranoid_crypto): the key-testing library, with its test for weak EC private keys
 - Google, [Protecting Chrome and Android Users from Compromised eMudhra Intermediate CA Certificates](https://blog.google/security/protecting-chrome-and-android-users-from-compromised-emudhra-intermediate-ca-certificates/) (Chrome and Android Security Teams, October 20, 2026): Chrome's CRLSet update blocked the SPKI hashes of the affected intermediate CAs, the real-world version of this assignment's blocklist (assignment 15 models that mechanism)
 - SECG, [SEC 1: Elliptic Curve Cryptography](https://www.secg.org/sec1-v2.pdf), section 3.2.2 (public key validation)
 

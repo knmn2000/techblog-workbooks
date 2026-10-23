@@ -6,9 +6,9 @@ LeetCode-style assignments built around the October 2026 eMudhra certificate aut
 ([eMudhra's statement](https://emudhra.com/en/post/certificate-security-incident)). Eight of eMudhra's
 intermediate CA keys turned out to be tiny integers (the smallest private key was 4), and anyone
 could recover them in under a second. The root cause is still open: eMudhra has not confirmed it,
-and what is public is part eMudhra's own account and part speculation.
-[What we know and what we don't](docs/what-we-know.md) sorts the two, with sources and an
-"as of" date.
+and what is public beyond the keys is eMudhra's own account, its HSM vendor's reading of it, and
+speculation. [What we know and what we don't](docs/what-we-know.md) sorts them, with sources and
+an "as of" date.
 
 The workbook covers the established facts: how to find weak CA keys, and what an incident response
 involves. You build the maths that makes a key pair work, parse and validate certificates by hand,

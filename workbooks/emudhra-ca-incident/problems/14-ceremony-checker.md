@@ -33,7 +33,12 @@ approved the deviation, and whether an auditor watched it. They also ask for the
 ceremony and witness reports, the HSM model and firmware, and a record of any imported or restored
 keys. Those are questions, and any answer a commenter guesses at is speculation.
 
-This assignment models one failure shape that fits eMudhra's account. The log format below is a
+Utimaco, which made the HSM that generated these keys, gave its reading on October 23. Based on
+what eMudhra has disclosed, it writes that "a scripting error seems to have created alternative
+keys" and used them in place of the keys the HSM created, and it says its HSMs offer no way to request an EC
+private key with a chosen value. Neither eMudhra nor Utimaco has published the script.
+
+This assignment models one failure shape that fits eMudhra's account and Utimaco's reading of it. The log format below is a
 teaching model built for this workbook. It is not eMudhra's file format or process, and it makes
 no claim about what their software did.
 
@@ -41,6 +46,7 @@ no claim about what their software did.
 
 - eMudhra, [Statement on Recent Certificate Security Incident](https://emudhra.com/en/post/certificate-security-incident), Update 3 ("How it happened", and the statement that the root cause is not yet confirmed)
 - Mozilla, [bug 2083449](https://bugzilla.mozilla.org/show_bug.cgi?id=2083449): eMudhra's account in comments 10 and 11, Chrome's root program's questions in comment 30, other questions to eMudhra in comments 31 to 33
+- Utimaco, [Compromised private keys in eMudhra certificates](https://utimaco.com/news/blog-posts/compromised-private-keys-emudhra-certificates) (October 23, 2026): the HSM vendor's reading of eMudhra's account
 - Hacker News, [thread 50166579](https://news.ycombinator.com/item?id=50166579)
 - Assignment 07 (`problems/07-spki-hash.md`): hashing a public key to get a name for it that survives reissuance
 - Assignment 13 (`problems/13-key-linter.md`): the check on the key itself
