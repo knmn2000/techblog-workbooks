@@ -297,10 +297,20 @@ A failing test looks like this:
 has two parts. `getFontMetric` returns a `FontMetric` holding the ascent and descent from
 `hhea` + 4 and `hhea` + 6. `loadGlyphMetricsMap` reads `numberOfHMetrics` from `hhea` + 34,
 then reads that many (advance width, left side bearing) pairs from `hmtx` into a map keyed by
-glyph id, `glyphMetric`.
+glyph id, `glyphMetric`, whose values are `Metric` structs (`advanceWidth`,
+`leftSideBearing`). In your project, `loadHorizontalMetrics` returns both parts at once in a
+`HorizontalMetrics`, with one `GlyphMetric` per glyph id. The post calls the count field
+"NumberOfMetrics" and the code names it `numOfMetrics`; the OpenType spec calls it
+`numberOfHMetrics`, and Apple's manual `numOfLongHorMetrics`. The author's repository has the
+same code.
 
 The snippet stops after the `longHorMetric` records, so glyphs at
-or past `numberOfHMetrics` get no entry. JetBrains Mono and Noto Sans JP store a full record
+or past `numberOfHMetrics` get no entry. A later step that asks for one with
+`glyphMetric[glyphCode]` gets a zeroed `Metric` from `operator[]`: advance 0 and lsb 0, so the
+renderer draws the next glyph on top of it. The post skips the `leftSideBearing` array on
+purpose, and its text says a monospaced font may store one record "or none at all"; the spec
+requires at least one, since the later glyphs take their advance from the last one.
+JetBrains Mono and Noto Sans JP store a full record
 for every glyph, so the gap doesn't show with them. Many fonts, including those compiled by
 fontTools, drop the trailing records when the last glyphs share an advance width, and a
 monospaced font can end up with `numberOfHMetrics` = 1. R3 tests the spec's rule: the last

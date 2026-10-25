@@ -245,9 +245,29 @@ for row in 0 .. height-1:
 
 The blog's [non-zero renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Fixing%20the%20counting%20error%20of%20B%C3%A9zier%20curve)
 doesn't split curves. If a scanline meets a curve twice, the renderer decides the two directions
-from the curve's convexity: the crossing nearer the curve's start gets one direction and the other
-crossing gets the opposite. It scans only the rows inside the glyph's bounding box, and fills each
-component of a compound glyph on its own.
+from the curve's convexity (`isBezierConvexUpwards`, the a > 0 test of assignment 15): a lambda
+`nearestX` picks the crossing nearer the curve's start, which gets one direction, and the crossing
+nearer its end gets the opposite. A curve met once takes its direction from its two ends. The
+renderer scans only the rows inside each component's bounding box, and fills each component of a
+compound glyph on its own.
 
-Like the line-only version, it fills only where the count is positive,
-so a contour wound the other way on its own would stay empty (assignment 16, test `16-R4-reversed`).
+The listing differs from this page in these places:
+
+- Like the line-only version, it fills only where the count is positive, so a contour wound the
+  other way on its own would stay empty (assignment 16, test `16-R4-reversed`).
+- `nearestX` compares x distances, not t. When both ends of a curve are nearer the same crossing,
+  that crossing gets both directions and the other gets none. The curve from (0, 0) through
+  (100, 100) to (10, 0) meets the row y = 32 at x = 32.4 and 38.4, and both ends are nearer 32.4.
+- The bounding box comes from the component's own glyph header, before the compound glyph's
+  offset moves it, so the renderer scans a component moved up or down over the wrong rows. In
+  JetBrains Mono, ’ (U+2019) is the low quote, whose box runs from y = −160 to 145, moved up by
+  585 (1170 in the author's parser, see assignment 09). The renderer scans rows where none of it
+  lies and draws nothing. The dots of · (U+00B7) and ŀ (U+0140) vanish the same way.
+- The previous on-curve point starts at (0, 0) and carries over between contours, as in
+  assignments 11 and 14, so a contour that starts off-curve (R2, test `17-R2-off-first`) gets a
+  wrong first curve and loses its closing one.
+- If a curve meets the row twice and one of its ends lies on the scanline, both the curve and the
+  neighbouring edge count that end. The even-odd version tried to handle this case; this one has
+  no rule for it. A row that touches a curve's lowest point on screen gets one crossing instead of
+  zero or two. Both need a point that lies on an integer row, so they seldom show.
+- A straight edge that crosses the row left of the canvas adds no crossing, as in assignment 16.

@@ -10,8 +10,8 @@
 //   fill them.
 //
 // Your job:
-//   The Boilerplate gives you this file finished: the declarations, with the author's
-//   names. You fill in the TODOs in this assignment's other files.
+//   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs
+//   in this assignment's other files.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

@@ -282,6 +282,9 @@ function runs the side test with ≤ 0 as here, then checks the denominator, the
 a1 + t·v1.
 
 The parallel check compares |cross(v1, v2)| with an `eps` that the
-listing doesn't define. Any small value works for glyph outlines, because two edges that
-aren't parallel have a cross product far from 0. In the blog's fill, one of the two segments
-is the scanline itself, running from x = 0 to the image width.
+listing doesn't define. The author's repository defines it in `Geometry.h` as
+`std::numeric_limits<float>::epsilon()`, about 1.2 × 10⁻⁷. Any small value works for glyph
+outlines, because two edges that aren't parallel have a cross product far from 0. In the blog's
+fill, one of the two segments is the scanline itself, running from x = 0 to the image width.
+
+The blog names the two segment parameters t and u, where this page writes t and s.

@@ -7,7 +7,7 @@ An assignment's files (workbook.json) are its program the checker runs ("solutio
 project files it creates ("files"). Each has two starters, at the same path under:
   starters/blank/        the header below, then nothing (an empty main in a program): the
                          learner writes everything else
-  starters/boilerplate/  the same header, then the declarations named as the author names them,
+  starters/boilerplate/  the same header, then the declarations,
                          TODO bodies, and the program's input/output done (authors write these;
                          this script only replaces their header)
 Every header says which assignment the file belongs to, why the file exists (project.purposes),
@@ -76,15 +76,13 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
         if later and not all(re.search(rf"\b0?{int(c)}\b", why) for c in later):
             why += f" Later, assignment{'s' if len(later) > 1 else ''} {listing(later)} add{'' if len(later) > 1 else 's'} to this file."
     sections.append(["Why this file exists:", *("  " + l for l in wrap(why))])
-    # A post with code: the Boilerplate keeps its author's names for things.
-    names = ", with the author's names" if config["project"].get("author") else ""
     job = jobs.get(path) or "See this assignment's Start here card in the problem book."
     if kind == "boilerplate" and path == entry:
         job = "The Boilerplate gives you this program finished. You fill in the TODOs in this assignment's other files."
     elif kind == "boilerplate" and todo:
         job += " The Boilerplate gives you the declarations; fill in each TODO."
     elif kind == "boilerplate":
-        job = (f"The Boilerplate gives you this file finished: the declarations{names}. "
+        job = (f"The Boilerplate gives you this file finished: the declarations. "
                "You fill in the TODOs in this assignment's other files.")
     sections.append(["Your job:", *("  " + l for l in wrap(job))])
     if path == entry:
@@ -109,7 +107,7 @@ def header(path: str, cid: str, meta: dict, config: dict, kind: str, todo: bool 
     how = ("This is the Boilerplate. To start from an empty file instead, choose From scratch in the "
            "book (the empty files are in starters/blank/)." if kind == "boilerplate" else
            "Write it yourself from here, or press Boilerplate in the book's editor to get the "
-           f"input/output code and the declarations{names} (the same files are in "
+           "input/output code and the declarations (the same files are in "
            "starters/boilerplate/).")
     sections.append(["How to start:", *("  " + l for l in wrap(how))])
     body = []

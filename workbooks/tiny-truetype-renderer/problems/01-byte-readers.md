@@ -305,7 +305,19 @@ for every later step. `jumpTo` and `skipBytes` wrap `seekg`. A function template
 `readBeOrThrow<T>`, reads `sizeof(T)` bytes with `get()`, throws "unexpected EOF" at the end
 of the file, assembles the bytes most significant first, and converts signed types from two's
 complement by hand. `readUint8` to `readInt32` are one-line wrappers around it, and
-`readF2Dot14` divides an `int16` by 2^14.
+`readF2Dot14` divides an `int16` by 2^14. Your `ByteReader` holds what the post keeps in
+`FontParser`, and the Boilerplate's `readBigEndian` plays the part of `readBeOrThrow`. The
+author's repository has the same code, plus a `static_assert` that `T` is an integer type.
+
+The author's `readF2Dot14` returns a `float`, where the Boilerplate uses `double`. An F2Dot14
+value needs 16 significant bits and a `float` has 24, so a `float` holds every one without
+rounding and both give the same numbers.
+
+Two details of the snippet differ from this page. If the file doesn't open, the constructor
+prints "failed to open file" and carries on, so the first read throws "unexpected EOF" instead.
+And `jumpTo` doesn't call `clear()`: after a read runs past the end, the stream stays failed and
+later jumps do nothing. The author's program doesn't catch the exception, so neither shows
+there, but a reader that recovers from errors needs the `clear()`.
 
 Since C++20, the standard defines a conversion from an unsigned
 value to a signed type of the same width as wrapping modulo 2^n, so

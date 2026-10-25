@@ -307,8 +307,16 @@ A failing test looks like this (here the offsets leave out where `glyf` starts):
 `loadGlyphOffsetsMap`, reads `numGlyphs` from `maxp` and `indexToLocFormat` from `head`, then
 reads one `loca` entry per glyph (doubling short ones) and stores `glyf` offset + entry in a
 map from glyph id to file offset, `glyphCodeToOffset`. It doesn't store lengths. Instead, when
-glyph i − 1 has the same offset as glyph i, it marks glyph i − 1 as empty, and later steps
-skip empty glyphs.
+glyph i − 1 has the same offset as glyph i, it marks glyph i − 1 as empty by setting its offset
+to 0, and later steps treat offset 0 as a glyph with no outline. Your `loadGlyphLocations`
+keeps a length per glyph in its place, and a length of 0 carries the same meaning. The
+snippet doubles short entries with `* 2u`, in unsigned 32-bit arithmetic, as R3 asks. The
+author's repository has the same code.
+
+The post's example of the check, the space in Noto Sans JP taking the comma's outline, comes
+from the static NotoSansJP-Regular font. The workbook's Noto Sans JP is the variable build,
+where the space is glyph 1 and shares its offset with glyph 2, the `!`. Without the check, the
+space would draw as `!` there.
 
 The snippet reads `numGlyphs` entries, where the spec has
 `numGlyphs` + 1. With no entry after the last glyph to compare against, the loader can't mark

@@ -330,8 +330,16 @@ splits the work into `readGlyphHeader` (the header), `getGlyphComponent` (contou
 instructions and flags) and `getGlyphCoordinates`, which it calls once for x and once for y.
 It stores the contour ends and on-curve indices in `unordered_set`s and multiplies every
 point by an affine matrix. The matrix is the identity for simple glyphs; it matters for
-compound glyphs in assignment 09.
+compound glyphs in assignment 09. The entry point, `getGlyphByCode`, takes what the blog calls
+a GlyphCode (the glyph id on this page). This project's `readGlyph` does the work of
+`readGlyphHeader` and `getGlyphComponent` in one function.
 
 In the snippet as published, the flag loop records ON_CURVE only
 for the first point of a repeated run. In JetBrains Mono Bold, 42 of the 90 simple ASCII
 glyphs repeat an on-curve flag, which is why R7 has its own tests.
+
+The blog's list of flag rules says the repeat count sits in the following 16 bits. The spec
+and the author's code both read one byte (uint8), as this page does.
+
+`getGlyphByCode` also treats a `numberOfContours` of 0 as an empty glyph, the same as a
+record of length 0. The spec counts it as a simple glyph with no contours; no test has one.

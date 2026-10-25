@@ -286,6 +286,24 @@ row's top edge (integer y) instead of through the pixel centres. Its fix for ver
 edge only when the edge's lowest y (on screen) is above the scanline, and handles curves that cross
 twice with a convexity check (assignment 15 finds the curve's lowest point).
 
-In the fixed version, the check for a curve's endpoint on the scanline
-compares the row y with the endpoints' x coordinates. That branch tests the wrong coordinate
-and seldom catches an endpoint that sits on the scanline.
+Its transform multiplies the start x and the baseline by `scale` too, so it takes them in font
+units, where this page's `place` takes pixels. The listing uses `scale` without defining it; in the
+author's repository, `setScale` sets it. Together with `segmentsIntersect`, which accepts a
+crossing at either end of an edge, the vertex fix is the half-open rule with the open end at the
+top: an edge counts below its top, down to and including its bottom.
+
+The fixed version differs from this page in these places:
+
+- For a curve that bulges down the screen and meets the row twice, the branch for an endpoint on
+  the scanline compares the row y with the endpoints' x coordinates, so it seldom fires. When it
+  doesn't, the curve adds neither crossing. The rows across the bottom of an arc that dips below
+  both its ends stay empty, as at the bottom of test `14-R3-circle-all-off`.
+- The previous on-curve point starts at (0, 0) and carries over from one contour to the next, as
+  in the outline renderer of assignment 11. A contour that starts with an off-curve point (R3)
+  gets a wrong first curve and loses its closing one.
+- `segmentsIntersect` meets the scanline only between x = 0 and the image width, while the curve
+  function treats it as an infinite line. A straight edge that crosses the row left of the canvas
+  is lost, and the rest of that row fills inverted (R7, test `14-R7-clipped`).
+- A row that touches the lowest point on screen of a curve that bulges down gets one crossing
+  from it instead of zero or two, which also inverts the rest of the row. That point has to lie
+  on an integer row, so this seldom shows.

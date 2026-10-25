@@ -11,8 +11,8 @@
 
 You can pass using this page alone. For the background, read the blog's
 [cmap table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=cmap%20table)
-section up to the paragraph that starts "In the implementation, simply loop". The author's code
-follows that paragraph.
+section through the paragraph that starts "In the implementation, simply loop". The author's
+code follows that paragraph.
 
 ## Source material
 
@@ -36,7 +36,8 @@ characters it maps, and which glyph a given character maps to.
 
 A code point is a character's number in Unicode, written `U+` and hexadecimal digits: `A`
 is U+0041. A glyph is a shape the font can draw, and its glyph id is its number in the
-font, from 0 up. The character map (the `cmap` table) lists the glyph id for each code
+font, from 0 up. The blog calls this number the GlyphCode (the specifications also say glyph
+index). The character map (the `cmap` table) lists the glyph id for each code
 point. Your program reads one part of it: the platform 0 / encoding 4 subtable in format 12,
 described below.
 
@@ -338,5 +339,16 @@ The loop doesn't stop at the first match, so if a font had two
 trades memory for simpler code: a font that maps most of Unicode would need over a million
 map entries, while the sorted groups with a binary search stay small. Many fonts that cover
 only the BMP have a format 4 subtable and no format 12 one (like test `03-R6-format4-only`).
-A complete renderer would read format 4 as a fallback, and would also accept a format 12
-subtable under (3, 10) when the font has no (0, 4) record.
+A complete renderer would read format 4 as a fallback, as the comment in the author's code
+says, and would also accept a format 12 subtable under (3, 10) when the font has no (0, 4)
+record.
+
+The loader marks "not found yet" with `u_int32_t subtableOffset = -1`. The -1 becomes
+4294967295, and the later `== -1` converts the same way, so the check works. `u_int32_t` comes
+from the BSD and glibc headers and isn't standard C++ (MSVC doesn't have it); `uint32_t` is the
+standard name. The group loop counts with an `int` up to `endCharCode - startCharCode`, an
+unsigned difference, so a malformed group whose start is above its end would wrap to about
+4 billion steps. The spec rules such groups out, and so do this page's constraints. The
+repository's code matches the post, and its header declares the map as
+`std::unordered_map<uint32_t, uint16_t>`: a glyph id fits in 16 bits, since `numGlyphs` is a
+uint16.

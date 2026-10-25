@@ -305,14 +305,29 @@ this:
 ## After you pass: compare with the author's code
 
 [The blog's first `FrameBufferCanvas`](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
-is a class that owns a one-dimensional vector of `RGB` pixels. `set` writes one pixel and
-ignores coordinates outside the picture, `drawRect` takes the centre and size, and `drawLine`
-does the steep swap, orders the ends and stamps a `drawRect` at every step. A second
-`drawLine` takes 2D vectors, which keeps the glyph code in later sections short, and
-`writePngFile` hands the buffer to `stbi_write_png` with 3 channels. Its `main` draws the
-scene from Example 1.
+is a class that owns a one-dimensional array of `RGB` pixels (a `std::unique_ptr<RGB[]>`,
+filled with `BLACK`). `set` writes one pixel and ignores coordinates outside the picture,
+`drawRect` takes the centre and size and clips its loops to the canvas, and `drawLine` does
+the steep swap, orders the ends and stamps a `drawRect` at every step. `writePngFile` hands
+the buffer to `stbi_write_png` with 3 channels, and the post's `main` draws the scene from
+Example 1. Your Boilerplate keeps these names, except `writePng` for `writePngFile`, and adds
+`get`, which reads a pixel back. The post's text also suggests overloads that
+take 2D vectors; the author's repository has them for `drawLine` and `drawRect`, and they round
+the vector to the nearest pixel with `std::lround`. They keep the glyph code in later sections
+short.
 
-The snippet turns the stepped coordinate into a pixel with a plain
-cast, which truncates toward zero instead of rounding, so its lines can sit up to a pixel to
-one side, and the tests accept both. It also divides by `bx - ax` without checking, so a
-zero-length line divides by zero; this page asks for one square instead.
+The post credits its line method to a Bresenham tutorial, but the snippet steps with a
+floating-point slope, the DDA method in this page's sources. It adds the slope to `y` at every
+step and turns `y` into a pixel with a plain cast. The cast truncates toward zero instead of
+rounding, and the repeated additions collect `float` error (on a line from (0, 0) to (9, 3), nine
+additions of 3/9 end at y = 2.9999998, which truncates to 2, one row short of the end point),
+so its lines can sit up to a pixel to one side. The tests
+accept both. For a line whose ends are the same pixel, the loop draws its one square and then
+divides 0 by 0 in floating point. Nothing reads the result, so the line comes out as one
+square, as this page asks.
+
+In the post's snippet, `RGB` holds three `unsigned` values, 4 bytes each, so each pixel takes
+12 bytes, while `stbi_write_png` with 3 channels reads 3 bytes per pixel. The PNG would come out
+scrambled. The author's repository declares the channels as `unsigned char`, which makes each
+pixel the 3 bytes the writer expects, and the Boilerplate's `uint8_t` channels and its
+`static_assert(sizeof(RGB) == 3)` do the same.

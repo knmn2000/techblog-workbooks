@@ -150,6 +150,8 @@ pass for each requirement, and it may add a `likely cause` line that names the r
 difference points to.
 
 - **R1** An empty glyph gives `components 0`; a simple glyph gives `components 1` and its outline.
+  A simple glyph with no contours (`numberOfContours` 0) has no outline, so it gives
+  `components 0` too.
 - **R2** Your program reads the component records: flags, glyph index, signed 1-byte or 2-byte
   arguments, and the loop over MORE_COMPONENTS.
 - **R3** The three scale forms: one scale, separate x and y scales, and the full 2 x 2 matrix.
@@ -329,11 +331,29 @@ USE_MY_METRICS.
 
 The snippet differs from the current specifications in these places:
 - The snippet reads 1-byte arguments as unsigned, so a small negative offset like -30 becomes 226.
-  JetBrains Mono has 48 such components, all in its ligature glyphs.
-- It scales the offset by Apple's `m` and `n` for every component. The OpenType specification
-  scales the offset only when SCALED_COMPONENT_OFFSET is set, and fontTools, which this
-  workbook follows, then also rotates it. JetBrains Mono marks its components
-  UNSCALED_COMPONENT_OFFSET and uses no scales, so all three agree there.
+  JetBrains Mono has 48 such components: 28 in ligature glyphs, the rest in numerator forms and
+  in characters such as `"` (U+0022, test `09-E2E-U+0022`), ŀ (U+0140) and ‼ (U+203C).
+- It scales the offset with Apple's older `m`/`n` rule for every component. The current
+  specifications only scale the offset when SCALED_COMPONENT_OFFSET is set, and fontTools,
+  which this workbook follows, then also rotates it. JetBrains Mono marks
+  its components UNSCALED_COMPONENT_OFFSET and uses no scales, and the rule as Apple states it
+  gives m = n = 1 there.
+- The snippet's version of that rule leaves out the outer absolute value in |(|b| − |d|)|. For an
+  unscaled component |b| − |d| is −1, which passes the test, so n becomes 2 and every y offset
+  doubles: in `·` (U+00B7) the period lands at y = 530 instead of 265. JetBrains Mono has 92
+  components with a nonzero y offset; test `09-E2E-U+01D8` has one. (In the post the line that
+  declares `eps` as 33/65536 ended up inside the comment above it, so the comparison uses the
+  tiny `eps` from `Geometry.h`; the repository declares it on its own line. Either way the
+  doubling happens.)
 - For a nested compound glyph, `getCompoundSubComponents` doesn't pass its own matrix down to the
   inner components, so an outer offset or scale is lost. JetBrains Mono has no nested compound
   glyphs, but the tests do.
+- A component that is an empty glyph isn't skipped. `readGlyphHeader` returns 0 contours without
+  moving the stream, and `getCompoundSubComponents` hands every count that isn't positive to
+  `getCompoundGlyph`, which then reads the parent's next component record as the empty glyph's
+  own. Test `09-R7-with-empty` covers this case.
+- Without a component that sets USE_MY_METRICS, the snippet returns a zero `Metric`, and
+  `getGlyphByCode` doesn't fall back to the compound glyph's own `hmtx` entry. In JetBrains Mono
+  22 compound characters have no such component, among them `"` and the grave accent (U+0060),
+  so the author's text renderer would give them an advance width of 0. The spec takes every
+  glyph's advance width from `hmtx`, as assignment 18 does.

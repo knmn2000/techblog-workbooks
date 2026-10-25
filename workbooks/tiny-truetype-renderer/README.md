@@ -81,10 +81,9 @@ On its own (for example after you've pushed it to GitHub), `solutions/` builds w
 1. Read the problem (book or `problems/NN-*.md`). In the book, its Start here card lists the
    files to write, your job in each, the earlier files you can use, and the two ways to start.
 2. Write the files. Each one starts as the Boilerplate, which gives you the input/output code and
-   the declarations (with the author's names where the post has them), and you fill in the parts
-   marked `TODO`. To write all of it yourself, including the includes, the parsing and the output,
-   choose From scratch on the Start here card: each file then starts empty apart from its
-   comment.
+   the declarations, and you fill in the parts marked `TODO`. To write all of it yourself,
+   including the includes, the parsing and the output, choose From scratch on the Start here
+   card: each file then starts empty apart from its comment.
 3. Check it from this folder in PowerShell (`./check.sh` on macOS or Linux), or with Run and
    Submit in the book:
 
@@ -141,7 +140,7 @@ To check a one-off program without changing anything, run
 | `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
 | `tools/gen_pNN.py` | Each assignment's test generator (used by `-Fresh`) |
 | `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
-| `fonts/` | JetBrains Mono Bold (Nerd Font build) and Noto Sans JP, both SIL Open Font License (see `fonts/README.md`) |
+| `fonts/` | JetBrains Mono Bold (Nerd Font build) and Noto Sans JP (variable font), both SIL Open Font License (see `fonts/README.md`). The post uses `JetBrainsMono-Bold.ttf` and `NotoSansJP-Regular.ttf`, so a glyph id or offset the post quotes can differ here; the problem pages say where it matters |
 | `third_party/` | stb_image_write, under its own licence (see `third_party/README.md`) |
 | `docs/authoring-guide.md` | How to write the assignments and their tests |
 | `_spoilers/` | The reference project. Don't open it until you've passed. |

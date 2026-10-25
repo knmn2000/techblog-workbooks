@@ -375,7 +375,7 @@ this:
 
 ## After you pass: compare with the author's code
 
-[The blog's curve renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
+[The blog's curve renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Glyph%20outline%20rendering%20with%20curves)
 replaces the start position with a transform matrix: `setGlyphBaseline` moves the glyph to
 its baseline and `transformVec2` maps a point to the picture. The new `renderGlyphOutline`
 walks each contour once, and `drawBezier` flattens a curve with `quadBezierLerp`, using the
@@ -388,3 +388,15 @@ its first curve from that stale point and skips its real closing curve. The JetB
 Nerd Font has over two thousand such contours, most of them in icons, and R4's tests cover
 them. The snippet also draws each marker inside the walk, so a line drawn later can cross an
 earlier marker. On this page you draw all markers last.
+
+After every off-curve point the snippet puts a blue marker on the end of the curve, whether that
+end is an implied point or a real on-curve point. Most real points get their red marker
+later in the walk, drawn over the blue one. A contour's first point gets its red marker before
+the walk comes back round, so when the contour's last point is off-curve, that first point
+stays blue. JetBrains Mono has about 16,500 such contours, including both
+contours of `a` in test `11-R5-big-markers`. R5 asks for red there, because the point is a
+real on-curve point from the font.
+
+The blog's prose marks on-curve points in white, and its code uses red, as this page does. The
+author's repository also multiplies the transform by a `scale` (`scale * transformMat`), which
+scales the start position and baseline along with the glyph, so both count in font units there.

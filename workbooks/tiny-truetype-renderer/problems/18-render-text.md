@@ -221,14 +221,29 @@ return penX
 
 ## After you pass: compare with the author's code
 
-The post ends after filling one glyph; the code that draws a whole string is in
-[the author's repository](https://github.com/YohYamasaki/tiny-truetype-renderer). Its `main.cpp`
-loads the font once in a `FontParser`, converts the string to code points with a small
-`utf8ToCodepoints` helper and calls `FontParser::getGlyphs`, which looks up each glyph and adds
-up the advance widths times the scale. `FrameBufferCanvas::renderGlyphs` then draws the glyphs.
+The blog shows the final pictures but not the program that draws them. Its last `main.cpp`
+listing draws one glyph, 'a', and already uses `utf8ToCodepoints` and `FontParser::getGlyph`.
+The final program is in the author's repository. Its `main.cpp` opens Noto Sans JP once in a
+`FontParser`, decodes "ほげ" with `utf8ToCodepoints`, and sets the scale to 800 pixels divided by
+ascent − descent from `getFontMetric`, as the Boilerplate's `main.cpp` does with its pixel height
+(in the assignment's tests, each `pen` line gives the scale).
+`FontParser::getGlyphs` returns the glyphs and the canvas width. `FrameBufferCanvas::renderGlyphs`
+then fills each glyph with `renderGlyphByNonZero` in white, starting x at 0 and adding each
+glyph's `advanceWidth` in font units, while `setGlyphBaseline(ascent)` and `setScale` put the
+whole transform in pixels. Your `TextRenderer` and its `drawText` do the work of `getGlyphs` and
+`renderGlyphs` together.
 
-The repository's code differs from this assignment in two places:
-- `FontParser::getGlyph` throws "Glyph not found" for a character the font doesn't map. This
-  assignment draws glyph 0 instead (requirement R2, test `18-R2-unmapped`).
-- `main.cpp` works out the scale itself, as the canvas height (800 pixels) divided by
-  ascent − descent from `hhea`. Here each `pen` line gives the scale.
+The repository differs from this page in these places:
+
+- `getGlyph` throws "Glyph not found" for a code point the cmap doesn't map, where this page
+  draws glyph 0 (R2, test `18-R2-unmapped`).
+- A compound glyph takes its advance only from a component with USE_MY_METRICS, and gets 0 when
+  none has it, while the spec uses the compound glyph's own `hmtx` entry. JetBrains Mono has 22
+  mapped compound glyphs without that flag, among them `"`, the backtick and `´`, so the author's
+  renderer would draw the next character on top of them. Your renderer takes every advance from
+  `hmtx`, as the tests expect (R3).
+- Glyphs past `numberOfHMetrics` get no metrics and so an advance of 0 (assignment 05). Both
+  fonts in the tests store a record for every glyph, so this doesn't show here.
+- The fill scans only the rows of each component's untransformed bounding box, so a component
+  moved up or down can disappear, as with ’ in assignment 17.
+- `utf8ToCodepoints` throws on a malformed byte; the Boilerplate's version turns it into U+FFFD.

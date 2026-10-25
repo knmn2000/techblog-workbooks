@@ -274,10 +274,25 @@ tag, the checker compares every space.
 runs in `FontParser`'s constructor, right after it opens the file. It skips the scaler type,
 reads `numTables`, skips the three search fields, and then reads each record: the tag as 4
 raw bytes turned into a string, followed by the checksum, offset and length. The records go
-into an `unordered_map` keyed by tag, so every later step finds its table by name, for
-example the `cmap` table in assignment 03.
+into a map keyed by tag, the field `directory`, so every later step finds its table by name,
+for example the `cmap` table in assignment 03. The post calls it a hash map; the author's
+repository declares it as a `std::map<std::string, Tag>`, where `Tag` is the record struct
+(`checkSum`, `offset`, `length`, with the tag itself as the key). In your project the record
+is `TableRecord`, the map is `Tables`, and `readTableDirectory` returns the records in file
+order.
+
+In the repository, the constructor goes on past the snippet: it throws "Could not find glyf
+table" if there is no `glyf` record, then loads `loca`, `cmap` and `hmtx` (assignments 04, 03
+and 05) before it returns.
 
 The snippet doesn't check the scaler type or verify any
 checksums. Neither matters for this workbook. A stricter parser would reject files whose
 scaler type isn't `0x00010000` or `'true'` (an `'OTTO'` font stores CFF outlines instead of
 `glyf`), and could check each table's sum of uint32 words against its `checkSum`.
+
+The tag comes from `ifs.read`, whose result the snippet doesn't check, so in a file that ends
+inside a tag, the rest of its 4-byte buffer stays uninitialised (the next `readUint32` then
+throws). Later steps look
+tables up with `directory["cmap"]` and the like. For a tag the font doesn't have, `operator[]`
+adds an all-zero record, and the step reads from offset 0 of the file instead of reporting a
+missing table. Looking records up with `at()` or `find()` turns that into an error.

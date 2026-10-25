@@ -285,8 +285,11 @@ The blog's version differs from this assignment in a few ways:
 
 - Despite its name, the function treats l1 and l2 as an infinite line. It doesn't check that a
   point lies between them, which suits the blog's fill: its scanline spans the whole image.
-- The blog doesn't show `solveQuadratic`. A version that uses the quadratic formula for every
-  input loses each crossing where a = 0 (R5), and in real glyphs that case is common for
-  horizontal lines.
-- The points come out in whatever order `solveQuadratic` returns the roots. This assignment
-  asks for increasing t so that each answer has one correct form.
+- The blog doesn't show `solveQuadratic`. The author's repository has it in `utils/Geometry.h`,
+  in `float`, with `eps` set to `std::numeric_limits<float>::epsilon()`. It treats |a| < eps as
+  the linear case, so it keeps the crossings where a = 0 (R5) that the plain quadratic formula
+  would lose. It returns one root when D is within eps of 0, and otherwise uses the form that
+  avoids cancellation: q = −(b + sign(b)·√D) / 2, with the roots q / a and c / q.
+- The points come out in the order `solveQuadratic` returns the roots, q / a first, which isn't
+  always increasing t. This assignment asks for increasing t so that each answer has one correct
+  form.

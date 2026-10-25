@@ -230,7 +230,12 @@ is one function, `getBezierMinY`, that takes the three points and returns an `in
 a and b as on this page. If |a| is below a small eps it returns p1.y when |b| is also tiny, and
 min(p1.y, p3.y) otherwise. Else it computes t*, and returns y(t*) when t* lies in
 [−eps, 1 + eps] and a > 0, and min(p1.y, p3.y) in every other case. Its branches match the rows
-of the table above.
+of the table above. The blog doesn't define `eps`; the author's repository sets it to
+`std::numeric_limits<float>::epsilon()`, about 1.2e-7.
+
+The blog's fill listings also call `isBezierConvexUpwards`, which the blog doesn't show. In the
+repository it sits next to `getBezierMinY` and returns whether a > 0: the valley row of the table,
+"convex upwards" on a screen where y points down.
 
 The result goes through `static_cast<int>`, which drops the fraction
 by rounding toward zero. On screen, where y is positive, that is the same as rounding down, so

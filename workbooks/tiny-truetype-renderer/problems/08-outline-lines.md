@@ -289,7 +289,7 @@ this:
 
 ## After you pass: compare with the author's code
 
-[The blog's `renderGlyphOutline`](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
+[The blog's `renderGlyphOutline`](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Glyph%20outline%20rendering%20with%20straight%20lines)
 takes a start position, the glyph and a colour. It walks the contours with a running start
 index, and at a contour's last point it sets the next point back to the contour's first
 point, as Hint 2 does. It draws each line with thickness 5 and puts a 20 x 20 square on
@@ -302,3 +302,11 @@ That works for one glyph, but the start position then counts from the bottom of 
 picture. This page uses an explicit baseline instead, which the later assignments need when
 several glyphs share a line of text; the blog switches to a transform matrix
 (`setGlyphBaseline`) for the same reason in its curve section.
+
+The snippet passes the float coordinates straight to the integer `drawLine` and `drawRect`,
+so C++ truncates them toward zero instead of rounding. With whole font units and a whole
+start position nothing moves; with fractional coordinates, as assignment 09 produces, a point
+can shift by a pixel.
+
+The author's repository keeps only the later `renderGlyphOutline`, the curve version from
+assignment 11, and its `writePngFile` no longer flips the picture.

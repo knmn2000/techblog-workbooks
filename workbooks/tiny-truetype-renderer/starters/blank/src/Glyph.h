@@ -16,6 +16,5 @@
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the
-//   input/output code and the declarations, with the author's names (the same files are in
-//   starters/boilerplate/).
+//   input/output code and the declarations (the same files are in starters/boilerplate/).
 // ======================================================================================

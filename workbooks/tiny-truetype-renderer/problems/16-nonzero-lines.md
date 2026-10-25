@@ -238,10 +238,18 @@ for row in 0 .. height-1:
 ## After you pass: compare with the author's code
 
 The blog's [line-only version](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Considering%20line%20direction%20at%20intersection%20counting)
-stores each crossing as an x and an "is upward" flag and keeps a running count while it walks the
-sorted crossings, the same way this page describes.
+stores each crossing as an `Intersection`, an x and an `isUpward` flag, and keeps a running count
+while it walks the sorted crossings, the same way this page describes. `isUpward` is true when the
+edge goes up the screen (`currentPt.y > nextPt.y`) and adds 1. The Boilerplate's `Crossing` uses the
+opposite sign, +1 for an edge going down, which gives the same fill under the non-zero test.
 
-It fills a stretch only when the count before it is greater than zero
-(and the count after it isn't negative). That works for fonts whose outer contours are all
-clockwise, but a contour wound the other way on its own (test `16-R4-reversed`) stays empty. The
-non-zero rule fills wherever the count isn't zero.
+The snippet differs from this page in these places:
+
+- It fills a stretch only when the count before it is greater than zero (its second condition,
+  that the count after it isn't negative, always holds then). That works for fonts whose outer
+  contours are all clockwise, but a contour wound the other way on its own (test
+  `16-R4-reversed`) stays empty. The non-zero rule fills wherever the count isn't zero.
+- Its scanline is a segment from x = 0 to the image width, so an edge that crosses the row left
+  of the canvas adds no crossing, and the count is off by one for the rest of that row (R7).
+- This short excerpt paints with the constant `WHITE`. The full listing that follows it, for
+  curves, paints with its `color` argument.

@@ -247,4 +247,8 @@ Example 2. The blog gives the expanded formula in its prose and doesn't use it i
 
 The drawing code in the next section ("TrueType Bézier curves")
 calls the curve function `quadBezierLerp`, while this listing names it `bezierLerp`. They are
-the same function. If you follow along in C++, pick one name.
+the same function. The author's repository uses `quadBezierLerp` in both places; this project
+keeps the listing's `bezierLerp`.
+
+The blog's prose subdivides the curve at the ratio t : t − 1. De Casteljau's
+construction splits each leg at t : 1 − t, which is what `lerp` computes.
