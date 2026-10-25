@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files).
 That section has one paragraph, and the author's code follows it, below a link card.
 
-## What you need
+## Learning material
 
 - [Header and source files](#primer/header-files): `ByteReader.h` declares the reader, and
   `ByteReader.cpp` defines its member functions as `ByteReader::jumpTo` and so on.

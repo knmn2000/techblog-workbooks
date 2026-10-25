@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section up to the transformation matrix. Stop at the paragraph that starts "Implementation.
 As compound glyphs are nested", before the author's code.
 
-## What you need
+## Learning material
 
 - [Compound glyphs](#primer/compound-glyph): `resolveGlyph` turns a glyph into the outlines of
   the simple glyphs inside it, depth first, and leaves out empty ones.

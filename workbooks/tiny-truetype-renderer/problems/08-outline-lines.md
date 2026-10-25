@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section up to and including the paragraph that starts "The glyph coordinates are", and stop
 before the author's code that follows it.
 
-## What you need
+## Learning material
 
 - [Font coordinates and screen coordinates](#primer/screen-coordinates): `Placement` in
   `render/Placement.h` holds a `place` line's x0, baseline and scale, and a point lands on pixel

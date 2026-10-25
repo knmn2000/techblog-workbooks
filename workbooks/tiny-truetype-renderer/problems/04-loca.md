@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "Additionally, a minor point is". The author's
 code follows that paragraph.
 
-## What you need
+## Learning material
 
 - [The `maxp` table](#primer/maxp): `src/font/Loca.cpp` reads `numGlyphs` at `maxp` + 4 and
   reads one more `loca` entry than that.

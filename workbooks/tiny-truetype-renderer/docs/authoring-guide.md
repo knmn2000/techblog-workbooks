@@ -79,7 +79,7 @@ book builder parses them):
 4. `## Read in the blog first`: which section of the post, linked with a text fragment
    (`url#:~:text=Heading%20words`), and where to stop before the author's code. Say that the page
    is complete on its own.
-5. `## What you need`: one item per primer entry this assignment needs, as
+5. `## Learning material`: one item per primer entry this assignment needs, as
    `- [Title](#primer/<id>): how this assignment uses it` (section 9). List what the assignment
    introduces, and any earlier entry it uses in a new way; the book adds the rest of the
    earlier ones it finds in the code.
@@ -118,8 +118,9 @@ book builder parses them):
 The web book (`tools/build_book.py`) finds these sections by their heading text, so keep it
 exact. It places them like this:
 - "The problem", Requirements, Examples and Constraints form the statement.
-- "What you need" folds away at the top, split into what this assignment introduces and what
-  earlier ones did; its links open the entry over the problem.
+- "Learning material" folds away at the top, with a collapsible block for each primer group
+  that this assignment introduces and one for what earlier ones did; its links open the entry
+  over the problem. (Pages that still say `## What you need` are read the same way.)
 - "Read in the blog first" becomes a note at the top, with "Source material" folded away right
   under it.
 - "Where this fits" folds away under the statement.
@@ -369,7 +370,7 @@ Each entry:
 - `Learn more:` lists two or three references you have opened: the language's reference site, a
   good tutorial, the specification, an encyclopedia article.
 
-On each page, the What you need list (section 2) names the entries the assignment introduces and
+On each page, the Learning material list (section 2) names the entries the assignment introduces and
 says how this assignment uses each. Tags link to entries too.
 
 An entry belongs on the page where the learner first needs it. A long first list (the first

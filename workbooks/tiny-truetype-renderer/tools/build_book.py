@@ -14,7 +14,7 @@ blocks, and raw <figure>/<svg>/<div> blocks. Sections are recognised by their na
 ROLES); any other section is shown in the statement under its own heading.
 
 The primer (primer/*.md, see tools/primer.py) becomes the book's Primer view. Each page's
-"What you need" list links into it, split into the entries the assignment introduces and the
+"Learning material" list links into it, split into the entries the assignment introduces and the
 ones known from earlier assignments; links written as (#primer/<id>) open the entry.
 
 Starters: each of an assignment's own files has a blank starter (starters/blank/<path>, made by
@@ -53,7 +53,8 @@ ROLES = {
     "read in the blog first": "read", "prerequisite material": "read", "read first": "read",
     "where this fits": "context", "the problem": "problem",
     "requirements": "requirements", "examples": "examples", "source material": "sources",
-    "hints": "hints", "checking your solution": "checking", "what you need": "need",
+    "hints": "hints", "checking your solution": "checking", "learning material": "need",
+    "what you need": "need",  # the section's earlier name
 }
 
 
@@ -292,7 +293,7 @@ def hints(body) -> list:
 
 
 def needs(body) -> list:
-    """The "What you need" list: [{"id", "title", "note"}], one per item that links to an entry.
+    """The "Learning material" list: [{"id", "title", "note"}], one per item that links to an entry.
     An item reads `[title](#primer/<id>): how this assignment uses it`."""
     items = []
     for line in body:
@@ -304,7 +305,7 @@ def needs(body) -> list:
     for item in items:
         m = re.search(r"\[([^\]]+)\]\(#primer/([a-z0-9-]+)\)", item)
         if not m:
-            WARNINGS.append(f"a What you need item doesn't link to the primer: {item[:60]}")
+            WARNINGS.append(f"a Learning material item doesn't link to the primer: {item[:60]}")
             continue
         note = re.sub(r"^\s*[:–—-]?\s*", "", item[m.end():])
         out.append({"id": m.group(2), "title": inline(m.group(1)), "note": inline(note) if note else ""})
@@ -473,7 +474,7 @@ def primer_data(config: dict, cps: list) -> list:
         c["need"] = {"new": new, "earlier": earlier}
         for i in listed:
             if i not in known:
-                WARNINGS.append(f"{c['id']}: What you need links to #primer/{i}, which isn't a primer entry")
+                WARNINGS.append(f"{c['id']}: Learning material links to #primer/{i}, which isn't a primer entry")
     used_in = {i: sorted(cid for cid, a in per.items() if i in a["used"] or i in a["listed"]) for i in known}
     return [{"title": g["title"], "intro": blocks(g["intro"]),
              "entries": [{"id": e["id"], "title": inline(e["title"]), "plain": plain(e["title"]), "also": e["also"],

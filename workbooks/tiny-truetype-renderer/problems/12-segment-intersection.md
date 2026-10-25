@@ -16,7 +16,7 @@ and then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype
 Stop after the formula for t. The author's code (the listing "Function to find a
 intersections of 2 segments") follows it.
 
-## What you need
+## Learning material
 
 - [The 2D cross product and the side test](#primer/cross-product): write `cross` and a `side`
   helper in `utils/Geometry.h`, and reject a pair in Step 1 when either product of side values is

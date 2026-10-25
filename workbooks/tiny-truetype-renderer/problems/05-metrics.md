@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "The hmtx table contains information for". The
 author's code follows that paragraph.
 
-## What you need
+## Learning material
 
 - [Font units and the em](#primer/font-units): the ascent, descent, advances and side
   bearings the program writes are in font units, and both real fonts have 1000 of them per em.

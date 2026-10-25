@@ -637,6 +637,12 @@ span.CodeMirror-selectedtext { background: none; }
 /* ---- Primer: every term, header and tool the assignments use, one entry each */
 .nav-link { color: var(--text-2); font-weight: 500; font-size: 14px; }
 .nav-link:hover { color: var(--text); text-decoration: none; }
+/* The Primer link reads as a button: a border, a fill and an icon, in both bars. */
+.primer-btn { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 6px;
+  border: 1px solid var(--line-strong); background: var(--fill); color: var(--text); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.primer-btn:hover { background: var(--fill-hover); border-color: var(--text-3); text-decoration: none; }
+.primer-btn svg { color: var(--brand-ink); flex: none; }
+.primer-btn[hidden] { display: none; }
 .primer-wrap { max-width: 920px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 28px; }
 .primer-head { display: grid; gap: 10px; }
 .primer-head h1 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 600; text-wrap: balance; }
@@ -657,7 +663,15 @@ span.CodeMirror-selectedtext { background: none; }
 .used a:hover { background: var(--fill-hover); text-decoration: none; }
 .pempty { color: var(--text-3); }
 .need-h { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
-.need-g { margin: 6px 0 -4px; font-size: 13px; font-weight: 600; color: var(--text); }
+.need-grp { border-top: 1px solid var(--line); }
+.need-grp:last-child { border-bottom: 1px solid var(--line); }
+.need-grp > summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 8px 2px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--text); }
+.need-grp > summary::-webkit-details-marker { display: none; }
+.need-grp > summary svg { transform: rotate(-90deg); transition: transform .15s; color: var(--text-3); flex: none; }
+.need-grp[open] > summary svg { transform: none; }
+.need-grp > summary .acc-sub { margin-left: 0; }
+.need-body { padding: 2px 0 12px 23px; display: grid; gap: 10px; }
 .need-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .need-list li { display: grid; gap: 2px; margin: 0; }
 .need-list a { font-weight: 500; }
@@ -678,7 +692,7 @@ span.CodeMirror-selectedtext { background: none; }
 <div id="list-view">
   <header class="nav"><div class="nav-in gutter">
     <a class="brand" href="#home"><span class="logo" data-logo></span><span id="book-name"></span></a>
-    <a class="nav-link" href="#primer" data-primer-link hidden>Primer</a>
+    <a class="primer-btn" href="#primer" data-primer-link hidden title="Terms, libraries and tools the assignments use"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7M8 11h5"/></svg><span>Primer</span></a>
     <span class="nav-src" id="nav-src"></span>
     <button class="exit-btn" id="exit-list" type="button" hidden title="Save, stop the book and close it">Exit</button>
   </div></header>
@@ -714,7 +728,7 @@ span.CodeMirror-selectedtext { background: none; }
     <div class="tb-left">
       <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
       <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem list</span></a>
-      <a class="tb-link" href="#primer" data-primer-link hidden><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7M8 11h5"/></svg><span>Primer</span></a>
+      <a class="primer-btn" href="#primer" data-primer-link hidden title="Terms, libraries and tools the assignments use"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7M8 11h5"/></svg><span>Primer</span></a>
       <button class="icon-btn" id="prev" type="button" aria-label="Previous assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
       <button class="icon-btn" id="next" type="button" aria-label="Next assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
@@ -914,7 +928,7 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="bars">${bars}</div>
       </div>
       <div class="card how"><h2>Using the book</h2><ol>
-        ${PRIMER.length ? `<li><span>When a term, a library or a tool is new to you, look it up in the <a href="#primer">primer</a>. Each assignment's What you need list links to the entries it needs.</span></li>` : ''}
+        ${PRIMER.length ? `<li><span>When a term, a library or a tool is new to you, look it up in the <a href="#primer">primer</a>. Each assignment's Learning material links to the entries it needs.</span></li>` : ''}
         <li><span>You build one ${esc(PROJECT.label)} project, in <code>${esc(PROJECT_DIR)}</code>. Each assignment adds files to it, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
         <li><span>Write the code here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
         ${LOCAL ? `<li><span>The Run button checks the selected example, and Submit runs every test. The verdict appears in the Test result tab, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
@@ -1015,20 +1029,23 @@ span.CodeMirror-selectedtext { background: none; }
   });
 
   // ---------------------------------------------------------------- problem view
-  // "What you need": the primer entries this assignment introduces, each with how it's used here,
+  // "Learning material": the primer entries this assignment introduces, each with how it's used here,
   // then the ones known from earlier assignments (with a note when the page gives one).
+  // Each primer group is a block that folds, so a long list (the first assignment introduces most
+  // of the language) shows as a few lines with counts; a short one starts open.
   function needHtml(need) {
     const item = (n) => `<li><a href="#primer/${esc(n.id)}">${n.title}</a>${n.note ? `<span>${n.note}</span>` : ''}</li>`;
+    const block = (title, count, body, open) => `<details class="need-grp"${open ? ' open' : ''}><summary>${I.down}<span>${esc(title)}</span><span class="acc-sub">${count}</span></summary><div class="need-body">${body}</div></details>`;
+    const groups = [...new Set(need.new.map((n) => n.group || 'New in this assignment'))];
+    const fresh = groups.map((g) => {
+      const items = need.new.filter((n) => (n.group || 'New in this assignment') === g);
+      return block(g, items.length, `<ul class="need-list">${items.map(item).join('')}</ul>`, need.new.length <= 8);
+    }).join('');
     const noted = need.earlier.filter((n) => n.note), rest = need.earlier.filter((n) => !n.note);
-    // A long list (the first assignment introduces most of the language) reads better by group.
-    const groups = [...new Set(need.new.map((n) => n.group || ''))];
-    const fresh = need.new.length > 8 && groups.length > 1
-      ? groups.map((g) => `<p class="need-g">${esc(g)}</p><ul class="need-list">${need.new.filter((n) => (n.group || '') === g).map(item).join('')}</ul>`).join('')
-      : `<ul class="need-list">${need.new.map(item).join('')}</ul>`;
-    return (need.new.length ? `<p class="need-h">New in this assignment</p>${fresh}` : '')
-      + (need.earlier.length ? `<p class="need-h">From earlier assignments</p>` : '')
-      + (noted.length ? `<ul class="need-list">${noted.map(item).join('')}</ul>` : '')
+    const earlier = (noted.length ? `<ul class="need-list">${noted.map(item).join('')}</ul>` : '')
       + (rest.length ? `<div class="need-chips">${rest.map((n) => `<a class="chip" href="#primer/${esc(n.id)}" title="Introduced in assignment ${esc(BY[n.from] ? BY[n.from].num : n.from)}">${n.title}</a>`).join('')}</div>` : '');
+    return (need.new.length ? `<p class="need-h">New in this assignment</p>${fresh}` : '')
+      + (need.earlier.length ? block('From earlier assignments', need.earlier.length, earlier, false) : '');
   }
 
   function renderDesc(c) {
@@ -1054,7 +1071,7 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="chip" title="The checker compares only what your program writes, so you can use any structure, language or library.">Any language</span>
       </div>
       ${c.read ? `<div class="callout">${I.book}<div><p class="callout-title">${esc(c.readTitle || 'Read in the blog first')}</p>${c.read}</div></div>` : ''}
-      ${c.sources || needCount ? `<div class="accs accs-top">${needCount ? acc('acc-need', I.learn, `What you need<span class="acc-sub">${needSub}</span>`, needHtml(c.need)) : ''}${c.sources ? acc('acc-sources', I.link, 'Source material', c.sources) : ''}</div>` : ''}
+      ${c.sources || needCount ? `<div class="accs accs-top">${needCount ? acc('acc-need', I.learn, `Learning material<span class="acc-sub">${needSub}</span>`, needHtml(c.need)) : ''}${c.sources ? acc('acc-sources', I.link, 'Source material', c.sources) : ''}</div>` : ''}
       ${startCard(c)}
       <div class="flow">${c.body}</div>
       <div class="accs">
@@ -1103,20 +1120,13 @@ span.CodeMirror-selectedtext { background: none; }
     const link = (f) => (LOCAL ? `<button type="button" class="fpath" data-open-file="${esc(f.path)}">${esc(shortName(f.path))}</button>`
       : `<code class="fpath">${esc(shortName(f.path))}</code>`);
     const facts = [];
-    if (c.files.some((f) => f.boilerplate != null)) {
-      facts.push(['Start from', `<div class="ways" role="group" aria-label="Start from">
-        <button type="button" class="way" data-start-kind="boilerplate">Boilerplate</button>
-        <button type="button" class="way" data-start-kind="blank">From scratch</button></div>
-        <span class="way-note">${WAY_NOTES[kindOf(c)]}</span>`]);
-    }
     if (c.buildsOn.length) facts.push(['You can use', `<span>${c.buildsOn.map((f) => `${link(f)} <span class="muted">${from(f)}</span>`).join(' &nbsp;')}</span>`]);
-    facts.push(['Done when', `<span>Submit says Accepted on all ${c.tests} tests.</span>`]);
     return `<section class="start" aria-labelledby="start-title">
       <div class="start-top"><span class="start-eyebrow">Start here</span>
-        <h2 id="start-title">You write ${order.length === 1 ? 'one file' : `${order.length} files`}</h2>
+        <h2 id="start-title">${order.length === 1 ? 'Complete this file' : `Complete these ${order.length} files`}</h2>
         <p class="start-sub">${order.length === 1 ? '' : 'Go from top to bottom. '}The checker runs ${order.length === 1 ? 'it' : 'the last one'} on ${c.tests} test inputs and compares what it writes with the expected output. You can organise the code any way you like.</p></div>
       <ol class="steps">${steps}</ol>
-      <dl class="start-facts">${facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      ${facts.length ? `<dl class="start-facts">${facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>` : ''}
     </section>`;
   }
 
@@ -2310,7 +2320,7 @@ span.CodeMirror-selectedtext { background: none; }
       + g.entries.map((e) => `<article class="pentry" id="pe-${esc(e.id)}"><h3>${e.title}</h3><div class="flow">${e.html}</div>${usedIn(e)}</article>`).join('')
       + '</section>').join('');
     $('#primer').innerHTML = `<div class="primer-head"><h1>Primer</h1>
-        <p>The terms, libraries and tools the ${CPS.length} assignments use, each explained in a few paragraphs, with where the workbook uses it and links to learn more. Each assignment's What you need list links to the entries it needs.</p></div>
+        <p>The terms, libraries and tools the ${CPS.length} assignments use, each explained in a few paragraphs, with where the workbook uses it and links to learn more. Each assignment's Learning material links to the entries it needs.</p></div>
       <div class="primer-tools"><label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="search" id="pq" placeholder="Search the primer" aria-label="Search the primer"></label>
         ${PRIMER.map((g, k) => `<button class="chip" type="button" data-pgroup="${k}">${esc(g.title)}</button>`).join('')}</div>

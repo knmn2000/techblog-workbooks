@@ -184,8 +184,8 @@ also: std::runtime_error; runtime_error; std::logic_error; logic_error; std::out
 code: #\s*include\s*<stdexcept>|\bstd::(runtime_error|logic_error|out_of_range|invalid_argument|domain_error|length_error|range_error|overflow_error|underflow_error)\b
 -->
 `<stdexcept>` declares the standard exception classes you throw when something goes wrong. Each
-one carries a message, given when you create it and returned later by `what()`. They come in
-two families: `std::logic_error` for a mistake in the program (with `std::out_of_range` and
+one carries a message, given when you create it and returned later by `what()`. They come in two
+families: `std::logic_error` for a mistake in the program (with `std::out_of_range` and
 `std::invalid_argument` among its kinds) and `std::runtime_error` for a problem with the data,
 such as a file that can't be opened. All of them derive from `std::exception` (see
 [`<exception>`](#primer/exception)). How `throw`, `try` and `catch` work is covered in
@@ -392,10 +392,10 @@ million entries. Three ways to look up a key behave differently:
 - `m.find(key)` returns an [iterator](#primer/iterators), equal to `m.end()` if the key isn't
   there.
 
-Because `m[key]` may insert, it doesn't compile on a [`const`](#primer/const) map. That
-includes a map a function receives as a `const std::map<K, V>&` (see
-[references](#primer/references)), the usual way to pass a map the function only reads. Such a
-function looks keys up with `at` or `find`.
+Because `m[key]` may insert, it doesn't compile on a [`const`](#primer/const) map. That includes
+a map a function receives as a `const std::map<K, V>&` (see [references](#primer/references)),
+the usual way to pass a map the function only reads. Such a function looks keys up with `at` or
+`find`.
 
 ```cpp
 std::map<std::string, int> offsets;
@@ -441,10 +441,10 @@ bool known = glyphFor.find(0x42) != glyphFor.end();
 
 Assignment 03's `loadUnicodeToGlyphCodeMap` in `Cmap.h` returns a
 `std::unordered_map<uint32_t, uint32_t>` from [code point](#primer/code-point) to
-[glyph id](#primer/glyph-id), and its program answers `count` with `size()` and
-`lookup U+XXXX` with `find`. Page 03 says a `std::map`, or a sorted `std::vector` searched with
-binary search, works too. Assignment 18's `TextRenderer` keeps the same map to find the glyph
-for each character of its text.
+[glyph id](#primer/glyph-id), and its program answers `count` with `size()` and `lookup U+XXXX`
+with `find`. Page 03 says a `std::map`, or a sorted `std::vector` searched with binary search,
+works too. Assignment 18's `TextRenderer` keeps the same map to find the glyph for each
+character of its text.
 
 Learn more:
 - [std::unordered_map](https://en.cppreference.com/w/cpp/container/unordered_map) on cppreference
@@ -815,10 +815,9 @@ forEachSquare(3, [](int sq) { std::cout << sq << "\n"; });  // 0 1 4
 
 Assignment 14 uses it in `src/render/Scanline.h`. `forEachRow(edges, height, visit)` walks the
 picture row by row and calls `visit(row, crossings)` with each row's crossings sorted by x. The
-visit parameter is a
-`std::function<void(int row, const std::vector<Crossing>& crossings)>`. Your
-[even-odd](#primer/even-odd) fill in 14 and your [non-zero](#primer/nonzero) fill in 16 each
-pass their own visit function, so both share the same [scanline](#primer/scanline) code.
+visit parameter is a `std::function<void(int row, const std::vector<Crossing>& crossings)>`.
+Your [even-odd](#primer/even-odd) fill in 14 and your [non-zero](#primer/nonzero) fill in 16
+each pass their own visit function, so both share the same [scanline](#primer/scanline) code.
 
 Learn more:
 - [std::function](https://en.cppreference.com/w/cpp/utility/functional/function) on cppreference

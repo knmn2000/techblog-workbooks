@@ -14,7 +14,7 @@ loads a Unicode font, draws any string with it and saves the result as a PNG. Sk
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
 pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
 
-## What you need
+## Learning material
 
 - [UTF-8](#primer/utf-8): `utf8ToCodepoints` in `utils/Unicode.h` turns the bytes of each `text`
   line into code points, and the R1 tests use 2-, 3- and 4-byte characters.

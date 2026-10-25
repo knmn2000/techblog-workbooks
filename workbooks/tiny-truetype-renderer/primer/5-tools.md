@@ -11,16 +11,36 @@ also: compiler; g++; gcc; clang; MinGW; MinGW-w64; WinLibs; MSYS2; Xcode command
 A compiler turns C++ source code into a program the computer can run. The workbook uses g++,
 the C++ compiler of GCC:
 
-- On Windows, g++ from MinGW-w64, a build of GCC that makes Windows programs. Installers such
-  as WinLibs and MSYS2 provide it.
+- On Windows, g++ from MinGW-w64, a build of GCC that makes Windows programs. WinLibs and MSYS2
+  provide it.
 - On Linux, GCC from the system's package manager (for example `sudo apt install g++`).
 - On macOS, the command line tools of Xcode (`xcode-select --install`). Their `g++` command is
   Apple's clang under another name, which works the same way for this project.
 
+On Windows, WinLibs is the shortest route, because its download also holds
+[CMake](#primer/cmake) and [Ninja](#primer/ninja) in the same `bin` folder as g++. In
+PowerShell:
+
+```
+winget install BrechtSanders.WinLibs.POSIX.UCRT
+```
+
+winget unpacks it and adds its `mingw64\bin` folder to your `PATH`, the list of folders the
+terminal searches for programs. Without winget, download the 64-bit UCRT build with POSIX
+threads from [winlibs.com](https://winlibs.com/), unzip it to a folder whose path has no
+spaces, such as `C:\winlibs`, and add `C:\winlibs\mingw64\bin` to `PATH` yourself:
+
+1. Open Settings, search for "environment" and choose "Edit the system environment variables".
+2. Click Environment Variables.
+3. Under the variables for your user, select Path and click Edit.
+4. Click New, paste the folder, and click OK in each window.
+
+A terminal keeps the `PATH` it started with, so open a new PowerShell window afterwards.
+
 The project needs C++20 (`set(CMAKE_CXX_STANDARD 20)` in its build file), so the compiler must
-be recent enough: GCC 10 or newer, or a current Xcode. Type `g++ --version` in a terminal to see
-which one you have, and whether the terminal finds it at all. If it doesn't, the folder holding
-`g++` isn't on your `PATH`, the list of folders the terminal searches for programs.
+be recent enough: GCC 10 or newer, or a current Xcode. Type `g++ --version` in PowerShell (or
+any terminal) to see which one you have. If the terminal answers that it doesn't know `g++`,
+the folder holding it isn't on your `PATH` yet.
 
 You rarely call the compiler yourself. [CMake](#primer/cmake) works out the commands, and the
 checker's setup tells CMake to use `g++` (`-DCMAKE_CXX_COMPILER=g++`). A command it runs looks
@@ -52,8 +72,9 @@ Building a C++ program takes two steps.
    object file (`.o`) of machine code. It looks at one `.cpp` at a time. A call to a function
    in another file compiles as long as a declaration is in view; the compiler leaves a note
    that the function must be found later.
-2. Linking: the linker (`ld`) joins the object files and libraries into one program and
-   connects each such call to the function's definition.
+2. Linking: the linker joins the object files and libraries into one program and connects
+   each such call to the function's definition. GCC's linker is a program called `ld`, which
+   g++ starts through a small helper, `collect2` (`collect2.exe` on Windows).
 
 The two steps fail in different ways. A compile error comes from your code in one file and
 names the file, line and column:
@@ -71,9 +92,10 @@ multiple definition of `lerp(Vec2, Vec2, double)'
 collect2.exe: error: ld returned 1 exit status
 ```
 
+The last line comes from `collect2` and only says that `ld` failed; the lines above it say why.
 "Undefined reference" means something is declared and called but never defined: the body is
-missing, its signature differs from the declaration (a `const` or a parameter type), or its
-`.cpp` isn't part of the build. "Multiple definition" means a function is defined in two
+missing, its parameter types or a `const` differ from the declaration's (which makes it a
+different function to the linker), or its `.cpp` isn't part of the build. "Multiple definition" means a function is defined in two
 places, often a function in a header without [`inline`](#primer/inline). A program with no
 `main` fails at this step too.
 
@@ -131,25 +153,36 @@ cmake -S solutions -B build/solutions -G Ninja -DCMAKE_CXX_COMPILER=g++
 cmake --build build/solutions --target assignment_07
 ```
 
-The first, configure, reads `solutions/CMakeLists.txt` and writes the build files into
-`build/solutions`. The second builds one target, a program or library the file defines. The
-checker runs the first when `build/solutions/build.ninja` doesn't exist yet and the second on
-every check.
+The first command is the configure step: it reads `solutions/CMakeLists.txt` and writes the
+build files into `build/solutions`. The second builds one target, a program or library the file
+defines. The checker runs the first when `build/solutions/build.ninja` doesn't exist yet and the
+second on every check.
 
 Your project's `CMakeLists.txt` (from `starters/project/`) says:
 
-- C++20, without compiler extensions, and a Debug build unless you ask for another (see
+- C++20, without compiler extensions (GCC's own additions to the language, which other
+  compilers reject), and a Debug build unless you ask for another (see
   [debug builds](#primer/debug-build)).
 - Warnings `-Wall -Wextra`, without the unused-parameter warning.
-- On Windows with MinGW, link with `-static`, so the programs run without the compiler's DLLs.
-- `tiny_ttf_core`: a static library of every `.cpp` under `src/` except `main.cpp`, with `src/`
-  and `third_party/` as include directories. New files are picked up at the next build.
+- On Windows with MinGW, link with `-static`: copy the parts of the compiler's own libraries
+  that a program uses into its `.exe`. Without it, each program needs the compiler's DLLs
+  (Windows library files that programs load when they start) on the `PATH`.
+- `tiny_ttf_core`: a static library, a bundle of compiled `.cpp` files that programs link
+  with, made from every `.cpp` under `src/` except `main.cpp`, with `src/` and `third_party/`
+  as include directories. New files are picked up at the next build.
 - `tiny_ttf`: the finished program, from `src/main.cpp`, once that file exists (18).
 - One program per assignment: `assignments/assignment_07_simple_glyph.cpp` becomes the target
   `assignment_07`, linked with the library.
 
 So building any one assignment compiles every `.cpp` in `src/`. You can leave
-`CMakeLists.txt` as it is for the whole workbook. CMake 3.20 or newer is needed.
+`CMakeLists.txt` as it is for the whole workbook.
+
+CMake 3.20 or newer is needed. On Windows the WinLibs download (see
+[the compiler](#primer/compiler)) includes it. Otherwise install it with
+`winget install Kitware.CMake`, or download the Windows x64 installer (`.msi`) from
+[cmake.org/download](https://cmake.org/download/) and choose the option that adds CMake to the
+`PATH`. On macOS Homebrew has `cmake`, and on Linux the package manager does. Check it in a new
+PowerShell window with `cmake --version`.
 
 On its own, for example after you've put it on GitHub, the project builds with
 `cmake -S . -B build` and `cmake --build build` from inside `solutions/`.
@@ -176,11 +209,16 @@ when given `-G Ninja` (the G is for generator). You don't usually run `ninja` ei
 too, such as Makefiles or Visual Studio projects; the workbook uses Ninja because it behaves the
 same on Windows, macOS and Linux.
 
-Ninja has to be installed and on your `PATH`, like the compiler. `ninja --version` shows
-whether the terminal finds it. If the checker's setup fails with a message that CMake can't
-find Ninja (or `CMAKE_MAKE_PROGRAM` is not set), install it and open a new terminal. On Windows
-the WinLibs builds of MinGW include it, and MSYS2 has it as a separate package; on macOS
-Homebrew has `ninja`, and on Linux the package is usually `ninja-build`.
+Ninja has to be installed and on your `PATH`, like the compiler. On Windows the WinLibs download
+(see [the compiler](#primer/compiler)) includes it. Otherwise install it with
+`winget install Ninja-build.Ninja`, or download the Windows zip from the
+[Ninja releases page](https://github.com/ninja-build/ninja/releases), unzip `ninja.exe` into a
+folder and add that folder to `PATH`. MSYS2 has it as a separate package; on macOS Homebrew has
+`ninja`, and on Linux the package is usually `ninja-build`.
+
+`ninja --version` in a new PowerShell window shows whether the terminal finds it. If the
+checker's setup fails with a message that CMake can't find Ninja (or `CMAKE_MAKE_PROGRAM` is
+not set), install it and open a new terminal.
 
 The README lists Ninja, CMake and g++ as the three tools the C++ project needs, and the study
 server checks for them when it starts.
@@ -230,11 +268,14 @@ id: debug-build
 also: Debug build; Release build; CMAKE_BUILD_TYPE; _GLIBCXX_ASSERTIONS; bounds checking; assertion failed; out of range
 -->
 A build type sets how the compiler treats your code. A Debug build keeps the program close to
-the source, with no optimisation and with debug information, so a debugger can follow it line
-by line. A Release build optimises for speed. The project's `CMakeLists.txt` picks Debug unless
+the source. It has no optimisation, the compiler's rewriting of your code to run faster, and it
+has debug information, a map from the machine code back to your lines and variable names. A
+debugger, a tool such as GDB that runs a program a line at a time and shows its variables, needs
+that map. A Release build optimises for speed. The project's `CMakeLists.txt` picks Debug unless
 you choose another type.
 
-In Debug it also defines `_GLIBCXX_ASSERTIONS`, which makes GCC's standard library check
+In Debug it also defines the [macro](#primer/preprocessor) `_GLIBCXX_ASSERTIONS`, which makes
+GCC's standard library check
 indexes. Without it, `v[i]` with `i` past the end of a vector reads whatever memory is there,
 and the program carries on with a wrong number. With it, the program stops at once:
 
@@ -242,10 +283,11 @@ and the program carries on with a wrong number. With it, the program stops at on
 .../stl_vector.h:1263: ... operator[](size_type) ...: Assertion '__n < this->size()' failed.
 ```
 
-The program then exits through `abort()`, and the checker reports a Runtime Error, "abort() -
-often a failed bounds check". That message is the clue: look for an index one too far, such as
-reading `loca` entry `numGlyphs` without allocating `numGlyphs + 1` (04), or a contour end
-used as a count instead of an index (07). The message names the line inside the library, not
+The program then exits through [`abort()`](#primer/exceptions), and the checker reports a
+Runtime Error, "abort() - often a failed bounds check". That message is the clue: look for an
+index one too far, such as reading [`loca`](#primer/loca) entry `numGlyphs` without allocating
+`numGlyphs + 1` (04), or a [contour](#primer/contour) end used as a count instead of an index
+(07). The message names the line inside the library, not
 in your code; a debugger, or a print before the suspect line, finds yours.
 
 The macro is part of GCC's library. Apple's clang on macOS uses a different library, which
@@ -318,13 +360,21 @@ The assignment programs use these codes, and the checker reads them:
 | 0xC00000FD | stack overflow, often endless recursion (Windows) | Runtime Error |
 
 99 is the workbook's own convention. Each unfinished function in the Boilerplate throws
-`std::logic_error("not implemented: lerp")`, the program's `main` catches it and returns 99,
-and the checker tells you which TODO to write next instead of reporting a crash. A function you
-haven't reached yet doesn't count as a wrong answer.
+[`std::logic_error`](#primer/stdexcept)`("not implemented: lerp")`, the program's `main`
+catches it and returns 99, and the checker tells you which TODO to write next instead of
+reporting a crash. A function you haven't reached yet doesn't count as a wrong answer.
 
-On macOS and Linux a crash shows as a signal instead of a large number: SIGSEGV for a bad
-pointer, SIGABRT for `abort()`, SIGFPE for an integer division by zero. A program that runs
-longer than 10 seconds is stopped and reported as `Time Limit Exceeded`.
+The last three rows are crashes. On Windows a crash ends the program with a large code that
+names the kind of crash. 0xC0000005 is an access violation: the program read or wrote memory
+it doesn't own, through a bad [pointer](#primer/pointers) or an index past the end of a vector.
+0xC00000FD is a stack overflow: the call stack, the memory that holds the variables of the
+function calls in progress, ran out, usually through [recursion](#primer/recursion) that never
+stops. Code 3 comes from [`abort()`](#primer/exceptions).
+
+On macOS and Linux a crash shows as a signal instead, the system's notice that stops the
+program: SIGSEGV (segmentation fault) for a bad memory access, SIGABRT for `abort()`, and
+SIGFPE for an arithmetic error such as an integer division by zero. A program that runs longer
+than 10 seconds is stopped and reported as `Time Limit Exceeded`.
 
 Learn more:
 - [Exit status](https://en.wikipedia.org/wiki/Exit_status) on Wikipedia
@@ -349,9 +399,18 @@ on macOS and Linux):
 .\check 07 -Dispute <test-id> "why" set aside a test you believe is wrong
 ```
 
-The first check of an assignment you haven't opened creates its files and stops. After that,
-the verdict is `Accepted`, `Wrong Answer`, `Compile Error`, `Runtime Error` or
-`Time Limit Exceeded`, or "Not implemented yet" while a TODO remains (see
+The checker needs your project folder first. From the workbook folder,
+`py -P tools/project.py setup` creates `solutions/` with its `CMakeLists.txt`, `README.md`,
+`.gitignore` and [`third_party/stb_image_write.h`](#primer/stb-image-write). Then
+`.\check 01` on an assignment you haven't started creates its files and stops. They start as
+the Boilerplate, the declarations and input/output code with `TODO`s for you to fill in (the
+default, set by `project.starter` in `workbook.json`). Write them and run `.\check 01` again.
+A coding assistant can do all of this for you, starting with a check of the tools, if you ask
+it to "set up my workbook".
+
+Once an assignment has its files, the verdict is `Accepted`, `Wrong Answer`,
+`Compile Error`, `Runtime Error` or `Time Limit Exceeded`, or "Not implemented yet" while a
+TODO remains (see
 [exit codes](#primer/exit-codes)). For each failing test it shows the line that differs, the
 requirement it most likely breaks, where the expected value came from and the command that
 reproduces it. Text is compared word by word, so spacing and line endings don't matter. Pictures
@@ -389,8 +448,9 @@ PowerShell or `./study.sh` on macOS and Linux. It runs `tools/serve.py`, which:
   which one is missing;
 - does the first-time build setup if it's needed, and offers to create your C++ project if
   there isn't one yet;
-- opens the book from `127.0.0.1` (port 8787 by default), an address only your own computer
-  can reach.
+- opens the book at `http://127.0.0.1:8787/`. 127.0.0.1 is an address only your own computer
+  can reach, and 8787 is the port, a number that tells apart the programs on one computer that
+  answer web requests.
 
 With the server running, the book's Run button checks the selected example, and Submit runs
 every test. Both call [the checker](#primer/checker), the same as `.\check` in a terminal, and
@@ -419,20 +479,29 @@ The workbook's tools are written in Python: the checker, the study server, the p
 and the test generators. They need Python 3.11 or newer. You don't need to know Python to use
 them; the `.\check` and `.\study` scripts start them for you.
 
-On Windows the commands start with `py`, which the Python install manager (or, in older
-installs, the Python launcher) provides and which finds your installed Python. On macOS and Linux the same commands use `python3`:
+On Windows the commands start with `py`. It comes from the Python install manager, Python's
+current installer for Windows, which installs Python versions and starts the right one when you
+type `py`. Older installs got `py` from the Python launcher, which did the second half of that
+job. On macOS and Linux the same commands use `python3`:
 
 ```
 py -P tools/check.py 07          (Windows)
 python3 -P tools/check.py 07     (macOS, Linux)
 ```
 
+To install Python on Windows, get the install manager from the Microsoft Store, from
+[python.org/downloads](https://www.python.org/downloads/), or in PowerShell with
+`winget install Python.PythonInstallManager`. Then `py install default` installs the latest
+Python. Check it in a new PowerShell window with `py --version`, which prints the version `py`
+starts.
+
 `-P` tells Python not to add the script's own folder to the places it imports modules from, a
 safety option added in Python 3.11, which is one reason for the version requirement.
 
 `-Fresh` needs one extra package, fontTools, which reads font files. Install it with
-`py -m pip install fonttools` (or `python3 -m pip install fonttools`). Everything else uses
-only Python's standard library.
+`py -m pip install fonttools` (or `python3 -m pip install fonttools`). `-m pip` runs pip,
+Python's package installer, with the same Python that `py` starts, so the package lands where
+the workbook's tools look for it. Everything else uses only Python's standard library.
 
 Two other tools are worth knowing. `py -P tools/project.py status` shows how far your project
 is, and `py -P tools/langs.py` lists the programming languages installed on your computer, if

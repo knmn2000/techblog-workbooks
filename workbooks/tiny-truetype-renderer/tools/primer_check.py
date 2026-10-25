@@ -5,7 +5,7 @@
 
 It reports:
   - an entry an assignment's Boilerplate or tags use that neither it nor an earlier assignment lists
-    in "What you need" (so the learner meets it unexplained)
+    in "Learning material" (so the learner meets it unexplained)
   - a link to #primer/<id> that names no entry, and duplicate ids
   - an entry that no page lists and no other entry links to (nothing leads a learner to it)
   - an entry without text, or without a "Learn more" link, or a link with ( ) in its URL
@@ -85,9 +85,9 @@ def main() -> int:
         for i in sorted(a["used"]):
             if i in known and (i not in first or first[i] > cid):
                 why = "its tags link it" if i in a["links"]["tags"] else "its code uses it"
-                problems.append(f"{cid}: {why}, but no assignment lists '{i}' in What you need by then")
+                problems.append(f"{cid}: {why}, but no assignment lists '{i}' in Learning material by then")
         if not a["listed"]:
-            problems.append(f"{cid}: the page has no What you need list")
+            problems.append(f"{cid}: the page has no Learning material")
     # An entry no page lists is still fine when another entry links to it: the primer is also
     # a reference to browse (a technique a solution may use, a term inside another entry).
     linked = {t for e in known.values() for t in primer.LINK.findall("\n".join(e["lines"])) if t != e["id"]}

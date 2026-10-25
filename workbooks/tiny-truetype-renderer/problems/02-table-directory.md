@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "This is the structure of the". The author's code
 follows that paragraph.
 
-## What you need
+## Learning material
 
 - [TrueType and OpenType fonts](#primer/truetype): the first 4 bytes of the file are the scaler
   type, which says the font has TrueType outlines; `readTableDirectory` reads them and moves on.

@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section through the paragraph that starts "In the implementation, simply loop". The author's
 code follows that paragraph.
 
-## What you need
+## Learning material
 
 - [Unicode code points](#primer/code-point): each `lookup` line names a code point such as
   `U+1F600`, and the ones above U+FFFF are why the map's keys are `uint32_t`.
@@ -34,8 +34,8 @@ code follows that paragraph.
 - [Deriving from a class](#primer/inheritance): `UnsupportedCmap` in `Cmap.h` derives from
   `std::runtime_error` and takes its constructors with a `using` line, and the program catches
   it by name to write `unsupported`.
-- [`std::size_t`](#primer/size-t): the program finds the quotes around the font's path with
-  `line.find('"')`, which returns a `std::size_t`, or `std::string::npos` when there is none.
+- [`std::size_t`](#primer/size-t): the program finds the quotes around a table's tag in a
+  `table "<tag>" ...` line with `line.find('"')`, which returns a `std::size_t`, or `std::string::npos` when there is none.
 
 ## Source material
 

@@ -17,7 +17,7 @@ entry is a `## ` heading, an optional comment block, and its text:
   code   a regular expression (multiline: ^ and $ match at each line); an assignment whose
          Boilerplate files match it uses the entry
 
-Problem pages link to entries as [text](#primer/<id>): in their tags, and in a "What you need"
+Problem pages link to entries as [text](#primer/<id>): in their tags, and in a "Learning material"
 section that lists the entries with a note on how the assignment uses them. An entry belongs to
 the first assignment that lists it; later assignments that use it show it as known from earlier.
 tools/primer_check.py checks that every entry an assignment uses is listed by then.
@@ -107,7 +107,7 @@ def assignment_code(config: dict, cid: str) -> dict:
 
 
 def page_links(problem_text: str) -> dict:
-    """{"tags": ids linked from the tag lines, "need": [(id, item text)] from "What you need",
+    """{"tags": ids linked from the tag lines, "need": [(id, item text)] from "Learning material",
     "all": every id linked anywhere on the page}."""
     lines = problem_text.replace("\r\n", "\n").split("\n")
     tags, need, section = [], [], None
@@ -117,7 +117,7 @@ def page_links(problem_text: str) -> dict:
             continue
         if section is None and re.match(r"- \*\w+:\*", line):
             tags += LINK.findall(line)
-        elif section == "what you need" and re.match(r"\s*[-*]\s+", line):
+        elif section in ("learning material", "what you need") and re.match(r"\s*[-*]\s+", line):
             ids = LINK.findall(line)
             if ids:
                 need.append((ids[0], line))
@@ -125,7 +125,7 @@ def page_links(problem_text: str) -> dict:
 
 
 def usage(config: dict, groups: list) -> dict:
-    """For each assignment, in order: {"listed": ids its "What you need" lists, "used": ids its
+    """For each assignment, in order: {"listed": ids its "Learning material" lists, "used": ids its
     code or tags use, "first": {id: the assignment that introduces it}}."""
     known = entries(groups)
     out, first = {}, {}

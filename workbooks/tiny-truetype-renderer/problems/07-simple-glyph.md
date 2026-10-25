@@ -15,7 +15,7 @@ You can pass using this page alone. For the background, read the blog's
 through the list of flag rules under "Simple glyph". Stop at the paragraph that starts
 "Implementation.", before the author's code.
 
-## What you need
+## Learning material
 
 - [The `glyf` table](#primer/glyf): each `glyph` line points at one record in it, and
   `readGlyph` reads the record's 10-byte header first.

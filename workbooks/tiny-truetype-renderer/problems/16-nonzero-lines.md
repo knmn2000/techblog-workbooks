@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section up to the sentence about considering only line segments for now. The author's code comes
 right after it.
 
-## What you need
+## Learning material
 
 - [The non-zero winding rule](#primer/nonzero): `renderGlyphByNonZero` in `render/NonZero.cpp`
   walks each row's crossings with a running count, +1 for an edge going down the screen and −1

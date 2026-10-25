@@ -15,7 +15,7 @@ section through [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype
 skipping the code blocks if you want to work it out yourself. The blog builds this in two steps,
 a first version and then a fix for errors at vertices; this assignment covers both.
 
-## What you need
+## Learning material
 
 - [Scanline filling](#primer/scanline): `render/Scanline` holds the steps both fill rules share.
   `edgePieces` turns an outline into edges in pixels, `forEachRow` gives each row its crossings

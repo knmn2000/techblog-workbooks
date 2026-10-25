@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
 and stop at the sentence that introduces the code. The author's code follows it.
 
-## What you need
+## Learning material
 
 - [On-curve and off-curve points](#primer/on-off-curve): the walk ends a straight line at an
   on-curve point and uses an off-curve point as a curve's control point, where assignment 08

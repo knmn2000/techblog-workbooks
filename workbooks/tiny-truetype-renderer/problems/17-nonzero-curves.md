@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section to the end, including the two cases where a scanline crosses one curve twice. Skip the
 code blocks if you want to work it out yourself.
 
-## What you need
+## Learning material
 
 - [Splitting a curve where y turns](#primer/curve-turning-point): the pieces `edgePieces` makes
   in assignment 14 now also give each crossing its direction, from the piece's end y minus its

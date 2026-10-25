@@ -16,7 +16,7 @@ up to the formula for the t where the curve turns. The author's code (the listin
 minimum curve of a quad Bézier curve") comes right after it. Assignment 10 covers the curve
 itself.
 
-## What you need
+## Learning material
 
 - [Lowest point of a quadratic curve](#primer/curve-min-y): `getBezierMinY` in
   `utils/Geometry.h` returns min(y1, y3), lowered to y(t*) when a > 0 and 0 < t* < 1.

@@ -21,7 +21,9 @@ channel runs from 0 to 255:
 
 Three channels of 8 bits give 24 bits per pixel and about 16.7 million colours. An image file
 or a PNG writer often wants the pixels as one run of bytes, red, green, blue, red, green, blue,
-and so on, so the pixel type should be those 3 bytes and nothing more:
+and so on, so the pixel type should be those 3 bytes and nothing more (see
+[structs](#primer/struct-class), [`static_assert`](#primer/static-assert) and
+[`sizeof`](#primer/sizeof)):
 
 ```cpp
 struct RGB { uint8_t r = 0, g = 0, b = 0; };
@@ -31,9 +33,9 @@ static_assert(sizeof(RGB) == 3);   // no padding: a vector of RGB is the byte ru
 A channel type wider than a byte, such as `unsigned`, makes each pixel 12 bytes, and a writer
 that expects 3 bytes per pixel reads garbage.
 
-Assignment 06 defines `RGB` in `src/FrameBufferCanvas.h`, and `FrameBufferCanvas.cpp` checks its
-size with that `static_assert`. Every drawing assignment's input gives colours as `r g b` from
-0 to 255, and the checker compares your pixels with the expected ones colour by colour.
+Assignment 06 defines `RGB` in `src/FrameBufferCanvas.h` with [`uint8_t`](#primer/cstdint)
+channels, and `FrameBufferCanvas.cpp` checks its size with that `static_assert`. Every drawing
+assignment's input gives colours as `r g b` from 0 to 255.
 
 Learn more:
 - [Pixel](https://en.wikipedia.org/wiki/Pixel) on Wikipedia
@@ -52,10 +54,14 @@ Memory is one long line of bytes, so the pixels go in row-major order: the whole
 from left to right, then the next row, and so on. Pixel (x, y) of a picture `width` pixels wide
 sits at index `y * width + x`:
 
-```cpp
-std::vector<RGB> pixels(width * height);           // every pixel starts black
-void set(int x, int y, RGB c) { pixels[y * width + x] = c; }
 ```
+a picture 4 pixels wide and 3 high, index = y * 4 + x
+row 0:   0   1   2   3
+row 1:   4   5   6   7
+row 2:   8   9  10  11      pixel (1, 2) is at index 2 * 4 + 1 = 9
+```
+
+In C++ the block is a [`std::vector<RGB>`](#primer/vector) of `width * height` elements.
 
 Picture coordinates put (0, 0) at the top-left corner, with x growing to the right and y growing
 downwards (see [Font coordinates and screen coordinates](#primer/screen-coordinates)).
@@ -65,8 +71,8 @@ drawn last shows. The workbook draws in input order: in assignment 06 a later co
 over an earlier one, and in assignment 11 the markers go on top of the lines.
 
 Assignment 06 builds the framebuffer, `FrameBufferCanvas` in `src/FrameBufferCanvas.h` and
-`.cpp`, with a `std::vector<RGB>` stored top row first. Every later picture is drawn on it:
-outlines in assignments 08 and 11, filled glyphs in 14, 16 and 17, and text in 18.
+`.cpp`, with a `std::vector<RGB>` stored top row first. Every later picture is drawn on it, from
+the outlines of assignment 08 to the text of 18.
 
 Learn more:
 - [Framebuffer](https://en.wikipedia.org/wiki/Framebuffer) on Wikipedia
@@ -84,23 +90,22 @@ appear. Without clipping, a pixel outside the picture doesn't disappear: `pixels
 with x past the right edge lands on the next row, and an index past the end of the vector is
 undefined behaviour.
 
-The simplest clipping lives in the function that paints one pixel: it ignores coordinates
-outside the picture. If every shape paints through that function, every shape is clipped:
-
-```cpp
-void set(int x, int y, RGB c) {
-  if (x < 0 || y < 0 || x >= width || y >= height) return;   // outside: draw nothing
-  pixels[y * width + x] = c;
-}
+```
+canvas 200 pixels wide, pixel (200, 10), one past the right edge:
+index = 10 * 200 + 200 = 2200, which is pixel (0, 11), the first pixel of the next row
 ```
 
-For a fill there's a second trap. A crossing point can lie far outside the canvas, and
-converting a `double` too large for `int` is undefined behaviour in C++. Clamp the value to the
-canvas first, `std::clamp(x, 0.0, double(width))`, then convert it.
+The simplest clipping lives in the function that paints one pixel: it ignores coordinates
+outside the picture. If every shape paints through that function, every shape is clipped.
 
-Assignment 06's `set` does this check (requirement R6 tests shapes that cross the edge or lie
-outside). Assignments 14, 16 and 17 clamp crossing x values before they become pixel columns, and
-assignment 18's R7 draws text that runs off the canvas.
+For a fill there's a second trap. A crossing point can lie far outside the canvas, and
+converting a `double` too large for `int` is undefined behaviour in C++ (see
+[converting a float to an int](#primer/float-to-int)). Clamp the value to the canvas first,
+with `std::clamp` from [`<algorithm>`](#primer/algorithm), then convert it.
+
+Assignment 06's `FrameBufferCanvas::set` ignores pixels outside the canvas (requirement R6 tests
+shapes that cross the edge or lie outside). The fills from assignment 14 on turn crossing x
+values into pixel columns, so they meet the second trap.
 
 Learn more:
 - [Clipping (computer graphics)](https://en.wikipedia.org/wiki/Clipping_%28computer_graphics%29) on
@@ -119,18 +124,19 @@ signature, then a series of chunks: a header with the size and colour type, comp
 data, and an end marker, each with a CRC checksum. Writing that by hand means writing a
 compressor and a CRC, so programs use a library.
 
-The workbook ships one: `stb_image_write.h`, a single-file library by Sean Barrett. One `.cpp`
-file defines `STB_IMAGE_WRITE_IMPLEMENTATION` before it includes the header, which puts the code
-in that file; other files include it without the define.
+The workbook ships one: [`stb_image_write.h`](#primer/stb-image-write), a single-file library
+by Sean Barrett. One `.cpp` file defines `STB_IMAGE_WRITE_IMPLEMENTATION` before it includes the
+header, which puts the code in that file; other files include it without the define.
 
 ```cpp
 // 3 channels (RGB), and each row is width * 3 bytes long in memory; returns 0 on failure
 stbi_write_png(path, width, height, 3, pixels, width * 3);
 ```
 
-The checker reads your picture's contents, not its name, so a [binary PPM](#primer/ppm) passes as
-well. When a test fails, it writes a diff picture as a PNG: red for extra ink, blue for missing
-ink, magenta for the wrong colour, yellow for pixels it forgave.
+The [checker](#primer/checker) reads your picture's contents, not its name, so a
+[binary PPM](#primer/ppm) passes as well. When a test fails, it writes a diff picture as a PNG:
+red for extra ink, blue for missing ink, magenta for the wrong colour, yellow for pixels it
+forgave.
 
 Assignment 06's `FrameBufferCanvas::writePng` calls `stbi_write_png` (the Boilerplate already
 does), and every later drawing assignment saves its picture through it.
@@ -163,12 +169,12 @@ out << "P6\n" << width << ' ' << height << "\n255\n";
 out.write(reinterpret_cast<const char*>(pixels.data()), pixels.size() * 3);
 ```
 
-Open the file in binary mode. In text mode Windows turns every byte 10 (a newline) into the two
-bytes 13 10, and every pixel after it shifts.
+Open the file in binary mode (see [`<fstream>`](#primer/fstream)). In text mode Windows turns
+every byte 10 (a newline) into the two bytes 13 10, and every pixel after it shifts.
 
-Assignments 06, 08, 11, 14, 16, 17 and 18 accept a binary PPM in place of a PNG, since the checker
-reads the contents and ignores the `.png` name. Fewer image viewers open PPM files than PNG
-files, so a PNG is easier to look at.
+Every drawing assignment, from 06 on, accepts a binary PPM in place of a [PNG](#primer/png),
+since the checker reads the contents and ignores the `.png` name. Fewer image viewers open PPM
+files than PNG files, so a PNG is easier to look at.
 
 Learn more:
 - [PPM format specification](https://netpbm.sourceforge.net/doc/ppm.html) from the Netpbm project
@@ -185,14 +191,16 @@ the line is shallow (it changes more in x than in y), step through every x from 
 other and work out y; if it is steep, swap the roles of x and y. Stepping along the shorter
 direction would leave gaps.
 
-The DDA (digital differential analyzer) works out the other coordinate in floating point and
-rounds it:
+The DDA (digital differential analyzer) works out the other coordinate in
+[floating point](#primer/floating-point) and rounds it to the nearest pixel (see
+[`<cmath>`](#primer/cmath)). For a line from (0, 0) to (5, 2), y grows by 2 / 5 = 0.4 per
+column. With `int` operands, 2 / 5 is 0 (see [integer division](#primer/integer-division)), so
+compute it in `double`:
 
-```cpp
-for (int x = x1; x <= x2; ++x) {
-  double y = y1 + double(y2 - y1) / (x2 - x1) * (x - x1);   // double: int division drops the fraction
-  plot(x, static_cast<int>(std::lround(y)));
-}
+```
+x:           0     1     2     3     4     5
+exact y:     0   0.4   0.8   1.2   1.6     2
+rounded y:   0     0     1     1     2     2
 ```
 
 Bresenham's algorithm draws the same pixels with integers only: it keeps an error term and adds
@@ -205,7 +213,8 @@ checker allows for that: it forgives a differing pixel when it sits on an edge t
 most 1 pixel, and counts gaps and missing pieces.
 
 Assignment 06 writes `drawLine` in `src/FrameBufferCanvas.cpp`. Assignment 08 draws outlines
-with it, and assignment 11 draws each flattened curve as a chain of short lines.
+with it, and assignment 11 draws each [flattened](#primer/flattening) curve as a chain of short
+lines.
 
 Learn more:
 - [Digital differential analyzer (graphics algorithm)](https://en.wikipedia.org/wiki/Digital_differential_analyzer_%28graphics_algorithm%29)
@@ -266,9 +275,10 @@ the picture, and a descender (y < 0) ends up below the baseline row.
 The fills test pixels at their centres: pixel (px, py) covers the square from (px, py) to
 (px + 1, py + 1), and its centre is (px + 0.5, py + 0.5).
 
-`Placement` in `src/render/Placement.h` holds x0, baseline and scale. Assignment 08 introduces it,
-assignments 11, 14, 16 and 17 place outlines with it, and assignment 18 moves its x0 along the
-line as the pen advances. This placement is a small [affine transform](#primer/affine-transform).
+`Placement` in `src/render/Placement.h` holds x0, baseline and scale, with the scale in pixels
+per [font unit](#primer/font-units). Assignment 08 introduces it, and assignment 18 moves its x0
+along the line as the [pen](#primer/baseline) advances. This placement is a small
+[affine transform](#primer/affine-transform).
 
 Learn more:
 - [Converting FUnits to pixels](https://learn.microsoft.com/en-us/typography/opentype/spec/ttch01#converting-funits-to-pixels)
@@ -306,8 +316,8 @@ p' = M2 (M1 p + t1) + t2 = (M2 M1) p + (M2 t1 + t2)
 
 The workbook uses affine transforms twice. A [component transform](#primer/component-transform)
 in assignment 09 places each part of a compound glyph, and nested compound glyphs compose them
-from the inside out. The font-to-pixel placement from assignment 08 is affine as well: a = scale,
-d = −scale, b = c = 0, e = x0, f = baseline.
+from the inside out. The font-to-pixel [placement](#primer/screen-coordinates) from assignment
+08 is affine as well: a = scale, d = −scale, b = c = 0, e = x0, f = baseline.
 
 Learn more:
 - [Affine transformation](https://en.wikipedia.org/wiki/Affine_transformation) on Wikipedia
@@ -322,7 +332,8 @@ also: vector; Vec2; point; 2D vector; dot product; normal vector; perpendicular
 A 2D vector is a pair of numbers (x, y). The same pair can mean a position (a point) or a step
 from one point to another (a direction with a length). Subtracting two points gives the step
 between them, and adding a step to a point gives another point. A small struct with `+`, `-` and
-multiplication by a number makes geometry code read like the formulas:
+multiplication by a number ([operator overloading](#primer/operator-overloading)) makes geometry
+code read like the formulas:
 
 ```cpp
 struct Vec2 { double x = 0, y = 0; };
@@ -331,16 +342,17 @@ Vec2 operator-(Vec2 a, Vec2 b) { return {a.x - b.x, a.y - b.y}; }
 Vec2 operator*(Vec2 v, double s) { return {v.x * s, v.y * s}; }
 ```
 
-The length of v is `std::hypot(v.x, v.y)`.
+The length of v is `std::hypot(v.x, v.y)` (see [`<cmath>`](#primer/cmath)).
 
 The dot product of u and v is `u.x * v.x + u.y * v.y`. It is 0 when the two are perpendicular.
 That gives a test for "is X on this line": take the line's direction d = l2 − l1 and the
 perpendicular K = (d.y, −d.x), a normal vector of the line. X is on the line if and only if
 K · (X − l1) = 0.
 
-The workbook's `Vec2` lives in `src/utils/Geometry.h` from assignment 10, where lerp and the
-Bézier curve use it. Assignment 12 adds the [cross product](#primer/cross-product), and assignment
-13 uses the normal vector and the dot product to turn a line and a curve into one equation.
+The workbook's `Vec2` lives in `src/utils/Geometry.h` from assignment 10, where
+[lerp](#primer/lerp) and the [Bézier curve](#primer/bezier) use it. Assignment 12 adds the
+[cross product](#primer/cross-product), and assignment 13 uses the normal vector and the dot
+product to turn a line and a curve into one equation.
 
 Learn more:
 - [Basic geometry](https://cp-algorithms.com/geometry/basic-geometry.html) on cp-algorithms, on
@@ -365,17 +377,22 @@ straight segment at a steady rate. For points, apply it to x and to y. It counts
 The same formula answers the opposite question. To find where a straight edge from p to q
 crosses the row y, solve for t, then interpolate x:
 
-```cpp
-double t = (y - p.y) / (q.y - p.y);   // the edge isn't horizontal here
-double x = p.x + (q.x - p.x) * t;
+```
+edge from p = (2, 0) to q = (6, 8), row y = 2
+t = (2 - 0) / (8 - 0) = 0.25
+x = 2 + (6 - 2) * 0.25 = 3
 ```
 
-In floating point, `a + (b - a) * t` at t = 1 can miss b by a rounding error; the form
-`(1 - t) * a + t * b` returns b. The workbook's checkers allow 0.001, so either passes.
+The division needs an edge that isn't horizontal; a horizontal edge never counts as crossing a
+row (see [Half-open edges](#primer/half-open)).
+
+In [floating point](#primer/floating-point), `a + (b - a) * t` at t = 1 can miss b by a
+rounding error; the form `(1 - t) * a + t * b` returns b. The workbook's checkers allow 0.001, so
+either passes.
 
 Assignment 10 writes `lerp` in `src/utils/Geometry.h`. The [Bézier curve](#primer/bezier) in the
-same assignment is three lerps, and the fills in assignments 14, 16 and 17 interpolate to find
-where a straight edge crosses each row.
+same assignment is three lerps, and the fills from assignment 14 on interpolate to find where a
+straight edge crosses each row.
 
 Learn more:
 - [Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation) on Wikipedia,
@@ -391,7 +408,7 @@ also: Bezier; Bézier curve; quadratic curve; control point; de Casteljau; curve
 A quadratic Bézier curve is defined by three points: a start P0, a control point P1 and an end
 P2. The curve leaves P0 heading toward P1, arrives at P2 coming from P1's direction, and bends
 toward P1 without passing through it. TrueType outlines are made of these curves and straight
-lines.
+lines, with P1 an [off-curve point](#primer/on-off-curve).
 
 Each value of the parameter t from 0 to 1 picks one point on the curve. De Casteljau's
 construction finds it with three [lerps](#primer/lerp), all with the same t: p = lerp(P0, P1, t),
@@ -423,7 +440,7 @@ Written as a polynomial in t, the same curve is A t² + B t + C with A = P0 − 
 B = 2 (P1 − P0) and C = P0. Assignments 13, 14, 15 and 17 work with that form.
 
 Assignment 10 writes the curve as `bezierLerp` in `src/utils/Geometry.h`. Assignment 11 draws
-curves with it, and assignments 13 to 17 intersect them, find their lowest point and fill them.
+curves with it, and assignment 13 intersects one with a line.
 
 Learn more:
 - [De Casteljau's algorithm](https://pomax.github.io/bezierinfo/#decasteljau) in Pomax's A Primer
@@ -436,9 +453,9 @@ Learn more:
 id: flattening
 also: flatten; curve subdivision; polyline; line segments; approximating a curve
 -->
-A line-drawing routine can't draw a curve, but it can draw many short straight lines. Flattening
-picks points along the curve and joins neighbours with lines. With n pieces, line i runs from
-B((i − 1) / n) to B(i / n).
+A [line-drawing](#primer/line-drawing) routine can't draw a curve, but it can draw many short
+straight lines. Flattening picks points along the curve and joins neighbours with lines. With n
+pieces, line i runs from B((i − 1) / n) to B(i / n).
 
 The question is how many pieces. Too few and the corners show; a fixed 8 looks fine on a small
 glyph and angular on a large one. A rule that grows with the curve's size works better. The
@@ -448,6 +465,9 @@ piece about a pixel long at most:
 ```
 n = max(1, ceil(|P1 - P0| + |P2 - P1|))       lengths in pixels
 ```
+
+`std::hypot` measures each length and `std::ceil` rounds the sum up (see
+[`<cmath>`](#primer/cmath)).
 
 Compute the points in pixel coordinates, as `double`, and round only when you call the line
 routine. Rounding each point first moves it by up to half a pixel, which still passes but bends
@@ -470,7 +490,7 @@ Learn more:
 id: cross-product
 also: cross product; 2D cross product; perp dot product; orientation; side of a line; side test; cross
 -->
-For two 2D vectors u and v, the cross product is one number:
+For two [2D vectors](#primer/vector-2d) u and v, the cross product is one number:
 
 ```
 cross(u, v) = u.x * v.y - u.y * v.x
@@ -479,16 +499,19 @@ cross(u, v) = u.x * v.y - u.y * v.x
 It is 0 when u and v are parallel (or one of them is zero), and only then. Its sign says which
 way you turn going from the direction of u to the direction of v: positive for
 counter-clockwise, negative for clockwise, in coordinates with y up. On a screen, where y points
-down, the same sign means the opposite visual turn.
+down, the same sign means the opposite visual turn (see
+[Font coordinates and screen coordinates](#primer/screen-coordinates)).
 
-That gives the side test. For a line through s and e and a point p,
-`cross(e - s, p - s)` is positive on one side of the line, negative on the other and 0 when p
-lies on the line. Two points are on opposite sides when the product of their side values is
-negative, and a product of 0 means one of them lies on the line:
+That gives the side test. For a line through s and e and a point p, `cross(e - s, p - s)` is
+positive on one side of the line, negative on the other and 0 when p lies on the line. Two
+points are on opposite sides when the product of their side values is negative, and a product of
+0 means one of them lies on the line:
 
-```cpp
-double side(Vec2 p, Vec2 s, Vec2 e) { return cross(e - s, p - s); }
-bool apart = side(b1, a1, a2) * side(b2, a1, a2) <= 0;   // b1 and b2 not on the same side
+```
+line through s = (0, 0) and e = (4, 0), so e - s = (4, 0)
+p = (1, 2):    cross((4, 0), (1, 2))  = 4 * 2 - 0 * 1    =  8    one side
+p = (3, -1):   cross((4, 0), (3, -1)) = 4 * (-1) - 0 * 3 = -4    the other side
+product 8 * (-4) = -32 < 0: the two points are on opposite sides
 ```
 
 Assignment 12 builds its segment intersection on this test in `src/utils/Geometry.h`: first the
@@ -524,10 +547,11 @@ When cross(v1, v2) is 0 the segments are parallel and the division fails. That i
 collinear segments, which lie on one line and may overlap; they have no single meeting point,
 and the workbook answers `none` for them.
 
-Assignment 12 writes `segmentsIntersect` in `src/utils/Geometry.h`, returning `std::optional`
-for "no point". The blog's even-odd fill finds where each row meets each straight edge with this
-function. Your fills from assignment 14 on work out the crossing from the edge directly, because
-this function reports a shared vertex for both of its edges.
+Assignment 12 writes `segmentsIntersect` in `src/utils/Geometry.h`, returning
+[`std::optional`](#primer/optional) for "no point". Whether a cross product counts as 0 is a
+[tolerance](#primer/epsilon) question. The blog's even-odd fill finds where each row meets each
+straight edge with this function. Your fills from assignment 14 on work out the crossing from
+the edge directly, because this function reports a shared vertex for both of its edges.
 
 Learn more:
 - [Line–line intersection: given two points on each line segment](https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line_segment)
@@ -540,25 +564,25 @@ Learn more:
 id: epsilon
 also: epsilon; eps; tolerance; floating-point comparison; rounding error; exact zero
 -->
-A `double` holds a binary fraction, so most decimals can't be stored without error: 0.1 is stored as
-a number a little above 0.1, and `0.1 + 0.2 == 0.3` is false. After a few operations, a value
-that should be 0 can come out as 1e-17. Code that tests `== 0` then takes the wrong branch, or
-divides by a tiny number and gets a huge one.
+A [`double`](#primer/floating-point) holds a binary fraction, so most decimals can't be stored
+without error: 0.1 is stored as a number a little above 0.1, and `0.1 + 0.2 == 0.3` is false.
+After a few operations, a value that should be 0 can come out as 1e-17. Code that tests `== 0`
+then takes the wrong branch, or divides by a tiny number and gets a huge one.
 
 The usual fix is a tolerance, often called epsilon: treat a value as 0 when its size is below a
-small bound, such as `std::abs(d) < 1e-9`. Pick the bound from the size of your numbers; `1e-9`
-suits values around 1 to 1000.
+small bound, such as `std::abs(d) < 1e-9` (see [`<cmath>`](#primer/cmath)). Pick the bound from
+the size of your numbers; `1e-9` suits values around 1 to 1000.
 
 Some numbers are exact. Whole numbers up to 2^53 are stored without error, and so are fractions
 whose denominator is a power of 2, such as 0.25 or 0.0625. Adding, subtracting and multiplying
-them stays exact while the results fit in a `double`'s 53 binary digits. The test data for assignments 12 and 13 use multiples of 0.25 for
-that reason, so `== 0` works there, and so does a tolerance.
+them stays exact while the results fit in a `double`'s 53 binary digits. The test data for
+assignments 12 and 13 use multiples of 0.25 for that reason, so `== 0` works there, and so does
+a tolerance.
 
-Assignment 12's page accepts `== 0` or a tolerance such as `1e-9` for the parallel test.
-Assignment 13's data make a and the discriminant come out as 0, with no rounding error, in the linear and tangent
-cases. Assignment 15 avoids the comparison by
-using the turning point only when a > 0 and it lies inside the curve. The fills in assignments 14
-and 17 clamp a root to [0, 1] in case rounding pushes it outside by a tiny amount.
+Assignment 12's page accepts `== 0` or a tolerance such as `1e-9` for the
+[parallel test](#primer/segment-intersection). Assignment 13's data make a and the discriminant
+come out as 0, with no rounding error, in the linear and tangent cases (see
+[Solving a quadratic equation](#primer/quadratic-equation)).
 
 Learn more:
 - [Comparison](https://floating-point-gui.de/errors/comparison/) in The Floating-Point Guide
@@ -582,21 +606,23 @@ values of t at the crossings. The cases:
 | D = 0 | one, t = −b / (2a): the line touches the curve |
 | D > 0 | two, (−b − √D) / (2a) and (−b + √D) / (2a) |
 
-D is the discriminant. Check a = 0 first: it is common in fonts (a curve whose control point
-sits halfway between its ends in y has a = 0 for a horizontal row), and the formula would divide
-by zero.
+D is the discriminant. Check a = 0 first (see [Floating-point tolerances](#primer/epsilon)): it
+is common in fonts (a curve whose control point sits halfway between its ends in y has a = 0 for
+a horizontal row), and the formula would divide by zero.
 
 The textbook formula loses precision when b² is much larger than 4ac: √D is then close to |b|,
 and one of −b ± √D subtracts two nearly equal numbers (cancellation). A safer form computes
 one root with an addition and gets the other from the product of the roots, c / a:
 
-```cpp
-double q = -0.5 * (b + std::copysign(std::sqrt(D), b));   // b and the root have the same sign
-double t1 = q / a, t2 = c / q;                             // sort them if you need order
+```
+q = −(b + sign(b) · √D) / 2        roots: q / a and c / q
 ```
 
-Assignment 13 solves for t where a line meets a curve, keeping roots in [0, 1]. Assignments 14
-and 17 solve y(t) = row for each curve piece.
+Giving √D the sign of b makes the two terms add up instead of cancel. In C++, `std::sqrt` and
+`std::copysign` from [`<cmath>`](#primer/cmath) give √D and a value with b's sign.
+
+Assignment 13 solves for t where a line meets a [Bézier curve](#primer/bezier), keeping roots in
+[0, 1], and the fills from assignment 14 on solve y(t) = row for each curve piece.
 
 Learn more:
 - [Quadratic formula](https://en.wikipedia.org/wiki/Quadratic_formula) on Wikipedia, with the
@@ -613,8 +639,9 @@ Scanline filling paints the inside of an outline one row of pixels at a time. Fo
 
 1. Lay a horizontal line, the scanline, through the centres of the row's pixels, at
    y = row + 0.5.
-2. Find every x where it crosses an edge of the outline.
-3. Sort the crossings by x.
+2. Find every x where it crosses an edge of the outline (see [lerp](#primer/lerp) for a
+   straight edge and [Solving a quadratic equation](#primer/quadratic-equation) for a curve).
+3. Sort the crossings by x (see [`<algorithm>`](#primer/algorithm)).
 4. Walk left to right and fill the stretches the fill rule calls inside: between the 1st and
    2nd crossing, the 3rd and 4th, and so on, for the [even-odd rule](#primer/even-odd), or
    wherever a running count isn't zero for the [non-zero rule](#primer/nonzero).
@@ -632,8 +659,9 @@ Two details decide whether the result has stray lines: how a row through a verte
 [Clipping](#primer/clipping)).
 
 Assignment 14 writes the shared machinery in `src/render/Scanline.cpp`: `edgePieces` builds the
-edges, `forEachRow` lists each row's crossings sorted by x, and `fillSpan` paints a stretch.
-Assignments 16 and 17 reuse it for the non-zero rule, and assignment 18 fills every glyph with it.
+edges, `forEachRow` hands each row's crossings, sorted by x, to a
+[`std::function`](#primer/functional), and `fillSpan` paints a stretch. Assignment 16 reuses it
+for the non-zero rule.
 
 Learn more:
 - [Scanline rendering](https://en.wikipedia.org/wiki/Scanline_rendering) on Wikipedia
@@ -646,7 +674,7 @@ id: half-open
 also: half-open interval; half-open rule; vertex on a scanline; horizontal edge; [a, b)
 -->
 A half-open interval includes one end and leaves out the other: [a, b) is every y with
-a ≤ y < b. Scanline fills use it to count each vertex the right number of times.
+a ≤ y < b. [Scanline fills](#primer/scanline) use it to count each vertex the right number of times.
 
 Where two edges meet at a vertex and a scanline passes through it, both edges touch the row at
 that point. Counting both gives two crossings at one x, where the outline crosses the row once,
@@ -666,8 +694,7 @@ The rule works for curve pieces too, once each curve is split into pieces that o
 fall.
 
 Assignment 14 introduces it (requirement R4, with tests such as a diamond whose vertex sits on a
-pixel centre), and assignments 16 and 17 apply it with the edge's direction. The `forEachRow`
-comment in `src/render/Scanline.h` states the same rule.
+pixel centre), and the `forEachRow` comment in `src/render/Scanline.h` states the same rule.
 
 Learn more:
 - [Interval (mathematics)](https://en.wikipedia.org/wiki/Interval_%28mathematics%29) on Wikipedia,
@@ -686,7 +713,7 @@ outline. An odd count means inside, an even count outside.
 
 Holes come out right without any extra information: a ray from inside the hole of an `o` crosses
 the inner contour and the outer one, 2 crossings, so the hole stays empty. The rule ignores which
-way the contours run.
+way the [contours](#primer/contour) run.
 
 With scanlines the rule becomes "fill between crossings 1 and 2, 3 and 4, ...", one row at a time.
 
@@ -696,8 +723,8 @@ pentagon in the middle for the same reason. Fonts that build a glyph from overla
 as variable fonts often do, need the [non-zero rule](#primer/nonzero) instead.
 
 Assignment 14 fills glyphs with the even-odd rule in `src/render/EvenOdd.cpp`, on top of the
-[scanline](#primer/scanline) code. Its test `14-R5-star` is that star, and R5 checks that overlaps
-stay empty.
+[scanline](#primer/scanline) code. Its requirement R5 checks that overlaps stay empty, with that
+star among its tests.
 
 Learn more:
 - [Even–odd rule](https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule) on Wikipedia
@@ -714,24 +741,25 @@ up. The fill has to see both crossings, and the [half-open rule](#primer/half-op
 piece of outline that only rises or only falls. Splitting each curve where its y turns gives such
 pieces.
 
-The curve's y is a quadratic in t, y(t) = (1 − t)² y0 + 2 (1 − t) t y1 + t² y2, and it turns
-where its slope is 0:
+The [curve](#primer/bezier)'s y is a quadratic in t, y(t) = (1 − t)² y0 + 2 (1 − t) t y1 + t²
+y2, and it turns where its slope is 0:
 
 ```
 t = (y0 - y1) / (y0 - 2*y1 + y2)
 ```
 
-Split only when the denominator isn't 0 and 0 < t < 1; otherwise the curve already rises or falls
-the whole way. De Casteljau's construction gives the two halves as curves of their own:
-(P0, lerp(P0, P1, t), B(t)) and (B(t), lerp(P1, P2, t), P2). Both halves share the point B(t), so
-use the same value for both.
+Split only when the denominator isn't 0 and 0 < t < 1; otherwise the curve already rises or
+falls the whole way. De Casteljau's construction (three [lerps](#primer/lerp)) gives the two
+halves as curves of their own: (P0, lerp(P0, P1, t), B(t)) and (B(t), lerp(P1, P2, t), P2). Both
+halves share the point B(t), so use the same value for both.
 
-Each piece then crosses a row at most once. Solve y(t) = row for the piece, keep the one root
-closest to [0, 1] and clamp it. Keeping every root in [0, 1] would count a crossing twice on a
+Each piece then crosses a row at most once. Solve y(t) = row for the piece (see
+[Solving a quadratic equation](#primer/quadratic-equation)), keep the one root closest to
+[0, 1] and clamp it. Keeping every root in [0, 1] would count a crossing twice on a
 row through the split point.
 
-Assignment 14 splits curves in `edgePieces` in `src/render/Scanline.cpp`. Assignment 17 uses the
-same pieces and takes each piece's direction from its end y minus its start y.
+Assignment 14 splits curves in `edgePieces` in `src/render/Scanline.cpp`, and assignment 17
+gives each piece a direction for the [non-zero rule](#primer/nonzero).
 
 Learn more:
 - [Finding extremities: root finding](https://pomax.github.io/bezierinfo/#extremities) in Pomax's
@@ -754,15 +782,17 @@ y(t) = a t² + b t + y0     with a = y0 - 2*y1 + y2,  b = 2*(y1 - y0)
 The slope 2at + b is 0 at t* = −b / (2a). When a > 0 the curve is a valley and t* is its lowest
 point; when a < 0 it is a hill and t* is its highest; when a = 0 y changes at a steady rate and
 there is no turning point. So the answer is min(y0, y2), lowered to y(t*) when a > 0 and
-0 < t* < 1. Testing a > 0 before you divide also avoids dividing by zero.
+0 < t* < 1. Testing a > 0 before you divide also avoids dividing by zero (see
+[Floating-point tolerances](#primer/epsilon)).
 
 On a screen, where y points down, the smallest y is the curve's highest point.
 
-The blog's even-odd fill needs this number. Its fix for rows through vertices counts an edge only
-when the edge's top on screen is above the row, and for a curve that top is its smallest y. A
-curve that bulges up and crosses a row twice needs its own branch there, which is why the blog
-also tests a > 0. Your fills split curves instead (see
-[Splitting a curve where y turns](#primer/curve-turning-point)), so they don't call this function.
+The blog's [even-odd](#primer/even-odd) fill needs this number. Its fix for rows through
+vertices counts an edge only when the edge's top on screen is above the row, and for a curve
+that top is its smallest y. A curve that bulges up and crosses a row twice needs its own branch
+there, which is why the blog also tests a > 0. Your fills split curves instead (see
+[Splitting a curve where y turns](#primer/curve-turning-point)), so they don't call this
+function.
 
 Assignment 15 adds `getBezierMinY` to `src/utils/Geometry.h`. It returns the exact value as a
 `double`, where the blog's version truncates it to an `int`.
@@ -783,10 +813,11 @@ winding count from 0. Each edge the ray crosses adds 1 if the edge goes down the
 subtracts 1 if it goes up (the opposite signs work too, if every edge uses them). The point is
 inside when the count isn't 0.
 
-Direction comes from the contour's point order: an edge runs from a point to the next one. Two
-overlapping contours that run the same way give a count of 2 in the overlap, inside, where the
-[even-odd rule](#primer/even-odd) leaves a hole. A contour inside another that runs the opposite
-way cancels it, 1 − 1 = 0, and makes a hole: that is how a font draws the inside of an `o`.
+Direction comes from the [contour](#primer/contour)'s point order: an edge runs from a point to
+the next one. Two overlapping contours that run the same way give a count of 2 in the overlap,
+inside, where the [even-odd rule](#primer/even-odd) leaves a hole. A contour inside another that
+runs the opposite way cancels it, 1 − 1 = 0, and makes a hole: that is how a font draws the
+inside of an `o`.
 
 <svg viewBox="0 0 420 200" role="img" aria-label="Two overlapping squares that both run clockwise: the even-odd rule leaves the overlap empty, the non-zero rule fills it" style="width:100%;max-width:420px;height:auto">
 <path d="M20 30H120V110H20Z M70 70H170V150H70Z" fill="var(--fig-a)" fill-opacity="0.45" fill-rule="evenodd" stroke="var(--ink)" stroke-width="2"/>
@@ -805,12 +836,13 @@ TrueType fills by this rule, and its outer contours run clockwise as you look at
 counter-clockwise. A contour that runs the other way on its own gives −1, still inside, so test
 "not zero", not "greater than zero".
 
-With scanlines, store each crossing as (x, direction), sort by x, keep a running sum from left to
-right and fill where it isn't 0.
+With [scanlines](#primer/scanline), each crossing carries an x and a direction, and the count
+runs from left to right along the row.
 
 Assignment 16 writes the rule for straight edges in `src/render/NonZero.cpp` (the `Crossing`
-type in `src/render/Scanline.h` carries the direction), assignment 17 adds curves, and assignment
-18 fills every glyph with it, including Noto Sans JP's overlapping strokes.
+type in `src/render/Scanline.h` carries the direction), and assignment 17 adds curves.
+Assignment 18 fills every glyph with it, including the overlapping strokes of the
+[variable font](#primer/variable-font) Noto Sans JP.
 
 Learn more:
 - [Nonzero-rule](https://en.wikipedia.org/wiki/Nonzero-rule) on Wikipedia

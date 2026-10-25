@@ -16,7 +16,7 @@ up to the quadratic equation in t. The author's code (the listing "Function to f
 intersections of a segment and a quadratic Bezier curve") follows it. Assignment 10 covers
 the curve itself.
 
-## What you need
+## Learning material
 
 - [Solving a quadratic equation](#primer/quadratic-equation): `segmentQuadBezierIntersect` in
   `utils/Geometry.h` comes down to a t² + b t + c = 0. Your helper for it has to handle a = 0,

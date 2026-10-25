@@ -729,12 +729,14 @@ reference, `const T&`, for anything large that it only reads: a `std::string`, a
 `std::vector` or a struct of vectors. Small values such as `int`, `double` or a two-`double`
 `Vec2` are as cheap to copy as to refer to, so they go by value.
 
-Every font-reading function in the project takes `ByteReader& reader`. Reading moves the file position, and
-that change must reach the caller. A copy isn't possible anyway: a `ByteReader` holds an
-`std::ifstream`, which can't be copied, so passing one by value is a compile error. Tables,
-outlines and placements arrive as `const Tables&`, `const GlyphComponent&` and
-`const Placement&` (03 to 18). A member function can return a reference too:
-`ByteReader& reader()` in `src/font/FontParser.h` (02) hands out the parser's own reader.
+Every font-reading function in the project takes `ByteReader& reader`, starting with
+`readTableDirectory` (02). Reading moves the file position, and that change must reach the
+caller. A copy isn't possible anyway: a `ByteReader` holds an
+[`std::ifstream`](#primer/fstream), which can't be copied, so passing one by value is a compile
+error. Larger inputs that a function only reads arrive as `const` references, such as the
+`const Tables& tables` of `loadUnicodeToGlyphCodeMap` (03). A member function can return a
+reference too: `ByteReader& reader()` in `src/font/FontParser.h` (02) hands out the parser's
+own reader.
 
 A reference must refer to something that outlives it. A reference to a vector element becomes
 invalid when the vector grows and moves its elements, and a reference to a local variable
@@ -755,19 +757,25 @@ code: \bchar\s*\*\*|->|\bnullptr\b|\.data\(\)|\.c_str\(\)|\bchar\s+\w+\[\d+\]
 A pointer holds the memory address of an object. `T*` is "pointer to T"; `*p` reaches the
 object it points to, and `p->member` is short for `(*p).member`. `nullptr` is the pointer that
 points to nothing. The project's own code needs no `new` or `delete`: standard containers and
-`std::unique_ptr` manage memory for it. You meet pointers at a few edges:
+[`std::unique_ptr`](#primer/memory) manage memory for it. `std::unique_ptr` is a smart pointer,
+an object that holds a pointer and deletes what it points to when the smart pointer itself goes
+away. You meet pointers at a few edges:
 
-- `char** argv` in [`main`](#primer/main) is a pointer to a list of `char*`, and each `char*`
-  points to the first character of a C string, a run of characters ending in a zero byte.
+- `char** argv` in [`main`](#primer/main) (01) is a pointer to a list of `char*`, and each
+  `char*` points to the first character of a C string, a run of characters ending in a zero
+  byte.
+- `->` also works on [iterators](#primer/iterators) and on types that behave like pointers.
+  Assignment 03's program writes `found->second` after a map lookup, and 06's program calls
+  `canvas->set(...)` on a [`std::optional`](#primer/optional) that holds the canvas once the
+  input gives its size. Later programs hold the canvas or the font's reader in a
+  `std::unique_ptr`.
+- C libraries such as [stb_image_write](#primer/stb-image-write) take pointers:
+  `pixels_.data()` is a pointer to the first element of the vector and `path.c_str()` a C
+  string version of a `std::string`, both passed to `stbi_write_png` in
+  `src/FrameBufferCanvas.cpp` (06).
 - A raw array, `char text[64];`, is a fixed block of 64 `char`s. Passed to a function, it turns
-  into a pointer to its first element. The programs of 09, 10, 12, 13 and 15 format numbers
-  into one with `std::snprintf(text, sizeof text, "%.4f", v)`.
-- C libraries such as stb_image_write take pointers: `pixels_.data()` is a pointer to the first
-  element of the vector and `path.c_str()` a C string version of a `std::string`, both passed to
-  `stbi_write_png` in `src/FrameBufferCanvas.cpp` (06).
-- `->` also works on iterators and smart pointers: `it->second` after a map lookup (09, 18), and
-  `canvas->writePng(...)` on the `std::unique_ptr<FrameBufferCanvas>` that the programs of 06,
-  08, 11, 14, 16, 17 and 18 create once the input gives the canvas size.
+  into a pointer to its first element. From 09 on, the programs format numbers into one with
+  [`std::snprintf`](#primer/cstdio)`(text, sizeof text, "%.4f", v)`.
 
 ```cpp
 int value = 5;
@@ -776,10 +784,9 @@ int* p = &value;     // & here means "address of"
 const char* name = "font.ttf";   // a C string
 ```
 
-Reading through a pointer that is `nullptr` or points outside its object crashes the program;
-on Windows the checker reports an access violation. The reference `src/font/GlyphParser.cpp`
-(07) also uses a pointer to member, `double GlyphPoint::*axis`, to read x and y with one
-function; you can write two loops instead.
+Reading through a pointer that is `nullptr` or points outside its object crashes the program.
+On Windows the checker then reports an access violation, the system's name for a read or write
+of memory the program doesn't own (see [exit codes](#primer/exit-codes)).
 
 Learn more:
 - [Introduction to pointers](https://www.learncpp.com/cpp-tutorial/introduction-to-pointers/)
@@ -794,12 +801,13 @@ also: auto; type deduction; const auto&; structured binding; auto [a, b]
 code: \bauto\b
 -->
 `auto` in place of a type tells the compiler to take the type from the initializer. It saves
-writing long names such as iterator types:
+writing long names such as [iterator](#primer/iterators) types:
 
 ```cpp
-const auto it = glyphs.find(codePoint);   // an iterator into a std::unordered_map
-const auto [x, y] = pixelOf(point);       // unpacks a std::pair<int, int>
-for (const auto& outline : outlines) { }  // no copies
+const auto it = ages.find("Ada");         // an iterator into a std::map
+for (const auto& name : names) { }        // no copies
+const std::pair<int, int> size{640, 480};
+const auto [w, h] = size;                 // w is 640, h is 480
 ```
 
 The variable still has one fixed type, decided at compile time; `auto` only spares you from
@@ -808,17 +816,16 @@ spelling it. Plain `auto` makes a copy and drops `const` and references, so writ
 [lambda](#primer/lambdas) has a type with no name you can write, so a variable that holds one is
 declared `auto`, and a lambda parameter declared `auto` accepts any type.
 
-The second line is a structured binding: `auto [a, b] = ...` unpacks a pair or the members of a
-struct into named variables.
+The last line is a structured binding: `auto [a, b] = ...` unpacks a value into named
+variables, like Python's `w, h = size`. It works on the members of a struct and on a
+[`std::pair`](#primer/utility), a value that holds two values called `first` and `second`.
 
 Use `auto` where the type is clear from the right-hand side or too long to be useful. For
 numbers, write the type: `auto n = reader.readUint16();` hides whether `n` is 16 or 32 bits.
 
-The reference uses `auto` for map lookups (`src/TextRenderer.cpp`, 18; `src/font/CompoundGlyph.cpp`,
-09), for lambdas (`src/render/Outline.cpp`, 11; `src/render/Scanline.cpp`, 14; assignment 01's
-program, where `line` takes `const auto& value`), for bytes in `src/utils/Unicode.h` (18), and
-for structured bindings in `src/render/Outline.cpp` (08), where `const auto [ax, ay] =
-pixelOf(...)` unpacks a point.
+In the Boilerplate, assignment 01's program declares its `line` lambda with `auto` and gives it
+a `const auto& value` parameter, and 03's program keeps the result of a map lookup in
+`const auto found`.
 
 Learn more:
 - [Type deduction for objects using the auto keyword](https://www.learncpp.com/cpp-tutorial/type-deduction-for-objects-using-the-auto-keyword/)
@@ -839,23 +846,21 @@ Python's `for i in range(n)` is
 ```cpp
 for (int i = 0; i < n; ++i) { /* body */ }
 
-while (flags.size() < numPoints) { /* checks first, may run 0 times */ }
+while (queue.size() < wanted) { /* checks first, may run 0 times */ }
 
-do { /* runs at least once */ } while (flags & MORE_COMPONENTS);
+do { /* runs at least once */ } while (more);
 ```
 
 `++i` adds one to `i`. `break` leaves the loop and `continue` skips to the next pass. Any of the
 three parts of a `for` may be empty, and the first may declare something other than a
-counter: assignment programs read their input with
+counter: assignment programs from 02 on read their input with
 `for (std::string line; std::getline(input, line);)`, which runs until the input ends.
+Assignment 01's program does the same with `while (std::getline(input, line))`.
 
-Loops inside loops are common here. `drawRect` (06) loops over rows, then columns. Assignment
-03 loops over the `cmap` groups and, inside, over the code points of each group. Assignment 07
-reads flags with a `while`, since a repeat flag can add several at once. Assignment 09's
-compound glyph is a list of records that ends at the first record without `MORE_COMPONENTS`, a
-natural `do`-`while`, as the reference `src/font/CompoundGlyph.cpp` writes it. The fills (14, 16,
-17) loop over pixel rows and, inside, over the crossings of each row. For a loop over every
-element of a container, see [range-based `for`](#primer/range-for).
+From 02 on you write loops yourself, such as one pass per record of the
+[table directory](#primer/table-directory). In 03 there is a loop inside a loop: over the
+[`cmap`](#primer/cmap) groups and, inside, over the code points of each group. For a loop over
+every element of a container, see [range-based `for`](#primer/range-for).
 
 Learn more:
 - [For statements](https://www.learncpp.com/cpp-tutorial/for-statements/) on learncpp.com
@@ -884,15 +889,15 @@ changes the elements. Don't add elements to the container or remove them inside 
 loop's position would no longer be valid. When you need the index as well, for example to look
 at the next point, use the counting [`for`](#primer/loops).
 
-The loop works with anything that has `begin()` and `end()`: `std::vector`, `std::map`,
-`std::string`, and a list in braces such as `{0x12, 0x34}`.
+The loop works with anything that has `begin()` and `end()` ([iterators](#primer/iterators)):
+[`std::vector`](#primer/vector), [`std::map`](#primer/map), `std::string`, and a list in
+braces such as `{0x12, 0x34}`.
 
-The reference uses it throughout. `src/font/FontParser.cpp` (02) fills each record with
-`for (TableRecord& t : tables)`, and `src/font/Loca.cpp` (04) fills the entries with
-`for (uint32_t& entry : entries)`. `src/render/Outline.cpp` (08) walks the contours with
-`for (const int last : outline.endPtsOfContours)`, the picture programs (14, 16, 17) fill each
-outline with `for (const GlyphComponent& outline : outlines)`, and `src/TextRenderer.cpp` (18)
-draws each code point of the text with `for (const uint32_t cp : utf8ToCodepoints(text))`.
+The Boilerplate uses it from assignment 02. The `FontParser` constructor in
+`src/font/FontParser.cpp` stores each record with
+`for (const TableRecord& t : readTableDirectory(reader_))`, and 02's program prints them with
+`for (const TableRecord& t : tables)`. Assignment 07's program prints the points of an outline
+the same way.
 
 Learn more:
 - [Range-based for loops (for-each)](https://www.learncpp.com/cpp-tutorial/range-based-for-loops-for-each/)
@@ -910,7 +915,7 @@ otherwise, like Python's `a if condition else b`. It fits where an `if` statemen
 an initializer or an argument:
 
 ```cpp
-const int next = i == last ? first : i + 1;
+const int larger = a > b ? a : b;
 std::cout << (p.onCurve ? " on" : " off");   // parentheses needed inside <<
 ```
 
@@ -919,12 +924,10 @@ mixing a signed and an unsigned branch converts the signed one to unsigned. The 
 low precedence, so put it in parentheses when it sits inside a larger expression, in particular
 after `<<`. Nested `?:` gets hard to read; use `if` when there are more than two cases.
 
-The reference uses it for short choices. `src/font/Loca.cpp` (04) reads a long or short entry
-with `result.longFormat ? reader.readUint32() : 2u * reader.readUint16()`.
-`src/font/GlyphParser.cpp` (07) chooses the glyph kind and the sign of a delta,
-`src/render/Outline.cpp` (08) wraps the last point of a contour to the first, and
-`src/TextRenderer.cpp` (18) returns glyph 0 when the `cmap` has no entry. `src/main.cpp` (18)
-takes the optional fourth argument with `argc == 5 ? std::stod(argv[4]) : 64.0`.
+Assignment 01's program uses it in `decimal`: `return text == "-0" ? "0" : text;` prints a
+negative zero as 0. Assignment 04's program prints `(loca.longFormat ? "long" : "short")`, and
+`src/main.cpp` (18) takes the optional fourth argument with
+`argc == 5 ? std::stod(argv[4]) : 64.0`.
 
 Learn more:
 - [The conditional operator](https://www.learncpp.com/cpp-tutorial/the-conditional-operator/)
@@ -965,11 +968,9 @@ with `.`: `p.x`. A member function can be written inside the class or declared t
 defined in the `.cpp` as `int Counter::count() const { ... }`. The trailing `_` on private
 members (`width_`, `file_`) is this project's naming habit, not a rule of the language.
 
-Most assignments add a type. Structs: `TableRecord` (02), `GlyphLocation` and `GlyphLocations`
-(04), `GlyphMetric` and `HorizontalMetrics` (05), `RGB` (06), `GlyphPoint`, `GlyphComponent`,
-`BoundingRect` and `Glyph` (07), `Placement` and `OutlineStyle` (08), `Vec2` (10), `EdgePiece`
-and `Crossing` (14). Classes: `ByteReader` (01), `FontParser` (02), `FrameBufferCanvas` (06) and
-`TextRenderer` (18).
+Most assignments add a type, and the Boilerplate headers declare them for you. Assignment 01
+has the class `ByteReader` and the struct `UnexpectedEof`, 02 the struct `TableRecord` and the
+class `FontParser`, and 06 the struct `RGB` and the class `FrameBufferCanvas`.
 
 Learn more:
 - [Introduction to structs, members, and member selection](https://www.learncpp.com/cpp-tutorial/introduction-to-structs-members-and-member-selection/)
@@ -1004,17 +1005,17 @@ class Canvas {
 ```
 
 Assigning in the body instead (`width_ = w;`) first builds each member with its default and
-then overwrites it. For some members that isn't possible: a member with no default
-constructor, such as the `ByteReader` inside `FontParser`, a `const` member and a reference
-member must be set in the list. Members are initialized in the order they are declared in the
-class, whatever order the list gives, and GCC's `-Wall` warns when the two orders differ.
+then overwrites it. For some members that isn't possible. A member with no default
+constructor (a constructor that takes no arguments), such as the `ByteReader` inside
+`FontParser`, must be set in the list, and so must a `const` member and a reference member.
+Members are initialized in the order they are declared in the class, whatever order the list
+gives, and GCC's `-Wall` warns when the two orders differ.
 
-`ByteReader`'s constructor (01) opens its `std::ifstream` member in the list with
-`file_(path, std::ios::binary)` and throws when the file doesn't open. `FontParser` (02)
-creates its `reader_(path)` in the list and reads the table directory in the body.
-`FrameBufferCanvas` (06) sets its size and allocates every pixel in the list. The reference
-`TextRenderer` (18) loads the `cmap` and the metrics in its list, and the exception type
-`UnexpectedEof` (01) passes its message to its [base class](#primer/inheritance) there.
+The Boilerplate writes these constructors for you. `ByteReader`'s (01) opens its
+[`std::ifstream`](#primer/fstream) member in the list with `file_(path, std::ios::binary)` and
+throws when the file doesn't open, and the exception type `UnexpectedEof` (01) passes its
+message to its [base class](#primer/inheritance) there. `FontParser` (02) creates its
+`reader_(path)` in the list and fills its table map in the body.
 
 Learn more:
 - [Introduction to constructors](https://www.learncpp.com/cpp-tutorial/introduction-to-constructors/)
@@ -1071,26 +1072,23 @@ constructor (an aggregate), the values fill the members in declaration order, an
 leave out keep their default:
 
 ```cpp
-RGB white{255, 255, 255};
-Vec2 sum(Vec2 a, Vec2 b) { return {a.x + b.x, a.y + b.y}; }  // the return type is known
-metrics.push_back({advance, lsb});                         // builds a GlyphMetric in place
-uint64_t one = uint64_t{1};
-Placement place{penX, baseline, scale};
+struct Size { int w = 0; int h = 0; };
+Size screen{640, 480};
+Size half(Size s) { return {s.w / 2, s.h / 2}; }   // the return type is known
+std::vector<Size> sizes;
+sizes.push_back({32, 32});                         // builds a Size in place
 ```
 
-Braces also call constructors (`std::vector<double> roots = {q / a, c / q};` makes a vector of
-two elements), and `{}` alone gives the default value: `Affine{}` in the reference is the
-identity transform.
+Braces also call constructors (`std::vector<int> v{8, 16, 32};` makes a vector of three
+elements), and `{}` alone gives the default value: `Size{}` is 0 by 0, and `int{}` is 0.
 
 Unlike `()` or `=`, braces refuse narrowing conversions, ones that can lose information, such
 as `int` to `uint8_t` or `double` to `int`. `RGB{r, g, b}` with `int` variables is an error in
 Clang and a `-Wnarrowing` warning in GCC. Cast first: `RGB{static_cast<uint8_t>(r), ...}`.
 
-The picture programs (06, 08, 11, 14, 16, 17, 18) build colours this way. The `Vec2`
-operators in `src/utils/Geometry.h` (10) return `{...}`, `src/font/Loca.cpp` (04) and
-`src/font/Metrics.cpp` (05) push records with `push_back({...})`, `src/render/Outline.cpp` (11)
-names its marker colours `ON_CURVE_COLOR{255, 0, 0}` and so on, and `src/TextRenderer.cpp` (18) places each
-glyph with `Placement{penX, baseline, scale}`.
+From 02 on, braces are a short way to fill a struct of your own, such as a `TableRecord`. The
+picture programs, starting with 06's, build colours as `RGB{...}`, and the `Vec2` operators in
+`src/utils/Geometry.h` (10) return `{...}`.
 
 Learn more:
 - [Struct aggregate initialization](https://www.learncpp.com/cpp-tutorial/struct-aggregate-initialization/)
@@ -1125,12 +1123,14 @@ A constructor of the derived class sets up its base in the
 constructors, so `BadFormat("format 4")` passes its message straight through.
 
 The project uses inheritance for one job: its own exception types. Each derives from
-`std::runtime_error`, which in turn derives from `std::exception`. A `catch` for a base class
-also catches every class derived from it, so the assignment programs' final
-`catch (const std::exception& e)` catches them all, while assignment 01's program catches
-`UnexpectedEof` alone first to print `eof`. The Boilerplate declares `UnexpectedEof` in
-`src/font/ByteReader.h` (01) and `UnsupportedCmap`, with the `using` line, in
-`src/font/Cmap.h` (03). The project has no virtual functions of its own.
+[`std::runtime_error`](#primer/stdexcept), which in turn derives from
+[`std::exception`](#primer/exception). A `catch` for a base class also catches every class
+derived from it, so the assignment programs' final `catch (const std::exception& e)` catches
+them all, while assignment 01's program catches `UnexpectedEof` alone first to print `eof`. The
+Boilerplate declares `UnexpectedEof` in `src/font/ByteReader.h` (01) and `UnsupportedCmap`,
+with the `using` line, in `src/font/Cmap.h` (03). Inheritance in C++ also allows virtual
+functions, member functions that a derived class can replace with its own version, but the
+project doesn't define any.
 
 Learn more:
 - [Basic inheritance in C++](https://www.learncpp.com/cpp-tutorial/basic-inheritance-in-c/) on
@@ -1196,12 +1196,11 @@ works but `2.0 * p` doesn't compile; write the scalar on the right or add the se
 Since C++20, `bool operator==(const RGB&) const = default;` asks the compiler to write `==` for
 you, comparing member by member, and `!=` comes with it.
 
-Assignment 10's `src/utils/Geometry.h` declares `+`, `-` and `*` for `Vec2`, so lerp reads like
-the formula: `a + (b - a) * t`. Assignments 11 to 15 use the same operators for curves and
-intersections, for example `A * (t * t) + B * t + C` in the reference for 13.
-`src/FrameBufferCanvas.h` (06) gives `RGB` a defaulted `==`, so the picture code can compare
-colours. You also use overloads written by others: `<<` and `>>` on streams and `[]` on vectors
-and maps.
+You use overloads written by others from assignment 01: `<<` and `>>` on streams, and later
+`[]` on vectors and maps. `src/FrameBufferCanvas.h` (06) gives `RGB` a defaulted `==`, so the
+picture code can compare colours. Assignment 10's `src/utils/Geometry.h` declares `+`, `-` and
+`*` for [`Vec2`](#primer/vector-2d), so the curve maths of the later assignments can be written
+close to the formulas on the problem pages.
 
 Learn more:
 - [Introduction to operator overloading](https://www.learncpp.com/cpp-tutorial/introduction-to-operator-overloading/)
@@ -1230,16 +1229,13 @@ int w = canvas.width();       // fine
 
 It suits functions that only compute a value and change nothing, such as getters. A bare call
 to one does nothing, so it is usually a slip, for example writing `glyph.bounds();` where you
-meant to use the bounds. Functions called for what they do, such as `readUint32()` used to skip
-a field, don't get it: the reference calls `reader.readUint32();` and ignores the result on
-purpose to step over the scaler type in the table directory (02).
+meant to use the bounds. Functions called for what they do don't get it. The readers of 01 are
+such functions: a program can call one only to move past a field it doesn't need, and the
+compiler shouldn't warn about that.
 
-The Boilerplate headers mark their getters: `width()`, `height()` and `get()` in
-`src/FrameBufferCanvas.h` (06), `tables()` in `src/font/FontParser.h` (02), and
-`measureText`, `metrics`, `glyphFor` and `advance` in `src/TextRenderer.h` (18). The reference
-`src/font/CompoundGlyph.cpp` (09) marks `Affine::after`, which combines two transforms and
-returns the result. The attribute changes no behaviour, so you can leave it out of your own
-code.
+The Boilerplate headers mark their getters: `tables()` in `src/font/FontParser.h` (02), and
+`width()`, `height()` and `get()` in `src/FrameBufferCanvas.h` (06). The attribute changes no
+behaviour, so you can leave it out of your own code.
 
 Learn more:
 - [C++ attribute: nodiscard](https://en.cppreference.com/w/cpp/language/attributes/nodiscard)
@@ -1268,23 +1264,45 @@ try {
 ```
 
 Catch by `const` reference, and order the `catch` blocks from the most specific type to the
-most general. `e.what()` returns the message given to the constructor.
+most general. `e.what()` returns the message given to the constructor. The standard error types
+are in [`<stdexcept>`](#primer/stdexcept), and their base, `std::exception`, in
+[`<exception>`](#primer/exception).
 
-If nothing catches an exception, the program calls `std::terminate`, which stops it with
-`abort()`. With GCC you see `terminate called after throwing an instance of
-'std::runtime_error'` and the message; on Windows the exit code is 3, on macOS and Linux the
-program dies from the signal SIGABRT. The checker reports either as a Runtime Error.
+When the handler doesn't need the error object, leave out the name:
+
+```cpp
+try {
+  value = reader.readUint16();
+} catch (const UnexpectedEof&) {         // no name: only the type matters
+  value = 0;
+}
+```
+
+Write it this way when the type alone tells you what happened and you won't call `what()`.
+Assignment 01's program does this: `catch (const UnexpectedEof&)` writes `eof` and stops
+reading.
+
+If nothing catches an exception, the program calls `std::terminate`, the standard library's
+function for ending a program after an error it can't recover from. That in turn calls
+`abort()`, which ends the program at once, without the normal clean-up, so output still
+waiting in a file stream can be lost. With GCC you see `terminate called after throwing an instance of
+'std::runtime_error'` and the message. On Windows the exit code is 3; on macOS and Linux the
+program dies from the signal SIGABRT, the system's notice that it called `abort()`. The checker
+reports either as a Runtime Error.
 
 The workbook uses exceptions in three ways:
 
 - Errors in the font: `ByteReader` throws `UnexpectedEof` past the end of the file (01), which
-  assignment 01's program catches to print `eof`; `UnsupportedCmap` (03) for a font without a
-  format 12 `cmap`; `std::runtime_error` when a file can't be opened or written (01, 06).
-  `tables.at("cmap")` throws `std::out_of_range` when a font has no such table (03 to 05).
+  assignment 01's program catches to print `eof`, and `std::runtime_error` when the file can't
+  be opened. Later, `UnsupportedCmap` (03) reports a font without a format 12
+  [`cmap`](#primer/cmap).
 - The Boilerplate's TODOs throw `std::logic_error("not implemented: ...")`.
 - Every assignment program catches `std::exception` in `main`. It returns
   [exit code](#primer/exit-codes) 99 for a "not implemented" message, which the checker turns
   into "Not implemented yet", and 1 for anything else.
+
+Library functions throw too: `.at()` on a [`std::map`](#primer/map) throws `std::out_of_range`
+when the key is missing.
 
 Learn more:
 - [Basic exception handling](https://www.learncpp.com/cpp-tutorial/basic-exception-handling/)
@@ -1318,15 +1336,16 @@ A template that doesn't compile for some type gives its error only when that typ
 GCC's messages for it can be long; read the first error and the line marked "required from
 here".
 
-You have used templates already: `std::vector<int>` and `std::map<std::string, TableRecord>`
-are class templates.
+You have used templates already: [`std::vector<int>`](#primer/vector) and
+[`std::map<std::string, TableRecord>`](#primer/map) are class templates.
 
 Assignment 01's tags mark templates as optional. The Boilerplate's `src/font/ByteReader.h`
-declares one, `template <typename T> T readBigEndian()`, which reads `sizeof(T)` bytes and
-serves all six integer types, and `readUint8` to `readInt32` call it. You may instead write six
-separate functions; the tests only see the numbers. The reference template uses
-[`static_assert`](#primer/static-assert) and [`if constexpr`](#primer/if-constexpr) to handle
-the types.
+declares one, `template <typename T> T readBigEndian()`, guarded by a
+[`static_assert`](#primer/static-assert), and `readUint8` to `readInt32` call it with their own
+types. Its body is yours to write: one function that reads `sizeof(T)` bytes and returns a `T`,
+for all six integer types. If some types need a step the others don't,
+[`if constexpr`](#primer/if-constexpr) is one way to write it. You may instead write six
+separate functions; the tests only see the numbers.
 
 Learn more:
 - [Function templates](https://www.learncpp.com/cpp-tutorial/function-templates/) on
@@ -1348,25 +1367,26 @@ The branch that isn't taken is thrown away for that version of the code. It is u
 
 ```cpp
 template <typename T>
-T fromUnsigned(uint64_t value) {
-  if constexpr (std::is_signed_v<T>) {
-    // only compiled for int8_t, int16_t, int32_t ...
+std::size_t lengthOf(const T& value) {
+  if constexpr (std::is_same_v<T, std::string>) {
+    return value.size();   // only compiled when T is std::string
+  } else {
+    return 1;              // an int has no .size(), and this branch doesn't need one
   }
-  return static_cast<T>(value);
 }
 ```
 
 The condition must be known at compile time: a type trait such as `std::is_signed_v<T>` (from
-`<type_traits>`), a `sizeof`, or a [`constexpr`](#primer/constexpr) value. A plain `if` with the
-same condition would often work too, since the compiler drops a branch that can never run. The
-difference is that with `if constexpr` the dropped branch doesn't even have to compile for that
-type, so it can use operations the type doesn't support, and the code says that the choice is
-made per type.
+[`<type_traits>`](#primer/type-traits)), a `sizeof`, or a [`constexpr`](#primer/constexpr)
+value. A plain `if` with the same condition would often work too, since the compiler drops a
+branch that can never run. The difference is that with `if constexpr` the dropped branch
+doesn't even have to compile for that type: with a plain `if`, `lengthOf(5)` above would fail
+to compile, because `value.size()` makes no sense for an `int`.
 
-The reference `readBigEndian` in `src/font/ByteReader.h` (01) applies the
-[two's complement](#primer/twos-complement) rule inside `if constexpr (std::is_signed_v<T>)`,
-so the unsigned readers contain no sign handling at all. The Boilerplate leaves the body to
-you, and a plain `if` or six separate functions work as well.
+Assignment 01's `readBigEndian` template in `src/font/ByteReader.h` serves signed and unsigned
+types. If your body needs a step only for the signed ones, `if constexpr` with
+`std::is_signed_v<T>` is one way to write it; a plain `if` or six separate functions work as
+well.
 
 Learn more:
 - [Constexpr if statements](https://www.learncpp.com/cpp-tutorial/constexpr-if-statements/) on
@@ -1403,8 +1423,8 @@ on values that only exist while the program runs, use an `if` and an
 The project has two. The Boilerplate's `readBigEndian` template in `src/font/ByteReader.h` (01)
 starts with `static_assert(std::is_integral_v<T> && sizeof(T) <= 4)`, so
 `readBigEndian<double>()` or a 64-bit type fails to compile instead of reading garbage.
-`src/FrameBufferCanvas.cpp` (06) checks `static_assert(sizeof(RGB) == 3, ...)`: stb_image_write
-reads the pixel vector as tightly packed bytes, three per pixel, and would draw a scrambled
+`src/FrameBufferCanvas.cpp` (06) checks `static_assert(sizeof(RGB) == 3, ...)`:
+[stb_image_write](#primer/stb-image-write) reads the pixel vector as tightly packed bytes, three per pixel, and would draw a scrambled
 picture if the compiler padded `RGB` to four.
 
 Learn more:
@@ -1436,13 +1456,11 @@ a struct can be more than the sum of its members, since the compiler may add pad
 them; and `sizeof` of a container is the size of the container object, so use `.size()` for
 the number of elements.
 
-In a [template](#primer/templates), `sizeof(T)` tells the code how many bytes the type has. The
-`readBigEndian<T>` in `src/font/ByteReader.h` (01) reads `sizeof(T)` bytes, so one function
-reads 1, 2 or 4 bytes for the six integer types, and the reference computes 2^bits as
-`uint64_t{1} << (8 * sizeof(T))`. `src/FrameBufferCanvas.cpp` (06) checks
-`sizeof(RGB) == 3`. The programs of assignments 10, 12, 13 and 15 format numbers into a `char text[64]`
-buffer (09's into a `char buf[32]`) and pass its `sizeof` to `std::snprintf`, so it never
-writes past the end.
+In a [template](#primer/templates), `sizeof(T)` tells the code how many bytes the type has.
+The `readBigEndian<T>` you write in `src/font/ByteReader.h` (01) reads `sizeof(T)` bytes, so
+one function covers the 1-, 2- and 4-byte types. `src/FrameBufferCanvas.cpp` (06) checks
+`sizeof(RGB) == 3`, and from 09 on the programs pass the `sizeof` of a `char` buffer to
+[`std::snprintf`](#primer/cstdio), so it never writes past the end.
 
 Learn more:
 - [Object sizes and the sizeof operator](https://www.learncpp.com/cpp-tutorial/object-sizes-and-the-sizeof-operator/)
@@ -1468,19 +1486,19 @@ if (flag & REPEAT_FLAG) { /* ... */ }
 ```
 
 Named constants make bit tests readable: `flag & REPEAT_FLAG` says what it checks, where
-`flag & 0x08` sends you to the specification. Prefer `constexpr` to a `#define` macro: it has a
-type, it obeys namespaces and scopes, and the debugger knows its name. A constant used in one
-`.cpp` file goes in an unnamed [namespace](#primer/namespaces) at the top of that file.
+`flag & 0x08` sends you to the specification. Prefer `constexpr` to a `#define`
+[macro](#primer/preprocessor): it has a type, it obeys namespaces and scopes, and a debugger (a
+tool that runs your program a line at a time and shows its variables) knows its name. A
+constant used in one `.cpp` file goes in an unnamed [namespace](#primer/namespaces) at the top
+of that file.
 
 Functions can be `constexpr` too, so the compiler can run them at compile time; the project
 doesn't need that.
 
-The reference names the flag bits this way. `src/font/GlyphParser.cpp` (07) declares
-`ON_CURVE_POINT`, `X_SHORT_VECTOR`, `Y_SHORT_VECTOR`, `REPEAT_FLAG`, `X_IS_SAME_OR_POSITIVE` and
-`Y_IS_SAME_OR_POSITIVE` as `constexpr uint8_t`, with values from `0x01` to `0x20`.
-`src/font/CompoundGlyph.cpp` (09) declares the component flags, such as `ARG_1_AND_2_ARE_WORDS`
-and `MORE_COMPONENTS`, as `constexpr uint16_t`. The names follow Apple's and Microsoft's
-specifications, so you can look each one up.
+Named constants pay off in 07 and 09, where you test the [flag bits](#primer/glyph-flags) of
+each point and the [component flags](#primer/component-flags) of each part of a compound glyph.
+If you name them after Apple's and Microsoft's specifications (`REPEAT_FLAG`,
+`MORE_COMPONENTS`), you can look each one up.
 
 Learn more:
 - [Constexpr variables](https://www.learncpp.com/cpp-tutorial/constexpr-variables/) on
@@ -1498,28 +1516,30 @@ JavaScript arrow function. Its parts are the capture list in square brackets, th
 and the body:
 
 ```cpp
-std::sort(crossings.begin(), crossings.end(),
-          [](const Crossing& a, const Crossing& b) { return a.x < b.x; });
-
+std::vector<std::string> words{"pear", "fig", "banana"};
+std::sort(words.begin(), words.end(),
+          [](const std::string& a, const std::string& b) { return a.size() < b.size(); });
+// words is now fig, pear, banana
 int total = 0;
 const auto add = [&](int n) { total += n; };   // [&]: uses `total` by reference
 add(5);                                         // total is now 5
 ```
 
+The lambda given to [`std::sort`](#primer/algorithm) is a comparator: a function that takes two
+elements and returns true when the first should come before the second.
+
 The capture list says which local variables the body may use. `[]` captures nothing, `[&]`
 captures everything it uses by reference, so changes reach the original, and `[=]` takes
-copies. A lambda that outlives the function it was written in must not capture by reference,
-since the variables are gone; in this project every lambda is used before its function returns.
-Store a lambda in an [`auto`](#primer/auto) variable or pass it straight to a function. A
-function that receives one either is a template or takes a `std::function`, as `forEachRow`
-does.
+copies. The object a lambda creates, which carries its captured variables along, is called a
+closure. A lambda that outlives the function it was written in must not capture by reference,
+since the variables are gone. Store a lambda in an [`auto`](#primer/auto) variable or pass it
+straight to a function. A function that receives one either is a template or takes a
+[`std::function`](#primer/functional).
 
-The reference uses them in four ways. In `src/render/Scanline.cpp` (14) a lambda tells
-`std::sort` to order crossings by x, and another tells `std::find_if` to find an on-curve point.
-`src/render/EvenOdd.cpp` (14) and `src/render/NonZero.cpp` (16) hand `forEachRow` a lambda
-with `[&]` that fills each row's spans on the canvas. `src/render/Outline.cpp` (11) defines
-small helpers inside a function, `at(k)` and `on(k)`, that wrap an index around the contour.
-And assignment 01's program uses `line` to write `<op> <value>`.
+Assignment 01's program defines a lambda, `line`, that writes `<op> <value>`. It captures with
+`[&]`, so it can use the output stream of the function around it. In 14 the Boilerplate's
+`forEachRow` takes a `std::function`, and you pass it a lambda with the work to do for each
+row.
 
 Learn more:
 - [Introduction to lambdas (anonymous functions)](https://www.learncpp.com/cpp-tutorial/introduction-to-lambdas-anonymous-functions/)
@@ -1534,7 +1554,8 @@ also: recursive function; base case; call stack; stack overflow; depth-first
 -->
 A recursive function calls itself on a smaller part of the problem, until it reaches a case it
 can answer directly, the base case. Each call gets its own local variables on the call stack,
-and the calls finish in reverse order.
+the memory where every unfinished function call keeps its variables, and the calls finish in
+reverse order.
 
 ```cpp
 int digits(unsigned n) {
@@ -1543,21 +1564,20 @@ int digits(unsigned n) {
 }
 ```
 
-Recursion fits data that contains smaller copies of itself. A compound glyph is such data: it
-is a list of components, and each component is another glyph, which may itself be compound.
-To draw one, you resolve each component the same way, depth first, and the simple and empty
-glyphs are the base cases. The transforms of the levels combine on the way down.
+Recursion fits data that contains smaller copies of itself. A
+[compound glyph](#primer/compound-glyph) is such data: it is a list of components, and each
+component is another glyph, which may itself be compound. To draw one, you resolve each
+component the same way, depth first, and the simple and empty glyphs are the base cases. The
+transforms of the levels combine on the way down.
 
 Every call uses some stack memory, and the stack is limited, to a few megabytes by default.
-A call that never reaches a base case runs out of stack and crashes; on Windows the checker
-reports a stack overflow. A corrupt font could make a glyph
-contain itself, so a resolver should stop at some depth. The reference
-`src/font/CompoundGlyph.cpp` (09) throws when nesting passes 16 levels.
+A call that never reaches a base case runs out of stack and crashes: a stack overflow, which
+the checker reports on Windows from exit code 0xC00000FD (see [exit codes](#primer/exit-codes)).
+A corrupt font could make a glyph contain itself, so a resolver should stop at some depth and
+throw an [exception](#primer/exceptions).
 
-Assignment 09 is the recursive one: `resolveGlyph` reads a compound glyph's component
-records, then resolves each component with the transforms combined. Assignment 18 calls it for
-every character. You can also do the same with a loop and a stack of your own; the tests only
-see the outlines.
+Assignment 09 is the recursive one: `resolveGlyph` turns any glyph into simple outlines. You can
+also do the same with a loop and a stack of your own; the tests only see the outlines.
 
 Learn more:
 - [Recursion](https://www.learncpp.com/cpp-tutorial/recursion/) on learncpp.com

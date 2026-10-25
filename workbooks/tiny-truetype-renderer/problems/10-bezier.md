@@ -17,7 +17,7 @@ Stop at the sentence that introduces the code. The author's code (the listing "L
 segment and a quadratic Bézier curve") follows it. "TrueType Bézier curves" belongs to
 assignment 11.
 
-## What you need
+## Learning material
 
 - [2D vectors and the dot product](#primer/vector-2d): `Vec2` in `utils/Geometry.h` holds a point
   as `double` x and y, and the program reads each pair of numbers on a line into one.

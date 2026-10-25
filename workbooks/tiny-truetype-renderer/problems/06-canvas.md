@@ -14,7 +14,7 @@ You can pass using this page alone. For the background, read the blog's
 section up to and including the paragraph that starts "The line drawing algorithm", and stop
 before the author's code that follows it.
 
-## What you need
+## Learning material
 
 - [Pixels and RGB colour](#primer/pixel): `RGB` in `src/FrameBufferCanvas.h` holds one
   `uint8_t` per channel, and each `point`, `rect` and `line` command ends in a colour as `r g b`.
