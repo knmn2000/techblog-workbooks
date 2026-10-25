@@ -10,10 +10,10 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read the `font` line, turn the three `table` lines (`hhea`, `hmtx`, `maxp`) into table
-//   records, collect the questions, and load the metrics once with your `Metrics` code.
-//   Answer each `font-metrics` and `glyph` line in input order, in the formats the Output
-//   section gives.
+//   Load the metrics once with your `Metrics` code: read the `font` line, turn the three
+//   `table` lines (`hhea`, `hmtx`, `maxp`) into table records and collect the questions
+//   first. Then answer each `font-metrics` and `glyph` line in input order, in the formats
+//   Output gives.
 //
 // The other files of this assignment:
 //   You also write src/font/Metrics.h and src/font/Metrics.cpp in this assignment; each

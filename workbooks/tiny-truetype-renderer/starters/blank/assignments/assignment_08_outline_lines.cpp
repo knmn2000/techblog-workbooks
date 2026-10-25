@@ -10,9 +10,9 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Create the canvas from the `canvas` line and keep the most recent `place`, `style` and
+//   Make the canvas from the `canvas` line and keep the latest `place`, `style` and
 //   `color`. For each `outline`, read its `ends` and `points` (coordinates may be
-//   fractional) and draw it; at the end, write the picture to the output path.
+//   fractional) and draw it. At the end, write the picture to the output path.
 //
 // The other files of this assignment:
 //   You also write src/render/Placement.h, src/render/Outline.h and src/render/Outline.cpp

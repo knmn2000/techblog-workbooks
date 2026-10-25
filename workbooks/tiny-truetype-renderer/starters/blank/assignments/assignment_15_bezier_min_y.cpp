@@ -10,13 +10,13 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read each `curve` line's six numbers as three points, call your lowest-point function,
-//   and write one answer per curve, in the same order (see Output for the precision).
+//   Each `curve` line holds six numbers, three points. Call your lowest-point function on
+//   them and write one answer per curve, in the same order (Output has the precision).
 //
 // The other files of this assignment:
 //   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
 //   a quadratic curve's start, control and end points and returns the smallest y on the
-//   curve for t from 0 to 1, as an exact `double` (don't round it to a whole number). The
+//   curve for t from 0 to 1, as a `double` (don't round it to a whole number). The
 //   Boilerplate from assignment 10 already declares it as `getBezierMinY`; if you wrote
 //   this file your own way, add it next to your curve functions.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".

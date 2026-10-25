@@ -4,10 +4,9 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Every outline in the project takes this form: its points (x and y in font units, on or
-//   off the curve) and the index where each contour ends. Assignments 08 and 11 draw
-//   outlines in this form, 09 produces one per part of a compound glyph, and 14, 16 and 17
-//   fill them.
+//   An outline is a list of points (x and y in font units, on or off the curve) plus the
+//   index where each contour ends, and this header defines that shape. Assignments 08 and
+//   11 draw it, 09 produces one per part of a compound glyph, and 14, 16 and 17 fill it.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

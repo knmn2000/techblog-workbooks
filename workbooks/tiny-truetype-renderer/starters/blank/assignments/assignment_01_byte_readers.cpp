@@ -10,10 +10,10 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read the `file` line and open that file with your `ByteReader`, then run the other
+//   Read the `file` line and open that file with your `ByteReader`. Then run the remaining
 //   lines in order: `jump` and `skip` move the reader, and each read writes `<op>
-//   <value>`. If a read runs out of bytes, write `eof` and stop. The Output section gives
-//   the format, including the tolerance for F2Dot14 values.
+//   <value>`. If a read runs out of bytes, write `eof` and stop. Output gives the format,
+//   including the tolerance for F2Dot14 values.
 //
 // The other files of this assignment:
 //   You also write src/font/ByteReader.h and src/font/ByteReader.cpp in this assignment;

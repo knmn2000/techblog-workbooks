@@ -4,10 +4,9 @@
 // Problem: problems/06-canvas.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The canvas holds a picture in memory, one colour per pixel. It can paint one pixel,
-//   fill a rectangle, draw a thick line and save the picture as a PNG. You draw every
-//   later picture on it: outlines in 08 and 11, filled glyphs in 14, 16 and 17, and a line
-//   of text in 18.
+//   A picture in memory, one colour per pixel, with operations to paint a pixel, fill a
+//   rectangle, draw a thick line and save a PNG. Outlines (08, 11), filled glyphs (14, 16,
+//   17) and the line of text in 18 all end up drawn on it.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

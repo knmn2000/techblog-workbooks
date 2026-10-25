@@ -4,10 +4,9 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   It holds the steps both fill rules share: it turns an outline into edges in pixels and
-//   finds, row by row, where the line through the pixel centres crosses them. Your
-//   even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both
-//   run on it.
+//   Both fill rules start the same way, and this is that part: turn an outline into edges
+//   in pixels, then find, row by row, where the line through the pixel centres crosses
+//   them. Your even-odd fill in 14 and your non-zero fill in 16 and 17 sit on top.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

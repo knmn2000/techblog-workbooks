@@ -4,15 +4,15 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This type holds a glyph as the glyf table stores it: whether it is empty, simple or
-//   compound, its contour count, its bounding box and, for a simple glyph, its outline.
-//   Your `GlyphParser` returns it, and in assignment 09 you use its kind to tell simple
-//   glyphs from compound ones.
+//   What the `glyf` table stores for a glyph: whether it is empty, simple or compound, its
+//   contour count, its bounding box and, for a simple glyph, its outline. Your
+//   `GlyphParser` returns it, and in assignment 09 the kind tells compound glyphs from
+//   simple ones.
 //
 // Your job:
-//   Declare a glyph type that records which of the three kinds it is (empty, simple or
-//   compound) and holds `numberOfContours`, the bounding box (`xMin`, `yMin`, `xMax`,
-//   `yMax`) and, for a simple glyph, its outline in the form from `GlyphComponent.h`.
+//   The glyph type records its kind (empty, simple or compound) and holds
+//   `numberOfContours`, the bounding box (`xMin`, `yMin`, `xMax`, `yMax`) and, for a
+//   simple glyph, its outline in the form from `GlyphComponent.h`.
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

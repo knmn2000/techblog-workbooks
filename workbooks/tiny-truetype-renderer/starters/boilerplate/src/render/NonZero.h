@@ -4,9 +4,9 @@
 // Problem: problems/16-nonzero-lines.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   It fills a glyph by the non-zero rule, the rule TrueType uses, on top of your
-//   `render/Scanline`. This assignment handles straight edges, assignment 17 adds curves,
-//   and the text renderer in assignment 18 fills every glyph with it.
+//   TrueType fills glyphs by the non-zero rule, and this is where yours is declared, on
+//   top of your `render/Scanline`. Straight edges come first in assignment 16, curves in
+//   17, and the text renderer in 18 fills every glyph with it.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

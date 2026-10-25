@@ -9,28 +9,29 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-[Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph)
-section up to the transformation matrix. Stop at the paragraph that starts "Implementation.
-As compound glyphs are nested", before the author's code.
+For background, the blog's
+[Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph) section
+goes up to the transformation matrix. Stop at the paragraph that starts "Implementation. As compound
+glyphs are nested"; the author's code comes after it.
 
 ## Learning material
 
-- [Compound glyphs](#primer/compound-glyph): `resolveGlyph` turns a glyph into the outlines of
-  the simple glyphs inside it, depth first, and leaves out empty ones.
-- [Component records and their flags](#primer/component-flags): after the header,
-  `CompoundGlyph.cpp` reads `flags`, `glyphIndex` and two arguments per record, and stops after
-  the record with MORE_COMPONENTS clear.
-- [Component transforms](#primer/component-transform): a record's scale flags give a, b, c and d,
-  its arguments give the offset, and SCALED_COMPONENT_OFFSET puts the offset through a, b, c, d.
-- [Affine transforms and 2 x 2 matrices](#primer/affine-transform): a nested component takes its
-  own transform first and then its parent's, so its points go through two transforms in that
-  order.
-- [Recursion](#primer/recursion): a component can be compound itself, so the resolver calls
-  itself for each component, with simple and empty glyphs as the base cases.
-- [Fixed-point numbers and F2Dot14](#primer/f2dot14): the scales are stored as F2Dot14, which your
-  `readF2Dot14` from assignment 01 turns into a `double` (`40 00` is 1.0).
-- [Integer types](#primer/integer-types): 1-byte arguments are signed, so read them with
+- [Compound glyphs](#primer/compound-glyph): a glyph with no points of its own, made of other
+  glyphs. `resolveGlyph` returns the outlines of the simple glyphs inside one, depth first,
+  without the empty ones.
+- [Component records and their flags](#primer/component-flags): what follows the header.
+  `CompoundGlyph.cpp` reads `flags`, `glyphIndex` and two arguments per record, and the record
+  with MORE_COMPONENTS clear is the last.
+- [Component transforms](#primer/component-transform): the scale flags give a, b, c and d, the
+  arguments give the offset, and with SCALED_COMPONENT_OFFSET set, the offset goes through a, b, c, d.
+- [Affine transforms and 2 x 2 matrices](#primer/affine-transform): six numbers, and what
+  happens when one transform follows another. A nested component goes through its own transform
+  and then its parent's.
+- [Recursion](#primer/recursion): a component can be compound too, so the resolver calls itself
+  for each component. Simple and empty glyphs are the base cases.
+- [Fixed-point numbers and F2Dot14](#primer/f2dot14): the font stores the scales as F2Dot14. Your
+  `readF2Dot14` from assignment 01 turns one into a `double` (`40 00` is 1.0).
+- [Integer types](#primer/integer-types): 1-byte arguments are signed, so they go through
   `readInt8`, and the byte `e2` gives -30.
 - [`<cstdio>`](#primer/cstdio): the program's `number()` writes a fractional coordinate with
   `std::snprintf` and `"%.4f"`, then drops the trailing zeros.
@@ -43,20 +44,20 @@ As compound glyphs are nested", before the author's code.
 
 ## Where this fits
 
-Your `GlyphParser` from assignment 07 decodes simple glyphs and only reports compound ones. A
-compound glyph has no points of its own: it lists other glyphs, its components, and where
-to put each one. For example, `é` is `e` plus an acute accent moved above it. Here you turn any
-glyph into the outlines of the simple glyphs that make it up, each in its final position. The
-fill assignments (14, 16, 17) and the text renderer (18) draw those outlines.
+Your `GlyphParser` from assignment 07 spots a compound glyph and moves on. This one opens it up.
+A compound glyph has no points of its own. It lists other glyphs, its components, and where each
+goes: `é`, for example, is `e` plus an acute accent shifted above it. The job is to flatten any
+glyph into the simple outlines that make it up, each already in its final position. Those are what
+the fill assignments (14, 16, 17) and the text renderer (18) draw.
 
 ## The problem
 
 Write a program that takes a glyph, simple or compound, and prints the outlines of the simple
-glyphs that make it up, each moved to its final position.
+glyphs inside it, each moved to its final position.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
+From the workbook folder, the checker starts your program as `<program> <input-file> <output-file>`.
 The input file contains three kinds of lines:
 
 | Line | Meaning |
@@ -77,26 +78,24 @@ points <x0> <y0> <on|off> <x1> <y1> <on|off> ...
 ... (k pairs)
 ```
 
-- An empty glyph (length 0) gives `components 0`. A simple glyph gives `components 1` with its own
-  outline.
-- Components appear in depth-first order: the order of the component records, and inside a
-  nested compound glyph, its components in their order before moving on. A component that is an
-  empty glyph adds nothing and isn't counted.
+- An empty glyph (length 0) gives `components 0`. A simple glyph gives `components 1` and its
+  own outline.
+- Components come out depth first: in the order of the component records, and for a nested
+  compound glyph, all of its components before the next record. A component that is an empty
+  glyph adds nothing and isn't counted.
 - `ends` and `on|off` are the simple glyph's own values, as in assignment 07.
 - Print coordinates after every transform that applies, so they can be fractional: one of the
   random tests expects `points 338.5 -275.25 on 324.4375 -266.8125 off ...`.
-- The checker accepts a difference of up to 0.01 per number, so the exact value or anything
-  rounded to two or more decimals passes. The boilerplate's `number()` prints whole numbers
-  without a decimal point and others rounded to 4 decimals with trailing zeros dropped (`47.5`,
-  `374.9062`).
+- Each number may be off by up to 0.01, so the exact value or anything rounded to two or more
+  decimals passes. The boilerplate's `number()` handles the format: whole numbers print bare,
+  anything else prints rounded to 4 decimals without trailing zeros (`47.5`, `374.9062`).
 
 ### The compound glyph record
 
-The 10-byte header is the same as for simple glyphs: `numberOfContours` (int16, negative for a
-compound glyph) and the bounding box (4 x int16, you can ignore it).
+The 10-byte header matches the simple-glyph one: `numberOfContours` (int16, negative for a
+compound glyph) and the bounding box (4 x int16, which you can ignore).
 
-Component records follow, one per component, one after another, until one has
-MORE_COMPONENTS clear:
+Component records follow, one per component, back to back, until one has MORE_COMPONENTS clear:
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -106,8 +105,8 @@ MORE_COMPONENTS clear:
 | transform | F2Dot14 x 0, 1, 2 or 4 | Depends on the scale flags |
 
 All numbers are big-endian. F2Dot14 is a signed 16-bit number divided by 16384 (your
-`ByteReader` from assignment 01 reads it), so `40 00` is 1.0 and `c0 00` is -1.0. The
-arguments are signed too: the byte `e2` is -30, not 226.
+`ByteReader` from assignment 01 reads it), so `40 00` is 1.0 and `c0 00` is -1.0. The arguments
+are signed as well: the byte `e2` is -30, not 226.
 
 The bits of `flags` are below; bits not listed don't affect the output:
 
@@ -122,7 +121,7 @@ The bits of `flags` are below; bits not listed don't affect the output:
 | 8 | `0x0100` | WE_HAVE_INSTRUCTIONS | Hinting instructions follow the last component; ignore them |
 | 11 | `0x0800` | SCALED_COMPONENT_OFFSET | The transform applies to the offset too; this workbook uses fontTools' rule (see below) |
 
-At most one of bits 3, 6 and 7 is set. With none of them, a = d = 1 and b = c = 0.
+A record sets at most one of bits 3, 6 and 7. With none of them, a = d = 1 and b = c = 0.
 
 ### Placing a component
 
@@ -133,21 +132,21 @@ x' = a*x + c*y + e
 y' = b*x + d*y + f
 ```
 
-where a, b, c, d are the 2 x 2 part set by the scale flags (it scales, flips or rotates)
-and (e, f) is the offset, (argument1, argument2).
+Here a, b, c, d are the 2 x 2 part the scale flags set (it can scale, flip or rotate), and
+(e, f) is the offset, (argument1, argument2).
 
-If SCALED_COMPONENT_OFFSET is set, the offset goes through the 2 x 2 part first:
+If the flags include SCALED_COMPONENT_OFFSET, the offset goes through the 2 x 2 part first:
 
 ```
 e = a*argument1 + c*argument2
 f = b*argument1 + d*argument2
 ```
 
-That is fontTools' reading of the flag, and fontTools computes this workbook's expected outputs.
+That is fontTools' reading of the flag, and fontTools produces this workbook's expected outputs.
 The OpenType specification says only that the offset is then in the component's coordinate
 system and that the transformation applies to it. Other implementations scale the offset
-without rotating it, so they place a rotated or flipped component elsewhere. For test
-`09-R5-scaled-offset-rot` (offset (50, 10), a = 0, b = 1, c = -1, d = 0):
+without rotating it, so a rotated or flipped component lands somewhere else. Test
+`09-R5-scaled-offset-rot` (offset (50, 10), a = 0, b = 1, c = -1, d = 0) shows the split:
 
 | Implementation | e | f | Offset in that test |
 |---|---|---|---|
@@ -156,26 +155,25 @@ without rotating it, so they place a rotated or flipped component elsewhere. For
 | Apple's *TrueType Reference Manual* | m * argument1 | n * argument2 | (50, 10) |
 
 Apple's m is max(|a|, |b|), doubled when |(|a| - |c|)| is at most 33/65536, and n is
-max(|c|, |d|), doubled when |(|b| - |d|)| is at most 33/65536. Apple's manual scales every
-component's offset this way and doesn't mention the flag. All three agree when b = c = 0 and a and d are positive, as in
-Example 1. Follow the fontTools row to pass.
+max(|c|, |d|), doubled when |(|b| - |d|)| is at most 33/65536. Apple's manual applies this to
+every component's offset and doesn't mention the flag. All three agree when b = c = 0 and a and d
+are positive, as in Example 1. Follow the fontTools row to pass.
 
-A component can itself be a compound glyph. In that case you place its own components with
-their own transforms first, then place the result with the outer transform, so transforms
-compose from the inside out.
+A component can itself be a compound glyph. Place its own components with their own transforms
+first, then place the result with the outer transform: transforms compose from the inside out.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test belongs to one requirement. The report shows a pass count for each, plus a `likely cause` line
+when a failure points at one.
 
-- **R1** An empty glyph gives `components 0`; a simple glyph gives `components 1` and its outline.
-  A simple glyph with no contours (`numberOfContours` 0) has no outline, so it gives
+- **R1** An empty glyph gives `components 0`; a simple glyph gives `components 1` and its
+  outline. A simple glyph with no contours (`numberOfContours` 0) has no outline, so it gives
   `components 0` too.
-- **R2** Your program reads the component records: flags, glyph index, signed 1-byte or 2-byte
-  arguments, and the loop over MORE_COMPONENTS.
-- **R3** The three scale forms: one scale, separate x and y scales, and the full 2 x 2 matrix.
+- **R2** The component records are read: flags, glyph index, signed 1-byte or 2-byte arguments,
+  and the loop over MORE_COMPONENTS.
+- **R3** The three scale forms work: one scale, separate x and y scales, and the full 2 x 2
+  matrix.
 - **R4** Every point goes through x' = a*x + c*y + e and y' = b*x + d*y + f.
 - **R5** With SCALED_COMPONENT_OFFSET, a, b, c, d transform the offset too (fontTools' rule).
 - **R6** Nested compound glyphs: inner transforms apply first, then outer ones.
@@ -203,8 +201,8 @@ ff ff                       numberOfContours = -1: compound
 20 00                       scale 0x2000 / 16384 = 0.5
 ```
 
-The scale of 0.5 halves the square, and because SCALED_COMPONENT_OFFSET is set, it also halves
-the offset (40, 40) to (20, 20):
+The scale of 0.5 halves the square, and because the flags include SCALED_COMPONENT_OFFSET it halves the
+offset (40, 40) to (20, 20):
 
 ```
 output:  glyph 14 components 1
@@ -214,9 +212,10 @@ output:  glyph 14 components 1
 
 ### Example 2: a rotation (test `09-R3-rotate`)
 
-Glyph 11's component record is `00 82 | 00 02 | 64 00 | 00 00 40 00 c0 00 00 00`: flags
-0x0082, WE_HAVE_A_TWO_BY_TWO plus ARGS_ARE_XY_VALUES (bit 0 clear, so the arguments are bytes),
-glyph 2, offset (100, 0), and a = 0, b = 1, c = -1, d = 0. That gives x' = -y + 100 and y' = x, a quarter turn:
+Glyph 11's component record is `00 82 | 00 02 | 64 00 | 00 00 40 00 c0 00 00 00`: flags 0x0082
+(WE_HAVE_A_TWO_BY_TWO plus ARGS_ARE_XY_VALUES; bit 0 is clear, so the arguments are bytes),
+glyph 2, offset (100, 0), and a = 0, b = 1, c = -1, d = 0. That gives x' = -y + 100 and y' = x, a
+quarter turn:
 
 ```
 input:   font tests/09/data/compound-test.ttf
@@ -256,17 +255,17 @@ output:  glyph 8 components 3
 - Records are well-formed, every glyph you need has a `glyph` line, and compound glyphs nest at
   most 3 levels deep. Point-matched components (ARGS_ARE_XY_VALUES clear) don't occur.
 - Scales are within the F2Dot14 range, from -2 up to 32767/16384 (a little under 2).
-- Each case has a 10-second limit.
-- There are 36 tests: hand-made glyphs for each rule in a small test font, accented letters from
-  JetBrains Mono Bold such as `é` and `Ü`, and 6 random compound glyphs (new ones with
+- The time limit is 10 seconds per case.
+- The suite has 36 tests: hand-made glyphs for each rule in a small test font, accented letters
+  from JetBrains Mono Bold such as `é` and `Ü`, and 6 random compound glyphs (new ones with
   `-Fresh`).
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Handle the three cases at the top: no outline (length 0), a simple glyph (numberOfContours ≥ 0),
-and a compound glyph. Only the last one needs new code, and it calls the same function again for
+Sort out three cases at the top: no outline (length 0), a simple glyph (numberOfContours ≥ 0),
+and a compound glyph. Only the last needs new code, and it calls the same function again for
 each component.
 </details>
 
@@ -275,11 +274,11 @@ each component.
 Keep a transform as six numbers a, b, c, d, e, f. For a compound glyph, read all of its
 component records first (reading a component moves the file position elsewhere), then recurse
 for each one. The boilerplate's `resolveGlyph(reader, locations, id)` takes no transform, so
-choose one of two ways:
+there are two ways to go:
 - Recurse, then transform: resolve the component with `resolveGlyph` and apply the component's
   transform to every point it returns.
 - Pass the transform down: write a private helper that takes a glyph id and the transform to
-  apply and appends outlines to a list, and have `resolveGlyph` call it with the identity
+  apply and appends outlines to a list, and let `resolveGlyph` call it with the identity
   transform. The pseudocode in Hint 4 does this.
 
 Both give the same points.
@@ -287,14 +286,15 @@ Both give the same points.
 
 <details><summary>Hint 3: the traps</summary>
 
-- Read int8 arguments as `int8_t`, not `uint8_t`, so that `e2` comes out as -30.
-- After WE_HAVE_A_TWO_BY_TWO the order is a, b, c, d, and x' uses c (not b) for y.
-- Inner transforms apply first. Combining outer (A) after inner (B) gives
+- Read int8 arguments as `int8_t`, not `uint8_t`, or `e2` won't come out as -30.
+- After WE_HAVE_A_TWO_BY_TWO the file stores a, b, c, d in that order. Since x' = a*x + c*y + e,
+  the y term in x' takes c, not b (b multiplies x in y').
+- Inner transforms apply first. Outer (A) after inner (B) combines as
   a = A.a*B.a + A.c*B.b, b = A.b*B.a + A.d*B.b, c = A.a*B.c + A.c*B.d, d = A.b*B.c + A.d*B.d,
   e = A.a*B.e + A.c*B.f + A.e, f = A.b*B.e + A.d*B.f + A.f.
 - SCALED_COMPONENT_OFFSET changes only the offset, not the 2 x 2 part, and it rotates the offset
   too (fontTools' rule, in "Placing a component").
-- Skip components that are empty glyphs instead of writing an empty outline.
+- Skip a component that is an empty glyph; don't write out an empty outline for it.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -330,7 +330,7 @@ resolve(id, T, out):
 .\check 09 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this (here x' used b in place of c):
+Here x' used b in place of c, and the test fails like this:
 
 ```
   R4  x' = a*x + c*y + e and y' = b*x + d*y + f for every point ............    1 / 2   FAILED
@@ -344,28 +344,27 @@ A failing test looks like this (here x' used b in place of c):
 ## After you pass: compare with the author's code
 
 [The blog's compound-glyph parser](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parser%20for%20compound%20glyphs)
-splits the work into `getCompoundGlyph`, which loops over the component records while
-MORE_COMPONENTS is set, and `getCompoundSubComponents`, which decodes a component and recurses for
-nested compound glyphs. It builds a `glm::mat3` for each component, saves the stream position
-before recursing and jumps back afterwards, and takes the glyph's metrics from a component with
+has two functions. `getCompoundGlyph` loops over the component records while MORE_COMPONENTS is
+set, and `getCompoundSubComponents` decodes one component and recurses into nested compound
+glyphs. Each component gets a `glm::mat3`. The code saves the stream position before recursing
+and jumps back afterwards, and it takes the glyph's metrics from a component with
 USE_MY_METRICS.
 
-The snippet differs from the current specifications in these places:
-- The snippet reads 1-byte arguments as unsigned, so a small negative offset like -30 becomes 226.
+The snippet departs from the current specifications in several places:
+- It reads 1-byte arguments as unsigned, so a small negative offset like -30 becomes 226.
   JetBrains Mono has 48 such components: 28 in ligature glyphs, the rest in numerator forms and
   in characters such as `"` (U+0022, test `09-E2E-U+0022`), ŀ (U+0140) and ‼ (U+203C).
 - It scales the offset with Apple's older `m`/`n` rule for every component. The current
-  specifications only scale the offset when SCALED_COMPONENT_OFFSET is set, and fontTools,
-  which this workbook follows, then also rotates it. JetBrains Mono marks
-  its components UNSCALED_COMPONENT_OFFSET and uses no scales, and the rule as Apple states it
-  gives m = n = 1 there.
-- The snippet's version of that rule leaves out the outer absolute value in |(|b| − |d|)|. For an
-  unscaled component |b| − |d| is −1, which passes the test, so n becomes 2 and every y offset
-  doubles: in `·` (U+00B7) the period lands at y = 530 instead of 265. JetBrains Mono has 92
-  components with a nonzero y offset; test `09-E2E-U+01D8` has one. (In the post the line that
-  declares `eps` as 33/65536 ended up inside the comment above it, so the comparison uses the
-  tiny `eps` from `Geometry.h`; the repository declares it on its own line. Either way the
-  doubling happens.)
+  specifications scale the offset only with SCALED_COMPONENT_OFFSET, and fontTools, which
+  this workbook follows, rotates it as well. JetBrains Mono marks its components
+  UNSCALED_COMPONENT_OFFSET and uses no scales, and the rule as Apple states it gives m = n = 1
+  there.
+- Its version of that rule drops the outer absolute value in |(|b| − |d|)|. For an unscaled
+  component |b| − |d| is −1, which passes the test, so n becomes 2 and every y offset doubles: in
+  `·` (U+00B7) the period lands at y = 530 instead of 265. JetBrains Mono has 92 components with
+  a nonzero y offset; test `09-E2E-U+01D8` has one. (In the post, the line that declares `eps`
+  as 33/65536 ended up inside the comment above it, so the comparison uses the tiny `eps` from
+  `Geometry.h`; the repository declares it on its own line. The doubling happens either way.)
 - For a nested compound glyph, `getCompoundSubComponents` doesn't pass its own matrix down to the
   inner components, so an outer offset or scale is lost. JetBrains Mono has no nested compound
   glyphs, but the tests do.
@@ -373,8 +372,8 @@ The snippet differs from the current specifications in these places:
   moving the stream, and `getCompoundSubComponents` hands every count that isn't positive to
   `getCompoundGlyph`, which then reads the parent's next component record as the empty glyph's
   own. Test `09-R7-with-empty` covers this case.
-- Without a component that sets USE_MY_METRICS, the snippet returns a zero `Metric`, and
-  `getGlyphByCode` doesn't fall back to the compound glyph's own `hmtx` entry. In JetBrains Mono
-  22 compound characters have no such component, among them `"` and the grave accent (U+0060),
-  so the author's text renderer would give them an advance width of 0. The spec takes every
-  glyph's advance width from `hmtx`, as assignment 18 does.
+- With no USE_MY_METRICS component, it returns a zero `Metric`, and `getGlyphByCode` doesn't
+  fall back to the compound glyph's own `hmtx` entry. In JetBrains Mono 22 compound characters
+  have no such component, among them `"` and the grave accent (U+0060), so the author's text
+  renderer would give them an advance width of 0. The spec takes every glyph's advance width
+  from `hmtx`, as assignment 18 does.

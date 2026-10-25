@@ -3,17 +3,16 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   It holds the steps both fill rules share: it turns an outline into edges in pixels and
-//   finds, row by row, where the line through the pixel centres crosses them. Your
-//   even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both
-//   run on it.
+//   Edge building and row crossings: outlines become edges in pixels, and each pixel row
+//   gets the crossings of the line through its pixel centres. Even-odd and non-zero both
+//   fill from that list.
 //
 // Your job:
-//   Implement the three functions you declared in `Scanline.h`. When you build the edges,
-//   make implied on-curve points explicit, start each contour at an on-curve point and
-//   split every curve where its y turns around. For each row, find where the line through
-//   its pixel centres crosses each piece (by the half-open rule) and sort the crossings.
-//   To fill a stretch, paint the pixels whose centres lie in it, clipped to the canvas.
+//   Implement the three functions declared in `Scanline.h`. To build the edges, make
+//   implied on-curve points explicit, start each contour at an on-curve point and split
+//   every curve where its y turns around. For each row, find where the line through its
+//   pixel centres crosses each piece (by the half-open rule) and sort the crossings.
+//   Filling a stretch paints the pixels whose centres lie in it, clipped to the canvas.
 //   The Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:

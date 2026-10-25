@@ -10,7 +10,7 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   On each `font` line, open the font and forget the earlier glyph locations; record each
+//   On each `font` line, open the font and forget the earlier glyph locations. Record each
 //   `glyph` line's offset and length by id. For each `decode` line, resolve the glyph and
 //   write the header line and one `ends` / `points` pair per part, as Output shows
 //   (fractional coordinates to at least 2 decimals).

@@ -4,11 +4,10 @@
 // Problem: problems/09-compound-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This code turns any glyph into the simple outlines you draw it with. It reads a
-//   compound glyph's components, moves, scales or rotates each one, and resolves
-//   components nested at any depth. In assignment 18 you draw every character of a line of
-//   text through it, so your text renderer doesn't need to tell simple glyphs from
-//   compound ones.
+//   Turns any glyph into the simple outlines you draw it with. It reads a compound glyph's
+//   components, moves, scales or rotates each one, and resolves components nested at any
+//   depth. The text renderer in 18 draws every character through it, so it doesn't have to
+//   ask whether a glyph is simple.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

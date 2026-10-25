@@ -4,9 +4,9 @@
 // Problem: problems/05-metrics.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This header declares your reader for the `hhea` and `hmtx` tables: the font's ascent
-//   and descent, and each glyph's advance width and left side bearing. Assignment 18 moves
-//   the pen by each glyph's advance width and sizes the text from the ascent and descent.
+//   Ascent and descent from `hhea`, and each glyph's advance width and left side bearing
+//   from `hmtx`; this header is the reader for both. In assignment 18 the pen moves by
+//   advance widths and the text is sized from the ascent and descent.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

@@ -9,26 +9,27 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, in the blog's
-"Renderer: Filling Glyph" section, read
+You need nothing outside this page to pass. For the author's take, open the "Renderer: Filling Glyph"
+section of the blog and read
 [Intersection detection for Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Intersection%20detection%20for%20B%C3%A9zier%20curves)
-up to the quadratic equation in t. The author's code (the listing "Function to find a
-intersections of a segment and a quadratic Bezier curve") follows it. Assignment 10 covers
-the curve itself.
+as far as the quadratic equation in t. The listing "Function to find a
+intersections of a segment and a quadratic Bezier curve" comes straight after. The curve
+itself was assignment 10.
 
 ## Learning material
 
 - [Solving a quadratic equation](#primer/quadratic-equation): `segmentQuadBezierIntersect` in
-  `utils/Geometry.h` comes down to a t² + b t + c = 0. Your helper for it has to handle a = 0,
-  which a horizontal line gives whenever the control point's y is halfway between the ends' y.
-- [Quadratic Bézier curves](#primer/bezier): you multiply out the curve from assignment 10 into
-  A t² + B t + C, with one set of A, B and C for x and one for y.
+  `utils/Geometry.h` boils down to a t² + b t + c = 0, which needs a solver that copes
+  with a = 0. A horizontal line produces that whenever the control point's y sits halfway
+  between the end points' y.
+- [Quadratic Bézier curves](#primer/bezier): you multiply out the curve from assignment 10
+  into a polynomial in t, with one set of coefficients for x and one for y.
 - [2D vectors and the dot product](#primer/vector-2d): the line becomes K · (X − l1) = 0, with K
   the line's normal vector, and you add a dot product helper to `utils/Geometry.h` to compute
   a, b and c.
-- [Floating-point tolerances](#primer/epsilon): the test coordinates are multiples of 0.25, so a
-  and D come out as 0 with no rounding error in the linear and tangent cases, and `== 0` or a tolerance such as
-  1e-9 both pass.
+- [Floating-point tolerances](#primer/epsilon): the test coordinates are multiples of 0.25, so
+  a and D come out as 0 with no rounding error in the linear and tangent cases. `== 0` passes, and so does a
+  tolerance such as 1e-9.
 
 ## Source material
 
@@ -39,25 +40,24 @@ the curve itself.
 
 ## Where this fits
 
-The blog's even-odd fill lays a horizontal line across the glyph for every row of pixels and
-finds where it meets each edge. In assignment 12 you wrote that for a straight edge. Here you
-find the points where a line meets a curved edge, which can be zero, one or two, and add the
-function to your `utils/Geometry.h`.
+The blog's even-odd fill sweeps a horizontal line across the glyph, one pixel row at a time,
+and asks where it meets each edge. Assignment 12 answered that for straight edges. A curve can meet
+the line in zero, one or two points. You add the function to your `utils/Geometry.h`.
 
-Your fill in assignment 14 doesn't call this function either. This function keeps roots at
-t = 0 and t = 1, so a scanline through the point where a curve meets the next edge finds that
-point on both, while the fill's half-open rule counts it once. The fill splits each curve where
-its y turns around and solves each piece's own quadratic.
+Your fill in assignment 14 won't call that function. Here the roots at t = 0 and t = 1 stay, so a scanline
+through the joint between a curve and the next edge finds that point on both, and the fill's
+half-open rule wants it counted once. The fill splits each curve where y turns and solves each
+piece's own quadratic.
 
 ## The problem
 
-Your program reads pairs of a quadratic Bezier curve and a straight line. For each pair it
-writes the points where the line meets the curve, or `none`.
+Each input line gives a quadratic Bezier curve and a straight line. For each one, print the
+points where the line meets the curve, or `none`.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-Every line of the input file has the same form:
+The workbook folder is where the checker executes `<program> <input-file> <output-file>`. Every
+input line has the same form:
 
 | Line | Meaning |
 |---|---|
@@ -65,44 +65,43 @@ Every line of the input file has the same form:
 
 - The curve is the one from assignment 10: the point at parameter t is
   P(t) = (1 − t)² p1 + 2(1 − t)t p2 + t² p3, for t from 0 to 1.
-- The line doesn't stop at l1 or l2: those two points only fix its position and direction.
+- The line doesn't stop at l1 or l2. Those two points only fix its position and direction.
 
 ### Output
 
-Write one line per input line, in the same order:
+One line of output per input line, in the same order:
 
-- `none` when the line doesn't meet the curve, or
+- `none` when the line misses the curve, or
 - the meeting points on one line: `x1 y1`, or `x1 y1 x2 y2`.
 
-Points come in increasing order of t (the order you meet them travelling along the curve from
-p1 to p3), not by x or y. A line that touches the curve without crossing it (a tangent)
+Order the points by increasing t, meaning the order you meet them walking along the curve from
+p1 to p3. Not by x, not by y. A line that touches the curve without crossing it (a tangent)
 gives its one point once.
 
-The checker accepts any number within 0.001 of the expected value. If a value isn't whole,
-print enough decimals to land within 0.001; 4 decimals are enough. The boilerplate's
-`number()` prints whole numbers with no decimal point and rounds the others to 4 decimals,
-dropping trailing zeros (`37.5`, `0.0625`).
+A tolerance of 0.001 applies. Print as many decimals as you need to stay inside it; 4 do the job.
+`number()` from the boilerplate is the easy route: whole numbers without a decimal point, other
+values rounded to 4 decimals, trailing zeros removed (`37.5`, `0.0625`).
 
 ### The curve as a polynomial
 
-If you multiply out the curve's formula, you get
+Multiply out the curve's formula and you get
 
 ```
 P(t) = A t² + B t + C,    where A = p1 − 2 p2 + p3,   B = 2 (p2 − p1),   C = p1
 ```
 
-A, B and C are vectors, so compute each one for x and for y.
+A, B and C are vectors, so work each one out for x and for y.
 
 ### The line as an equation
 
-Let d = l2 − l1 be the line's direction, and K = (d.y, −d.x). K is perpendicular to the line:
-it is a normal vector of the line. A point X lies on the line if and only if
+Let d = l2 − l1 be the line's direction, and K = (d.y, −d.x). K is perpendicular to the line,
+a normal vector. A point X lies on the line if and only if
 
 ```
 K · (X − l1) = 0           (· is the dot product: u · v = u.x v.x + u.y v.y)
 ```
 
-Moving along the line changes X by a multiple of d, and K · d = 0, so the left side stays 0.
+Sliding along the line changes X by a multiple of d, and K · d = 0, which leaves the left side at 0.
 
 ### From a line and a curve to a quadratic
 
@@ -113,12 +112,12 @@ K · (A t² + B t + C − l1) = 0
 a t² + b t + c = 0,    where a = K · A,   b = K · B,   c = K · (C − l1)
 ```
 
-a, b and c are plain numbers. Every solution t is a place where the curve's polynomial meets
-the line.
+a, b and c come out as ordinary numbers, and every solution t is a place where the curve's
+polynomial meets the line.
 
 ### Solving for t
 
-The case depends on whether a is 0, and on D = b² − 4ac, the discriminant:
+The case depends on a and on the discriminant D = b² − 4ac:
 
 | Case | Roots |
 |---|---|
@@ -128,33 +127,33 @@ The case depends on whether a is 0, and on D = b² − 4ac, the discriminant:
 | a = 0 and b ≠ 0 | one: t = −c / b. The equation is linear. |
 | a = 0 and b = 0 | none. The "curve" is a straight segment parallel to the line. (If c were also 0, it would lie on the line; the tests don't have that.) |
 
-The case a = 0 is common in real fonts: for a horizontal line, a is 0 whenever the control
-point's y is halfway between the end points' y. The quadratic formula would divide by 0 there.
+The a = 0 case is common in real fonts. For a horizontal line, a is 0 whenever the
+control point's y is halfway between the end points' y, and the quadratic formula would divide
+by 0 there.
 
-If a < 0, the second formula in the table gives the smaller t, so sort the roots.
+Sort the roots: when a < 0, the second formula in the table gives the smaller t.
 
 ### The roots that count
 
-Keep only the roots with 0 ≤ t ≤ 1, including t = 0 and t = 1, where the line passes through
-p1 or p3. Roots outside that range belong to the curve's polynomial beyond its ends. For each
-root you keep, the point is P(t) = A t² + B t + C.
+Keep only the roots with 0 ≤ t ≤ 1, ends included: t = 0 and t = 1 are where the line passes through
+p1 or p3. Anything outside that range belongs to the polynomial beyond the curve's ends. Each
+kept root gives the point P(t) = A t² + B t + C.
 
 ### Precision
 
 Every coordinate is a multiple of 0.25 between −1000 and 1000, so a, b, c and D are exact in
 `double`.
 
-- In tangent cases D comes out as 0 with no rounding error, and so does a in linear cases, so
-  comparing with 0 works.
-- A tiny tolerance also works: every root other than 0 and 1 is at least 0.01 away from 0 and
-  1, and two different roots are at least 0.01 apart. If you accept t within, say, 1e-9 of the
-  ends, you get the same answers.
+- In tangent cases D comes out as 0 with no rounding error, and so does a in linear cases.
+  Comparing with 0 works.
+- A tiny tolerance works too. Every root other than 0 and 1 is at least 0.01 away from 0 and
+  1, and two different roots are at least 0.01 apart, so accepting t within 1e-9 of the ends
+  gives the same answers.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test checks one of these. After a failure the checker shows how many pass for each requirement
+and adds a `likely cause` line singling one out when it can.
 
 - **R1** A line that crosses the curve twice gives both points. The line is infinite: where l1
   and l2 sit along it makes no difference.
@@ -195,9 +194,9 @@ output:  5 5
          125.2 30
 ```
 
-On the first line, A = (−20, 0) and K = (0, −20), so a = 0. Then b = K · (20, 10) = −200 and
-c = K · ((0, 0) − (−10, 5)) = 100, so t = −c / b = 0.5 and P(0.5) = (5, 5). Both curves
-bulge sideways, so a horizontal line crosses each of them once.
+Take the first line. A = (−20, 0) and K = (0, −20), so a = 0 and the quadratic formula is out.
+b = K · (20, 10) = −200 and c = K · ((0, 0) − (−10, 5)) = 100, which gives t = −c / b = 0.5 and
+P(0.5) = (5, 5). Both curves bulge sideways, so a horizontal line crosses each once.
 
 ### Example 3: a tangent (test `13-R4-arch-top`)
 
@@ -206,48 +205,47 @@ input:   curve 0 0 5 10 10 0 line 0 5 10 5
 output:  5 5
 ```
 
-Here a = 200, b = −200 and c = 50, so D = 40000 − 40000 = 0. The single root t = 0.5 is the
-top of the arch, where the line touches it, and your program prints that point once.
+Here a = 200, b = −200 and c = 50, so D = 40000 − 40000 = 0. The one root, t = 0.5, is the top
+of the arch where the line grazes it. Print that point once.
 
 ## Constraints
 
-- Every coordinate is between −1000 and 1000 and is a multiple of 0.25. l1 ≠ l2. In no test
-  does the curve lie along the line.
+- Coordinates are multiples of 0.25 between −1000 and 1000. l1 ≠ l2. In no test does the curve lie
+  along the line.
 - Every root other than 0 and 1 is at least 0.01 away from 0 and from 1. Two different roots
   are at least 0.01 apart.
 - A test has from 1 to 74 lines.
-- There are 35 tests: hand-made lines for each rule, random curves and lines, and one
-  horizontal line against every curve of 'o' and 'S' (JetBrains Mono Bold) and 'あ' (Noto
-  Sans JP).
-- Each case has a 10-second limit. A correct solution takes milliseconds.
+- 35 tests: hand-made lines for each rule, random curves and lines, and one horizontal line
+  against every curve of 'o' and 'S' (JetBrains Mono Bold) and 'あ' (Noto Sans JP).
+- Cases time out at 10 seconds; the intended solution needs milliseconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Write `solveQuadratic(a, b, c)` on its own first and test it by hand: (1, −3, 2) gives 1 and 2;
-(1, 2, 1) gives −1 once; (1, 0, 1) gives nothing; (0, 2, −1) gives 0.5. Once it works, the
-rest of the function is a few dot products.
+Write `solveQuadratic(a, b, c)` by itself first and try it by hand: (1, −3, 2) gives 1 and 2;
+(1, 2, 1) gives −1 once; (1, 0, 1) gives nothing; (0, 2, −1) gives 0.5. Once that behaves,
+what's left of the function is a few dot products.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Compute A, B and C from the curve, and K from the line. Turn them into the three numbers
-a, b, c. Solve, keep the roots between 0 and 1, sort them, and turn each one back into a point
-with A t² + B t + C. Check each step against Example 1.
+A, B and C come from the curve, K from the line. Reduce them to the three numbers a, b, c and
+solve. Keep the roots between 0 and 1, sort them, and turn each back into a point with
+A t² + B t + C. Example 1 lets you check every step.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- a = 0 happens often with horizontal lines. Dividing by 2a then gives `inf` or `nan`, and the
-  crossing disappears with no error.
+- a = 0 is routine with horizontal lines. Divide by 2a anyway and you get `inf` or `nan`, and
+  the crossing vanishes without any error.
 - If D = 0, return the root once.
 - Sort the roots. The sign of a decides which formula gives the smaller one, and reversing the
   line's direction flips that sign.
-- Don't check the points against l1 and l2. The line goes on forever.
-- Keep t = 0 and t = 1: use ≤ at both ends. A half-open range like 0 ≤ t < 1 loses crossings at
-  p3.
-- Check D before taking its square root. The square root of a negative number is `nan`.
+- Don't test the points against l1 and l2. The line goes on forever.
+- Keep t = 0 and t = 1, so use ≤ at both ends. A half-open range like 0 ≤ t < 1 loses
+  crossings at p3.
+- Look at D before you take its square root. The root of a negative number is `nan`.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -278,7 +276,7 @@ intersect(p1, p2, p3, l1, l2):
 .\check 13 -Dispute <id> "why"      set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+This is what a failing test prints:
 
 ```
   R4  A tangent line gives its touching point once .........................    1 / 4   FAILED
@@ -290,20 +288,21 @@ A failing test looks like this:
 
 ## After you pass: compare with the author's code
 
-[The blog's listing](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersections%20of%20a%20segment%20and%20a%20quadratic)
-is one function, `segmentQuadBezierIntersect`, that returns `std::vector<glm::vec2>`. It
-builds K, A, B and C as on this page, calls `solveQuadratic(dot(k, a), dot(k, b),
-dot(k, c - l1))`, and keeps the roots with −eps ≤ t ≤ 1 + eps.
+[The blog's
+listing](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersections%20of%20a%20segment%20and%20a%20quadratic)
+is one function, `segmentQuadBezierIntersect`, which returns `std::vector<glm::vec2>`. It builds K,
+A, B and C the way this page does, calls `solveQuadratic(dot(k, a), dot(k, b), dot(k, c - l1))`, and
+keeps the roots with −eps ≤ t ≤ 1 + eps.
 
-The blog's version differs from this assignment in a few ways:
+It differs from this assignment in these ways:
 
-- Despite its name, the function treats l1 and l2 as an infinite line. It doesn't check that a
-  point lies between them, which suits the blog's fill: its scanline spans the whole image.
+- Despite the name, it treats l1 and l2 as an infinite line and doesn't check that a point lies
+  between them. That suits the blog's fill, whose scanline spans the whole image.
 - The blog doesn't show `solveQuadratic`. The author's repository has it in `utils/Geometry.h`,
-  in `float`, with `eps` set to `std::numeric_limits<float>::epsilon()`. It treats |a| < eps as
-  the linear case, so it keeps the crossings where a = 0 (R5) that the plain quadratic formula
-  would lose. It returns one root when D is within eps of 0, and otherwise uses the form that
+  in `float`, with `eps` set to `std::numeric_limits<float>::epsilon()`. |a| < eps counts as
+  the linear case. That keeps the a = 0 crossings (R5) that the plain quadratic formula would
+  lose. If D is within eps of 0, it returns one root. Otherwise it uses the form that
   avoids cancellation: q = −(b + sign(b)·√D) / 2, with the roots q / a and c / q.
-- The points come out in the order `solveQuadratic` returns the roots, q / a first, which isn't
-  always increasing t. This assignment asks for increasing t so that each answer has one correct
-  form.
+- Points come out in whatever order `solveQuadratic` returns the roots, q / a first, and that
+  order can run against increasing t. This assignment asks for increasing t so each answer has one
+  correct form.

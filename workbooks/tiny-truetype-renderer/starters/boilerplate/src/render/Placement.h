@@ -4,11 +4,10 @@
 // Problem: problems/08-outline-lines.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   A placement is where a glyph goes on the canvas, given as three numbers: the pixel
-//   column of font x = 0, the pixel row of the baseline and the pixels per font unit.
-//   Together they turn font units (y up) into pixels (y down). You place glyphs with it in
-//   assignments 11, 14, 16 and 17, and in assignment 18 you move it along a line of text,
-//   one glyph at a time.
+//   Where a glyph goes on the canvas, in three numbers: the pixel column of font x = 0,
+//   the pixel row of the baseline, and pixels per font unit. They turn font units (y up)
+//   into pixels (y down). Assignments 11, 14, 16 and 17 place glyphs with it, and 18
+//   slides it along a line of text, one glyph at a time.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

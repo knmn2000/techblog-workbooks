@@ -73,7 +73,7 @@ export function homeCard(workbooks, domain) {
   const n = workbooks.length;
   return render(card({
     title: "Don't just read tech blogs. Learn by building.",
-    headline: 'Each workbook splits a technical post into coding assignments that add up to one project.',
+    headline: 'Pick a technical post and write what it describes, with a checker to tell you when you got it right.',
     pills: [pill(`${n} ${n === 1 ? 'workbook' : 'workbooks'}`), pill('Free and open source')],
     domain,
   }));

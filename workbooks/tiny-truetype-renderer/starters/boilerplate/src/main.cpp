@@ -3,10 +3,10 @@
 // Problem: problems/18-render-text.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This is the finished command-line program. `tiny_ttf <font.ttf> "<text>" <out.png>`
-//   draws a line of text with a TrueType font into a PNG sized to fit it, using your
-//   `TextRenderer`. An optional fourth argument sets the text height in pixels (64 by
-//   default).
+//   `tiny_ttf <font.ttf> "<text>" <out.png>` draws a line of text with a TrueType font
+//   into a PNG sized to fit it, through your `TextRenderer`. This is the finished
+//   command-line program. An optional fourth argument sets the text height in pixels (64
+//   by default).
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

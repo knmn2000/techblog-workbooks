@@ -4,9 +4,9 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The parser decodes one glyph record from the glyf table into the types in `Glyph.h`:
-//   the header of any glyph, and the contours and points of a simple one. In assignment 09
-//   you call it for every simple glyph inside a compound glyph.
+//   One glyph record from the `glyf` table goes in and a glyph from `Glyph.h` comes out:
+//   the header of any glyph, plus contours and points when it is simple. Assignment 09
+//   calls it for each simple glyph inside a compound glyph.
 //
 // Your job:
 //   Declare one function that decodes the glyph record at a given offset and length,

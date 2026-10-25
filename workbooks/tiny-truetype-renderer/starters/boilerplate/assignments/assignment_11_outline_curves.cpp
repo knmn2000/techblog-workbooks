@@ -20,10 +20,10 @@
 //   curves. The Boilerplate's `Outline.h` already declares it as `renderGlyphCurves`; if
 //   you wrote the header your own way, add the declaration now.
 //   It adds to src/render/Outline.cpp, which you started earlier: Implement the curve
-//   drawing. Walk each contour from an on-curve point and turn its points into straight
-//   lines and quadratic curves, adding an implied on-curve point between two off-curve
-//   points. Draw each curve as short lines with your curve function from
-//   `utils/Geometry.h`. Draw the red, green and blue markers after all the lines of the
+//   drawing. Walk each contour starting from an on-curve point, turning its points into
+//   straight lines and quadratic curves, with an implied on-curve point between any two
+//   off-curve points. Draw each curve as short lines using your curve function from
+//   `utils/Geometry.h`. The red, green and blue markers go down after all the lines of the
 //   outline.
 //   Earlier files you can use: src/utils/Geometry.h.
 //   Include them by their path under src/, e.g. #include "render/Outline.h".

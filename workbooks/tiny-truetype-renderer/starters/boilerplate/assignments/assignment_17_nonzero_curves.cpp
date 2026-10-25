@@ -15,15 +15,15 @@
 //
 // The other files of this assignment:
 //   It adds to src/render/NonZero.h, which you started earlier: Keep the non-zero fill
-//   function you declared in assignment 16. Your program now also passes it outlines with
-//   off-curve points, so it has to handle curves. You have nothing new to declare unless
-//   you add a helper for curves.
+//   function you declared in assignment 16. The outlines it gets now have off-curve
+//   points, so it has to handle curves, but there is nothing new to declare unless you add
+//   a helper for them.
 //   It adds to src/render/NonZero.cpp, which you started earlier: Make the non-zero fill
 //   work for curved outlines. Every crossing on a curve needs the direction the curve runs
 //   at that row. Once you split each curve where its y turns around, each piece runs one
 //   way, and comparing its end's y with its start's y gives that direction. If your
 //   `render/Scanline` from assignment 14 already splits curves and gives every crossing
-//   its direction, your assignment 16 fill may pass as it is; otherwise add what's
+//   its direction, your assignment 16 fill may pass as it is. Otherwise add what's
 //   missing, in `render/Scanline` or here.
 //   Earlier files you can use: src/render/Scanline.h and src/utils/Geometry.h.
 //   Include them by their path under src/, e.g. #include "render/NonZero.h".

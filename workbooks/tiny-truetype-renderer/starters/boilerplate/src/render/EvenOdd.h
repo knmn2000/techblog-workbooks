@@ -4,9 +4,8 @@
 // Problem: problems/14-even-odd-fill.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16
-//   adds the non-zero rule beside it, and the text renderer in assignment 18 uses that
-//   rule.
+//   Even-odd fill for a glyph, on top of your `render/Scanline`. The non-zero rule joins
+//   it in assignment 16 and is the one the text renderer uses in 18.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

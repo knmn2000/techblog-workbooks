@@ -33,7 +33,8 @@ function readProblem(file) {
   const unit = /\*\*(\w+)\*\*\s+\d+\s+of\s+\d+/.exec(head)?.[1]?.toLowerCase() ?? null;
   const concepts = (/\*Concepts:\*\s*(.+)/.exec(head)?.[1] ?? '')
     .split('·')
-    .map((s) => s.trim().replace(/`/g, ''))
+    // Tags link into the primer, [term](#primer/id): show the term only.
+    .map((s) => s.trim().replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/`/g, ''))
     .filter(Boolean);
   return { difficulty, concepts, unit };
 }
@@ -62,7 +63,14 @@ function projectTree(json) {
     const cut = f.path.lastIndexOf('/');
     const dir = cut < 0 ? '' : f.path.slice(0, cut + 1);
     if (!folders.has(dir)) folders.set(dir, []);
-    folders.get(dir).push({ ...f, name: f.path.slice(cut + 1) });
+    // purposeHtml turns `code` spans into <code>; purpose stays plain text for tooltips.
+    const escaped = f.purpose.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    folders.get(dir).push({
+      ...f,
+      name: f.path.slice(cut + 1),
+      purpose: f.purpose.replace(/`/g, ''),
+      purposeHtml: escaped.replace(/`([^`]+)`/g, '<code>$1</code>'),
+    });
   }
   const programs = Object.keys(json.checkpoints).length;
   return {

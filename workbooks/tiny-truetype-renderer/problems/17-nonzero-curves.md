@@ -9,23 +9,24 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-[Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
-section to the end, including the two cases where a scanline crosses one curve twice. Skip the
-code blocks if you want to work it out yourself.
+Optional: the blog's
+[Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section
+through to its end, including the two cases where a scanline crosses one curve twice. The code
+blocks can wait until you've worked it out your own way.
 
 ## Learning material
 
-- [Splitting a curve where y turns](#primer/curve-turning-point): the pieces `edgePieces` makes
-  in assignment 14 now also give each crossing its direction, from the piece's end y minus its
-  start y.
-- [The non-zero winding rule](#primer/nonzero): at the bottom of a `U` one curve crosses a row
-  twice, going down at one crossing and up at the other, so the running count changes by +1 at
-  one and by −1 at the other.
-- [Half-open edges](#primer/half-open): a row that touches a curve's extreme counts it twice with
-  opposite directions or not at all, and neither changes the fill (R5).
-- [Variable fonts](#primer/variable-font): test `17-R3-a-hiragana` draws あ from Noto Sans JP, a
-  variable font whose strokes overlap, and the non-zero rule fills the overlaps.
+- [Splitting a curve where y turns](#primer/curve-turning-point): a piece that keeps
+  one vertical direction crosses any row at most once, and its direction is plain to read. Your
+  `edgePieces` from assignment 14 already cuts curves this way.
+- [The non-zero winding rule](#primer/nonzero): the bottom of a `U` is one curve crossing a row
+  twice, once heading down and once heading up, so the running count changes by +1 at one
+  crossing and by −1 at the other.
+- [Half-open edges](#primer/half-open): a row that grazes the extreme of a curve counts it twice
+  with opposite directions, or skips it, and the fill comes out the same either way (R5).
+- [Variable fonts](#primer/variable-font): test `17-R3-a-hiragana` draws あ from Noto Sans JP,
+  a variable font whose strokes overlap. The non-zero rule is what fills
+  the overlaps.
 
 ## Source material
 
@@ -36,20 +37,18 @@ code blocks if you want to work it out yourself.
 
 ## Where this fits
 
-In assignment 16 you filled straight-line outlines with the non-zero rule. Real glyphs have
-curves, and a curve can cross one scanline twice, going up at one crossing and down at the other.
-In this assignment you extend your `render/NonZero` from assignment 16 to curves, using the curve
-splitting in your `render/Scanline` from assignment 14. The text renderer in assignment 18 fills
-every glyph with this fill.
+Assignment 16 filled polygons. Letters have curves, and one curve can cross a scanline twice, up
+at one crossing and down at the other. Extend `render/NonZero` to cope, borrowing the curve
+splitting from `render/Scanline` (assignment 14). The text renderer in 18 fills every glyph
+through this code.
 
 ## The problem
 
-Write a program that fills glyph outlines, curves included, on a black canvas with the non-zero
-rule and saves the picture as a PNG.
+Fill glyph outlines, curves included, by the non-zero rule on a black canvas and output a PNG.
 
 ### Input
 
-The checker runs `<program> <input-file> <output-png>` from the workbook folder.
+Run by the checker from the workbook folder: `<program> <input-file> <output-png>`.
 
 | Line | Meaning |
 |---|---|
@@ -60,81 +59,76 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `ends <e0> <e1> ...` | Index of the last point of each contour, counting from 0: contour k runs from the point after the previous end up to and including `e_k` |
 | `points <x> <y> <on\|off> ...` | The outline's points; coordinates may be fractional |
 
-There can be several outlines. Fill each one on its own, one after another, in the same colour.
-Compound glyphs arrive already resolved into one outline (assignment 09's job).
+An input can hold several outlines; fill each one on its own, in the same colour. Compound glyphs arrive
+already resolved into a single outline (assignment 09 did that work).
 
 ### Output
 
-A PNG (or binary PPM) `width` pixels wide and `height` pixels high, black to begin with. Paint a
-pixel in the fill colour when its centre (px + 0.5, py + 0.5) is inside an outline by the
-non-zero rule. The checker forgives edges that move by one pixel; missing or extra shapes and
-stray lines fail.
+Same picture as in assignment 16: `width` x `height` pixels, PNG or binary PPM, starting black. A
+pixel takes the fill colour when its centre (px + 0.5, py + 0.5) lies inside an outline by the
+non-zero rule. Edges may be off by one pixel; missing or extra shapes and stray lines fail.
 
-Write the picture to the output path you're given. The name ends in `.png`, but the checker
-looks at the contents, so a PNG and a binary PPM both work:
+The output name ends in `.png`, yet a binary PPM passes too: the checker reads what is in the file.
 
-- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
-  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
-  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
-  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
-  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
-  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
-  byte 10 as two bytes.
+- The `writePng` call in the boilerplate already covers PNG output, through `FrameBufferCanvas`
+  (assignment 06). To call stb yourself instead: include `third_party/stb_image_write.h` (your include
+  path already has it), put `#define STB_IMAGE_WRITE_IMPLEMENTATION` before the include in one file
+  only, and call `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- The by-hand route is a binary PPM: `P6`, then width, height and `255`, each separated by a space
+  or newline, the last one followed by a newline (for example `P6\n205 195\n255\n`), then the pixel
+  data, each pixel as red, green, blue bytes, taken from the top-left row by row. Open it in binary
+  mode (`std::ios::binary`); a text-mode stream on Windows writes any 10 in the pixel data as two
+  bytes.
 
 ### From points to edges
 
-Every contour is a closed loop: after its last point it continues to its first. Walk the points as
-in assignment 14:
+Contours close up: the last point connects back to the first. Walk the points the way assignment 14
+did:
 
 - Two on-curve points in a row make a straight line.
 - An off-curve point is the control point of a quadratic Bézier curve from the previous on-curve
   point to the next one: B(t) = (1−t)²·P0 + 2(1−t)t·P1 + t²·P2 for t from 0 to 1.
-- Two off-curve points next to each other have an implied on-curve point halfway between
-  them.
-- A contour can start with an off-curve point, or consist only of off-curve points.
+- Two off-curve points side by side have an implied on-curve point halfway between them.
+- A contour can start with an off-curve point, or consist of nothing but off-curve points.
 
 ### The non-zero rule with curves
 
 Every edge has a direction, from a point to the next one. For each place a scanline crosses the
-outline, note the x and whether the outline is going down or up the screen there (+1 or −1). Sort by
-x, keep a running count from left to right, and fill wherever the count isn't zero.
+outline, record the x and whether the outline is heading down or up the screen there (+1 or −1).
+Sort by x, keep a running count from left to right, and fill wherever the count isn't zero.
 
-A curve can cross one scanline twice. At the bottom of a `U`, the curve goes down then up, so its
-two crossings have opposite directions. Split each curve at the point where its y turns around:
-for y(t) = (1−t)²·y0 + 2(1−t)t·y1 + t²·y2 that is t = (y0 − y1) / (y0 − 2·y1 + y2), when the
-denominator isn't 0 and 0 < t < 1. Each piece is then monotone, going only up or only down. A
-monotone piece crosses a scanline at most once, and its direction comes from comparing its end's
-y with its start's y.
+A curve can cross one scanline twice. At the bottom of a `U` the curve goes down and then up, so
+its two crossings have opposite directions. The fix is to split each curve where its y turns
+around. For y(t) = (1−t)²·y0 + 2(1−t)t·y1 + t²·y2 that point is
+t = (y0 − y1) / (y0 − 2·y1 + y2), when the denominator isn't 0 and 0 < t < 1. Each piece is then
+monotone, going only up or only down. A monotone piece crosses a scanline at most once, and its
+direction comes from comparing the y at its end with the y at its start.
 
-To find a crossing on a line, interpolate. For a curve piece, solve y(t) = scanline y, a
-quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and c = y0 − scanline y
-(linear when a = 0). Take one root per piece: the one closest to [0, 1] (either one if
-both are inside), clamped to [0, 1]. A scanline through a split point gives two equal roots, both
-in [0, 1], so keeping every root in [0, 1] counts that crossing twice; 7 of this assignment's
-tests, such as `17-R1-o` and `17-R5-tangent`, have such rows. The clamp also covers a root that
-a rounding error puts outside [0, 1]. The crossing's x is (1−t)²·x0 + 2(1−t)t·x1 + t²·x2.
-Bisection on t also works, since each piece is monotone.
+Finding a crossing on a line is interpolation. On a curve piece, solve y(t) = scanline y, a
+quadratic in t: a·t² + b·t + c = 0 with a = y0 − 2·y1 + y2, b = 2·(y1 − y0) and
+c = y0 − scanline y (linear when a = 0). Take one root per piece: the one closest to [0, 1] (either
+one if both are inside), clamped to [0, 1]. A scanline through a split point gives two equal roots,
+both in [0, 1], so keeping every root in [0, 1] would count that crossing twice; 7 of this
+assignment's tests, such as `17-R1-o` and `17-R5-tangent`, have such rows. The clamp also rescues
+a root that rounding error pushed outside [0, 1]. The crossing's x is
+(1−t)²·x0 + 2(1−t)t·x1 + t²·x2. Bisection on t works too, since each piece is monotone.
 
-For vertices and touching scanlines, treat every piece as half-open in y: it counts at scanline
-y when min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a curve's extreme
-without crossing it then counts it either:
+Vertices and grazing scanlines follow the half-open rule again, applied to every piece: it counts
+at scanline y when min(y_start, y_end) ≤ y < max(y_start, y_end). A scanline that touches a
+curve's extreme without crossing it then counts the curve either:
 
 - twice, with opposite directions, when the extreme is the smaller y of both pieces, or
 - not at all, when the extreme is the larger y of both.
 
-Neither case changes the fill.
+The fill is the same both ways.
 
-Crossings can lie far outside the canvas, for example at large scales. Clamp x to the canvas
-before you convert it to an integer pixel index, because C++ doesn't define what happens when you
-convert a huge double to `int`.
+At large scales crossings land far outside the canvas, so clamp x to the canvas before it becomes an
+integer pixel index; converting a huge double to `int` has undefined behaviour in C++.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test checks one of these requirements, and the report shows how many tests pass under each when
+something fails. Sometimes a `likely cause` line names the requirement the failure resembles.
 
 - **R1** Fill each pixel whose centre is inside a curved outline, and no others.
 - **R2** Handle implied on-curve points, and contours that start with an off-curve point or have
@@ -159,8 +153,8 @@ input:   canvas 133 133
                 60 119.53 off 102.1 102.1 off
 ```
 
-(The `points` line is one line in the real input.) All eight points are off-curve, so each
-on-curve point is an implied midpoint. The curves between them make a circle:
+(The `points` line is one line in the real input.) All eight points are off-curve, so every
+on-curve point is an implied midpoint, and the curves between them make a circle:
 
 ![expected picture for 17-R2-all-off](../tests/17/expected/17-R2-all-off.png)
 
@@ -177,50 +171,50 @@ input:   canvas 223 148
 ```
 
 (One `points` line in the real input.) Two contours of four curves each, both going the same way,
-overlap in the middle. The overlap has a count of 2, so the non-zero rule fills it; the even-odd
-rule would leave a hole.
+overlap in the middle. The overlap has a count of 2, so the non-zero rule fills it; even-odd would
+leave a hole.
 
 ![expected picture for 17-R3-two-circles](../tests/17/expected/17-R3-two-circles.png)
 
 ### Example 3: overlapping strokes in a real glyph (test `17-R3-a-hiragana`)
 
-Noto Sans JP draws U+3042 (あ) as overlapping curved strokes, as many variable fonts do. Its
+Noto Sans JP draws U+3042 (あ) as overlapping curved strokes, as many variable fonts do. The
 outline has 106 points; `.\check 17 -Case 17-R3-a-hiragana` prints the full input.
 
 ![expected picture for 17-R3-a-hiragana](../tests/17/expected/17-R3-a-hiragana.png)
 
 ## Constraints
 
-- Canvases are at most about 560 x 560 pixels; outlines have at most a few hundred points.
-- Every contour has at least 2 points.
-- There are 24 tests: hand-made curved shapes for each rule, letters from JetBrains Mono Bold,
-  characters from Noto Sans JP, and 7 random glyphs (new ones with `-Fresh`). Each case has 10
-  seconds.
+- Canvases reach about 560 x 560 pixels at most; outlines run to a few hundred points.
+- Contours have 2 points or more.
+- 24 tests: hand-made curved shapes for each rule, letters from JetBrains Mono Bold, characters
+  from Noto Sans JP, and 7 random glyphs (new ones with `-Fresh`). Cases time out at 10 seconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Run `.\check 17` first: if your `render/Scanline` from assignment 14 already splits curves and
-records each crossing's direction, your non-zero fill from assignment 16 may pass already.
-Otherwise combine the two: assignment 14's `render/Scanline` (curves into edges, crossings per
-row) and assignment 16's `render/NonZero` (counting with directions). The new part is giving
-each curve crossing the right direction.
+Run `.\check 17` before writing anything. If your `render/Scanline` from assignment 14 already
+splits curves and records each crossing's direction, your non-zero fill from assignment 16 may
+pass as it stands. If it doesn't, the job is to join the two: assignment 14's `render/Scanline`
+(curves into edges, crossings per row) and assignment 16's `render/NonZero` (counting with
+directions). The missing piece is the right direction for each curve crossing.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Turn each contour into lines and curves in pixel coordinates. Split every curve at its y turning
-point so each piece is monotone in y. After that, every piece, line or curve, crosses a row at
-most once, with a direction you can read from its endpoints. Then fill as in assignment 16.
+Turn each contour into lines and curves in pixel coordinates, then split every curve at its y
+turning point so each piece is monotone in y. From there every piece, line or curve, crosses a row
+at most once, with a direction you can read off its endpoints. Fill the way you did in
+assignment 16.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- After splitting, solve the piece's quadratic for the scanline y and take one root: the one
-  closest to [0, 1], clamped to [0, 1]. Two equal roots come back when the scanline passes
-  through a split point. If the quadratic coefficient is 0, the equation is linear.
-- The direction of a curve piece is its end's y compared with its start's y, not the control point.
+- After splitting, solve the piece's quadratic for the scanline y and keep one root: the one
+  closest to [0, 1], clamped to [0, 1]. A scanline through a split point returns two equal roots.
+  If the quadratic coefficient is 0, the equation is linear.
+- A curve piece's direction is its end y against its start y. The control point plays no part.
 - Insert implied midpoints and handle contours that start off-curve, as in assignment 14.
 - Fill where the count is not zero, of either sign.
 </details>
@@ -257,30 +251,31 @@ for row in 0 .. height-1:
 ## After you pass: compare with the author's code
 
 The blog's [non-zero renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Fixing%20the%20counting%20error%20of%20B%C3%A9zier%20curve)
-doesn't split curves. If a scanline meets a curve twice, the renderer decides the two directions
-from the curve's convexity (`isBezierConvexUpwards`, the a > 0 test of assignment 15): a lambda
-`nearestX` picks the crossing nearer the curve's start, which gets one direction, and the crossing
-nearer its end gets the opposite. A curve met once takes its direction from its two ends. The
+doesn't split curves. If a scanline meets a curve twice, it works out the two directions from
+the curve's convexity (`isBezierConvexUpwards`, the a > 0 test of assignment 15). A lambda,
+`nearestX`, picks the crossing nearer the curve's start and gives it one direction; the crossing
+nearer the end gets the opposite. A curve met once takes its direction from its two ends. The
 renderer scans only the rows inside each component's bounding box, and fills each component of a
 compound glyph on its own.
 
-The listing differs from this page in these places:
+This page differs from the listing in these ways:
 
 - Like the line-only version, it fills only where the count is positive, so a contour wound the
   other way on its own would stay empty (assignment 16, test `16-R4-reversed`).
-- `nearestX` compares x distances, not t. When both ends of a curve are nearer the same crossing,
+- `nearestX` compares x distances, not t. If both ends of a curve are nearer the same crossing,
   that crossing gets both directions and the other gets none. The curve from (0, 0) through
   (100, 100) to (10, 0) meets the row y = 32 at x = 32.4 and 38.4, and both ends are nearer 32.4.
 - The bounding box comes from the component's own glyph header, before the compound glyph's
-  offset moves it, so the renderer scans a component moved up or down over the wrong rows. In
-  JetBrains Mono, ’ (U+2019) is the low quote, whose box runs from y = −160 to 145, moved up by
-  585 (1170 in the author's parser, see assignment 09). The renderer scans rows where none of it
-  lies and draws nothing. The dots of · (U+00B7) and ŀ (U+0140) vanish the same way.
+  offset moves it, so the renderer scans the wrong rows for a component shifted up or down. Take ’
+  (U+2019) in JetBrains Mono, the low quote: its box runs from y = −160 to 145, and the compound
+  glyph moves it up by 585 (1170 in the author's parser, see assignment 09). The renderer scans
+  rows where none of it lies and draws nothing. The dots of · (U+00B7) and ŀ (U+0140) vanish the
+  same way.
 - The previous on-curve point starts at (0, 0) and carries over between contours, as in
   assignments 11 and 14, so a contour that starts off-curve (R2, test `17-R2-off-first`) gets a
   wrong first curve and loses its closing one.
 - If a curve meets the row twice and one of its ends lies on the scanline, both the curve and the
   neighbouring edge count that end. The even-odd version tried to handle this case; this one has
-  no rule for it. A row that touches a curve's lowest point on screen gets one crossing instead of
-  zero or two. Both need a point that lies on an integer row, so they seldom show.
+  no rule for it. A row that touches a curve's lowest point on screen gets one crossing instead
+  of zero or two. Both need a point on an integer row, so they seldom show.
 - A straight edge that crosses the row left of the canvas adds no crossing, as in assignment 16.

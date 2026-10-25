@@ -9,27 +9,29 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. In this assignment you reach the blog's goal: a program that
-loads a Unicode font, draws any string with it and saves the result as a PNG. Skim the
+Skimming is optional, since this page is complete. The blog's destination is the program you write
+here: load a Unicode font, draw any string with it, save a PNG. The
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
-pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
+pictures in the
+[Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section
+show it.
 
 ## Learning material
 
-- [UTF-8](#primer/utf-8): `utf8ToCodepoints` in `utils/Unicode.h` turns the bytes of each `text`
-  line into code points, and the R1 tests use 2-, 3- and 4-byte characters.
-- [Glyph 0 and `.notdef`](#primer/notdef): `glyphFor` in `TextRenderer.cpp` returns 0 for a code
-  point the cmap doesn't map, so U+0378 in test `18-R2-unmapped` draws as a box with a slash.
-- [Variable fonts](#primer/variable-font): your `TextRenderer` reads Noto Sans JP's `glyf`
-  outlines and `hmtx` advances and skips its `gvar` and `HVAR` tables, which gives the font's
-  default instance, its Thin weight.
-- [Font units and the em](#primer/font-units): each `pen` line gives the scale in pixels per font
-  unit, and `main.cpp` works one out from a pixel height and the font's ascent and descent.
-- [Running a program from the terminal](#primer/command-line): once you build the `tiny_ttf`
-  target, `tiny_ttf <font.ttf> "<text>" <out.png>` draws your own text, in quotes when it has
-  spaces.
-- [Git and GitHub](#primer/git): after this assignment `solutions/` is a complete C++ project with
-  its own `README.md` and `.gitignore`, ready to commit and put on GitHub.
+- [UTF-8](#primer/utf-8): the Boilerplate's `utils/Unicode.h` holds `utf8ToCodepoints`, which
+  turns a `text` line's bytes into code points. The R1 tests use 2-, 3- and 4-byte characters.
+- [Glyph 0 and `.notdef`](#primer/notdef): the font's stand-in for a code point it has no glyph
+  for. The assignment (R2) needs glyph 0 for a code point the cmap doesn't map, and U+0378 in test
+  `18-R2-unmapped` shows what it looks like, a box with a slash.
+- [Variable fonts](#primer/variable-font): Noto Sans JP is one. Its `glyf` outlines and `hmtx`
+  advances are the default instance, the Thin weight, and its `gvar` and `HVAR` tables go unread.
+- [Font units and the em](#primer/font-units): each `pen` line carries a scale in pixels per font
+  unit, and the Boilerplate's `main.cpp` derives one from a pixel height and the font's ascent and
+  descent.
+- [Running a program from the terminal](#primer/command-line): once the `tiny_ttf` target builds,
+  `tiny_ttf <font.ttf> "<text>" <out.png>` draws any text you like, in quotes when it has spaces.
+- [Git and GitHub](#primer/git): after this assignment `solutions/` is a complete C++
+  project with its own `README.md` and `.gitignore`, ready to commit and put on GitHub.
 
 ## Source material
 
@@ -39,18 +41,17 @@ pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer
 
 ## Where this fits
 
-In assignments 01 to 17 you built the pieces one at a time. Here you put them together, going from
-the bytes of a font file and a string of text to a picture of that text. This is the last part of
-your project: `TextRenderer` uses the files of assignments 02 to 17, and `main.cpp` turns the
-project into a program you can run, `tiny_ttf <font.ttf> "<text>" <out.png>`.
+Assignments 01 to 17 built the parts. This one connects them: font bytes and a string go in, a
+picture of the text comes out. `TextRenderer` pulls in the files from assignments 02 to 17, and
+`main.cpp` turns the project into something you can run, `tiny_ttf <font.ttf> "<text>" <out.png>`.
 
 ## The problem
 
-Write a program that draws lines of text with a TrueType font and saves the picture as a PNG.
+Draw lines of text with a TrueType font and save the picture as a PNG.
 
 ### Input
 
-The checker runs `<program> <input-file> <output-png>` from the workbook folder.
+`<program> <input-file> <output-png>` is the command, executed in the workbook folder.
 
 | Line | Meaning |
 |---|---|
@@ -62,49 +63,48 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 
 - `pen`, `color` and `text` can repeat.
 - A `text` line starts where the pen is: at the most recent `pen` line, moved right by any text
-  drawn since. (The boilerplate passes the pen x on from one `text` line to the next.)
-- Draw later text on top of earlier text.
+  drawn since. (The boilerplate hands the pen x from one `text` line to the next.)
+- Later text draws on top of earlier text.
 
 ### Output
 
-A PNG (or binary PPM) `width` pixels wide and `height` pixels high. For each character, in order:
+A PNG (or binary PPM), `width` x `height` pixels. Draw the text one character at a time, in order:
 
 1. Decode UTF-8 into Unicode code points. A code point takes 1 to 4 bytes: `0xxxxxxx`,
    `110xxxxx 10xxxxxx`, `1110xxxx 10xxxxxx 10xxxxxx` or `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx`.
-2. Find the glyph with the font's cmap: the format 12 subtable with platform 0, encoding 4
-   (your `font/Cmap` from assignment 03). A code point the font doesn't map uses glyph 0
-   (`.notdef`, which most fonts draw as a box).
-3. Get its outline (assignments 04, 07 and 09): find the glyph's record with `loca`. A simple
-   glyph gives one outline. A compound glyph gives the outlines of its components placed with
-   their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment 09's
-   rules, your `font/CompoundGlyph`). An empty glyph (such as space) gives nothing. Fill every
-   component outline; filling them one by one or merged gives the same picture for these fonts.
-   Noto Sans JP is a [variable font](#primer/variable-font): use the outlines stored in `glyf`
+2. Map the code point to a glyph through the font's cmap: the format 12 subtable with platform 0, encoding 4 (your
+   `font/Cmap` from assignment 03). A code point the font doesn't map gets glyph 0 (`.notdef`,
+   which most fonts draw as a box).
+3. Get the outline (assignments 04, 07 and 09), starting with the glyph's record in `loca`. A
+   simple glyph gives one outline. A compound glyph gives the outlines of its components, placed
+   with their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment
+   09's rules, your `font/CompoundGlyph`). An empty glyph, a space for instance, gives nothing.
+   Fill every component outline; filling them one by one or merged gives the same picture for
+   these fonts.
+   Noto Sans JP is a [variable font](#primer/variable-font), so use the outlines stored in `glyf`
    and ignore its variation tables. Its weight axis runs from 100 to 900 with a default of 100,
-   so `glyf` holds the Thin weight, and the tests and their expected pictures draw Noto Sans JP
-   at that weight.
-4. Fill it with the non-zero rule (your `render/NonZero` from assignment 17), placed with
-   glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). Paint a pixel when
+   which means `glyf` holds the Thin weight, and the tests and their expected pictures draw Noto
+   Sans JP at that weight.
+4. Fill it with the non-zero rule (your `render/NonZero` from assignment 17), placed with glyph
+   point (x, y) at pixel position (penX + scale·x, baseline − scale·y). Paint a pixel when
    its centre is inside.
-5. Move the pen: penX += advanceWidth × scale, using the glyph's advance width from `hmtx`
-   (your `font/Metrics` from assignment 05; glyphs past numberOfHMetrics use the last advance).
-   Don't round the pen position: keep it fractional.
+5. Move the pen: penX += advanceWidth × scale, with the advance width from `hmtx` (your
+   `font/Metrics` from assignment 05; glyphs past numberOfHMetrics reuse the last advance). Don't
+   round the pen position; keep it fractional.
 
-The checker forgives edges that move by one pixel. Missing glyphs, glyphs in the wrong place or
+Edges that move by one pixel pass. Missing glyphs, glyphs in the wrong place or
 colour, and holes in the wrong places fail.
 
-Write the picture to the output path you're given. The name ends in `.png`, but the checker
-looks at the contents, so a PNG and a binary PPM both work:
+The output name ends in `.png`, and the checker looks inside the file, so either format passes:
 
-- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
-  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
-  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
-  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
-  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
-  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
-  byte 10 as two bytes.
+- PNG: `writePng` on your `FrameBufferCanvas` (the boilerplate calls it already), or
+  call `stbi_write_png(path, width, height, 3, pixels, width * 3)` yourself, with
+  `third_party/stb_image_write.h` on the include path and
+  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before its include in one file.
+- Binary PPM, as in assignment 06: the four fields `P6`, width, height and `255`, spaces or newlines
+  between them, one closing newline (for example `P6\n205 195\n255\n`), then the pixels, 3 bytes
+  each in red, green, blue order, starting top-left and going row by row. Use `std::ios::binary`:
+  Windows text mode would double every pixel byte 10.
 
 ### The pieces and the assignments that cover them
 
@@ -123,9 +123,8 @@ per `font` line and calls its `drawText` once per `text` line.)
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Every test checks one requirement. The report for a failing run lists passes for each, and now and
+then a `likely cause` line names the requirement behind the difference.
 
 - **R1** Decode UTF-8 into code points, including 2-, 3- and 4-byte characters.
 - **R2** Map characters to glyphs with cmap; a character the font doesn't have draws glyph 0.
@@ -147,8 +146,8 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
          text Hello, World!
 ```
 
-JetBrains Mono is a monospaced font: every advance width is 600 font units, so each character
-moves the pen 600 × 0.07 = 42 pixels.
+In JetBrains Mono every advance width is 600 font units, so each character moves the
+pen 600 × 0.07 = 42 pixels.
 
 ![expected picture for 18-E2E-hello](../tests/18/expected/18-E2E-hello.png)
 
@@ -177,9 +176,8 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
          text A͸B
 ```
 
-The middle character, U+0378 (bytes `cd b8` in UTF-8), isn't in JetBrains Mono's cmap, so your
-program draws glyph 0 in its place, a box with a slash. The pen still moves on by glyph 0's
-advance width.
+The middle character is U+0378 (bytes `cd b8` in UTF-8), which JetBrains Mono's cmap doesn't cover.
+Glyph 0 stands in, a box with a slash, and the pen still advances by glyph 0's advance width.
 
 ![expected picture for 18-R2-unmapped](../tests/18/expected/18-R2-unmapped.png)
 
@@ -187,33 +185,34 @@ advance width.
 
 - Both fonts in the tests have a platform 0 / encoding 4 format 12 cmap subtable. Canvases are at
   most 600 pixels wide.
-- The text contains no control characters, and no character needs more than one glyph.
-- There are 18 tests: one or more per requirement with JetBrains Mono Bold and Noto Sans JP, plus
-  phrases and random words (new ones with `-Fresh`). Each case has 10 seconds.
+- The text has no control characters, and no character needs more than one glyph.
+- 18 tests: one or more per requirement with JetBrains Mono Bold and Noto Sans JP, plus phrases
+  and random words (new ones with `-Fresh`). Limit: 10 seconds a case.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Make a small font class that loads these once: the table directory, the cmap mapping, the `loca`
-offsets and lengths, and the advance widths. Then drawing a string is a loop over code points.
+Write a small font class that loads these once: the table directory, the cmap mapping, the
+`loca` offsets and lengths, and the advance widths. Drawing a string is then a loop over code
+points.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Call the project files you already have: assignments 02 to 05 (tables), 07 and 09 (glyph
-outlines) and 17 (filling). Each one already hands the next step the data it needs. Decode the
-UTF-8 into code points first, then for each one find the glyph id, get its outlines, fill them and
-move the pen by the advance.
+outlines) and 17 (filling), each handing the next step what it needs. Decode the UTF-8 into code
+points first. Then, per code point, find the glyph id, get its outlines, fill them, and move the
+pen by the advance.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- A character the font doesn't map draws glyph 0, not nothing.
-- Keep the pen x as a double. Rounding it each step drifts by up to half a pixel per character.
-- The space character has no outline but does have an advance width.
+- A character the font doesn't map draws glyph 0. It doesn't draw nothing.
+- Keep the pen x as a double. Rounding at each step drifts by up to half a pixel per character.
+- A space has no outline but does have an advance width.
 - Fill every outline of a compound glyph.
-- Text runs off the canvas in one test: skip pixels outside it.
+- One test runs text off the canvas: skip pixels outside it.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -240,29 +239,29 @@ return penX
 
 ## After you pass: compare with the author's code
 
-The blog shows the final pictures but not the program that draws them. Its last `main.cpp`
-listing draws one glyph, 'a', and already uses `utf8ToCodepoints` and `FontParser::getGlyph`.
-The final program is in the author's repository. Its `main.cpp` opens Noto Sans JP once in a
+The blog shows the final pictures but not the program behind them. Its last `main.cpp` listing
+draws one glyph, 'a', and already uses `utf8ToCodepoints` and `FontParser::getGlyph`. The finished
+program lives in the author's repository. There, `main.cpp` opens Noto Sans JP once in a
 `FontParser`, decodes "ほげ" with `utf8ToCodepoints`, and sets the scale to 800 pixels divided by
 ascent − descent from `getFontMetric`, as the Boilerplate's `main.cpp` does with its pixel height
-(in the assignment's tests, each `pen` line gives the scale).
+(in this assignment's tests, each `pen` line gives the scale).
 `FontParser::getGlyphs` returns the glyphs and the canvas width. `FrameBufferCanvas::renderGlyphs`
 then fills each glyph with `renderGlyphByNonZero` in white, starting x at 0 and adding each
 glyph's `advanceWidth` in font units, while `setGlyphBaseline(ascent)` and `setScale` put the
 whole transform in pixels. Your `TextRenderer` and its `drawText` do the work of `getGlyphs` and
 `renderGlyphs` together.
 
-The repository differs from this page in these places:
+Differences between the repository and this page:
 
-- `getGlyph` throws "Glyph not found" for a code point the cmap doesn't map, where this page
-  draws glyph 0 (R2, test `18-R2-unmapped`).
+- `getGlyph` throws "Glyph not found" for a code point the cmap doesn't map. This page draws
+  glyph 0 (R2, test `18-R2-unmapped`).
 - A compound glyph takes its advance only from a component with USE_MY_METRICS, and gets 0 when
   none has it, while the spec uses the compound glyph's own `hmtx` entry. JetBrains Mono has 22
   mapped compound glyphs without that flag, among them `"`, the backtick and `´`, so the author's
-  renderer would draw the next character on top of them. Your renderer takes every advance from
-  `hmtx`, as the tests expect (R3).
+  renderer would draw the next character on top of them. Yours takes every advance from `hmtx`,
+  as the tests expect (R3).
 - Glyphs past `numberOfHMetrics` get no metrics and so an advance of 0 (assignment 05). Both
-  fonts in the tests store a record for every glyph, so this doesn't show here.
+  fonts in the tests store a record for every glyph, so it doesn't show here.
 - The fill scans only the rows of each component's untransformed bounding box, so a component
   moved up or down can disappear, as with ’ in assignment 17.
-- `utf8ToCodepoints` throws on a malformed byte; the Boilerplate's version turns it into U+FFFD.
+- `utf8ToCodepoints` throws on a malformed byte. The Boilerplate's version turns it into U+FFFD.

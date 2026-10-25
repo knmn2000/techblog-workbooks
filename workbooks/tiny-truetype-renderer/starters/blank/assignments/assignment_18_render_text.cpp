@@ -13,7 +13,7 @@
 //   Read the input line by line (see Input): load the font on `font`, make the canvas on
 //   `canvas`, keep the pen and colour from `pen` and `color`, and draw each `text` line
 //   (the rest of the line after `text` and its space) with your `TextRenderer`, carrying
-//   the returned pen x on to the next `text` line. Then write the picture to the output
+//   the pen x it returns on to the next `text` line. Then write the picture to the output
 //   path (see Output).
 //
 // The other files of this assignment:

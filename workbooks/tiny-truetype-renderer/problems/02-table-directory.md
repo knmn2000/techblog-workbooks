@@ -9,42 +9,42 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-[Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table)
-section through the paragraph that starts "This is the structure of the". The author's code
-follows that paragraph.
+Optional background: the blog's
+[Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table) section,
+down to the paragraph that begins "This is the structure of the". The author's code comes right
+after it.
 
 ## Learning material
 
 - [TrueType and OpenType fonts](#primer/truetype): the first 4 bytes of the file are the scaler
-  type, which says the font has TrueType outlines; `readTableDirectory` reads them and moves on.
-- [The table directory](#primer/table-directory): the 12-byte header and the 16-byte records
-  that `readTableDirectory` in `src/font/FontParser.cpp` reads.
-- [Table tags](#primer/table-tag): the 4-byte name at the start of each record, which you keep
-  with its trailing spaces and write between quotes.
-- [`char` and `unsigned char`](#primer/char): the tag's 4 bytes come from your `ByteReader` as
-  numbers, and `TableRecord::tag` is a `std::string`, so each byte has to become a `char`.
-- [`<vector>`](#primer/vector): `readTableDirectory` returns the records in file order as a
-  `std::vector<TableRecord>`, and the program writes one `table` line per element.
+  type, which marks TrueType outlines. `readTableDirectory` reads them and moves on.
+- [The table directory](#primer/table-directory): the 12-byte header and 16-byte records read by
+  `readTableDirectory` in `src/font/FontParser.cpp`.
+- [Table tags](#primer/table-tag): the 4-byte name opening each record. You keep trailing spaces
+  and print the tag between quotes.
+- [`char` and `unsigned char`](#primer/char): your `ByteReader` returns the tag's bytes as
+  numbers, but `TableRecord::tag` is a `std::string`, so each byte has to become a `char`.
+- [`<vector>`](#primer/vector): `readTableDirectory` returns a `std::vector<TableRecord>` in file
+  order, and the program prints a `table` line per element.
 - [`<map>`](#primer/map): `Tables` in `src/font/FontParser.h` is a
-  `std::map<std::string, TableRecord>` keyed by tag; `FontParser` fills it, and assignments 03
-  to 05 look tables up in it with `at`.
-- [Range-based `for`](#primer/range-for): the program writes the records with
+  `std::map<std::string, TableRecord>` keyed by tag. `FontParser` fills it; assignments 03 to 05
+  fetch tables from it with `at`.
+- [Range-based `for`](#primer/range-for): the program prints records with
   `for (const TableRecord& t : tables)`, and `FontParser`'s constructor copies them into the map
-  with the same kind of loop.
-- [The `nodiscard` attribute](#primer/nodiscard): `FontParser::tables()` in `FontParser.h`
-  carries it, so the compiler warns about a call that throws the result away.
-- [Compiling and linking](#primer/compile-and-link): from now on the build compiles several
-  `.cpp` files, `ByteReader.cpp` and `FontParser.cpp` among them, and links them into each
-  program; the checker reports a failure in either step as a Compile Error.
-- [Compiler warnings](#primer/compiler-warnings): the checker lists the build's warnings before
-  the tests; a signed and unsigned mix-up often shows up there first.
-- [Ninja](#primer/ninja): CMake hands the build to Ninja, which recompiles only the files you
-  changed since the last check.
-- [The `build` folder](#primer/build-folder): the programs land in `build/solutions/`, and each
+  with a loop of the same shape.
+- [The `nodiscard` attribute](#primer/nodiscard): `FontParser::tables()` in `FontParser.h` has
+  it, so a call that drops the result gets a compiler warning.
+- [Compiling and linking](#primer/compile-and-link): from here the build compiles several `.cpp`
+  files (`ByteReader.cpp`, `FontParser.cpp` and others) and links them into each program. A
+  failure in either step shows up as a Compile Error.
+- [Compiler warnings](#primer/compiler-warnings): the checker prints the build's warnings ahead
+  of the tests, and a signed/unsigned mix-up often turns up there first.
+- [Ninja](#primer/ninja): CMake passes the build to Ninja, which recompiles only what changed
+  since your last check.
+- [The `build` folder](#primer/build-folder): programs land in `build/solutions/`, and each
   test's input and your output in `build/cases/NN/`.
-- [The study server](#primer/study-server): with `.\study` running, the book's Run and Submit
-  buttons check your code without the terminal.
+- [The study server](#primer/study-server): run `.\study` and the book's Run and Submit buttons
+  check your code without a terminal.
 
 ## Source material
 
@@ -56,29 +56,28 @@ follows that paragraph.
 
 ## Where this fits
 
-A TrueType font is a set of tables (`cmap`, `glyf`, `head`, ...) packed into one file. The
-table directory at the start of the file lists where each table is. Assignments 03 to 05
-read the `cmap`, `loca` and metrics tables at the offsets you find here. Their inputs already
-contain this assignment's output lines for the tables they need, so you can solve them without
-finishing this one.
+A TrueType font is a pile of tables (`cmap`, `glyf`, `head`, ...) in one file, and the table
+directory at the front says where each one starts. Assignments 03 to 05 read `cmap`, `loca` and
+the metrics at offsets you produce here. Their inputs already carry the lines for the tables
+they need, so none of them waits on this one.
 
 ## The problem
 
-Write a program that reads a font file's table directory and writes how many tables the font
-has, then the record of every table.
+Read a font file's table directory, then write the number of tables followed by one record per
+table.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
+Same command line as ever, `<program> <input-file> <output-file>`, started from the workbook folder.
 The input file has one line:
 
 | Line | Meaning |
 |---|---|
 | `font <path>` | The file to read. The path is relative to the workbook folder and contains no spaces. |
 
-Some test files are real fonts. Others are hand-made files that hold only a table directory,
-so their offsets may point past the end of the file. Your program doesn't need to follow any
-offset.
+Some test files are real fonts. The rest are hand-made and hold nothing but a directory, so
+their offsets can point past the end of the file. That doesn't matter, because your program
+never follows an offset.
 
 ### Output
 
@@ -97,8 +96,8 @@ table "<tag>" <checkSum> <offset> <length>
 
 ### The table directory
 
-The directory starts at byte 0 of the file. All numbers are big-endian, and your
-`ByteReader` from assignment 01 can read every field.
+It starts at byte 0 of the file. Every number is big-endian, so the `ByteReader` from
+assignment 01 reads all of the fields.
 
 The first 12 bytes are the header, which Apple's manual calls the "offset subtable":
 
@@ -110,7 +109,7 @@ The first 12 bytes are the header, which Apple's manual calls the "offset subtab
 | `entrySelector` | uint16 | log2 of that power of 2 |
 | `rangeShift` | uint16 | `numTables` × 16 − `searchRange` |
 
-Of these five fields, your program needs `numTables`. Skip the other four, whatever they hold.
+You need `numTables` and nothing else from these five. Skip the others, whatever they hold.
 
 The table records follow from byte 12, `numTables` of them, 16 bytes each:
 
@@ -123,14 +122,14 @@ The table records follow from byte 12, `numTables` of them, 16 bytes each:
 
 Record k (counting from 0) starts at byte 12 + 16k.
 
-A well-made font sorts the records by tag, byte by byte, so uppercase tags come before
-lowercase ones. Your program can ignore that order.
+Well-made fonts sort the records by tag, byte by byte, so uppercase tags come before
+lowercase ones. You can ignore that order.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test targets one requirement, so a failure report can show passes requirement by requirement.
+If the difference points somewhere specific, a `likely cause` line names the requirement
+(R1, R2 or R3) it points to.
 
 - **R1** Your program reads `numTables` as the uint16 at byte 4 and writes it as
   `tables <numTables>` (it can be 0). It skips the scaler type before it and the 6 bytes of
@@ -168,9 +167,8 @@ output:  tables 3
          table "head" 858993459 76 4
 ```
 
-The 6 bytes of search fields are all `ff` here, where a real font with 3 tables would hold 32,
-1 and 16.
-Your program skips them, so their values don't change the output.
+The search fields are all `ff` here, where a real 3-table font would hold 32, 1 and 16. The
+program skips them, so it makes no difference.
 
 ### Example 2: tags that end in spaces (test `02-R3-spaces`)
 
@@ -186,8 +184,8 @@ output:  tables 6
          table "zzz " 6 128 4
 ```
 
-The tag `A   ` is the byte `41` followed by three spaces (`20 20 20`). All four bytes are
-part of the tag.
+The tag `A   ` is the byte `41` and then three spaces (`20 20 20`). All four bytes belong to
+the tag.
 
 ### Example 3: a real font (test `02-E2E-jetbrains`)
 
@@ -215,17 +213,17 @@ output:  tables 18
          table "prep" 2328730654 64596 214
 ```
 
-The records follow tag order, and the tables sit in the file in a different order: `head`
-comes first in the file (offset 300) but has the eleventh record.
+The records are in tag order and the tables sit in the file in another: `head` is the first
+table in the file (offset 300) but the eleventh record.
 
 ## Constraints
 
 - `numTables` is between 0 and 30 in the tests, and the tags in one file are all different.
 - Tags are printable ASCII without `"`, and spaces appear only at the end.
-- Each file holds the whole directory. Offsets and lengths may point anywhere, including past
-  the end of the file.
-- Each case has a 10-second limit. A correct solution finishes in milliseconds.
-- There are 13 tests: hand-made directories for each rule, three small fonts built with
+- Each file holds the whole directory. Offsets and lengths may point anywhere, past the end of
+  the file included.
+- A case times out after 10 seconds. A correct solution finishes in milliseconds.
+- 13 tests: hand-made directories for each rule, three small fonts built with
   fontTools (with and without the hinting tables, and with three tables removed), both real
   fonts, and 3 random directories.
 
@@ -233,28 +231,27 @@ comes first in the file (offset 300) but has the eleventh record.
 
 <details><summary>Hint 1: where to start</summary>
 
-The answer comes from the first 12 + 16 × `numTables` bytes. Read the header fields in the
-order the font stores them, then loop `numTables` times, reading one record per pass.
+The first 12 + 16 × `numTables` bytes hold all you need. Read the header fields in
+the order the font stores them, then loop `numTables` times and read one record per pass.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Seek to byte 0. Read and ignore a uint32 (the scaler type). Read the uint16 `numTables`.
-Skip 6 bytes. Then, for each record, read 4 single bytes and append each one to a string as a
-character, and read three uint32 values. Your `ByteReader` from assignment 01
-does the byte order for you.
+Seek to byte 0. Read and discard a uint32 (the scaler type). Read the uint16 `numTables`.
+Skip 6 bytes. Then, for each record, read 4 single bytes and append each to a string as a
+character, followed by three uint32 values. Your `ByteReader` from assignment 01 takes care of
+the byte order.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - Don't trim the tag. `"cvt "` and `"cvt"` are different answers.
-- Read the tag byte by byte. If you read it as a uint32 and pull the characters out with
-  shifts, start with the most significant byte, or you'll get `pamc` for `cmap`.
-- Skip 6 bytes after `numTables`. If you skip 4 or 8, you read every record from the wrong
-  position.
-- `checkSum` and `offset` can be 2^31 or more. Keep them in an unsigned 32-bit (or wider)
+- Read the tag byte by byte. If you read a uint32 and pull the characters out with shifts,
+  start from the most significant byte or `cmap` comes out as `pamc`.
+- Skip 6 bytes after `numTables`. Skip 4 or 8 and you read every record from the wrong place.
+- `checkSum` and `offset` can be 2^31 or more, so keep them in an unsigned 32-bit (or wider)
   type.
-- The search fields may be wrong. Don't use them to count the records.
+- The search fields can be wrong. Don't use them to count the records.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -285,7 +282,7 @@ for each record: write 'table "' + tag + '"', checkSum, offset, length
 .\check 02 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+The checker prints this for a failing test:
 
 ```
   R3  Tags as the font stores them: 4 characters, trailing spaces kept ...........    0 / 2   FAILED
@@ -296,35 +293,33 @@ A failing test looks like this:
           reproduce: build/solutions/assignment_02.exe build/cases/02/02-R3-tiny-hinted.in build/cases/02/02-R3-tiny-hinted.out
 ```
 
-Your lines may come in any order, so the checker looks for each expected line in your output.
-If one is missing, it shows the closest line you wrote with the same keyword. Inside a quoted
+Output order doesn't matter: the checker looks for each expected line anywhere in your output.
+For a missing line it shows the closest line you wrote with the same keyword. Inside a quoted
 tag, the checker compares every space.
 
 ## After you pass: compare with the author's code
 
 [The blog's directory parser](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parser%20for%20table%20directory)
-runs in `FontParser`'s constructor, right after it opens the file. It skips the scaler type,
-reads `numTables`, skips the three search fields, and then reads each record: the tag as 4
-raw bytes turned into a string, followed by the checksum, offset and length. The records go
-into a map keyed by tag, the field `directory`, so every later step finds its table by name,
-for example the `cmap` table in assignment 03. The post calls it a hash map; the author's
-repository declares it as a `std::map<std::string, Tag>`, where `Tag` is the record struct
-(`checkSum`, `offset`, `length`, with the tag itself as the key). In your project the record
-is `TableRecord`, the map is `Tables`, and `readTableDirectory` returns the records in file
-order.
+runs in `FontParser`'s constructor, straight after the file opens. It skips the scaler
+type, reads `numTables`, skips the three search fields, then reads each record: the tag as 4
+raw bytes turned into a string, followed by checksum, offset and length. Records go into a map
+keyed by tag, the field `directory`, so later steps can find a table by name (assignment 03
+fetches `cmap` that way). The post calls it a hash map, but the author's repository declares a
+`std::map<std::string, Tag>`, where `Tag` is the record struct (`checkSum`, `offset`, `length`,
+with the tag itself as the key). In your project the record is `TableRecord`, the map is
+`Tables`, and `readTableDirectory` returns the records in file order.
 
-In the repository, the constructor goes on past the snippet: it throws "Could not find glyf
-table" if there is no `glyf` record, then loads `loca`, `cmap` and `hmtx` (assignments 04, 03
-and 05) before it returns.
+The repository's constructor goes on past the snippet. It throws "Could not find glyf table"
+when there's no `glyf` record, then loads `loca`, `cmap` and `hmtx` (assignments 04, 03 and 05)
+before returning.
 
-The snippet doesn't check the scaler type or verify any
-checksums. Neither matters for this workbook. A stricter parser would reject files whose
-scaler type isn't `0x00010000` or `'true'` (an `'OTTO'` font stores CFF outlines instead of
-`glyf`), and could check each table's sum of uint32 words against its `checkSum`.
+The snippet checks neither the scaler type nor any checksum, and for this workbook that costs
+nothing. A stricter parser would reject files whose scaler type isn't `0x00010000` or `'true'`
+(an `'OTTO'` font stores CFF outlines instead of `glyf`), and could compare each table's sum of
+uint32 words with its `checkSum`.
 
-The tag comes from `ifs.read`, whose result the snippet doesn't check, so in a file that ends
+The tag comes from `ifs.read`, whose result the snippet doesn't check. In a file that ends
 inside a tag, the rest of its 4-byte buffer stays uninitialised (the next `readUint32` then
-throws). Later steps look
-tables up with `directory["cmap"]` and the like. For a tag the font doesn't have, `operator[]`
-adds an all-zero record, and the step reads from offset 0 of the file instead of reporting a
-missing table. Looking records up with `at()` or `find()` turns that into an error.
+throws). Later steps look tables up with `directory["cmap"]` and the like, and for a tag the
+font lacks, `operator[]` adds an all-zero record, so the step reads from offset 0 of the file
+instead of reporting a missing table. `at()` or `find()` would turn that into an error.

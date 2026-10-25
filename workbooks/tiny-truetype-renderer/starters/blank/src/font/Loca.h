@@ -4,16 +4,16 @@
 // Problem: problems/04-loca.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This header declares your reader for the `loca` table, which gives the position and
-//   size in bytes of each glyph's record, by glyph id. Assignment 09 uses it to find the
-//   parts of a compound glyph, and assignment 18 to find the glyph of every character.
+//   Glyph records sit at positions the `loca` table lists by glyph id, each with an offset
+//   and a size in bytes. This header is your reader for that table. Assignment 09 uses it
+//   to find the parts of a compound glyph, and 18 to find the glyph for every character.
 //
 // Your job:
-//   Declare a glyph location (an offset from the start of the file and a length in bytes)
-//   and a function that reads the location of every glyph, given your `ByteReader` and the
-//   table records from your `FontParser`. Have its result also carry `numGlyphs` and
-//   whether `loca` uses the short or long format, because the first output line prints
-//   both.
+//   Two declarations: a glyph location (an offset from the start of the file and a length
+//   in bytes) and a function that reads the location of every glyph, taking your
+//   `ByteReader` and the table records from your `FontParser`. The result also carries
+//   `numGlyphs` and whether `loca` is in the short or long format, because the first
+//   output line prints both.
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

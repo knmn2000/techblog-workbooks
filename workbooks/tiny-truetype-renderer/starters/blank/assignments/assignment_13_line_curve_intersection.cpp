@@ -10,18 +10,18 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read each line as the curve's three points p1, p2 and p3 (start, control point, end),
-//   then the word `line` and the line's two points l1 and l2. Call your line-curve
-//   function from `utils/Geometry.h` and write the points it returns on one line (`x1 y1`
-//   or `x1 y1 x2 y2`), or `none` if it returns no points.
+//   Each input line starts with the curve's three points p1, p2 and p3 (start, control
+//   point, end), then the word `line` and the line's two points l1 and l2. Call your
+//   line-curve function from `utils/Geometry.h` and write the points it returns on one
+//   line (`x1 y1` or `x1 y1 x2 y2`), or `none` if it returns no points.
 //
 // The other files of this assignment:
 //   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
 //   a quadratic curve (start, control point, end) and two points on an infinite line, and
 //   returns the points where they meet, in increasing t. There can be none, one or two.
 //   Put a dot product helper here too, and a helper that solves a t^2 + b t + c = 0,
-//   including the linear case a = 0. The Boilerplate's `Geometry.h` from assignment 10
-//   already declares the function as `segmentQuadBezierIntersect`.
+//   linear case a = 0 included. The Boilerplate's `Geometry.h` from assignment 10 already
+//   declares the function as `segmentQuadBezierIntersect`.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:

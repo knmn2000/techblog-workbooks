@@ -10,8 +10,8 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read the `canvas` line and create a canvas of that size, then read the `point`, `rect`
-//   and `line` commands in order and call the matching canvas operation with each
+//   Read the `canvas` line and make a canvas that size, then go through the `point`,
+//   `rect` and `line` commands in order, calling the matching canvas operation with each
 //   command's colour. At the end, write the picture to the output path (see Output).
 //
 // The other files of this assignment:

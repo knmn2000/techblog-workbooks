@@ -9,25 +9,24 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-"Renderer: Curve Rendering" section through
-[TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
-and stop at the sentence that introduces the code. The author's code follows it.
+The blog covers this in its "Renderer: Curve Rendering" section, through [TrueType Bézier
+curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves),
+up to the sentence that introduces the code. Reading it is optional. The author's code is what
+follows that sentence.
 
 ## Learning material
 
-- [On-curve and off-curve points](#primer/on-off-curve): the walk ends a straight line at an
-  on-curve point and uses an off-curve point as a curve's control point, where assignment 08
-  joined both kinds with lines.
-- [Implied on-curve points](#primer/implied-point): between two off-curve points in a row,
-  `renderGlyphCurves` ends one curve and starts the next at their midpoint, which gets a blue
-  marker.
-- [Flattening a curve](#primer/flattening): each curve becomes n short lines between points from
-  your `bezierLerp`, with n = max(1, ceil(|P1 - P0| + |P2 - P1|)) in pixels.
-- [Integer division and `%`](#primer/integer-division): index a contour's points modulo its
-  length, so the point after the last is the first and the walk can go all the way round.
-- [`<cmath>`](#primer/cmath): `std::hypot` measures the two legs of the control polygon for n,
-  and `std::ceil` rounds their sum up.
+- [On-curve and off-curve points](#primer/on-off-curve): a contour mixes the two kinds. Assignment
+  08 joined every point with a line whatever its kind; here an on-curve point ends a straight
+  line and an off-curve point is a curve's control point.
+- [Implied on-curve points](#primer/implied-point): the midpoint of two off-curve points in a
+  row. `renderGlyphCurves` gives each one a blue marker.
+- [Flattening a curve](#primer/flattening): a curve goes onto the canvas as short straight lines,
+  and `bezierLerp` from assignment 10 supplies the points between them.
+- [Integer division and `%`](#primer/integer-division): contours are circular, and `%` is how an
+  index past the last point wraps back to the first.
+- [`<cmath>`](#primer/cmath): `std::hypot` for lengths and `std::ceil` for rounding up, which
+  the piece count needs.
 
 ## Source material
 
@@ -38,25 +37,21 @@ and stop at the sentence that introduces the code. The author's code follows it.
 
 ## Where this fits
 
-In assignment 08 you joined every point of an outline with a straight line. TrueType outlines
-also contain quadratic curves: an off-curve point pulls the outline toward itself without
-lying on it.
-
-Here you draw outlines with their curves, using your curve function in `utils/Geometry.h`
-from assignment 10. Assignments 13, 14 and 17 use the same pieces (lines and curves) to fill
-glyphs.
+Assignment 08 drew every outline point-to-point with straight lines. Real TrueType contours also
+have off-curve points, which pull the outline toward themselves without lying on it. You now
+draw those as curves, with the curve function from assignment 10 in `utils/Geometry.h`.
+Assignments 13, 14 and 17 fill glyphs from the same lines and curves.
 
 ## The problem
 
-Your program reads one or more glyph outlines and draws each one with straight lines and
-quadratic curves. It marks every point with a coloured square and writes the picture as a
-PNG.
+Read one or more glyph outlines and draw each with straight lines and quadratic curves. Every
+point gets a coloured square, and the picture goes out as a PNG.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-The output file name ends in `.png`. The input is the same as in assignment 08, except that
-`style` has one number (there is no marker size):
+The checker runs `<program> <input-file> <output-file>` from the workbook folder and writes to a
+name ending in `.png`. The input format is the one from assignment 08, except that `style` takes a
+single number (no marker size):
 
 | Line | Meaning |
 |---|---|
@@ -68,26 +63,26 @@ The output file name ends in `.png`. The input is the same as in assignment 08, 
 | `ends <e0> <e1> ...` | Index of the last point of each contour, in increasing order. |
 | `points <x> <y> <on\|off> ...` | Every point of the outline, in order, in font units. |
 
-`place`, `style` and `color` come before the first `outline` and may change between
-outlines; each outline uses the most recent ones. Coordinates may have a fractional part.
+`place`, `style` and `color` come before the first `outline` and can change between outlines;
+an outline uses the most recent ones. Coordinates may have a fractional part.
 
 ### Output
 
-Your program writes a PNG (or binary PPM) file of `w` x `h` pixels, RGB, with (0, 0) at the
+Same kind of file as in assignment 08: `w` x `h` pixels, RGB, PNG or binary PPM, with (0, 0) at the
 top-left and y growing downwards.
 
-Write the picture to the output path the checker gives you. The name ends in `.png`, but the
-checker looks at the contents, so a PNG and a binary PPM both work.
+Write it to the output path the checker gives you. Despite the `.png` name, the file can be a PNG or
+a binary PPM, since the checker reads the contents.
 
-- `writePng` on your `FrameBufferCanvas` from assignment 06 writes a PNG. The boilerplate
-  calls it.
-- To write a binary PPM by hand, write the header `P6`, the width, the height and `255`,
-  separated by spaces or newlines and ended by one newline (for example `P6\n205 195\n255\n`),
-  then 3 bytes per pixel (red, green, blue), row by row from the top-left. Open the file in
-  binary mode (`std::ios::binary`), or Windows writes every pixel byte 10 as two bytes.
-- To write a PNG without the canvas, use `third_party/stb_image_write.h`, which is on your
-  project's include path. `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one
-  file, then call `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
+- The PNG route: the boilerplate already calls `writePng`, a method of the `FrameBufferCanvas` you
+  built in assignment 06.
+- By hand, use the PPM layout from assignment 06: `P6`, the width and height, then `255`, separated
+  by spaces or newlines, with one newline closing the header (for example `P6\n205 195\n255\n`).
+  After it come the pixels as red, green and blue bytes, a row at a time from the top-left. Leave
+  out `std::ios::binary` and Windows turns each byte 10 in the pixel data into two bytes.
+- For a PNG without the canvas, `third_party/stb_image_write.h` is on your project's include path.
+  Put `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+  `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
 
 ### From font units to pixels
 
@@ -99,22 +94,21 @@ py = baseline - scale * y
 ```
 
 Keep these as floating-point numbers. Work out curves and implied points from them, and round
-to whole pixels only when you draw. Your `FrameBufferCanvas::drawLine` from assignment 06
-takes whole pixels, so round each end to the nearest pixel (`std::lround`) as you call it; a
+to whole pixels only at the moment you draw. `FrameBufferCanvas::drawLine` from assignment 06
+takes whole pixels, so round each end to the nearest pixel (`std::lround`) as you call it. A
 cast to `int` cuts off the fraction instead of rounding.
 
-Rounding every point first, as in assignment 08, moves a curve by less than a pixel and also
-passes.
+Rounding every point first, as assignment 08 did, shifts a curve by less than a pixel, and that
+passes too.
 
 ### Walking a contour
 
 `ends` splits the points into contours as in assignment 08: contour 0 is points 0 to `e0`,
-contour 1 is points `e0 + 1` to `e1`, and so on. Each contour closes on itself: after its last
-point comes its first point again.
+contour 1 is points `e0 + 1` to `e1`, and so on. A contour closes on itself, so its first point
+follows its last.
 
-Go round a contour keeping a current position: the point where the next piece starts. The
-current position is an on-curve point, real or implied. Each point you reach adds one piece
-that starts at the current position:
+Go round a contour with a current position, the point where the next piece starts. It is always
+an on-curve point, real or implied. Each point you reach adds one piece that starts there:
 
 | Point reached | The point after it | Piece | Current position becomes |
 |---|---|---|---|
@@ -123,27 +117,24 @@ that starts at the current position:
 | off-curve | off-curve | a curve with this point as control point, ending at the implied on-curve point halfway between the two | the implied point |
 
 If two off-curve points follow each other, the outline passes through the point halfway
-between them. The font doesn't store that point; it is an implied on-curve point, where
-one curve ends and the next begins. The last and the first point of a contour count as
-neighbours.
+between them. The font doesn't store that point. It is an implied on-curve point, where one
+curve ends and the next begins. The last and first points of a contour count as neighbours.
 
-Every piece starts at an on-curve point, real or implied, so start the walk at the first
-on-curve point of the contour and go round the contour back to it. The walk ends when it
-reaches the starting point again:
+Every piece starts at an on-curve point, so start the walk at the contour's first on-curve
+point and go round until you reach it again:
 
 - if the contour's last point is on-curve, the final piece is a line back to the start;
 - if it is off-curve, the final piece is a curve that ends at the start.
 
-A contour with k off-curve control points gives k curves. If the contour has no on-curve
-point, start at the implied point halfway between its last and first points.
+A contour with k off-curve control points gives k curves. If it has no on-curve point at all,
+start at the implied point halfway between its last and first points.
 
 The start rule matters for two kinds of contour:
 
-- a contour whose first point is off-curve: its first curve starts at the last on-curve
-  point of the contour (or at the implied point between its last and first points), not
-  at (0, 0);
-- a contour with only off-curve points, such as a circle made of 4 or 8 control points: it is
-  a ring of curves joined at implied points.
+- one whose first point is off-curve: its first curve starts at the contour's last on-curve
+  point (or at the implied point between its last and first points), and never at (0, 0);
+- one made only of off-curve points, such as a circle of 4 or 8 control points: a ring of curves
+  joined at implied points.
 
 ### Drawing a curve
 
@@ -159,19 +150,19 @@ Draw it as `n` short straight lines from B((i - 1) / n) to B(i / n) for i = 1 to
 n = max(1, ceil(|P1 - P0| + |P2 - P1|))       lengths in pixels
 ```
 
-The curve is no longer than its control polygon (P0 to P1 to P2), so each short line is
-about a pixel long at most. More pieces are fine; much fewer, such as a fixed 8, leave visible
-corners on long curves.
+A curve is never longer than its control polygon (P0 to P1 to P2), so each short line comes
+out about a pixel long at most. More pieces are fine. Far fewer, such as a fixed 8, leave
+visible corners on long curves.
 
-Lines and curves both use thickness `lineThickness` and the outline's colour.
+Lines and curves share the thickness `lineThickness` and the outline's colour.
 
 ### Markers
 
 Draw the markers after all the lines and curves of an outline: a square of size
 `2 * lineThickness` on each point, rounded to the nearest pixel. The size is even, so the
 square covers columns x − lineThickness up to x + lineThickness − 1 (and rows likewise), as
-your `FrameBufferCanvas::drawRect` from assignment 06 does: a 6 x 6 marker at x = 50 covers
-columns 47 to 52. The colour depends on the point:
+`FrameBufferCanvas::drawRect` from assignment 06 does: a 6 x 6 marker at x = 50 covers columns
+47 to 52. The colour depends on the point:
 
 | Point | Colour |
 |---|---|
@@ -179,27 +170,22 @@ columns 47 to 52. The colour depends on the point:
 | every off-curve point of the input | green (0, 255, 0) |
 | every implied on-curve point | blue (0, 0, 255) |
 
-Markers go on top of the lines, so each square shows its full colour. In the tests, markers of
-different colours don't overlap, so you can draw them in any order.
+Markers sit on top of the lines, so each square shows its full colour. Markers of different
+colours don't overlap in the tests, so the order among them is free.
 
 ### How the picture is compared
 
-The checker compares your PNG with the expected picture pixel by pixel. The one difference it
-forgives is an edge that moved by at most 1 pixel, so small rounding differences pass. A
-straight line where a curve should be, a missing marker or a marker of the wrong colour fails.
+The checker compares your PNG with the expected picture, pixel by pixel. The one allowance is for edges:
+one that sits at most 1 pixel from where it should is forgiven, so small rounding differences pass.
+A straight line where a curve belongs, a missing marker or a marker of the wrong colour fails.
 
-If a test fails, the checker writes a diff picture:
-
-- red where you have extra ink;
-- blue where ink is missing;
-- magenta for the wrong colour;
-- yellow for forgiven pixels.
+A failing test's diff picture uses the colours from before: red for ink you added, blue for ink you left
+out, magenta where the colour is wrong, yellow for pixels the tolerance forgave.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test exercises one of the requirements below. The failure report lists how many tests pass
+under each, and a `likely cause` line may blame one of them.
 
 - **R1** A straight line joins two on-curve points in a row, including the last and first
   point of a contour.
@@ -232,9 +218,9 @@ output:  a 344 x 344 PNG
 
 ![A white arch: two curves meeting at a blue marker at the top, closed by a straight line at the bottom](../tests/11/expected/11-R3-two-offs.png)
 
-In pixels the points are A (12, 332) on, B (12, 12) off, C (332, 12) off and D (332, 332)
-on. B and C are both off-curve, so the outline passes through the implied point halfway
-between them, M = (172, 12). The pieces are:
+In pixels the points are A (12, 332) on, B (12, 12) off, C (332, 12) off and D (332, 332) on.
+B and C are both off-curve, so the outline passes through the implied point halfway between
+them, M = (172, 12). The pieces:
 
 | Piece | From | Control | To | n |
 |---|---|---|---|---|
@@ -242,7 +228,7 @@ between them, M = (172, 12). The pieces are:
 | curve | M (172, 12) | C (332, 12) | D (332, 332) | 160 + 320 = 480 |
 | line | D (332, 332) | | A (12, 332) | |
 
-Then draw 6 x 6 markers: red on A and D, green on B and C, blue on M.
+Then the 6 x 6 markers: red on A and D, green on B and C, blue on M.
 
 ### Example 2: a contour that starts off-curve (test `11-R4-off-first`)
 
@@ -260,8 +246,8 @@ output:  a 384 x 294 PNG
 
 ![expected picture for 11-R4-off-first](../tests/11/expected/11-R4-off-first.png)
 
-In pixels: P0 (282, 282) off, P1 (372, 102) on, P2 (192, 12) on, P3 (12, 192) off. Start at
-P1, the first on-curve point, and go round:
+In pixels: P0 (282, 282) off, P1 (372, 102) on, P2 (192, 12) on, P3 (12, 192) off. The first
+on-curve point is P1, so start there and go round:
 
 1. P2 is on-curve: a line P1 → P2.
 2. P3 is off-curve and so is the next point, P0 (the walk has wrapped round): a curve from P2
@@ -269,8 +255,8 @@ P1, the first on-curve point, and go round:
 3. P0 is off-curve and the next point, P1, is on-curve: a curve from (147, 237) with control
    P0 back to P1.
 
-If you start at P0 with a "previous point" of (0, 0), you draw the first curve from (12, 282),
-where font (0, 0) lands, and miss the curve from the implied point into P1.
+Start at P0 with a "previous point" of (0, 0) and you draw the first curve from (12, 282),
+where font (0, 0) lands, and lose the curve from the implied point into P1.
 
 ### Example 3: only off-curve points (test `11-R4-circle4`)
 
@@ -288,16 +274,16 @@ output:  a 344 x 344 PNG
 
 ![A white circle through four blue markers, with four green markers at the corners of a square around it](../tests/11/expected/11-R4-circle4.png)
 
-There is no on-curve point, so start at the implied point between the last and first
-points: halfway between (332, 332) and (12, 332), which is (172, 332). Each of the 4 points
-is then the control point of one curve, and the 4 curves meet at 4 implied points (blue).
+No on-curve point, so the walk starts at the implied point between the last and first points:
+halfway between (332, 332) and (12, 332), which is (172, 332). Each of the 4 points is the
+control point of one curve, and the 4 curves meet at 4 implied points (blue).
 
 ## Constraints
 
-- `w` and `h` are at most 600. Every outline fits inside the canvas.
-- Every contour has at least 3 points. An outline has at most a few hundred points.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
-- There are 27 tests: glyphs from JetBrains Mono Bold (`-`, `A`, `B`, `D`, `S`, `a`, `g`,
+- Canvas size `w` x `h` is at most 600 x 600, and every outline lies inside it.
+- Contours have 3 points or more, and an outline has a few hundred points at most.
+- Past 10 seconds a case fails, though a correct solution takes only milliseconds.
+- 27 tests: glyphs from JetBrains Mono Bold (`-`, `A`, `B`, `D`, `S`, `a`, `g`,
   `o`), Nerd Font icons from the same file whose contours start off-curve or have no
   on-curve point (U+F111, U+F10C, U+E3A2, U+F00C, U+F042), `a` and U+5341 十 from Noto Sans JP,
   hand-made outlines and 3 random outlines.
@@ -306,35 +292,35 @@ is then the control point of one curve, and the 4 curves meet at 4 implied point
 
 <details><summary>Hint 1: where to start</summary>
 
-Before you start, open the expected pictures for Example 1 and Example 3: the blue markers
-show where curves join. Write `drawQuadratic()` first and test it on Example 1's numbers.
-Then copy your loop from assignment 08 and change what happens at an off-curve point.
+Open the expected pictures for Example 1 and Example 3 first. The blue markers show where
+curves join. Then write `drawQuadratic()` and test it on Example 1's numbers. After that, copy
+your loop from assignment 08 and change what happens at an off-curve point.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Convert the contour's points to pixels (as floats) and index them modulo the contour's
-length, so the point after the last is the first. Keep a `current` position: where the next
-piece starts. Find the first on-curve point and start there (or start at the midpoint of the
-last and first points if there is none). Then, for each point after the start, all the way
-round: an on-curve point ends a straight line; an off-curve point ends a curve at the next
-point if that is on-curve (skip it, since the curve used it) or at the midpoint with the next point.
-Each time, `current` becomes the end of what you drew. Collect the markers as you go and draw
-them after the loop.
+Convert the contour's points to pixels (as floats) and index them modulo the contour's length,
+so the point after the last is the first. Keep a `current` position, where the next piece
+starts. Find the first on-curve point and start there, or at the midpoint of the last and first
+points if there is none. Then go round, one lap, and for each point after the start: an
+on-curve point ends a straight line; an off-curve point ends a curve at the next point if that
+one is on-curve (skip it, since the curve used it), or at the midpoint with the next point
+otherwise. After each piece, `current` becomes the end of what you drew. Collect the markers as
+you go and draw them after the loop.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Don't start the walk at point 0 with `current = (0, 0)`: a contour whose first point is
+- Don't start the walk at point 0 with `current = (0, 0)`. A contour whose first point is
   off-curve then starts its first curve in the wrong place and loses its closing curve.
 - A contour can have no on-curve point at all (`fa-circle`, U+F111, is 8 off-curve points).
-  Make sure your search for an on-curve start point doesn't loop forever or fall off the end.
+  Make sure your search for a starting on-curve point can't loop forever or run off the end.
 - After a curve that ends at a real on-curve point, don't draw a line to that point again.
-- The midpoint test also applies across the wrap: the last and first points of a contour are
+- The midpoint test applies across the wrap too: the last and first points of a contour are
   neighbours.
 - Draw markers after all lines, or later lines cross earlier markers.
-- Use the pixel positions for the piece count: `n` from font units would be far too many at
-  a small scale (still correct, but slow) or too few at a large one.
+- Take the piece count from pixel positions. From font units, `n` would be far too big at a
+  small scale (still correct, but slow) or too small at a large one.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -375,9 +361,8 @@ drawOutline(outline):
 .\check 11 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-Open your picture (`build/cases/11/<id>.out.png`) next to the expected one
-(`tests/11/expected/<id>.png`) and the diff the checker writes. A failing test looks like
-this:
+Open your output (`build/cases/11/<id>.out.png`), the expected image
+(`tests/11/expected/<id>.png`) and the diff the checker writes. A failure report looks like this:
 
 ```
   R3  Two off-curve points in a row: implied on-curve point halfway (blue) .    0 / 4   FAILED
@@ -391,26 +376,25 @@ this:
 ## After you pass: compare with the author's code
 
 [The blog's curve renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Glyph%20outline%20rendering%20with%20curves)
-replaces the start position with a transform matrix: `setGlyphBaseline` moves the glyph to
-its baseline and `transformVec2` maps a point to the picture. The new `renderGlyphOutline`
-walks each contour once, and `drawBezier` flattens a curve with `quadBezierLerp`, using the
-ceiling of the control polygon's length as the number of pieces, as on this page. Its markers
-are twice the line thickness and coloured red, green and blue, as here.
+swaps the start position for a transform matrix: `setGlyphBaseline` moves the glyph to its
+baseline and `transformVec2` maps a point to the picture. The new `renderGlyphOutline` walks
+each contour once, and `drawBezier` flattens a curve with `quadBezierLerp`, taking the ceiling
+of the control polygon's length as the number of pieces, as this page does. Its markers are
+twice the line thickness and coloured red, green and blue, as here.
 
-The snippet keeps a "previous point" that starts at (0, 0) and
-doesn't reset it between contours. A contour whose first point is off-curve therefore starts
-its first curve from that stale point and skips its real closing curve. The JetBrains Mono
-Nerd Font has over two thousand such contours, most of them in icons, and R4's tests cover
-them. The snippet also draws each marker inside the walk, so a line drawn later can cross an
-earlier marker. On this page you draw all markers last.
+Its walk keeps a "previous point" that starts at (0, 0) and isn't reset between contours. A
+contour whose first point is off-curve therefore starts its first curve from that stale point
+and skips its real closing curve. The JetBrains Mono Nerd Font has over two thousand such
+contours, most of them in icons, and R4's tests cover them. The snippet also draws each marker
+inside the walk, so a line drawn later can cross an earlier marker. Here all markers go last.
 
-After every off-curve point the snippet puts a blue marker on the end of the curve, whether that
-end is an implied point or a real on-curve point. Most real points get their red marker
-later in the walk, drawn over the blue one. A contour's first point gets its red marker before
-the walk comes back round, so when the contour's last point is off-curve, that first point
-stays blue. JetBrains Mono has about 16,500 such contours, including both
-contours of `a` in test `11-R5-big-markers`. R5 asks for red there, because the point is a
-real on-curve point from the font.
+Markers have a second quirk. After every off-curve point the snippet puts a blue marker on the
+end of the curve, whether that end is an implied point or a real on-curve one. Most real points
+get their red marker later in the walk, drawn over the blue. A contour's first point gets its
+red one before the walk comes back round, so when the contour's last point is off-curve, that
+first point stays blue. JetBrains Mono has about 16,500 such contours, both contours of `a` in
+test `11-R5-big-markers` among them. R5 asks for red there, because the font says it's a real
+on-curve point.
 
 The blog's prose marks on-curve points in white, and its code uses red, as this page does. The
 author's repository also multiplies the transform by a `scale` (`scale * transformMat`), which

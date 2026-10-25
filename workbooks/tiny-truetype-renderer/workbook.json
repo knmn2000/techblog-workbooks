@@ -36,38 +36,38 @@
       ]
     },
     "purposes": {
-      "src/font/ByteReader.h": "This header declares your reader for big-endian numbers at any position in a font file: unsigned and signed integers of 8, 16 and 32 bits, and F2Dot14 fixed point. Every later assignment that reads the font goes through it: assignment 02 reads the table directory, 03 to 05 the `cmap`, `loca` and metrics tables, and 07 and 09 the glyph outlines.",
-      "src/font/ByteReader.cpp": "This file implements the reader: it opens the font, moves the position and turns bytes into numbers. Every later assignment that reads the font runs this code, so a bug here makes their tests fail too.",
-      "src/font/FontParser.h": "This header declares the code that opens a font and reads its table directory: the tag, checksum, offset and length of each table (`cmap`, `glyf`, `loca`, ...). Assignments 03 to 05 find their tables by tag in these records, and assignment 18 opens the font through it.",
-      "src/font/FontParser.cpp": "This file reads the table directory from the first bytes of the font through your `ByteReader`. Each later assignment that needs a table looks up its offset in these records.",
-      "src/font/Cmap.h": "This header declares your reader for the `cmap` table, the font's map from each character to the glyph that draws it. It reads the format 12 subtable stored for platform 0, encoding 4, which covers the full Unicode range, and assignment 18 looks up every character of a line of text in the result.",
-      "src/font/Cmap.cpp": "This file reads the platform 0 / encoding 4 subtable of `cmap` into a map from character to glyph. Assignment 18 builds this map once per font.",
-      "src/font/Loca.h": "This header declares your reader for the `loca` table, which gives the position and size in bytes of each glyph's record, by glyph id. Assignment 09 uses it to find the parts of a compound glyph, and assignment 18 to find the glyph of every character.",
-      "src/font/Loca.cpp": "This file reads `maxp`, `head` and `loca` and works out one location per glyph id. Assignments 09 and 18 look glyphs up in its result.",
-      "src/font/Metrics.h": "This header declares your reader for the `hhea` and `hmtx` tables: the font's ascent and descent, and each glyph's advance width and left side bearing. Assignment 18 moves the pen by each glyph's advance width and sizes the text from the ascent and descent.",
-      "src/font/Metrics.cpp": "This file reads `hhea`, `maxp` and `hmtx` into the ascent, the descent and one set of metrics per glyph id, including the glyphs that store a side bearing and no advance. Assignment 18 loads these metrics once per font.",
-      "src/FrameBufferCanvas.h": "The canvas holds a picture in memory, one colour per pixel. It can paint one pixel, fill a rectangle, draw a thick line and save the picture as a PNG. You draw every later picture on it: outlines in 08 and 11, filled glyphs in 14, 16 and 17, and a line of text in 18.",
-      "src/FrameBufferCanvas.cpp": "The canvas holds a picture in memory, one colour per pixel. It can paint one pixel, fill a rectangle, draw a thick line and save the picture as a PNG. You draw every later picture on it: outlines in 08 and 11, filled glyphs in 14, 16 and 17, and a line of text in 18.",
-      "src/GlyphComponent.h": "Every outline in the project takes this form: its points (x and y in font units, on or off the curve) and the index where each contour ends. Assignments 08 and 11 draw outlines in this form, 09 produces one per part of a compound glyph, and 14, 16 and 17 fill them.",
-      "src/Glyph.h": "This type holds a glyph as the glyf table stores it: whether it is empty, simple or compound, its contour count, its bounding box and, for a simple glyph, its outline. Your `GlyphParser` returns it, and in assignment 09 you use its kind to tell simple glyphs from compound ones.",
-      "src/font/GlyphParser.h": "The parser decodes one glyph record from the glyf table into the types in `Glyph.h`: the header of any glyph, and the contours and points of a simple one. In assignment 09 you call it for every simple glyph inside a compound glyph.",
-      "src/font/GlyphParser.cpp": "The parser decodes one glyph record from the glyf table into the types in `Glyph.h`: the header of any glyph, and the contours and points of a simple one. In assignment 09 you call it for every simple glyph inside a compound glyph.",
-      "src/render/Placement.h": "A placement is where a glyph goes on the canvas, given as three numbers: the pixel column of font x = 0, the pixel row of the baseline and the pixels per font unit. Together they turn font units (y up) into pixels (y down). You place glyphs with it in assignments 11, 14, 16 and 17, and in assignment 18 you move it along a line of text, one glyph at a time.",
-      "src/render/Outline.h": "These files draw a glyph's outline on the canvas, with straight lines between its points and a marker on every point. In assignment 11 you add a second drawing, with the real curves, to the same files.",
-      "src/render/Outline.cpp": "These files draw a glyph's outline on the canvas, with straight lines between its points and a marker on every point. In assignment 11 you add a second drawing, with the real curves, to the same files.",
-      "src/font/CompoundGlyph.h": "This code turns any glyph into the simple outlines you draw it with. It reads a compound glyph's components, moves, scales or rotates each one, and resolves components nested at any depth. In assignment 18 you draw every character of a line of text through it, so your text renderer doesn't need to tell simple glyphs from compound ones.",
-      "src/font/CompoundGlyph.cpp": "This code turns any glyph into the simple outlines you draw it with. It reads a compound glyph's components, moves, scales or rotates each one, and resolves components nested at any depth. In assignment 18 you draw every character of a line of text through it, so your text renderer doesn't need to tell simple glyphs from compound ones.",
-      "src/utils/Geometry.h": "This header holds the project's 2D maths: a point type, lerp, and the point at t on a quadratic Bezier curve. In assignment 11 you draw curves with it. Assignments 12, 13 and 15 add the blog's helpers for where segments and curves meet and for a curve's lowest point. The blog's fill uses them; your fills from assignment 14 on work out each crossing from its edge instead.",
-      "src/render/Scanline.h": "It holds the steps both fill rules share: it turns an outline into edges in pixels and finds, row by row, where the line through the pixel centres crosses them. Your even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both run on it.",
-      "src/render/Scanline.cpp": "It holds the steps both fill rules share: it turns an outline into edges in pixels and finds, row by row, where the line through the pixel centres crosses them. Your even-odd fill in this assignment and your non-zero fill in assignments 16 and 17 both run on it.",
-      "src/render/EvenOdd.h": "It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16 adds the non-zero rule beside it, and the text renderer in assignment 18 uses that rule.",
-      "src/render/EvenOdd.cpp": "It fills a glyph by the even-odd rule, on top of your `render/Scanline`. Assignment 16 adds the non-zero rule beside it, and the text renderer in assignment 18 uses that rule.",
-      "src/render/NonZero.h": "It fills a glyph by the non-zero rule, the rule TrueType uses, on top of your `render/Scanline`. This assignment handles straight edges, assignment 17 adds curves, and the text renderer in assignment 18 fills every glyph with it.",
-      "src/render/NonZero.cpp": "It fills a glyph by the non-zero rule, the rule TrueType uses, on top of your `render/Scanline`. This assignment handles straight edges, assignment 17 adds curves, and the text renderer in assignment 18 fills every glyph with it.",
-      "src/utils/Unicode.h": "It turns UTF-8 text into Unicode code points, the numbers a font's cmap maps to glyphs. Your `TextRenderer` decodes every line of text with it.",
-      "src/TextRenderer.h": "This class holds the whole pipeline. It loads a font's tables once, then maps each character of a line of text to its glyph, fills the glyph by the non-zero rule and moves the pen on by its advance. The checker's program and `main.cpp` both draw through it.",
-      "src/TextRenderer.cpp": "This class holds the whole pipeline. It loads a font's tables once, then maps each character of a line of text to its glyph, fills the glyph by the non-zero rule and moves the pen on by its advance. The checker's program and `main.cpp` both draw through it.",
-      "src/main.cpp": "This is the finished command-line program. `tiny_ttf <font.ttf> \"<text>\" <out.png>` draws a line of text with a TrueType font into a PNG sized to fit it, using your `TextRenderer`. An optional fourth argument sets the text height in pixels (64 by default)."
+      "src/font/ByteReader.h": "Your reader for big-endian numbers at any position in a font file: signed and unsigned integers of 8, 16 and 32 bits, and F2Dot14 fixed point. The table directory, `cmap`, `loca`, the metrics and the glyph outlines all get read through it.",
+      "src/font/ByteReader.cpp": "Opens the font, moves the position and assembles numbers from bytes. A bug here fails the tests of every assignment that reads the font, so get it solid before moving on.",
+      "src/font/FontParser.h": "Every table in the font gets a record: tag, checksum, offset and length (`cmap`, `glyf`, `loca` and the rest). Assignments 03 to 05 find their tables by tag in these records, and 18 opens the font through them.",
+      "src/font/FontParser.cpp": "From the first bytes of the font, through your `ByteReader`, this file reads the table directory. Later assignments look up their table's offset in these records.",
+      "src/font/Cmap.h": "Characters map to glyphs through the `cmap` table, and this is your reader for it. Only the format 12 subtable stored for platform 0, encoding 4 is needed, which covers the full Unicode range. Assignment 18 looks up every character of a line of text in the result.",
+      "src/font/Cmap.cpp": "Finds the platform 0 / encoding 4 subtable of `cmap` and reads it into a map from character to glyph. Assignment 18 builds the map once per font.",
+      "src/font/Loca.h": "Glyph records sit at positions the `loca` table lists by glyph id, each with an offset and a size in bytes. This header is your reader for that table. Assignment 09 uses it to find the parts of a compound glyph, and 18 to find the glyph for every character.",
+      "src/font/Loca.cpp": "`maxp`, `head` and `loca` go in, one location per glyph id comes out. Assignments 09 and 18 look glyphs up in the result.",
+      "src/font/Metrics.h": "Ascent and descent from `hhea`, and each glyph's advance width and left side bearing from `hmtx`; this header is the reader for both. In assignment 18 the pen moves by advance widths and the text is sized from the ascent and descent.",
+      "src/font/Metrics.cpp": "Reads `hhea`, `maxp` and `hmtx` into the ascent, the descent and a set of metrics for each glyph id. Some glyphs store a side bearing and no advance; they get entries too. Assignment 18 loads all of this once per font.",
+      "src/FrameBufferCanvas.h": "A picture in memory, one colour per pixel, with operations to paint a pixel, fill a rectangle, draw a thick line and save a PNG. Outlines (08, 11), filled glyphs (14, 16, 17) and the line of text in 18 all end up drawn on it.",
+      "src/FrameBufferCanvas.cpp": "Painting, rectangles, thick lines and the PNG save all live here. All later drawing assignments go through this code, so a stray pixel in it shows up in all of them.",
+      "src/GlyphComponent.h": "An outline is a list of points (x and y in font units, on or off the curve) plus the index where each contour ends, and this header defines that shape. Assignments 08 and 11 draw it, 09 produces one per part of a compound glyph, and 14, 16 and 17 fill it.",
+      "src/Glyph.h": "What the `glyf` table stores for a glyph: whether it is empty, simple or compound, its contour count, its bounding box and, for a simple glyph, its outline. Your `GlyphParser` returns it, and in assignment 09 the kind tells compound glyphs from simple ones.",
+      "src/font/GlyphParser.h": "One glyph record from the `glyf` table goes in and a glyph from `Glyph.h` comes out: the header of any glyph, plus contours and points when it is simple. Assignment 09 calls it for each simple glyph inside a compound glyph.",
+      "src/font/GlyphParser.cpp": "Bytes of a glyph record become the types in `Glyph.h` here: the header of any glyph, then the contours and points of a simple one. The compound glyph code in assignment 09 calls it once per simple part.",
+      "src/render/Placement.h": "Where a glyph goes on the canvas, in three numbers: the pixel column of font x = 0, the pixel row of the baseline, and pixels per font unit. They turn font units (y up) into pixels (y down). Assignments 11, 14, 16 and 17 place glyphs with it, and 18 slides it along a line of text, one glyph at a time.",
+      "src/render/Outline.h": "Drawing a glyph's outline on the canvas: straight lines between its points and a marker on each one. Assignment 11 adds a second drawing function next to it, one that follows the real curves.",
+      "src/render/Outline.cpp": "Lines between a glyph's points, then a marker on every point: that is what this file draws. The curved version arrives here in assignment 11.",
+      "src/font/CompoundGlyph.h": "Turns any glyph into the simple outlines you draw it with. It reads a compound glyph's components, moves, scales or rotates each one, and resolves components nested at any depth. The text renderer in 18 draws every character through it, so it doesn't have to ask whether a glyph is simple.",
+      "src/font/CompoundGlyph.cpp": "Resolving a compound glyph means reading its components, transforming each one, and following any component that is itself compound, to any depth. A simple glyph comes back as itself and an empty one gives no parts.",
+      "src/utils/Geometry.h": "2D maths in one header: a point type, lerp, and the point at t on a quadratic Bezier curve, which the curve drawing in 11 uses. Assignments 12, 13 and 15 add the blog's helpers for where segments and curves meet and for a curve's lowest point. The blog's fill relies on those; yours, from 14 on, works out each crossing from its edge and skips them.",
+      "src/render/Scanline.h": "Both fill rules start the same way, and this is that part: turn an outline into edges in pixels, then find, row by row, where the line through the pixel centres crosses them. Your even-odd fill in 14 and your non-zero fill in 16 and 17 sit on top.",
+      "src/render/Scanline.cpp": "Edge building and row crossings: outlines become edges in pixels, and each pixel row gets the crossings of the line through its pixel centres. Even-odd and non-zero both fill from that list.",
+      "src/render/EvenOdd.h": "Even-odd fill for a glyph, on top of your `render/Scanline`. The non-zero rule joins it in assignment 16 and is the one the text renderer uses in 18.",
+      "src/render/EvenOdd.cpp": "Pairs of crossings, the 1st with the 2nd, the 3rd with the 4th, painted row by row: that is the even-odd rule, running on your `render/Scanline`. Assignment 16 puts the non-zero rule beside it.",
+      "src/render/NonZero.h": "TrueType fills glyphs by the non-zero rule, and this is where yours is declared, on top of your `render/Scanline`. Straight edges come first in assignment 16, curves in 17, and the text renderer in 18 fills every glyph with it.",
+      "src/render/NonZero.cpp": "Walk the sorted crossings of a row with a running winding count and paint wherever it isn't zero. The file builds on your `render/Scanline`, and assignment 17 extends it to curves.",
+      "src/utils/Unicode.h": "UTF-8 in, Unicode code points out: those are the numbers a font's cmap maps to glyphs. Your `TextRenderer` decodes each line of text with it.",
+      "src/TextRenderer.h": "The whole pipeline is one class: load a font's tables once, then for each character of a line of text find its glyph, fill it by the non-zero rule and move the pen on by its advance. The checker's program and `main.cpp` both draw through it.",
+      "src/TextRenderer.cpp": "Loading happens once, when the font opens: the character map, the glyph locations and the advance widths. After that each character of a line goes through glyph lookup, fill and pen advance.",
+      "src/main.cpp": "`tiny_ttf <font.ttf> \"<text>\" <out.png>` draws a line of text with a TrueType font into a PNG sized to fit it, through your `TextRenderer`. This is the finished command-line program. An optional fourth argument sets the text height in pixels (64 by default)."
     }
   },
   "setup": {
@@ -92,8 +92,8 @@
     "sourceTitle": "Writing a tiny TrueType parser and renderer from scratch",
     "author": "Yohei Yamasaki",
     "headline": "Build a TrueType renderer yourself",
-    "lede": "Each assignment has you write the program that one part of the blog post builds, from reading big-endian bytes to drawing a line of text. The checker feeds your program test inputs and compares what it writes with expected answers, most of them computed by fontTools. You choose how to structure the code and which language or libraries to use.",
-    "credits": "Fonts: JetBrains Mono (Nerd Font build) and Noto Sans JP, both under the SIL Open Font License. Most expected outputs come from fontTools. The book keeps your progress in this browser only."
+    "lede": "Eighteen assignments, one per step of the blog post, from reading big-endian bytes up to drawing a line of text. Each is a program you write. The checker feeds it test inputs and compares what it writes with expected answers, most of them computed by fontTools. Structure, language and libraries are your call.",
+    "credits": "Fonts are JetBrains Mono (Nerd Font build) and Noto Sans JP, both under the SIL Open Font License. fontTools produced most of the expected outputs. Your progress stays in this browser."
   },
   "checkpoints": {
     "01": {
@@ -104,9 +104,9 @@
         "src/font/ByteReader.cpp"
       ],
       "jobs": {
-        "assignments/assignment_01_byte_readers.cpp": "Read the `file` line and open that file with your `ByteReader`, then run the other lines in order: `jump` and `skip` move the reader, and each read writes `<op> <value>`. If a read runs out of bytes, write `eof` and stop. The Output section gives the format, including the tolerance for F2Dot14 values.",
-        "src/font/ByteReader.h": "Declare a reader that opens a binary file and keeps a current position. Give it functions to jump to an absolute offset, skip forward, read each of the six integer types (`u8` to `i32`) big-endian, and read an F2Dot14 as a floating-point number. Also declare how a read reports that it ran out of bytes, such as an exception type.",
-        "src/font/ByteReader.cpp": "Open the file in binary mode, move the position for jumps and skips, and build each number from its bytes, most significant first, with two's complement for the signed types. If a read needs a byte past the end of the file, throw the error your header declares (`UnexpectedEof` in the Boilerplate) instead of returning a value."
+        "assignments/assignment_01_byte_readers.cpp": "Read the `file` line and open that file with your `ByteReader`. Then run the remaining lines in order: `jump` and `skip` move the reader, and each read writes `<op> <value>`. If a read runs out of bytes, write `eof` and stop. Output gives the format, including the tolerance for F2Dot14 values.",
+        "src/font/ByteReader.h": "Declare a reader that opens a binary file and tracks a current position. It needs functions to jump to an absolute offset, skip forward, read each of the six integer types (`u8` to `i32`) big-endian, and read an F2Dot14 as a floating-point number. Also declare how a read reports running out of bytes, with an exception type for instance.",
+        "src/font/ByteReader.cpp": "Open the file in binary mode, move the position on jumps and skips, and build each number from its bytes, most significant first. The signed types use two's complement. A read that needs a byte past the end of the file throws the error your header declares (`UnexpectedEof` in the Boilerplate) instead of returning a value."
       },
       "problem": "problems/01-byte-readers.md",
       "cases": "tests/01/cases.txt",
@@ -123,9 +123,9 @@
         "src/font/ByteReader.h"
       ],
       "jobs": {
-        "assignments/assignment_02_table_directory.cpp": "Read the `font` line, read that file's table directory with your `FontParser` code, and write `tables <numTables>` followed by one `table` line per record. The Output section gives the format, including the quotes around the tag.",
-        "src/font/FontParser.h": "Declare a record for one table (its 4-character tag, `checkSum`, `offset` and `length`), a function that reads the whole directory through your `ByteReader`, and a collection of records that assignments 03 to 05 can search by tag. Assignment 18 also uses one object that opens a font and holds its reader and tables. You can declare it now or when you reach assignment 18.",
-        "src/font/FontParser.cpp": "Read `numTables` from the 12-byte header and skip the other header fields, then read one 16-byte record per table and keep each tag's 4 bytes as the font stores them. The Boilerplate's `FontParser` constructor already opens the file and loads the directory; from scratch, a font object like it is up to you."
+        "assignments/assignment_02_table_directory.cpp": "Read the `font` line, read that file's table directory with your `FontParser` code, and write `tables <numTables>` followed by one `table` line per record. Output covers the format, including the quotes around the tag.",
+        "src/font/FontParser.h": "Declare a record for one table (its 4-character tag, `checkSum`, `offset` and `length`), a function that reads the whole directory through your `ByteReader`, and a collection of records that assignments 03 to 05 can search by tag. Assignment 18 also wants one object that opens a font and holds its reader and tables; declare it now or wait until you get there.",
+        "src/font/FontParser.cpp": "Read `numTables` from the 12-byte header and skip the other header fields, then read one 16-byte record per table, keeping each tag's 4 bytes as the font stores them. The Boilerplate's `FontParser` constructor already opens the file and loads the directory. Writing from scratch, how you wrap that in a font object is up to you."
       },
       "problem": "problems/02-table-directory.md",
       "cases": "tests/02/cases.txt",
@@ -143,9 +143,9 @@
         "src/font/FontParser.h"
       ],
       "jobs": {
-        "assignments/assignment_03_cmap.cpp": "Read the `font` line, turn the `table \"cmap\"` line into a table record (you need its offset), and load the character map once with your `Cmap` code. If loading reports no usable subtable, write the single line `unsupported`. Otherwise answer each `count` and `lookup` line in input order, in the formats the Output section gives.",
-        "src/font/Cmap.h": "Declare a function that reads a font's character map, given your `ByteReader` and the table records from your `FontParser`. Its result should give the number of mapped code points and the glyph id for a code point, or no glyph if the map doesn't cover it. Also declare how the function reports a font without a usable subtable, such as an exception type.",
-        "src/font/Cmap.cpp": "Find the encoding record with platform 0 and encoding 4, check that its subtable is format 12, and read its groups so your code can look up every code point they cover. Report the two `unsupported` cases (no such record, or another format) the way your header declares."
+        "assignments/assignment_03_cmap.cpp": "Read the `font` line, turn the `table \"cmap\"` line into a table record (you need its offset), and load the character map once with your `Cmap` code. If loading reports no usable subtable, write the single line `unsupported`. Otherwise answer each `count` and `lookup` line in input order, in the formats Output gives.",
+        "src/font/Cmap.h": "Declare a function that reads a font's character map, taking your `ByteReader` and the table records from your `FontParser`. The result has to give the number of mapped code points and a code point's glyph id, or no glyph where the map has none. Also declare how a font without a usable subtable is reported, with an exception type for instance.",
+        "src/font/Cmap.cpp": "Find the encoding record with platform 0 and encoding 4, check that its subtable is format 12, and read its groups so you can look up any code point they cover. Report the two `unsupported` cases (no such record, or another format) the way your header declares."
       },
       "problem": "problems/03-cmap.md",
       "cases": "tests/03/cases.txt",
@@ -164,8 +164,8 @@
       ],
       "jobs": {
         "assignments/assignment_04_loca.cpp": "Read the `font` line, turn the four `table` lines (`glyf`, `head`, `loca`, `maxp`) into table records, collect the `glyph` ids, and load the locations once with your `Loca` code. Write the `glyphs <numGlyphs> loca <short|long>` line, then one `glyph <id> <offset> <length>` line per requested id, in input order.",
-        "src/font/Loca.h": "Declare a glyph location (an offset from the start of the file and a length in bytes) and a function that reads the location of every glyph, given your `ByteReader` and the table records from your `FontParser`. Have its result also carry `numGlyphs` and whether `loca` uses the short or long format, because the first output line prints both.",
-        "src/font/Loca.cpp": "Read `numGlyphs` from `maxp` and `indexToLocFormat` from `head`, read the `numGlyphs` + 1 `loca` entries, and turn them into an absolute offset and a length for each glyph id. The page lists the fields and formulas under \"The tables you need\"."
+        "src/font/Loca.h": "Two declarations: a glyph location (an offset from the start of the file and a length in bytes) and a function that reads the location of every glyph, taking your `ByteReader` and the table records from your `FontParser`. The result also carries `numGlyphs` and whether `loca` is in the short or long format, because the first output line prints both.",
+        "src/font/Loca.cpp": "Read `numGlyphs` from `maxp` and `indexToLocFormat` from `head`, then the `numGlyphs` + 1 `loca` entries, and turn them into an absolute offset and a length for each glyph id. The page lists the fields and formulas under \"The tables you need\"."
       },
       "problem": "problems/04-loca.md",
       "cases": "tests/04/cases.txt",
@@ -183,9 +183,9 @@
         "src/font/FontParser.h"
       ],
       "jobs": {
-        "assignments/assignment_05_metrics.cpp": "Read the `font` line, turn the three `table` lines (`hhea`, `hmtx`, `maxp`) into table records, collect the questions, and load the metrics once with your `Metrics` code. Answer each `font-metrics` and `glyph` line in input order, in the formats the Output section gives.",
-        "src/font/Metrics.h": "Declare the metrics of one glyph (advance width and left side bearing) and a function that reads the font's ascent and descent and the metrics of every glyph id, given your `ByteReader` and the table records from your `FontParser`.",
-        "src/font/Metrics.cpp": "Read `ascent`, `descent` and `numberOfHMetrics` from `hhea` and `numGlyphs` from `maxp`. Then read `hmtx` and give every glyph id from 0 to `numGlyphs` - 1 an advance and an lsb, by the two rules under \"A glyph's metrics\"."
+        "assignments/assignment_05_metrics.cpp": "Load the metrics once with your `Metrics` code: read the `font` line, turn the three `table` lines (`hhea`, `hmtx`, `maxp`) into table records and collect the questions first. Then answer each `font-metrics` and `glyph` line in input order, in the formats Output gives.",
+        "src/font/Metrics.h": "Declare the metrics of one glyph (advance width and left side bearing) and a function that reads the font's ascent and descent and the metrics of every glyph id, taking your `ByteReader` and the table records from your `FontParser`.",
+        "src/font/Metrics.cpp": "Read `ascent`, `descent` and `numberOfHMetrics` from `hhea` and `numGlyphs` from `maxp`. Then read `hmtx` and give every glyph id from 0 to `numGlyphs` - 1 an advance and an lsb, following the two rules under \"A glyph's metrics\"."
       },
       "problem": "problems/05-metrics.md",
       "cases": "tests/05/cases.txt",
@@ -199,9 +199,9 @@
         "src/FrameBufferCanvas.cpp"
       ],
       "jobs": {
-        "assignments/assignment_06_canvas.cpp": "Read the `canvas` line and create a canvas of that size, then read the `point`, `rect` and `line` commands in order and call the matching canvas operation with each command's colour. At the end, write the picture to the output path (see Output).",
-        "src/FrameBufferCanvas.h": "Declare a colour type (red, green and blue, one byte each) and a canvas type that holds a width, a height and one colour per pixel, all black to start. Give the canvas four operations: paint one pixel, draw a filled rectangle from its centre and size, draw a line of a given thickness between two points, and write the picture to a file.",
-        "src/FrameBufferCanvas.cpp": "Implement the canvas operations as \"Painting one pixel\", \"Drawing a rectangle\" and \"Drawing a line\" describe. Painting a pixel ignores coordinates outside the picture, a rectangle clips its loops to the canvas, and a line stamps a square at every step. Save the pixels as a PNG with `stbi_write_png` or as a binary PPM."
+        "assignments/assignment_06_canvas.cpp": "Read the `canvas` line and make a canvas that size, then go through the `point`, `rect` and `line` commands in order, calling the matching canvas operation with each command's colour. At the end, write the picture to the output path (see Output).",
+        "src/FrameBufferCanvas.h": "Declare a colour type (red, green and blue, one byte each) and a canvas type holding a width, a height and one colour per pixel, all black to start. The canvas gets four operations: paint one pixel, draw a filled rectangle from its centre and size, draw a line of a given thickness between two points, and write the picture to a file.",
+        "src/FrameBufferCanvas.cpp": "Implement the operations as \"Painting one pixel\", \"Drawing a rectangle\" and \"Drawing a line\" describe them. A pixel outside the picture is ignored, a rectangle clips its loops to the canvas, and a line stamps a square at every step. Save the pixels as a PNG with `stbi_write_png`, or as a binary PPM."
       },
       "problem": "problems/06-canvas.md",
       "cases": "tests/06/cases.txt",
@@ -222,10 +222,10 @@
       ],
       "jobs": {
         "assignments/assignment_07_simple_glyph.cpp": "For each `font` line, open that file with your `ByteReader`. For each `glyph` line, decode the record it points to and write `empty`, `compound`, or the three lines of a simple glyph, as Output shows.",
-        "src/GlyphComponent.h": "Declare a point type (x, y and whether it is on the curve) and an outline type that holds the contour end indices and the list of points. Give x and y a type that can hold fractions, such as `double`: assignment 08 reads coordinates like `120.75` and assignment 09 scales points.",
-        "src/Glyph.h": "Declare a glyph type that records which of the three kinds it is (empty, simple or compound) and holds `numberOfContours`, the bounding box (`xMin`, `yMin`, `xMax`, `yMax`) and, for a simple glyph, its outline in the form from `GlyphComponent.h`.",
+        "src/GlyphComponent.h": "Declare a point type (x, y, and whether it is on the curve) and an outline type holding the contour end indices and the list of points. Give x and y a type that can hold fractions, such as `double`: assignment 08 reads coordinates like `120.75` and assignment 09 scales points.",
+        "src/Glyph.h": "The glyph type records its kind (empty, simple or compound) and holds `numberOfContours`, the bounding box (`xMin`, `yMin`, `xMax`, `yMax`) and, for a simple glyph, its outline in the form from `GlyphComponent.h`.",
         "src/font/GlyphParser.h": "Declare one function that decodes the glyph record at a given offset and length, reading through your `ByteReader` from assignment 01, and returns a glyph from `Glyph.h`.",
-        "src/font/GlyphParser.cpp": "Implement the glyph decoder as \"The glyph record you are decoding\" lays out. Length 0 gives an empty glyph. A negative `numberOfContours` gives a compound glyph, and you stop reading after the header. For a simple glyph, read the contour ends and every point, with absolute coordinates and the point's own on/off flag."
+        "src/font/GlyphParser.cpp": "Implement the decoder as \"The glyph record you are decoding\" lays it out. Length 0 gives an empty glyph. A negative `numberOfContours` means compound, and you stop after the header. A simple glyph needs the contour ends and every point, with absolute coordinates and the point's own on/off flag."
       },
       "problem": "problems/07-simple-glyph.md",
       "cases": "tests/07/cases.txt",
@@ -244,10 +244,10 @@
         "src/GlyphComponent.h"
       ],
       "jobs": {
-        "assignments/assignment_08_outline_lines.cpp": "Create the canvas from the `canvas` line and keep the most recent `place`, `style` and `color`. For each `outline`, read its `ends` and `points` (coordinates may be fractional) and draw it; at the end, write the picture to the output path.",
-        "src/render/Placement.h": "Declare a small type in this header, with no `.cpp`, for the three values of a `place` line: `x0`, `baseline` and `scale`, as numbers that can be fractional or negative.",
+        "assignments/assignment_08_outline_lines.cpp": "Make the canvas from the `canvas` line and keep the latest `place`, `style` and `color`. For each `outline`, read its `ends` and `points` (coordinates may be fractional) and draw it. At the end, write the picture to the output path.",
+        "src/render/Placement.h": "A small type, defined in this header with no `.cpp`, for the three values of a `place` line: `x0`, `baseline` and `scale`. They can be fractional or negative.",
         "src/render/Outline.h": "Declare a drawing style (line thickness and marker size) and a function that draws one outline (the type from `GlyphComponent.h`) on your `FrameBufferCanvas`, given a placement, a style and a colour.",
-        "src/render/Outline.cpp": "Implement the outline drawing as \"What to draw\" describes: turn every point into a pixel with the formulas in \"From font units to pixels\", join the points of each contour with lines, including the closing line, then draw a marker on every point. Use your canvas's line and rectangle for both."
+        "src/render/Outline.cpp": "Implement the drawing as \"What to draw\" describes. Turn every point into a pixel with the formulas in \"From font units to pixels\", join the points of each contour with lines (the closing line included), then put a marker on every point. Your canvas's line and rectangle do both jobs."
       },
       "problem": "problems/08-outline-lines.md",
       "cases": "tests/08/cases.txt",
@@ -266,9 +266,9 @@
         "src/font/Loca.h"
       ],
       "jobs": {
-        "assignments/assignment_09_compound_glyph.cpp": "On each `font` line, open the font and forget the earlier glyph locations; record each `glyph` line's offset and length by id. For each `decode` line, resolve the glyph and write the header line and one `ends` / `points` pair per part, as Output shows (fractional coordinates to at least 2 decimals).",
+        "assignments/assignment_09_compound_glyph.cpp": "On each `font` line, open the font and forget the earlier glyph locations. Record each `glyph` line's offset and length by id. For each `decode` line, resolve the glyph and write the header line and one `ends` / `points` pair per part, as Output shows (fractional coordinates to at least 2 decimals).",
         "src/font/CompoundGlyph.h": "Declare a function that takes a glyph id, the font (through your `ByteReader`) and where every glyph's record is (offset and length, like the locations from your `Loca.h`), and returns a list of outlines in the form from `GlyphComponent.h`, one per simple part.",
-        "src/font/CompoundGlyph.cpp": "Implement the glyph resolver as \"The compound glyph record\" and \"Placing a component\" describe. An empty glyph gives no parts, and a simple glyph gives itself, decoded by your `GlyphParser` from assignment 07. For a compound glyph, read all of its component records first, then resolve each component in record order: apply its own transform first and the outer ones after."
+        "src/font/CompoundGlyph.cpp": "Implement the resolver as \"The compound glyph record\" and \"Placing a component\" describe. An empty glyph gives no parts, and a simple glyph gives itself, decoded by your `GlyphParser`. For a compound glyph, read all the component records first, then resolve each component in record order, applying its own transform before the outer ones."
       },
       "problem": "problems/09-compound-glyph.md",
       "cases": "tests/09/cases.txt",
@@ -281,8 +281,8 @@
         "src/utils/Geometry.h"
       ],
       "jobs": {
-        "assignments/assignment_10_bezier.cpp": "Read the input file line by line. A `lerp` line gives two points and t; a `bezier` line gives the start, the control point, the end and t. Call your lerp or curve function from `utils/Geometry.h` and write one `x y` line per input line, formatting the numbers as the Output section describes.",
-        "src/utils/Geometry.h": "Declare a 2D point type with `double` x and y, and the arithmetic you want on it: adding, subtracting and scaling by a number. Then write two functions: lerp, which returns the point a fraction t of the way from a to b, and one that returns the point at t on a quadratic Bezier curve from its start, control point and end. The project has no `Geometry.cpp`, so define the functions in this header and mark them `inline`."
+        "assignments/assignment_10_bezier.cpp": "Read the input file line by line. A `lerp` line gives two points and t, a `bezier` line gives the start, the control point, the end and t. Call your lerp or curve function from `utils/Geometry.h` and write one `x y` line per input line, formatting the numbers as Output describes.",
+        "src/utils/Geometry.h": "Declare a 2D point type with `double` x and y, and whatever arithmetic you want on it: adding, subtracting, scaling by a number. Then write two functions: lerp, which returns the point a fraction t of the way from a to b, and one that returns the point at t on a quadratic Bezier curve from its start, control point and end. The project has no `Geometry.cpp`, so define them in this header and mark them `inline`."
       },
       "problem": "problems/10-bezier.md",
       "cases": "tests/10/cases.txt",
@@ -301,7 +301,7 @@
       "jobs": {
         "assignments/assignment_11_outline_curves.cpp": "Read the input as in assignment 08: make the canvas from the `canvas` line, keep the latest `place`, `style` (which now holds only the line thickness) and `color`, and build each outline from its `ends` and `points` lines. Draw every outline with your new curve function from `render/Outline.h`, then write the canvas to the output path with your `FrameBufferCanvas` from assignment 06.",
         "src/render/Outline.h": "Declare a second drawing function next to your straight-line one from assignment 08. It takes the canvas, an outline, its placement, a line thickness and a colour, and draws the outline with its curves. The Boilerplate's `Outline.h` already declares it as `renderGlyphCurves`; if you wrote the header your own way, add the declaration now.",
-        "src/render/Outline.cpp": "Implement the curve drawing. Walk each contour from an on-curve point and turn its points into straight lines and quadratic curves, adding an implied on-curve point between two off-curve points. Draw each curve as short lines with your curve function from `utils/Geometry.h`. Draw the red, green and blue markers after all the lines of the outline."
+        "src/render/Outline.cpp": "Implement the curve drawing. Walk each contour starting from an on-curve point, turning its points into straight lines and quadratic curves, with an implied on-curve point between any two off-curve points. Draw each curve as short lines using your curve function from `utils/Geometry.h`. The red, green and blue markers go down after all the lines of the outline."
       },
       "problem": "problems/11-outline-curves.md",
       "cases": "tests/11/cases.txt",
@@ -315,8 +315,8 @@
         "src/utils/Geometry.h"
       ],
       "jobs": {
-        "assignments/assignment_12_segment_intersection.cpp": "Read each `segments` line as four points: a1 and a2 for segment A, then b1 and b2 for segment B. Call your intersection function from `utils/Geometry.h` and write the meeting point as `x y`, or `none`, one line per input line.",
-        "src/utils/Geometry.h": "Add a function that takes two segments, each given by its two end points, and returns the one point where they meet. If they don't meet, or are parallel or collinear, it returns nothing; `std::optional` suits this. Put small helpers for the 2D cross product and the side value here too, `inline` like the rest of the header. The Boilerplate's `Geometry.h` from assignment 10 already declares the function as `segmentsIntersect`."
+        "assignments/assignment_12_segment_intersection.cpp": "A `segments` line holds four points: a1 and a2 for segment A, then b1 and b2 for segment B. Call your intersection function from `utils/Geometry.h` and write the meeting point as `x y`, or `none`, one line per input line.",
+        "src/utils/Geometry.h": "Add a function that takes two segments, each given by its two end points, and returns the one point where they meet. Segments that don't meet, or are parallel or collinear, give nothing back; `std::optional` suits that. Put small helpers for the 2D cross product and the side value here too, `inline` like the rest of the header. The Boilerplate's `Geometry.h` from assignment 10 already declares the function as `segmentsIntersect`."
       },
       "problem": "problems/12-segment-intersection.md",
       "cases": "tests/12/cases.txt",
@@ -329,8 +329,8 @@
         "src/utils/Geometry.h"
       ],
       "jobs": {
-        "assignments/assignment_13_line_curve_intersection.cpp": "Read each line as the curve's three points p1, p2 and p3 (start, control point, end), then the word `line` and the line's two points l1 and l2. Call your line-curve function from `utils/Geometry.h` and write the points it returns on one line (`x1 y1` or `x1 y1 x2 y2`), or `none` if it returns no points.",
-        "src/utils/Geometry.h": "Add a function that takes a quadratic curve (start, control point, end) and two points on an infinite line, and returns the points where they meet, in increasing t. There can be none, one or two. Put a dot product helper here too, and a helper that solves a t^2 + b t + c = 0, including the linear case a = 0. The Boilerplate's `Geometry.h` from assignment 10 already declares the function as `segmentQuadBezierIntersect`."
+        "assignments/assignment_13_line_curve_intersection.cpp": "Each input line starts with the curve's three points p1, p2 and p3 (start, control point, end), then the word `line` and the line's two points l1 and l2. Call your line-curve function from `utils/Geometry.h` and write the points it returns on one line (`x1 y1` or `x1 y1 x2 y2`), or `none` if it returns no points.",
+        "src/utils/Geometry.h": "Add a function that takes a quadratic curve (start, control point, end) and two points on an infinite line, and returns the points where they meet, in increasing t. There can be none, one or two. Put a dot product helper here too, and a helper that solves a t^2 + b t + c = 0, linear case a = 0 included. The Boilerplate's `Geometry.h` from assignment 10 already declares the function as `segmentQuadBezierIntersect`."
       },
       "problem": "problems/13-line-curve-intersection.md",
       "cases": "tests/13/cases.txt",
@@ -354,9 +354,9 @@
       "jobs": {
         "assignments/assignment_14_even_odd_fill.cpp": "Read the `canvas`, `place` and `color` lines and each `outline` with its `ends` and `points` lines (see Input). Make the canvas, fill every outline in turn with your even-odd fill, and write the picture to the output path (see Output).",
         "src/render/Scanline.h": "Declare what both fill rules share: a type for an edge piece (a straight line or a quadratic curve, in pixels) and one for a crossing (its x, and whether the edge runs up or down the screen there, which assignment 16 needs). Then declare functions that turn an outline and its placement into edge pieces, give each pixel row its crossings sorted by x, and fill a stretch of one row.",
-        "src/render/Scanline.cpp": "Implement the three functions you declared in `Scanline.h`. When you build the edges, make implied on-curve points explicit, start each contour at an on-curve point and split every curve where its y turns around. For each row, find where the line through its pixel centres crosses each piece (by the half-open rule) and sort the crossings. To fill a stretch, paint the pixels whose centres lie in it, clipped to the canvas.",
+        "src/render/Scanline.cpp": "Implement the three functions declared in `Scanline.h`. To build the edges, make implied on-curve points explicit, start each contour at an on-curve point and split every curve where its y turns around. For each row, find where the line through its pixel centres crosses each piece (by the half-open rule) and sort the crossings. Filling a stretch paints the pixels whose centres lie in it, clipped to the canvas.",
         "src/render/EvenOdd.h": "Declare one function that fills an outline on a canvas by the even-odd rule, given its placement and colour.",
-        "src/render/EvenOdd.cpp": "Implement the even-odd fill with your `render/Scanline`: build the edge pieces, then on every row fill from the 1st crossing to the 2nd, the 3rd to the 4th, and so on."
+        "src/render/EvenOdd.cpp": "Build the edge pieces with your `render/Scanline`, then on every row fill from the 1st crossing to the 2nd, the 3rd to the 4th, and so on."
       },
       "problem": "problems/14-even-odd-fill.md",
       "cases": "tests/14/cases.txt",
@@ -370,8 +370,8 @@
         "src/utils/Geometry.h"
       ],
       "jobs": {
-        "assignments/assignment_15_bezier_min_y.cpp": "Read each `curve` line's six numbers as three points, call your lowest-point function, and write one answer per curve, in the same order (see Output for the precision).",
-        "src/utils/Geometry.h": "Add a function that takes a quadratic curve's start, control and end points and returns the smallest y on the curve for t from 0 to 1, as an exact `double` (don't round it to a whole number). The Boilerplate from assignment 10 already declares it as `getBezierMinY`; if you wrote this file your own way, add it next to your curve functions."
+        "assignments/assignment_15_bezier_min_y.cpp": "Each `curve` line holds six numbers, three points. Call your lowest-point function on them and write one answer per curve, in the same order (Output has the precision).",
+        "src/utils/Geometry.h": "Add a function that takes a quadratic curve's start, control and end points and returns the smallest y on the curve for t from 0 to 1, as a `double` (don't round it to a whole number). The Boilerplate from assignment 10 already declares it as `getBezierMinY`; if you wrote this file your own way, add it next to your curve functions."
       },
       "problem": "problems/15-bezier-min-y.md",
       "cases": "tests/15/cases.txt",
@@ -390,7 +390,7 @@
       "jobs": {
         "assignments/assignment_16_nonzero_lines.cpp": "Read the `canvas`, `place` and `color` lines and each `outline` with its `ends` and `points` lines (see Input). Make the canvas, fill every outline in turn with your non-zero fill, and write the picture to the output path (see Output).",
         "src/render/NonZero.h": "Declare one function that fills an outline on a canvas by the non-zero rule, given its placement and colour.",
-        "src/render/NonZero.cpp": "Implement the non-zero fill with your `render/Scanline`: on every row, walk the sorted crossings left to right with a running winding count and fill each stretch where the count isn't zero. Each crossing needs the direction of its edge; if your crossings from assignment 14 don't record it yet, add it to `render/Scanline` first."
+        "src/render/NonZero.cpp": "Build on your `render/Scanline`. On every row, walk the sorted crossings left to right with a running winding count and fill each stretch where the count isn't zero. That needs each crossing's edge direction; if your crossings from assignment 14 don't record it yet, add it to `render/Scanline` first."
       },
       "problem": "problems/16-nonzero-lines.md",
       "cases": "tests/16/cases.txt",
@@ -410,8 +410,8 @@
       ],
       "jobs": {
         "assignments/assignment_17_nonzero_curves.cpp": "Read the `canvas`, `place` and `color` lines and each `outline` with its `ends` and `points` lines, where points can now be `off` (see Input). Make the canvas, fill every outline in turn with your non-zero fill, and write the picture to the output path (see Output).",
-        "src/render/NonZero.h": "Keep the non-zero fill function you declared in assignment 16. Your program now also passes it outlines with off-curve points, so it has to handle curves. You have nothing new to declare unless you add a helper for curves.",
-        "src/render/NonZero.cpp": "Make the non-zero fill work for curved outlines. Every crossing on a curve needs the direction the curve runs at that row. Once you split each curve where its y turns around, each piece runs one way, and comparing its end's y with its start's y gives that direction. If your `render/Scanline` from assignment 14 already splits curves and gives every crossing its direction, your assignment 16 fill may pass as it is; otherwise add what's missing, in `render/Scanline` or here."
+        "src/render/NonZero.h": "Keep the non-zero fill function you declared in assignment 16. The outlines it gets now have off-curve points, so it has to handle curves, but there is nothing new to declare unless you add a helper for them.",
+        "src/render/NonZero.cpp": "Make the non-zero fill work for curved outlines. Every crossing on a curve needs the direction the curve runs at that row. Once you split each curve where its y turns around, each piece runs one way, and comparing its end's y with its start's y gives that direction. If your `render/Scanline` from assignment 14 already splits curves and gives every crossing its direction, your assignment 16 fill may pass as it is. Otherwise add what's missing, in `render/Scanline` or here."
       },
       "problem": "problems/17-nonzero-curves.md",
       "cases": "tests/17/cases.txt",
@@ -436,10 +436,10 @@
         "src/render/NonZero.h"
       ],
       "jobs": {
-        "assignments/assignment_18_render_text.cpp": "Read the input line by line (see Input): load the font on `font`, make the canvas on `canvas`, keep the pen and colour from `pen` and `color`, and draw each `text` line (the rest of the line after `text` and its space) with your `TextRenderer`, carrying the returned pen x on to the next `text` line. Then write the picture to the output path (see Output).",
+        "assignments/assignment_18_render_text.cpp": "Read the input line by line (see Input): load the font on `font`, make the canvas on `canvas`, keep the pen and colour from `pen` and `color`, and draw each `text` line (the rest of the line after `text` and its space) with your `TextRenderer`, carrying the pen x it returns on to the next `text` line. Then write the picture to the output path (see Output).",
         "src/utils/Unicode.h": "Write a function that decodes a string of UTF-8 bytes into a list of code points, for characters of 1 to 4 bytes (Output, step 1, lists the byte patterns). It is short enough to write in the header itself.",
-        "src/TextRenderer.h": "Declare a class that loads a font from a path once and keeps what drawing needs: the map from code point to glyph, where each glyph's record is, and the advance widths. Give it a function that draws a UTF-8 string on a canvas from a pen x, baseline, scale and colour and returns the pen x after the last character, plus, for `main.cpp`, a way to measure a string's width and to read the font's ascent and descent.",
-        "src/TextRenderer.cpp": "Implement the class by calling your earlier work: load the cmap (assignment 03), the glyph locations (04) and the advance widths (05) once, when you open the font. To draw, decode the text, then for each code point find its glyph (glyph 0 if the font has none), fill each of its outlines from your `font/CompoundGlyph` with your non-zero fill, and move the pen by its advance times the scale.",
+        "src/TextRenderer.h": "Declare a class that loads a font from a path once and keeps what drawing needs: the map from code point to glyph, where each glyph's record is, and the advance widths. Give it a function that draws a UTF-8 string on a canvas from a pen x, baseline, scale and colour and returns the pen x after the last character. For `main.cpp` it also needs a way to measure a string's width and to read the font's ascent and descent.",
+        "src/TextRenderer.cpp": "Build the class from your earlier work: when you open the font, load the cmap (assignment 03), the glyph locations (04) and the advance widths (05) once. To draw, decode the text, then for each code point find its glyph (glyph 0 if the font has none), fill each of its outlines from your `font/CompoundGlyph` with your non-zero fill, and move the pen by the advance times the scale.",
         "src/main.cpp": "Write the command-line program: take the font path, the text and the output path (and an optional pixel height) from the command line, size a canvas to fit the text, draw it in white with your `TextRenderer` and save the PNG. The checker doesn't run it, and the Boilerplate already contains it; build the `tiny_ttf` target and try it on your own text."
       },
       "problem": "problems/18-render-text.md",
@@ -461,6 +461,6 @@
       "mac": "study.command",
       "other": "./study.sh"
     },
-    "caveat": "Checked on Windows and Linux. macOS uses the same commands as Linux; they haven't run on a Mac yet."
+    "caveat": "Tested on Windows and Linux. A Mac should take the Linux commands, but they haven't been run on one yet."
   }
 }

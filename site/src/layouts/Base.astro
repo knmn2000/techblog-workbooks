@@ -3,7 +3,7 @@ import { href } from '../lib/paths.mjs';
 import { socialTags } from '../lib/social.mjs';
 import { SKILL_INSTALL_URL } from '../lib/workbooks.mjs';
 interface Props { title: string; description?: string; image?: string; }
-const { title, description = 'Each workbook splits a technical post into coding assignments that add up to one project.', image = '/og.png' } = Astro.props;
+const { title, description = 'Coding assignments built from technical blog posts. Write the code a post describes, check it against independent answers, and finish with a working project.', image = '/og.png' } = Astro.props;
 // Link previews need absolute URLs; Astro.site is the custom domain (astro.config.mjs).
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const social = socialTags({ title, description, url: canonical, image: new URL(href(image), Astro.site).href });
@@ -109,8 +109,8 @@ const social = socialTags({ title, description, url: canonical, image: new URL(h
   </header>
   <main><div class="wrap"><slot /></div></main>
   <footer><div class="wrap">
-    <span>Each workbook links to the post it teaches from and contains none of its text or code.</span>
-    <span>Workbook content is Apache-2.0. Fonts and third-party code keep their own licences.</span>
+    <span>Workbooks link to the post they are built on and carry none of its text or code.</span>
+    <span>Workbook content is Apache-2.0; fonts and third-party code keep their own licences.</span>
   </div></footer>
   <script is:inline>
     document.getElementById('theme').addEventListener('click', function () {

@@ -19,7 +19,7 @@ const first = w.checkpoints[0];
   <header class="head">
     <h1>{w.title}</h1>
     <p class="headline">{w.headline}</p>
-    <p class="built">Built on <a href={w.source.url} rel="noopener">{w.source.title}</a> by {w.source.author}. Read the post alongside; each {w.unit} links to the part it covers.</p>
+    <p class="built">Built on <a href={w.source.url} rel="noopener">{w.source.title}</a> by {w.source.author}. Keep the post open in another tab: each {w.unit} links to the section it covers.</p>
     <a class="btn run-link" href="#start">Run it locally</a>
   </header>
 
@@ -28,9 +28,9 @@ const first = w.checkpoints[0];
       <section class="card here" aria-labelledby="here">
         <h2 id="here">Start here</h2>
         <ol class="here-steps">
-          <li>Get the workbook onto your computer: clone it, or hand the prompt under <a href="#start">Run it locally</a> to your coding assistant. The book runs your code on your machine.</li>
-          <li>Open the book and set up your {w.language} project. In the book, each {w.unit}'s Start here card lists the files to write and your job in each.</li>
-          <li>Begin with {w.unit} {first?.id}{first ? ` (${first.title})` : ''} and go in order: each one adds files to the project, and later ones use them.{w.hasBook && first ? <> <a href={bookUrl(first.id)}>Read it now</a>.</> : ''}</li>
+          <li>Get a local copy. Clone it yourself, or give the prompt under <a href="#start">Run it locally</a> to your coding assistant. The book runs your code on your machine, so it needs the files there.</li>
+          <li>Open the book and set up your {w.language} project. Each {w.unit} opens with a Start here card that names the files to write and what each should do.</li>
+          <li>Start at {w.unit} {first?.id}{first ? ` (${first.title})` : ''} and work down the list; later ones build on the files you write now.{w.hasBook && first ? <> <a href={bookUrl(first.id)}>Read it now</a>.</> : ''}</li>
         </ol>
       </section>
 
@@ -62,7 +62,7 @@ const first = w.checkpoints[0];
         <section class="card proj" aria-labelledby="proj">
           <div class="proj-head">
             <h2 id="proj">The project you build</h2>
-            <p>Your {w.language} project lives in <code>{w.project.dir}/</code> and grows one {w.unit} at a time. The number by each file is the {w.unit} that creates it, and a <code>+</code> marks the {w.unit}s that add to it later.</p>
+            <p>The {w.language} project you end up with, in <code>{w.project.dir}/</code>. The number beside a file is the {w.unit} where you create it; a <code>+</code> lists the later ones that come back to extend it.</p>
           </div>
           <div class="tree">
             {w.project.folders.map((f) => (
@@ -72,14 +72,14 @@ const first = w.checkpoints[0];
                   <div class="t-file" title={file.purpose}>
                     <code class="t-name">{file.name}</code>
                     <span class="t-n">{file.owner}{file.adds.length ? <span class="t-adds"> +{file.adds.join(', ')}</span> : ''}</span>
-                    <span class="t-why">{file.purpose}</span>
+                    <span class="t-why" set:html={file.purposeHtml}></span>
                   </div>
                 ))}
               </div>
             ))}
             <div class="t-dir">
               <div class="t-dname">{w.project.dir}/assignments/</div>
-              <div class="t-file"><code class="t-name">assignment_NN_….*</code><span class="t-n">all</span><span class="t-why">One small program per {w.unit}: it reads a test input, calls your project and writes the answer the checker compares.</span></div>
+              <div class="t-file"><code class="t-name">assignment_NN_….*</code><span class="t-n">all</span><span class="t-why">A small driver for each {w.unit}. It reads the test input, calls into your project and prints the answer the checker compares.</span></div>
             </div>
           </div>
         </section>

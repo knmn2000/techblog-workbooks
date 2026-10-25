@@ -16,8 +16,8 @@
 // The other files of this assignment:
 //   It adds to src/utils/Geometry.h, which you started earlier: Add a function that takes
 //   two segments, each given by its two end points, and returns the one point where they
-//   meet. If they don't meet, or are parallel or collinear, it returns nothing;
-//   `std::optional` suits this. Put small helpers for the 2D cross product and the side
+//   meet. Segments that don't meet, or are parallel or collinear, give nothing back;
+//   `std::optional` suits that. Put small helpers for the 2D cross product and the side
 //   value here too, `inline` like the rest of the header. The Boilerplate's `Geometry.h`
 //   from assignment 10 already declares the function as `segmentsIntersect`.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".

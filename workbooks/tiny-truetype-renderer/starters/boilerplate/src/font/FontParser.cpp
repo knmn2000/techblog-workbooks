@@ -3,16 +3,15 @@
 // Problem: problems/02-table-directory.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This file reads the table directory from the first bytes of the font through your
-//   `ByteReader`. Each later assignment that needs a table looks up its offset in these
-//   records.
+//   From the first bytes of the font, through your `ByteReader`, this file reads the table
+//   directory. Later assignments look up their table's offset in these records.
 //
 // Your job:
 //   Read `numTables` from the 12-byte header and skip the other header fields, then read
-//   one 16-byte record per table and keep each tag's 4 bytes as the font stores them. The
-//   Boilerplate's `FontParser` constructor already opens the file and loads the directory;
-//   from scratch, a font object like it is up to you. The Boilerplate gives you the
-//   declarations; fill in each TODO.
+//   one 16-byte record per table, keeping each tag's 4 bytes as the font stores them. The
+//   Boilerplate's `FontParser` constructor already opens the file and loads the directory.
+//   Writing from scratch, how you wrap that in a font object is up to you. The Boilerplate
+//   gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

@@ -4,10 +4,10 @@
 // Problem: problems/03-cmap.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This header declares your reader for the `cmap` table, the font's map from each
-//   character to the glyph that draws it. It reads the format 12 subtable stored for
-//   platform 0, encoding 4, which covers the full Unicode range, and assignment 18 looks
-//   up every character of a line of text in the result.
+//   Characters map to glyphs through the `cmap` table, and this is your reader for it.
+//   Only the format 12 subtable stored for platform 0, encoding 4 is needed, which covers
+//   the full Unicode range. Assignment 18 looks up every character of a line of text in
+//   the result.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

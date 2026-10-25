@@ -4,18 +4,16 @@
 // Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This header declares your reader for big-endian numbers at any position in a font
-//   file: unsigned and signed integers of 8, 16 and 32 bits, and F2Dot14 fixed point.
-//   Every later assignment that reads the font goes through it: assignment 02 reads the
-//   table directory, 03 to 05 the `cmap`, `loca` and metrics tables, and 07 and 09 the
-//   glyph outlines.
+//   Your reader for big-endian numbers at any position in a font file: signed and unsigned
+//   integers of 8, 16 and 32 bits, and F2Dot14 fixed point. The table directory, `cmap`,
+//   `loca`, the metrics and the glyph outlines all get read through it.
 //
 // Your job:
-//   Declare a reader that opens a binary file and keeps a current position. Give it
+//   Declare a reader that opens a binary file and tracks a current position. It needs
 //   functions to jump to an absolute offset, skip forward, read each of the six integer
 //   types (`u8` to `i32`) big-endian, and read an F2Dot14 as a floating-point number. Also
-//   declare how a read reports that it ran out of bytes, such as an exception type. The
-//   Boilerplate gives you the declarations; fill in each TODO.
+//   declare how a read reports running out of bytes, with an exception type for instance.
+//   The Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

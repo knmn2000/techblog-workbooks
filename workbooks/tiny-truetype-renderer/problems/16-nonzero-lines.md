@@ -9,18 +9,18 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-[Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
-section up to the sentence about considering only line segments for now. The author's code comes
-right after it.
+Background, if you want it: the blog's
+[Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
+Stop at the sentence about considering only line segments for now, because the author's code starts
+right after. The page doesn't rely on it.
 
 ## Learning material
 
-- [The non-zero winding rule](#primer/nonzero): `renderGlyphByNonZero` in `render/NonZero.cpp`
-  walks each row's crossings with a running count, +1 for an edge going down the screen and −1
-  going up, and fills where the count isn't 0.
-- [Half-open edges](#primer/half-open): the rule from assignment 14 now also has to give a vertex
-  on a scanline its crossing with the right direction (R5).
+- [The non-zero winding rule](#primer/nonzero): the Boilerplate leaves `renderGlyphByNonZero` in
+  `render/NonZero.cpp` for you to fill in. The assignment needs a running count per row's crossings,
+  +1 for an edge going down the screen and −1 going up, with the fill wherever the count isn't 0.
+- [Half-open edges](#primer/half-open): assignment 14's rule comes back, because a vertex on a
+  scanline must produce one crossing with the right direction (R5).
 
 ## Source material
 
@@ -30,20 +30,20 @@ right after it.
 
 ## Where this fits
 
-In assignment 14 you filled glyphs with the even-odd rule, which leaves a hole wherever two
-contours overlap. TrueType uses the non-zero rule, which fills the overlap when both contours go
-the same way. In this assignment you add a non-zero fill, `render/NonZero`, built on your
-`render/Scanline` from assignment 14, for outlines made only of straight lines; assignment 17 adds
-curves.
+The even-odd fill from assignment 14 punches a hole wherever two contours overlap. TrueType
+uses the non-zero rule, which fills the overlap when both contours wind the
+same way. `render/NonZero` goes on top of `render/Scanline`, and for now the outlines are
+polygons; curves wait for 17.
 
 ## The problem
 
-Write a program that fills polygon outlines (straight edges only) on a black canvas with the
-non-zero rule and saves the picture as a PNG.
+Fill polygon outlines (straight edges only) with the non-zero rule on a black canvas, and write the
+result as a PNG.
 
 ### Input
 
-The checker runs `<program> <input-file> <output-png>` from the workbook folder.
+The checker passes the input path and the PNG path to your program:
+`<program> <input-file> <output-png>`, in the workbook folder.
 
 | Line | Meaning |
 |---|---|
@@ -54,75 +54,68 @@ The checker runs `<program> <input-file> <output-png>` from the workbook folder.
 | `ends <e0> <e1> ...` | Index of the last point of each contour, counting from 0: contour k runs from the point after the previous end up to and including `e_k` |
 | `points <x> <y> on ...` | The outline's points. In this assignment every point is on-curve, so every edge is a straight line. |
 
-There can be several outlines. Fill each one on its own, one after another, in the same colour.
-Keep a separate winding count (below) for each outline; a pixel ends up in the fill colour if any
-outline fills it.
+An input can hold several outlines. Fill them one after another in the same colour, each with its
+own winding count (see below), so a pixel gets the fill colour if any outline fills it.
 
 ### Output
 
-A PNG (or binary PPM) `width` pixels wide and `height` pixels high, black to begin with. Paint a
-pixel in the fill colour when its centre is inside an outline by the non-zero rule. Pixel
-(px, py), with py counted down from the top, has its centre at screen position (px + 0.5, py + 0.5).
+The picture is `width` x `height` pixels, as a PNG (or binary PPM), and starts black. A pixel gets
+the fill colour if its centre falls inside an outline by the non-zero rule. Pixel (px, py) counts py
+down from the top and has its centre at (px + 0.5, py + 0.5) on screen.
 
-The checker forgives edges that move by one pixel, so you still pass if you sample at the top of
-each row instead of the centre, or round x another way. Missing or extra shapes and stray lines
-fail.
+The checker tolerates a one-pixel shift of an edge, so sampling at the top of each row instead of the centre,
+or rounding x another way, still passes. Missing or extra shapes and stray lines fail.
 
-Write the picture to the output path you're given. The name ends in `.png`, but the checker
-looks at the contents, so a PNG and a binary PPM both work:
+The checker accepts a PNG or a binary PPM, whichever you write: it reads the contents and ignores
+the `.png` ending of the output name.
 
-- Your `FrameBufferCanvas` from assignment 06 writes a PNG with `writePng`, and the boilerplate
-  calls it. Underneath, `third_party/stb_image_write.h` is on your project's include path:
-  `#define STB_IMAGE_WRITE_IMPLEMENTATION` before including it in one file, then call
+- The boilerplate already calls `writePng` on `FrameBufferCanvas`, your class from assignment 06. To
+  go straight to stb, `third_party/stb_image_write.h` is reachable through the include path; one
+  file needs `#define STB_IMAGE_WRITE_IMPLEMENTATION` above that include, and the call is
   `stbi_write_png(path, width, height, 3, pixels, width * 3)`.
-- To write the bytes yourself, use a binary PPM. The header is `P6`, the width, the height and
-  `255`, separated by spaces or newlines and ended by one newline (for example
-  `P6\n205 195\n255\n`). Then come 3 bytes per pixel (red, green, blue), row by row from the
-  top-left. Open the file in binary mode (`std::ios::binary`), or Windows writes every pixel
-  byte 10 as two bytes.
+- A binary PPM by hand uses the layout from assignment 06: `P6`, width, height, `255` (spaces or
+  newlines between them, a newline after the last) (for example `P6\n205 195\n255\n`), then one RGB
+  triple of bytes per pixel, going row after row from the top-left. Open the file with
+  `std::ios::binary`; otherwise Windows stores each pixel byte equal to 10 as two bytes.
 
 ### The non-zero rule
 
-Every contour is a closed loop (after its last point it continues to its first), and every edge
-has a direction: from a point to the next one.
+Each contour closes up, with its last point connecting back to its first, and each edge has a
+direction: from a point to the next one.
 
-Draw a ray from the point to the right and keep a winding count, starting at 0. For each edge
-the ray crosses, add 1 if the edge goes down the screen (y grows from its start to its end) and
-subtract 1 if it goes up. (The opposite signs work too, as long as they're the same for all
-edges; this page and the hints use down = +1.) The point is inside when the final
-count is not zero.
+To test a point, shoot a ray to the right and keep a winding count starting at 0. Every edge the
+ray crosses adds 1 if it heads down the screen (y grows from its start to its end) and subtracts
+1 if it heads up. The opposite signs work as long as all edges use the same ones; this page and
+the hints use down = +1. The point is inside when the final count is not zero.
 
-- Two overlapping contours that go the same way give a count of 2 where they overlap: still
-  inside, so there is no hole. (Even-odd would leave one.)
-- A contour inside another that goes the opposite way gives 1 − 1 = 0: a hole. This is how fonts
-  make the inside of an `o` or a `#`.
-- A contour that goes counter-clockwise on its own gives −1: inside. Test for "not zero" instead
-  of "greater than zero".
+- Two overlapping contours going the same way give 2 in the overlap. Still inside, no hole.
+  Even-odd would leave one.
+- A contour inside another and going the opposite way gives 1 − 1 = 0, a hole. That's how fonts
+  hollow out an `o` or a `#`.
+- A counter-clockwise contour by itself gives −1, and that's inside too, so the test is "not
+  zero", not "greater than zero".
 
 With scanlines, for each row:
 
 1. Collect each crossing as (x, direction).
 2. Sort the crossings by x.
-3. Walk left to right keeping a running count, and fill the stretches where the count isn't zero.
+3. Walk left to right with a running count and fill the stretches where it isn't zero.
 
-To count a vertex on the scanline the right number of times, treat each edge as half-open in
-y, as in assignment 14:
+Vertices need the half-open treatment from assignment 14 so they count the right number of times:
 
-- An edge counts at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y measured on the screen
-  (pixels, growing downward).
+- Count an edge at scanline y when min(y0, y1) ≤ y < max(y0, y1), with y in screen pixels, growing
+  downward.
 - A horizontal edge doesn't count.
 
-Then a vertex the outline passes through counts once, with the right direction.
+That makes a vertex the outline passes through count once, with the right direction.
 
-Clamp crossing x values to the canvas before converting them to integers. Your stretch fill from
-assignment 14 (the boilerplate's `fillSpan`) should already skip columns outside the canvas and
-do nothing when a stretch is empty.
+Clamp crossing x values to the canvas before they become integers. `fillSpan` (assignment 14) should
+skip columns outside the canvas and do nothing for an empty stretch.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+One requirement per test. A failing run totals passes by requirement, and may add a `likely cause`
+line for the requirement the difference suggests.
 
 - **R1** Fill each pixel whose centre is inside, and leave every other pixel black.
 - **R2** Fill the overlap of contours that go the same way.
@@ -146,8 +139,8 @@ input:   canvas 205 195
          points 50 100 on 79 9 on 2 65 on 98 65 on 21 9 on
 ```
 
-This is the star from assignment 14. The outline winds around the pentagon in the middle twice
-(count 2), so the non-zero rule fills it:
+The star from assignment 14 again. The outline winds around the central pentagon twice (count 2),
+so the non-zero rule fills it:
 
 ![expected picture for 16-R2-star](../tests/16/expected/16-R2-star.png)
 
@@ -162,7 +155,7 @@ input:   canvas 133 133
          points 0 0 on 0 40 on 40 40 on 40 0 on 60 20 on 60 60 on 20 60 on 20 20 on
 ```
 
-The first square goes clockwise, the second counter-clockwise, so their overlap has a count of 0:
+The first square runs clockwise and the second counter-clockwise, so the overlap sums to 0:
 
 ![expected picture for 16-R3-opposite-overlap](../tests/16/expected/16-R3-opposite-overlap.png)
 
@@ -177,41 +170,42 @@ input:   canvas 234 238
          points 62 443 on 945 443 on 945 414 on 62 414 on 486 829 on 516 829 on 516 -70 on 486 -70 on
 ```
 
-U+5341 (十) from Noto Sans JP is two rectangles going the same way. The even-odd rule in
-assignment 14 left the crossing empty, and the non-zero rule fills it.
+U+5341 (十) from Noto Sans JP is two rectangles going the same way. Even-odd left the crossing
+empty in assignment 14; the non-zero rule fills it.
 
 ![expected picture for 16-R2-ten](../tests/16/expected/16-R2-ten.png)
 
 ## Constraints
 
-- Every point is on-curve. Canvases are at most about 560 x 560 pixels.
-- Every contour has at least 2 points.
-- There are 24 tests: hand-made polygons for each rule, straight-line letters from JetBrains Mono
-  Bold, and straight-line characters from Noto Sans JP (random picks change with `-Fresh`). Each
-  case has 10 seconds.
+- Every point is on-curve, and no canvas is bigger than about 560 x 560 pixels.
+- A contour has at least 2 points.
+- 24 tests: hand-made polygons for each rule, straight-line letters from JetBrains Mono Bold, and
+  straight-line characters from Noto Sans JP (the random picks change with `-Fresh`). The limit is 10 seconds
+  a case.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Start from your scanline fill of assignment 14 (`render/Scanline`). The edges and crossings are
-the same; only what you do with the sorted crossings changes.
+Begin with your scanline fill from assignment 14 (`render/Scanline`). The edges and crossings stay
+as they were. Only your handling of the sorted crossings changes.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-For each crossing, record its x and whether the edge goes down or up the screen (+1 or −1). Sort by
-x, walk left to right adding the directions, and fill each stretch between two crossings where the
-running count isn't zero.
+Store each crossing as its x plus a direction, +1 for an edge going down the screen and −1 for
+one going up. Sort by x, walk left to right adding the directions, and fill each stretch between
+two crossings whose running count isn't zero.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- "Inside" is count ≠ 0. A lone counter-clockwise contour gives −1, and you must fill it.
-- The direction comes from the edge's own order (point i to point i + 1), not from its endpoints
-  sorted by y.
+- "Inside" means count ≠ 0. Fill a lone counter-clockwise contour, which gives −1.
+- Direction comes from the edge's own order (point i to point i + 1), not from the endpoints after
+  sorting by y.
 - Keep the half-open rule (min ≤ y < max) and skip horizontal edges.
-- The last point connects back to the first point of its contour, not of the outline.
+- The last point connects back to the first point of its own contour, not the first of the whole
+  outline.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -246,18 +240,18 @@ for row in 0 .. height-1:
 ## After you pass: compare with the author's code
 
 The blog's [line-only version](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Considering%20line%20direction%20at%20intersection%20counting)
-stores each crossing as an `Intersection`, an x and an `isUpward` flag, and keeps a running count
-while it walks the sorted crossings, the same way this page describes. `isUpward` is true when the
-edge goes up the screen (`currentPt.y > nextPt.y`) and adds 1. The Boilerplate's `Crossing` uses the
-opposite sign, +1 for an edge going down, which gives the same fill under the non-zero test.
+works the way this page describes: each crossing is an `Intersection` holding an x and an
+`isUpward` flag, and a running count goes along the sorted list. `isUpward` is true when the edge
+goes up the screen (`currentPt.y > nextPt.y`), and that adds 1. The Boilerplate's `Crossing` has
+the opposite sign, +1 for down, which fills the same pixels under the non-zero test.
 
 The snippet differs from this page in these places:
 
 - It fills a stretch only when the count before it is greater than zero (its second condition,
-  that the count after it isn't negative, always holds then). That works for fonts whose outer
-  contours are all clockwise, but a contour wound the other way on its own (test
-  `16-R4-reversed`) stays empty. The non-zero rule fills wherever the count isn't zero.
-- Its scanline is a segment from x = 0 to the image width, so an edge that crosses the row left
-  of the canvas adds no crossing, and the count is off by one for the rest of that row (R7).
-- This short excerpt paints with the constant `WHITE`. The full listing that follows it, for
+  that the count after it isn't negative, always holds then: the count before is at least 1, and one crossing changes it by 1). Fine for fonts whose outer contours
+  are all clockwise. A contour wound the other way on its own (test
+  `16-R4-reversed`) stays empty, though, and the non-zero rule says to fill it wherever the count isn't zero.
+- Its scanline is a segment from x = 0 to the image width, so an edge crossing the row left of
+  the canvas adds no crossing and the count is off by one for the rest of that row (R7).
+- The short excerpt paints with the constant `WHITE`. The full listing after it, the one with
   curves, paints with its `color` argument.

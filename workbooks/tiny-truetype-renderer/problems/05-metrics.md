@@ -9,21 +9,21 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
-[hhea, hmtx tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=hhea%2C%20hmtx%20tables)
-section through the paragraph that starts "The hmtx table contains information for". The
-author's code follows that paragraph.
+The post isn't required to pass this one. If you want it, the blog's [hhea, hmtx
+tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=hhea%2C%20hmtx%20tables) section
+runs through the paragraph that starts "The hmtx table contains information for", and the author's
+code takes over after it.
 
 ## Learning material
 
 - [Font units and the em](#primer/font-units): the ascent, descent, advances and side
   bearings the program writes are in font units, and both real fonts have 1000 of them per em.
-- [The `hhea` table](#primer/hhea): `src/font/Metrics.cpp` reads `ascent` and `descent` at
-  `hhea` + 4 and + 6, and `numberOfHMetrics` at + 34.
+- [The `hhea` table](#primer/hhea): `ascent` and `descent` sit at `hhea` + 4 and + 6,
+  `numberOfHMetrics` at + 34. `src/font/Metrics.cpp` reads all three.
 - [The `hmtx` table](#primer/hmtx): `Metrics.cpp` reads `numberOfHMetrics` full records, then
   one lsb for each remaining glyph, which takes the last record's advance.
 - [Integer types](#primer/integer-types): `ascent`, `descent` and each lsb are signed int16
-  values and `advanceWidth` an unsigned uint16, and `GlyphMetric` holds both kinds in an `int`.
+  values, `advanceWidth` is an unsigned uint16, and `GlyphMetric` stores both kinds in an `int`.
 
 ## Source material
 
@@ -37,28 +37,26 @@ author's code follows that paragraph.
 
 ## Where this fits
 
-Outlines give the shape of each glyph. To set a line of text, a renderer also needs the
-height of the line and the distance from one glyph to the next. Assignment 18 moves the pen
-by each glyph's advance width, and its `main.cpp` sizes the text from the ascent and descent
-you read here.
+An outline is only a shape. To set a line of text a renderer also needs the line's height and
+the spacing between glyphs. Assignment 18 moves the pen by each glyph's advance width, and its
+`main.cpp` sizes the text from the ascent and descent you read here.
 
 ## The problem
 
-Write a program that reads a font's ascent and descent, and the advance width and left side
-bearing of requested glyphs.
+Read a font's ascent and descent, plus the advance width and left side bearing of whichever glyphs
+the input asks about.
 
-Text sits on a horizontal line, the baseline. A pen moves along it: the renderer draws
-each glyph at the pen's position, then moves the pen right. The numbers your program reads
-are:
+Text sits on a horizontal baseline, and a pen travels along it. The renderer draws a glyph at
+the pen, then moves the pen right. Four numbers matter:
 
-- ascent and descent: how much room a line needs above and below the baseline.
-- advance width: how far to move the pen after drawing a glyph.
-- left side bearing (lsb): where the glyph's outline starts, measured from the pen.
+- ascent and descent: the room a line needs above and below the baseline.
+- advance width: how far the pen moves after a glyph.
+- left side bearing (lsb): how far from the pen the glyph's outline starts.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-The input file contains these lines, in this order:
+The checker calls your program with `<program> <input-file> <output-file>`, again from the workbook
+folder. These lines make up the input, in order:
 
 | Line | Meaning |
 |---|---|
@@ -67,8 +65,8 @@ The input file contains these lines, in this order:
 | `font-metrics` | Asks for the font's ascent and descent. |
 | `glyph <id>` | Asks for this glyph's metrics. `id` is from 0 to `numGlyphs` − 1. |
 
-Your program can parse the `table` lines into the table records your `FontParser` from
-assignment 02 declares, and read the font with your `ByteReader` from assignment 01.
+You can parse the `table` lines into the table records your `FontParser` from assignment 02
+declares, and read the font with your `ByteReader` from assignment 01.
 
 ### Output
 
@@ -78,10 +76,10 @@ One line per question, in input order:
 - `glyph <id>` → `glyph <id> advance <advanceWidth> lsb <leftSideBearing>`
 
 All values are whole numbers in font units, the grid the type designer drew the glyphs on.
-In both real fonts, 1000 font units make one em, the font's nominal size.
+In both real fonts 1000 font units make one em, the font's nominal size.
 
-The Boilerplate writes `glyph <id> missing` if the list your function returns has no entry for
-a glyph. Every glyph has metrics, so a `missing` line fails the test.
+If the list your function returns has no entry for a glyph, the Boilerplate prints
+`glyph <id> missing`. Every glyph has metrics, so a `missing` line fails the test.
 
 ### The tables you need
 
@@ -99,7 +97,7 @@ All numbers are big-endian.
 
 From `maxp` you need `numGlyphs`, the uint16 at `maxp` + 4.
 
-`hmtx` (horizontal metrics) has two parts, one after the other:
+`hmtx` (horizontal metrics) has two parts, back to back:
 
 | Part | Count | Each entry |
 |---|---|---|
@@ -117,23 +115,22 @@ For glyph id i:
 - Otherwise: advance = the advance of the last `longHorMetric`,
   `hMetrics[numberOfHMetrics − 1].advanceWidth`, and lsb = `leftSideBearings[i − numberOfHMetrics]`.
 
-The second rule saves space. If the last glyphs of a font all have the same advance (common in
-monospaced fonts and in runs of CJK glyphs), the font stores that advance once and keeps a
-2-byte side bearing for each of those glyphs.
+The second rule saves space. If the last glyphs of a font share one advance (common in
+monospaced fonts and in runs of CJK glyphs), the font stores that advance once and spends only
+2 bytes per glyph, on the side bearing.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Each test checks one requirement. A failing run reports passes per requirement, and a
+`likely cause` line may name the requirement your difference matches.
 
 - **R1** `ascent` and `descent` are the int16 values at `hhea` + 4 and `hhea` + 6. They can
   be negative.
-- **R2** A glyph whose id is below `numberOfHMetrics` has its own `longHorMetric`: an
-  unsigned advance and a signed lsb.
-- **R3** A glyph whose id is `numberOfHMetrics` or more takes the last `longHorMetric`'s
-  advance, and its lsb is entry (id − `numberOfHMetrics`) of the int16 array after the
-  `longHorMetric` records.
+- **R2** A glyph with id below `numberOfHMetrics` has its own `longHorMetric`: an unsigned
+  advance and a signed lsb.
+- **R3** A glyph with id `numberOfHMetrics` or more takes the last `longHorMetric`'s advance,
+  and its lsb is entry (id − `numberOfHMetrics`) of the int16 array after the `longHorMetric`
+  records.
 
 ## Examples
 
@@ -149,8 +146,8 @@ input:   font fonts/JetBrainsMonoNerdFont-Bold.ttf
 output:  ascent 1020 descent -300
 ```
 
-The 4 bytes at `hhea` + 4 (byte 360) are `03 fc fe d4`. `03 fc` is 1020. `fe d4` is 65236
-as an unsigned number, and 65236 − 65536 = −300 as an int16.
+The 4 bytes at `hhea` + 4 (byte 360) are `03 fc fe d4`. `03 fc` is 1020. `fe d4` reads as
+65236 unsigned, which as an int16 is 65236 − 65536 = −300.
 
 ### Example 2: glyphs past `numberOfHMetrics` (test `05-R3-negative-tail`)
 
@@ -168,8 +165,8 @@ input:   font tests/05/data/05-R3-negative-tail.ttf
          glyph 5
 ```
 
-`hhea` + 4 holds `03 20 ff 38` (ascent 800, descent −200), and `hhea` + 34 holds `00 03`:
-3 full records. `maxp` + 4 holds 6, the number of glyphs. The 18 bytes of `hmtx`:
+`hhea` + 4 holds `03 20 ff 38` (ascent 800, descent −200) and `hhea` + 34 holds `00 03`, so
+3 full records. `maxp` + 4 holds 6, the glyph count. The 18 bytes of `hmtx`:
 
 ```
 01 f4 00 32      glyph 0: advance 500, lsb 50
@@ -221,48 +218,46 @@ output:  glyph 0 advance 600 lsb 90
 ```
 
 JetBrains Mono stores a full record for all 12125 glyphs (`numberOfHMetrics` = `numGlyphs`),
-so every glyph here follows the first rule. Most glyphs are 600 units wide, and glyph 1 has an
-advance of 0.
+so every glyph here follows the first rule. Most are 600 units wide; glyph 1 has an advance
+of 0.
 
 ## Constraints
 
 - `numGlyphs` is at most 17,936 in the tests, and 1 ≤ `numberOfHMetrics` ≤ `numGlyphs`.
 - Every `glyph` id is below `numGlyphs`.
-- Each input has at most 31 questions.
-- Each case has a 10-second limit. A correct solution finishes in milliseconds.
-- There are 14 tests: both real fonts (ascent and descent, Latin, kana and kanji glyphs,
-  random glyphs) and small fonts built with fontTools (the int16 limits, negative side
-  bearings, trailing glyphs that share an advance, a font where `numberOfHMetrics` is 1, and
-  random fonts).
+- At most 31 questions per input.
+- 10 seconds per case. A correct solution takes milliseconds.
+- 14 tests. Both real fonts (ascent and descent, Latin, kana and kanji glyphs, random glyphs), plus
+  hand-built fontTools fonts: the int16 limits, negative side bearings, trailing glyphs that share
+  an advance, a font where `numberOfHMetrics` is 1, and random fonts.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Read the two int16 values at `hhea` + 4, then `numberOfHMetrics` at `hhea` + 34 and
-`numGlyphs` at `maxp` + 4. Those two counts give the layout of `hmtx`.
+Start with the two int16 values at `hhea` + 4, then `numberOfHMetrics` at `hhea` + 34 and
+`numGlyphs` at `maxp` + 4. Those two counts fix the layout of `hmtx`.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Walk through `hmtx` once from its start. First read `numberOfHMetrics` pairs of (uint16,
-int16) and append each one to the result. Keep the last advance. Then read
-`numGlyphs` − `numberOfHMetrics` more int16 values, appending (last advance, value) for
-each. The result now has one entry per glyph id.
+Walk `hmtx` once, front to back. Read `numberOfHMetrics` pairs of (uint16, int16) and append
+each to the result, remembering the last advance. Then read `numGlyphs` − `numberOfHMetrics`
+more int16 values and append (last advance, value) for each. That leaves one entry per glyph
+id.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - `ascent`, `descent` and every `lsb` are signed. `advanceWidth` is unsigned.
-- Glyphs past `numberOfHMetrics` still have metrics. Their advance is the last
-  `longHorMetric`'s advance, but their lsb is their own, from the array that follows.
-  Don't copy the last record's lsb.
-- The lsb-only array starts right after the last 4-byte record, and its entries are 2 bytes
-  each.
+- Glyphs past `numberOfHMetrics` still have metrics. The advance is the last
+  `longHorMetric`'s, but the lsb is the glyph's own, from the array that follows. Copying the
+  last record's lsb is an easy mistake.
+- The lsb-only array begins right after the last 4-byte record, with 2 bytes per entry.
 - `numberOfHMetrics` is at `hhea` + 34. The field before it (+32) is `metricDataFormat`,
-  whose value is 0.
-- Both real fonts store a full record for every glyph, so only the small test fonts check the
-  second rule.
+  which is 0.
+- Both real fonts store a full record for every glyph, so only the small test fonts exercise
+  the second rule.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -291,7 +286,7 @@ repeat numGlyphs - n times:
 .\check 05 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+A failure looks like this:
 
 ```
   R3  Later glyphs: the last advance, lsb from the array after .............    0 / 3   FAILED
@@ -305,24 +300,22 @@ A failing test looks like this:
 ## After you pass: compare with the author's code
 
 [The blog's metrics parser](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parser%20for%20glyph%20metrics)
-has two parts. `getFontMetric` returns a `FontMetric` holding the ascent and descent from
+comes in two parts. `getFontMetric` returns a `FontMetric` with the ascent and descent from
 `hhea` + 4 and `hhea` + 6. `loadGlyphMetricsMap` reads `numberOfHMetrics` from `hhea` + 34,
-then reads that many (advance width, left side bearing) pairs from `hmtx` into a map keyed by
-glyph id, `glyphMetric`, whose values are `Metric` structs (`advanceWidth`,
-`leftSideBearing`). In your project, `loadHorizontalMetrics` returns both parts at once in a
-`HorizontalMetrics`, with one `GlyphMetric` per glyph id. The post calls the count field
-"NumberOfMetrics" and the code names it `numOfMetrics`; the OpenType spec calls it
-`numberOfHMetrics`, and Apple's manual `numOfLongHorMetrics`. The author's repository has the
-same code.
+then that many (advance width, left side bearing) pairs from `hmtx` into a map keyed by glyph
+id, `glyphMetric`, whose values are `Metric` structs (`advanceWidth`, `leftSideBearing`). Your
+`loadHorizontalMetrics` returns both parts together in a `HorizontalMetrics`, with one
+`GlyphMetric` per glyph id. The count field goes by different names: the post says
+"NumberOfMetrics" and the code `numOfMetrics`, the OpenType spec says `numberOfHMetrics`, and
+Apple's manual says `numOfLongHorMetrics`. The author's repository has the same code.
 
-The snippet stops after the `longHorMetric` records, so glyphs at
-or past `numberOfHMetrics` get no entry. A later step that asks for one with
-`glyphMetric[glyphCode]` gets a zeroed `Metric` from `operator[]`: advance 0 and lsb 0, so the
-renderer draws the next glyph on top of it. The post skips the `leftSideBearing` array on
-purpose, and its text says a monospaced font may store one record "or none at all"; the spec
-requires at least one, since the later glyphs take their advance from the last one.
-JetBrains Mono and Noto Sans JP store a full record
-for every glyph, so the gap doesn't show with them. Many fonts, including those compiled by
-fontTools, drop the trailing records when the last glyphs share an advance width, and a
-monospaced font can end up with `numberOfHMetrics` = 1. R3 tests the spec's rule: the last
-advance and the glyph's own lsb.
+The snippet stops after the `longHorMetric` records, so glyphs at or past `numberOfHMetrics`
+get no entry. Ask for one with `glyphMetric[glyphCode]` and `operator[]` hands back a zeroed
+`Metric`: advance 0 and lsb 0, so the renderer draws the next glyph on top of it. The post
+skips the `leftSideBearing` array on purpose, and its text says a monospaced font may store one
+record "or none at all". The spec requires at least one, since the later glyphs take their
+advance from the last. JetBrains Mono and Noto Sans JP store a full record for every glyph, so
+the gap doesn't show with them. Plenty of other fonts, those compiled by fontTools among them,
+drop the trailing records when the last glyphs share an advance width, and a monospaced font
+can end up with `numberOfHMetrics` = 1. R3 tests the spec's rule: the last advance and the
+glyph's own lsb.

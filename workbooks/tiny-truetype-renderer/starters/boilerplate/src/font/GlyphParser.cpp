@@ -3,16 +3,16 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The parser decodes one glyph record from the glyf table into the types in `Glyph.h`:
-//   the header of any glyph, and the contours and points of a simple one. In assignment 09
-//   you call it for every simple glyph inside a compound glyph.
+//   Bytes of a glyph record become the types in `Glyph.h` here: the header of any glyph,
+//   then the contours and points of a simple one. The compound glyph code in assignment 09
+//   calls it once per simple part.
 //
 // Your job:
-//   Implement the glyph decoder as "The glyph record you are decoding" lays out. Length 0
-//   gives an empty glyph. A negative `numberOfContours` gives a compound glyph, and you
-//   stop reading after the header. For a simple glyph, read the contour ends and every
-//   point, with absolute coordinates and the point's own on/off flag. The Boilerplate
-//   gives you the declarations; fill in each TODO.
+//   Implement the decoder as "The glyph record you are decoding" lays it out. Length 0
+//   gives an empty glyph. A negative `numberOfContours` means compound, and you stop after
+//   the header. A simple glyph needs the contour ends and every point, with absolute
+//   coordinates and the point's own on/off flag. The Boilerplate gives you the
+//   declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

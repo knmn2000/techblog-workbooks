@@ -10,10 +10,10 @@
 //   Linux), or use Run and Submit in the book.
 //
 // Your job:
-//   Read the input file line by line. A `lerp` line gives two points and t; a `bezier`
+//   Read the input file line by line. A `lerp` line gives two points and t, a `bezier`
 //   line gives the start, the control point, the end and t. Call your lerp or curve
 //   function from `utils/Geometry.h` and write one `x y` line per input line, formatting
-//   the numbers as the Output section describes.
+//   the numbers as Output describes.
 //
 // The other files of this assignment:
 //   You also write src/utils/Geometry.h in this assignment; each one gives its job at the

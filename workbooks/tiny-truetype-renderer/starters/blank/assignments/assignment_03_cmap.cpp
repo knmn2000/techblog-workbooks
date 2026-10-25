@@ -13,7 +13,7 @@
 //   Read the `font` line, turn the `table "cmap"` line into a table record (you need its
 //   offset), and load the character map once with your `Cmap` code. If loading reports no
 //   usable subtable, write the single line `unsupported`. Otherwise answer each `count`
-//   and `lookup` line in input order, in the formats the Output section gives.
+//   and `lookup` line in input order, in the formats Output gives.
 //
 // The other files of this assignment:
 //   You also write src/font/Cmap.h and src/font/Cmap.cpp in this assignment; each one

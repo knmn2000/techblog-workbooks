@@ -4,10 +4,9 @@
 // Problem: problems/18-render-text.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This class holds the whole pipeline. It loads a font's tables once, then maps each
-//   character of a line of text to its glyph, fills the glyph by the non-zero rule and
-//   moves the pen on by its advance. The checker's program and `main.cpp` both draw
-//   through it.
+//   The whole pipeline is one class: load a font's tables once, then for each character of
+//   a line of text find its glyph, fill it by the non-zero rule and move the pen on by its
+//   advance. The checker's program and `main.cpp` both draw through it.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

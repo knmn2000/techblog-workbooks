@@ -38,20 +38,20 @@ export function startPanelHtml(w, { id = '', prefix = 'p', heading = 'Solve it o
       </li>
       <li>
         <h3>Start the problem book</h3>
-        <p class="wbs-note">Run the command for your system from the workbook folder. The book opens in your browser with Run and Submit working.</p>
+        <p class="wbs-note">Run the command for your system from the workbook folder. The book opens in your browser, and Run and Submit work.</p>
         ${term('shell', `<pre>${esc(launchText(w))}</pre>`)}
       </li>
     </ol>
   </div>`,
     ai: `<div class="wbs-pane" data-pane="ai"${order[0] === 'ai' ? '' : ' hidden'}>
-    <p class="wbs-note">Paste this into any coding assistant, such as Codex, Cursor, Gemini CLI, GitHub Copilot or Claude Code. It clones the workbook, checks the tools it needs (asking before installing anything), sets up your project and starts the book. The prompt tells it not to solve anything for you.</p>
+    <p class="wbs-note">Paste this into a coding assistant: Codex, Cursor, Gemini CLI, GitHub Copilot, Claude Code, whichever you use. It clones the workbook, checks for the tools you need (and asks before installing any), sets up your project and starts the book. The prompt also tells it to leave the solutions alone.</p>
     ${term('prompt', `<pre class="wbs-wrap">${esc(aiPrompt(w))}</pre>`)}
   </div>`,
   };
   const src = sourceUrl ? `<a class="wbs-src" href="${esc(sourceUrl)}">View source</a>` : '';
   return `<section class="wbs-start"${id ? ` id="${esc(id)}"` : ''}>
   ${heading || src ? `<div class="wbs-hrow">${heading ? `<h2 class="wbs-h">${esc(heading)}</h2>` : ''}${src}</div>` : ''}
-  ${lead ? `<p class="wbs-lead">Your code runs on your machine against the workbook's checker. Choose how to set it up.</p>` : ''}
+  ${lead ? `<p class="wbs-lead">Your code runs on your own machine, against the workbook's checker. Pick a way to set it up.</p>` : ''}
   <div class="wbs-tabs" role="tablist">
     ${tabs}
   </div>

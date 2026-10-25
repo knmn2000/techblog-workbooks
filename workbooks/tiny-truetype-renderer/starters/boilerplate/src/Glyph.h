@@ -4,10 +4,10 @@
 // Problem: problems/07-simple-glyph.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This type holds a glyph as the glyf table stores it: whether it is empty, simple or
-//   compound, its contour count, its bounding box and, for a simple glyph, its outline.
-//   Your `GlyphParser` returns it, and in assignment 09 you use its kind to tell simple
-//   glyphs from compound ones.
+//   What the `glyf` table stores for a glyph: whether it is empty, simple or compound, its
+//   contour count, its bounding box and, for a simple glyph, its outline. Your
+//   `GlyphParser` returns it, and in assignment 09 the kind tells compound glyphs from
+//   simple ones.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

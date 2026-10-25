@@ -9,55 +9,55 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, read the blog's
+You don't need the blog for this. If you do read it, take the blog's
 [Preparation of a renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
-section up to and including the paragraph that starts "The line drawing algorithm", and stop
-before the author's code that follows it.
+section up to and including the paragraph that starts "The line drawing algorithm", and stop before
+the author's code that follows.
 
 ## Learning material
 
-- [Pixels and RGB colour](#primer/pixel): `RGB` in `src/FrameBufferCanvas.h` holds one
-  `uint8_t` per channel, and each `point`, `rect` and `line` command ends in a colour as `r g b`.
-- [Framebuffer](#primer/framebuffer): `FrameBufferCanvas` keeps its pixels in `pixels_`, a
-  `std::vector<RGB>` stored row by row, so pixel (x, y) is at index `y * width + x`.
+- [Pixels and RGB colour](#primer/pixel): `RGB` in `src/FrameBufferCanvas.h` is one `uint8_t`
+  per channel, and the `point`, `rect` and `line` commands all end in a colour as `r g b`.
+- [Framebuffer](#primer/framebuffer): `FrameBufferCanvas` stores its pixels row by row in
+  `pixels_`, a `std::vector<RGB>`, so pixel (x, y) is at index `y * width + x`.
 - [Clipping](#primer/clipping): `set` ignores coordinates outside the canvas, and `drawRect`
   starts and stops its loops at the canvas edges.
-- [Drawing a line](#primer/line-drawing): `drawLine` steps along the longer axis, works out the
-  other coordinate from a `double` slope, and stamps a square at each step.
+- [Drawing a line](#primer/line-drawing): the idea behind `drawLine`: walk the longer axis,
+  work out the other coordinate from a `double` slope, stamp a square at each step.
 - [PNG files](#primer/png): `writePng` saves the canvas as a PNG, the format of the expected
   pictures and of the diff pictures the checker writes.
-- [Binary PPM files](#primer/ppm): the format you can write instead of a PNG, with an
-  `std::ofstream` in binary mode and no library.
-- [`stb_image_write.h`](#primer/stb-image-write): the Boilerplate's `writePng` passes
-  `pixels_.data()` to `stbi_write_png` with 3 channels and `width * 3` bytes per row.
+- [Binary PPM files](#primer/ppm): the library-free alternative to PNG, written with an
+  `std::ofstream` in binary mode.
+- [`stb_image_write.h`](#primer/stb-image-write): `writePng` hands `pixels_.data()` to
+  `stbi_write_png` with 3 channels and `width * 3` bytes per row.
 - [`#define` and `#pragma`](#primer/preprocessor): `src/FrameBufferCanvas.cpp` defines
-  `STB_IMAGE_WRITE_IMPLEMENTATION` before it includes the stb header, and turns off that
-  header's warnings with `#pragma GCC diagnostic`.
-- [Operator overloading](#primer/operator-overloading): `RGB` declares a defaulted
-  `operator==`, so two colours compare channel by channel.
-- [`<cmath>`](#primer/cmath): `std::lround` rounds a point of your line to the nearest pixel.
+  `STB_IMAGE_WRITE_IMPLEMENTATION` before the stb include and quiets that header's warnings
+  with `#pragma GCC diagnostic`.
+- [Operator overloading](#primer/operator-overloading): `RGB` has a defaulted `operator==`, so
+  two colours compare channel by channel.
+- [`<cmath>`](#primer/cmath): `std::lround` rounds to the nearest whole number, which is how a
+  point on your line becomes a pixel.
 - [Converting a float to an int](#primer/float-to-int): rounding with `std::lround` and
-  truncating with `static_cast<int>` both pass here, because the checker forgives an edge that
+  truncating with `static_cast<int>` both pass here, since the checker forgives an edge that
   moves by one pixel.
-- [`<algorithm>`](#primer/algorithm): `std::min` and `std::max` help when `drawRect` has to
-  keep a square that hangs over the edge inside the canvas.
-- [`<utility>`](#primer/utility): `std::swap` trades two values, which a line-drawing loop
-  that always steps in one direction can use.
-- [`<cstdlib>`](#primer/cstdlib): `std::abs` gives the size of a difference, which tells a
-  steep line from a flat one.
-- [`<optional>`](#primer/optional): the program declares
-  `std::optional<FrameBufferCanvas> canvas` and builds it with `canvas.emplace(w, h)` once it
-  has read the `canvas` line.
-- [Integer division](#primer/integer-division): `cx - w / 2` in `drawRect` rounds down on
-  purpose, while the line's slope needs a `double` division.
-- [`static_assert`](#primer/static-assert): `FrameBufferCanvas.cpp` checks
-  `sizeof(RGB) == 3` when it compiles, the 3 bytes per pixel that `stbi_write_png` reads.
+- [`<algorithm>`](#primer/algorithm): `std::min` and `std::max` are handy for keeping a square
+  that hangs over the edge inside the canvas.
+- [`<utility>`](#primer/utility): `std::swap` exchanges two values, and a line routine that
+  wants a single stepping direction will reach for it.
+- [`<cstdlib>`](#primer/cstdlib): `std::abs` gives the size of a difference, which is how to
+  tell a steep line from a flat one.
+- [`<optional>`](#primer/optional): the program declares `std::optional<FrameBufferCanvas> canvas`
+  and calls `canvas.emplace(w, h)` once it has read the `canvas` line.
+- [Integer division](#primer/integer-division): rounding down is what you want for `cx - w / 2` in
+  `drawRect` and wrong for the line's slope, which needs a `double` division.
+- [`static_assert`](#primer/static-assert): `FrameBufferCanvas.cpp` checks `sizeof(RGB) == 3` at
+  compile time, matching the 3 bytes per pixel that `stbi_write_png` reads.
 - [Debug builds](#primer/debug-build): the checker builds in Debug with GCC's bounds checks, so
-  writing a pixel outside the canvas's vector stops the program instead of corrupting memory.
-- [`static_cast`](#primer/static-cast): the program turns each colour's `int` into a `uint8_t`
-  with `static_cast`, and the canvas converts `width` to `std::size_t` before it multiplies.
-- [Brace initialization](#primer/brace-init): the program builds a colour as
-  `RGB{r, g, b}`, one value per member in order.
+  a write outside the canvas's vector stops the program instead of corrupting memory.
+- [`static_cast`](#primer/static-cast): the program narrows each colour's `int` to a `uint8_t`
+  with `static_cast`, and the canvas widens `width` to `std::size_t` before it multiplies.
+- [Brace initialization](#primer/brace-init): the program builds a colour as `RGB{r, g, b}`,
+  one value per member in order.
 
 ## Source material
 
@@ -68,22 +68,20 @@ before the author's code that follows it.
 
 ## Where this fits
 
-In assignments 01 to 05 you read numbers out of the font file. Six later assignments draw
-pictures: outlines with straight lines (08) and with curves (11), filled glyphs (14, 16, 17)
-and a line of text (18). They all draw on the framebuffer you build here, in
-`src/FrameBufferCanvas.h` and `.cpp`. It is a grid of pixels in memory with three operations
-(paint one pixel, fill a rectangle, draw a thick line) and a way to save the grid as a PNG.
+Assignments 01 to 05 only read numbers. The six that draw (outlines in 08 and 11, filled
+glyphs in 14, 16 and 17, the line of text in 18) all paint onto the framebuffer you build
+here, in `src/FrameBufferCanvas.h` and `.cpp`: a grid of pixels in memory with three
+operations (paint one pixel, fill a rectangle, draw a thick line) and a way to save it as a
+PNG.
 
 ## The problem
 
-Write a program that reads a list of drawing commands and saves the picture they draw as a PNG
-file.
+Turn a list of drawing commands into a picture and save it as a PNG.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-The output file name ends in `.png`. The input file contains these lines, one command per
-line. All values are whole numbers.
+The checker runs `<program> <input-file> <output-file>` from the workbook folder, and the output
+file name ends in `.png`. The input has one command per line, all values whole numbers.
 
 | Line | Meaning |
 |---|---|
@@ -97,11 +95,11 @@ Colours are 0 to 255 per channel. Coordinates can be negative or beyond the pict
 ### Output
 
 A PNG (or binary PPM) file of `w` x `h` pixels, 8 bits per channel, RGB (RGBA works too; the
-checker ignores alpha). Pixel (0, 0) is the top-left corner; x grows to the right and y
-grows downwards. Every pixel that no command paints stays black (0, 0, 0).
+checker ignores alpha). Pixel (0, 0) is the top-left corner, x grows to the right and y grows
+downwards. A pixel that no command paints stays black (0, 0, 0).
 
-Write the picture to the output path the checker gives you. The name ends in `.png`, but the
-checker looks at the contents, so either of these works:
+Write the picture to the output path the checker passes you. It ends in `.png`, but the checker looks
+at what is inside, so you have two options:
 
 - A binary PPM, which needs no library: the header `P6`, the width, the height and
   `255`, separated by spaces or newlines and ended by one newline (for example
@@ -114,17 +112,15 @@ checker looks at the contents, so either of these works:
 
 ### The commands, in order
 
-Draw the commands in the order they appear, so that a later command paints over an earlier
-one wherever they overlap.
+Run the commands in file order. If two overlap, the later one paints over the earlier.
 
 ### Painting one pixel
 
-`point x y ...` paints a single pixel. If (x, y) is outside the picture (x < 0, y < 0,
-x ≥ w or y ≥ h), nothing happens.
+`point x y ...` paints one pixel. If (x, y) is outside the picture (x < 0, y < 0, x ≥ w or
+y ≥ h), nothing happens.
 
-The rectangle and the line paint through this operation, so its bounds check does the
-clipping for every shape: a shape that crosses the edge of the picture keeps only its
-inside part.
+The rectangle and the line both paint through this operation, so its bounds check clips every
+shape: one that crosses the edge of the picture keeps only the part inside.
 
 ### Drawing a rectangle
 
@@ -135,8 +131,8 @@ inside part.
 | x | `cx - w/2` | `cx - w/2 + w - 1` |
 | y | `cy - h/2` | `cy - h/2 + h - 1` |
 
-where `w/2` and `h/2` round down. With an odd size the centre pixel sits in the middle; with
-an even size the left (or top) side gets one pixel more than the right (or bottom):
+where `w/2` and `h/2` round down. An odd size has a centre pixel in the middle. An even size
+gives the left (or top) side one pixel more than the right (or bottom):
 
 | w | columns, for cx = 100 |
 |---|---|
@@ -147,8 +143,8 @@ an even size the left (or top) side gets one pixel more than the right (or botto
 
 ### Drawing a line
 
-`line ax ay bx by t ...` stamps one `t` x `t` square (centred like a rectangle) for every
-step along the line's longer direction:
+`line ax ay bx by t ...` stamps a `t` x `t` square (centred like a rectangle) at each step
+along the line's longer direction:
 
 1. If the line is steep, meaning |by - ay| > |bx - ax|, swap the roles of x and y for
    the steps below (step along y instead of x).
@@ -160,21 +156,21 @@ step along the line's longer direction:
    swapping back).
 4. If both ends are the same pixel, the line is a single square.
 
-Truncating toward zero instead of rounding to the nearest also passes, and a tie at .5 may
-go either way, because the checker forgives an edge that moves by one pixel. It doesn't
-forgive a missing piece, a gap or a shape in the wrong place.
+Truncating toward zero instead of rounding passes too, and a tie at .5 can go either way: the
+checker forgives an edge that moves by one pixel. A missing piece, a gap or a shape in the
+wrong place gets no such pass.
 
-Compute the slope in floating point: with ints, `(by - ay) / (bx - ax)` is integer division
-and loses the fraction.
+Do the slope in floating point. `(by - ay) / (bx - ax)` on ints is integer division and drops
+the fraction.
 
 ### How the picture is compared
 
-The checker reads your PNG and compares it with the expected picture pixel by pixel. It
-forgives a differing pixel only when it belongs to an edge that moved by at most 1 pixel:
-extra ink next to the same ink in the expected picture, or missing ink with the same ink next
-to it in your picture. Every other difference counts, and every test allows 0 of them.
+The checker loads your PNG and compares it with the expected picture pixel by pixel. A
+differing pixel is forgiven only if it sits on an edge that moved by at most 1 pixel: extra ink
+next to the same ink in the expected picture, or missing ink with the same ink next to it in
+yours. Any other difference counts, and every test allows 0 of them.
 
-If a test fails, the checker writes a diff picture:
+A failing test gets a diff picture:
 
 - red where you have extra ink;
 - blue where ink is missing;
@@ -183,15 +179,14 @@ If a test fails, the checker writes a diff picture:
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+One requirement per test. After a failing run the report counts passes for each requirement, and a
+`likely cause` line can single out the one your difference looks like.
 
 - **R1** The picture is `w` x `h` pixels, black wherever no command paints, with (0, 0) at
   the top-left and y growing downwards.
 - **R2** `point` paints one pixel, in its colour.
-- **R3** `rect` covers columns `cx - w/2` to `cx - w/2 + w - 1` and rows likewise, for even
-  and odd sizes.
+- **R3** `rect` covers columns `cx - w/2` to `cx - w/2 + w - 1` and rows likewise, for even and
+  odd sizes.
 - **R4** `line` works in every direction (shallow, steep, horizontal, vertical, either end
   first), with both ends included and no gaps, and a zero-length line is one square.
 - **R5** `line` stamps a `thickness` x `thickness` square at every step.
@@ -214,9 +209,9 @@ output:  a 500 x 500 PNG
 
 ![The blog's demo: a thick white line, a thin red line crossing it, and a green square](../tests/06/expected/06-E2E-blog-demo.png)
 
-The white line is steep (it moves 300 down and 200 across), so it steps along y. The red line
-goes right to left, so your program swaps its ends before stepping along x. The red line is on
-top where the two cross, because it comes later.
+The white line is steep (300 down, 200 across), so it steps along y. The red one runs right
+to left, so your program swaps its ends before stepping along x. At the crossing, red wins
+because it comes later.
 
 ### Example 2: even-sized rectangles (test `06-R3-even`)
 
@@ -232,8 +227,8 @@ output:  a 220 x 140 PNG
 ```
 
 The green square covers columns 60 - 25 = 35 to 35 + 49 = 84 and rows 45 to 94: 25 pixels
-left of the centre column, 24 to the right. The pink bar covers columns 150 to 169 and rows
-36 to 43. The 2 x 2 square covers columns 159 to 160 and rows 99 to 100. The two points come
+left of the centre column, 24 to the right. The pink bar takes columns 150 to 169 and rows 36
+to 43, and the 2 x 2 square takes columns 159 to 160 and rows 99 to 100. Both points come
 last, so they show on top of the rectangles' centres.
 
 ### Example 3: lines 1 to 3 pixels long (test `06-R4-short`)
@@ -250,7 +245,7 @@ input:   canvas 120 80
 output:  a 120 x 80 PNG
 ```
 
-Take the green line from (50, 10) to (52, 13). It moves 3 down and 2 across, so it is steep:
+Take the green line from (50, 10) to (52, 13). It goes 3 down and 2 across, so it is steep:
 step y from 10 to 13 and work out x = 50 + 2/3 * (y - 10).
 
 | y | x before rounding | x rounded | pixel |
@@ -260,47 +255,46 @@ step y from 10 to 13 and work out x = 50 + 2/3 * (y - 10).
 | 12 | 51.33 | 51 | (51, 12) |
 | 13 | 52 | 52 | (52, 13) |
 
-Without the swap you would step x from 50 to 52 and paint only 3 pixels, leaving a gap.
+Skip the swap and you step x from 50 to 52, paint 3 pixels and leave a gap.
 
 ## Constraints
 
-- `w` and `h` are between 1 and 600. Rectangle sizes and line thicknesses are between 1 and 600
-  (Hint 3 says what that means for speed).
-- Coordinates are between -1000 and 1000, so a line has at most a few thousand steps.
-- At most 15 colours appear in one picture, each far from the others and from black.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
-- There are 30 tests: the blog's demo, hand-made scenes for each requirement and 5 random
-  scenes.
+- `w` and `h` run from 1 to 600, and so do rectangle sizes and line thicknesses (Hint 3 covers
+  what that means for speed).
+- Coordinates run from -1000 to 1000, so a line has at most a few thousand steps.
+- A picture uses at most 15 colours, each far from the others and from black.
+- Each case gets 10 seconds, and a correct solution needs milliseconds.
+- 30 tests: the blog's demo, hand-made scenes for each requirement, and 5 random scenes.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Get `set()` right first: it is the only function that touches the pixel array, so if it
-checks the bounds, no shape can write outside the picture. Then `drawRect()` is two loops calling `set()`, and
-`drawLine()` is one loop calling `drawRect()`.
+Get `set()` right first. It is the only function that touches the pixel array, so if it checks
+the bounds, no shape can write outside the picture. After that `drawRect()` is two loops
+calling `set()`, and `drawLine()` is one loop calling `drawRect()`.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
 Pixel (x, y) lives at index `y * width + x` of the vector. For the line, decide once whether
-it is steep, swap x and y of both ends if so, and swap the ends if the first has the larger
-x. After those swaps you have one case left: x goes up by 1 per step and y changes by `slope`
-per step, where `|slope| <= 1`. Swap x and y back when you stamp the square.
+it is steep and, if so, swap x and y in both ends. Then swap the ends if the first has the
+larger x. One case remains: x goes up by 1 per step, y changes by `slope` per step, and
+`|slope| <= 1`. Swap x and y back when you stamp the square.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Check `x >= width`, not `x > width`: index `y * width + width` is the first pixel of the
-  next row (or past the end of the vector on the last row).
-- Without the steep swap, a line close to vertical comes out as a few dots.
-- `(by - ay) / (bx - ax)` with ints is integer division. Convert to `double` first.
+- The bounds check needs `x >= width`, not `x > width`. Index `y * width + width` is the first
+  pixel of the next row, or past the end of the vector on the last row.
+- Without the steep swap, a line close to vertical turns into a few dots.
+- `(by - ay) / (bx - ax)` on ints is integer division. Convert to `double` first.
 - A zero-length line has `bx - ax == 0`. Don't divide by it; draw one square.
-- `w / 2` for the rectangle is integer division on purpose: it rounds down.
-- Loop `x <= bx`, not `x < bx`, or the last end goes missing.
+- `w / 2` in the rectangle rounds down on purpose: it is integer division.
+- Loop `x <= bx`, not `x < bx`, or the far end goes missing.
 - A thick line stamps one rectangle per step, up to 600 x 600 pixels each, and most of a stamp
-  can lie outside the canvas. Start and stop the rectangle's loops at the canvas edges, so the
-  pixels outside cost nothing; `set()` would drop them anyway, one call at a time.
+  can hang outside the canvas. Start and stop the rectangle's loops at the canvas edges so
+  those pixels cost nothing. `set()` would drop them anyway, but one call at a time.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -334,9 +328,8 @@ drawLine(ax, ay, bx, by, t, c):
 .\check 06 -Dispute <id> "why"     set aside a test you believe is wrong; you won't be blocked
 ```
 
-Open your picture (`build/cases/06/<id>.out.png`) next to the expected one
-(`tests/06/expected/<id>.png`) and the diff the checker writes. A failing test looks like
-this:
+Open your picture (`build/cases/06/<id>.out.png`), the expected one
+(`tests/06/expected/<id>.png`) and the diff side by side. A failing run:
 
 ```
   R4  line in every direction (shallow, steep, axis-aligned), both ends... .    2 / 6   FAILED
@@ -350,29 +343,28 @@ this:
 ## After you pass: compare with the author's code
 
 [The blog's first `FrameBufferCanvas`](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
-is a class that owns a one-dimensional array of `RGB` pixels (a `std::unique_ptr<RGB[]>`,
-filled with `BLACK`). `set` writes one pixel and ignores coordinates outside the picture,
-`drawRect` takes the centre and size and clips its loops to the canvas, and `drawLine` does
-the steep swap, orders the ends and stamps a `drawRect` at every step. `writePngFile` hands
-the buffer to `stbi_write_png` with 3 channels, and the post's `main` draws the scene from
-Example 1. Your Boilerplate keeps these names, except `writePng` for `writePngFile`, and adds
-`get`, which reads a pixel back. The post's text also suggests overloads that
-take 2D vectors; the author's repository has them for `drawLine` and `drawRect`, and they round
-the vector to the nearest pixel with `std::lround`. They keep the glyph code in later sections
-short.
+owns a one-dimensional array of `RGB` pixels (a `std::unique_ptr<RGB[]>`, filled with
+`BLACK`). `set` writes a pixel and ignores coordinates outside the picture, `drawRect` takes
+a centre and a size and clips its loops to the canvas, and `drawLine` does the steep swap,
+orders the ends and stamps a `drawRect` at every step. `writePngFile` hands the buffer to
+`stbi_write_png` with 3 channels, and the post's `main` draws the scene from Example 1. Your
+Boilerplate keeps those names, except `writePng` for `writePngFile`, and adds `get`, which
+reads a pixel back. The post's text also suggests overloads that take 2D vectors; the
+author's repository has them for `drawLine` and `drawRect`, rounding the vector to the nearest
+pixel with `std::lround`. They keep the glyph code in later sections short.
 
 The post credits its line method to a Bresenham tutorial, but the snippet steps with a
-floating-point slope, the DDA method in this page's sources. It adds the slope to `y` at every
-step and turns `y` into a pixel with a plain cast. The cast truncates toward zero instead of
-rounding, and the repeated additions collect `float` error (on a line from (0, 0) to (9, 3), nine
-additions of 3/9 end at y = 2.9999998, which truncates to 2, one row short of the end point),
-so its lines can sit up to a pixel to one side. The tests
-accept both. For a line whose ends are the same pixel, the loop draws its one square and then
-divides 0 by 0 in floating point. Nothing reads the result, so the line comes out as one
-square, as this page asks.
+floating-point slope: the DDA method from this page's sources. It adds the slope to `y` at
+each step and turns `y` into a pixel with a plain cast. A cast truncates toward zero instead
+of rounding, and the repeated additions pile up `float` error (on a line from (0, 0) to
+(9, 3), nine additions of 3/9 end at y = 2.9999998, which truncates to 2, one row short of the
+end point), so its lines can sit up to a pixel to one side. The tests accept both. If a
+line's ends are the same pixel, the loop draws its one square and then divides 0 by 0 in
+floating point. Nothing reads the result, so the line comes out as one square, as this page
+asks.
 
-In the post's snippet, `RGB` holds three `unsigned` values, 4 bytes each, so each pixel takes
-12 bytes, while `stbi_write_png` with 3 channels reads 3 bytes per pixel. The PNG would come out
-scrambled. The author's repository declares the channels as `unsigned char`, which makes each
-pixel the 3 bytes the writer expects, and the Boilerplate's `uint8_t` channels and its
+In the post's snippet `RGB` holds three `unsigned` values of 4 bytes each, so a pixel takes 12
+bytes, while `stbi_write_png` with 3 channels reads 3 bytes per pixel. The PNG would come out
+scrambled. The author's repository declares the channels as `unsigned char`, which gives the 3
+bytes the writer expects, and the Boilerplate's `uint8_t` channels and its
 `static_assert(sizeof(RGB) == 3)` do the same.

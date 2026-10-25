@@ -3,14 +3,13 @@
 // Problem: problems/01-byte-readers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   This file implements the reader: it opens the font, moves the position and turns bytes
-//   into numbers. Every later assignment that reads the font runs this code, so a bug here
-//   makes their tests fail too.
+//   Opens the font, moves the position and assembles numbers from bytes. A bug here fails
+//   the tests of every assignment that reads the font, so get it solid before moving on.
 //
 // Your job:
-//   Open the file in binary mode, move the position for jumps and skips, and build each
-//   number from its bytes, most significant first, with two's complement for the signed
-//   types. If a read needs a byte past the end of the file, throw the error your header
+//   Open the file in binary mode, move the position on jumps and skips, and build each
+//   number from its bytes, most significant first. The signed types use two's complement.
+//   A read that needs a byte past the end of the file throws the error your header
 //   declares (`UnexpectedEof` in the Boilerplate) instead of returning a value. The
 //   Boilerplate gives you the declarations; fill in each TODO.
 //

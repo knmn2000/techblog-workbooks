@@ -9,23 +9,22 @@
 
 ## Read in the blog first
 
-You can pass using this page alone. For the background, in the blog's
-"Renderer: Filling Glyph" section, read the start of
-[Even-odd Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Even%2Dodd%20Rule)
-and then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments).
-Stop after the formula for t. The author's code (the listing "Function to find a
-intersections of 2 segments") follows it.
+The page alone gets you through. The background is in the blog's "Renderer: Filling Glyph"
+section: the start of
+[Even-odd Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Even%2Dodd%20Rule),
+then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments).
+Read through the formula for t and stop. The author's listing, "Function to find a
+intersections of 2 segments", follows it.
 
 ## Learning material
 
-- [The 2D cross product and the side test](#primer/cross-product): write `cross` and a `side`
-  helper in `utils/Geometry.h`, and reject a pair in Step 1 when either product of side values is
-  positive.
-- [Intersecting two segments](#primer/segment-intersection): `segmentsIntersect` works out
-  t = cross(b1 - a1, v2) / cross(v1, v2) and returns a1 + t·v1.
-- [Floating-point tolerances](#primer/epsilon): the coordinates are multiples of 0.25, so the
-  parallel test `cross(v1, v2) == 0` has no rounding error here, and a tolerance such as `1e-9`
-  passes too.
+- [The 2D cross product and the side test](#primer/cross-product): `Geometry.h` needs a `cross`
+  and a `side` helper, and the segment test builds on them.
+- [Intersecting two segments](#primer/segment-intersection): `segmentsIntersect` in
+  `utils/Geometry.h` takes two segments and gives back their meeting point.
+- [Floating-point tolerances](#primer/epsilon): the coordinates here are multiples of 0.25, so
+  the arithmetic stays exact, and a test against `0` and one against a small tolerance such as
+  `1e-9` both pass.
 - [`<optional>`](#primer/optional): `segmentsIntersect` returns a `std::optional<Vec2>`, and the
   program writes `none` when it comes back empty.
 
@@ -38,24 +37,23 @@ intersections of 2 segments") follows it.
 
 ## Where this fits
 
-The blog's even-odd fill finds where each row's scanline, a horizontal line across the glyph,
-meets each straight edge of the outline with this function, and fills between pairs of those
-points. Here you write it: the point where two segments meet, endpoints included. In assignment
-13 you do the same for a curved edge, and both go into your `utils/Geometry.h`.
+The blog's even-odd fill sends a scanline, a horizontal line across the glyph, through every
+row and uses this function to find where it crosses each straight edge; the fill then paints
+between pairs of crossings. You write the function here, endpoints included. Assignment 13 does
+the same job for a curved edge, and both end up in `utils/Geometry.h`.
 
-Your fill in assignment 14 doesn't call this function. For a scanline through a vertex, this
-function reports that point for both edges that meet there, while the fill's half-open rule
-counts it once. The fill works out each crossing's x from the edge instead.
+Your own fill in assignment 14 skips this function. For a scanline through a vertex, this function
+reports that point for each edge meeting there, while the fill's half-open rule has to count it once, so
+the fill works out each crossing's x from the edge.
 
 ## The problem
 
-Your program reads pairs of line segments. For each pair it writes the point where the two
-segments meet, or `none`.
+Each input line gives two line segments. Print the point where they meet, or `none`.
 
 ### Input
 
-The checker runs your program from the workbook folder as `<program> <input-file> <output-file>`.
-Every line of the input file has the same form:
+The checker starts your program in the workbook folder as `<program> <input-file> <output-file>`.
+All lines of the input have one form:
 
 | Line | Meaning |
 |---|---|
@@ -63,13 +61,13 @@ Every line of the input file has the same form:
 
 ### Output
 
-Write one line per input line, in the same order: the meeting point as `x y`, or the word
+Answer each input line with one line, keeping the order: the meeting point as `x y`, or the word
 `none`.
 
-The checker accepts any number within 0.001 of the expected value, so `5`, `5.0` and
-`5.0000` all match `5`. If a value isn't whole, print enough decimals to land within 0.001;
-4 decimals are enough. The boilerplate's `number()` prints whole numbers with no decimal point
-and rounds the others to 4 decimals, dropping trailing zeros (`37.5`, `0.0625`).
+The checker accepts numbers within 0.001 of the expected one, so `5`, `5.0` and `5.0000` all match `5`. For
+a fractional value 4 decimals are plenty. `number()` in the boilerplate does the formatting: whole
+numbers lose the decimal point; any other value prints with 4 decimals and no trailing zeros
+(`37.5`, `0.0625`).
 
 ### The rules
 
@@ -91,66 +89,65 @@ cross(u, v) = u.x · v.y − u.y · v.x
 ```
 
 - It is 0 when u and v are parallel or one of them is zero, and only then.
-- Its sign says which way you turn going from the direction of u to the direction of v.
+- Its sign tells you which way you turn going from the direction of u to the direction of v.
 
-The side value tells you which side of a line a point is on. For a line through s and e, and
-a point p, it is:
+A side value says which side of a line a point is on. For a line through s and e, and a point
+p:
 
 ```
 side(p; s, e) = cross(e − s, p − s)
 ```
 
-The result is positive on one side of the line, negative on the other, and 0 when p lies on
-the line.
+Positive on one side of the line, negative on the other, 0 when p lies on it.
 
 ### Step 1: the side test
 
-Segment B can reach segment A's line only if b1 and b2 don't lie on the same side of it, where
-a point on the line counts as on neither side. The same goes for A and B's line. Both
+Segment B can reach segment A's line only if b1 and b2 aren't on the same side of it, with a
+point on the line counting as on neither side. The same goes for A against B's line. Both
 conditions must hold:
 
 ```
 side(b1; a1, a2) · side(b2; a1, a2) ≤ 0     and     side(a1; b1, b2) · side(a2; b1, b2) ≤ 0
 ```
 
-If either product is positive, the answer is `none`. Use ≤, not <: when an endpoint lies on
-the other segment's line, its side value is 0, so the product is 0 and a touching pair passes.
+If either product is positive, the answer is `none`. Use ≤, not <. An endpoint lying on the
+other segment's line has side value 0, which makes the product 0, and that's how a touching
+pair gets through.
 
 ### Step 2: the meeting point
 
 Let v1 = a2 − a1 and v2 = b2 − b1. If cross(v1, v2) = 0, the segments are parallel or
-collinear: the answer is `none` (rule 2). Collinear segments pass the side test, because every
-side value is 0, so you need this check even after Step 1. Otherwise:
+collinear, and the answer is `none` (rule 2). Collinear segments pass the side test, since every
+side value is 0, so you still need this check after Step 1. Otherwise:
 
 ```
 t = cross(b1 − a1, v2) / cross(v1, v2)
 point = a1 + t · v1
 ```
 
-The formula comes from writing a point on A as a1 + t·v1 and a point on B as b1 + s·v2. If
-you set them equal and take the cross product of both sides with v2, s drops out, because
-cross(v2, v2) = 0. After Step 1, t is between 0 and 1.
+The formula comes from writing a point on A as a1 + t·v1 and a point on B as b1 + s·v2,
+setting them equal, and taking the cross product of both sides with v2. The s term vanishes
+because cross(v2, v2) = 0. After Step 1, t lies between 0 and 1.
 
-You can get the same answers another way: also compute s = cross(b1 − a1, v1) / cross(v1, v2),
-and accept the point only when t and s are both between 0 and 1, inclusive.
+Another route gives the same answers. Also compute s = cross(b1 − a1, v1) / cross(v1, v2), and
+accept the point only when t and s are both between 0 and 1, inclusive.
 
 ### Exact arithmetic
 
-Every coordinate is a multiple of 0.25 between −1000 and 1000. In `double` arithmetic every
-side value and cross product above is then exact:
+Coordinates are multiples of 0.25 between −1000 and 1000, so in `double` arithmetic every
+side value and cross product above is exact:
 
-- Touching gives a side value of 0, and parallel segments give a cross product of 0, with no
+- A touch gives a side value of 0 and parallel segments give a cross product of 0, with no
   rounding error in either.
-- If you multiply two side values to compare their signs, the product can round, but its sign
-  is still exact. If you compare the two signs without multiplying, nothing rounds.
-- A tolerance such as `|cross(v1, v2)| < 1e-9` also works: when two segments in the tests
+- Multiplying two side values to compare signs can round the product, but the sign survives.
+  Comparing the two signs without multiplying avoids the question.
+- A tolerance such as `|cross(v1, v2)| < 1e-9` also works: for two segments in the tests that
   aren't parallel, |cross(v1, v2)| is at least 0.25.
 
 ## Requirements
 
-Each test checks one of these requirements. If tests fail, the checker's report shows how many
-pass for each requirement, and it may add a `likely cause` line that names the requirement the
-difference points to.
+Every test exercises one of these requirements. A failure report gives counts under each, and
+sometimes a `likely cause` line aimed at the requirement your difference resembles.
 
 - **R1** Segments that cross at a point inside both give that point.
 - **R2** Touching counts: if the segments meet at an endpoint of either one (a shared corner
@@ -187,11 +184,11 @@ output:  3 5
          3 5
 ```
 
-The horizontal line y = 5 passes through (3, 5), where the two edges meet. On the
-first line, side(b1; a1, a2) = cross((200, 0), (103, 0)) = 0, so the product is 0 and the
-touch counts. Both edges report the same corner. A fill that counts crossings would count this
-corner twice; the blog fixes that in "Removal of fill errors" (assignment 15 builds one piece
-of that fix).
+The horizontal line y = 5 passes through (3, 5), where the two edges meet. On the first line,
+side(b1; a1, a2) = cross((200, 0), (103, 0)) = 0, so the product is 0 and the touch counts.
+Both edges report the same corner. A fill that counts crossings would count this corner twice.
+The blog deals with that in "Removal of fill errors", and assignment 15 builds one piece of the
+fix.
 
 ### Example 3: collinear segments (test `12-R4-collinear-overlap`)
 
@@ -205,45 +202,46 @@ output:  none
          none
 ```
 
-Every side value is 0, so the side test passes. cross(v1, v2) is 0, so the answer is `none`.
+Every side value is 0, so the side test lets all three through. Then cross(v1, v2) is 0 and the
+answer is `none`.
 
 ## Constraints
 
 - Every coordinate is between −1000 and 1000 and is a multiple of 0.25. No segment has zero
   length.
 - For two segments that aren't parallel, |cross(v1, v2)| ≥ 0.25.
-- A test has from 1 to 20 lines.
-- There are 34 tests: hand-made pairs for each rule, random pairs aimed at R1 to R4, random
+- Between 1 and 20 lines per test.
+- 34 tests: hand-made pairs for each rule, random pairs aimed at R1 to R4, random
   pairs on a small grid (where touching and collinear pairs are common), and horizontal lines
   across every edge of 'K' and 'Z' from JetBrains Mono Bold, once between corners and once
   through a corner.
-- Each case has a 10-second limit. A correct solution takes milliseconds.
+- 10 seconds per case, and milliseconds are enough.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
 Write `cross(u, v)` first and check it by hand: cross((1, 0), (0, 1)) = 1 and
-cross((2, 4), (1, 2)) = 0. You build the side test, the parallel check and the formula for t
-from it.
+cross((2, 4), (1, 2)) = 0. The side test, the parallel check and the formula for t all come out
+of it.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Work in three steps, in this order. Reject the pair if either side-test product is positive.
-Reject it if cross(v1, v2) is 0. Otherwise compute t and return a1 + t·v1. Work through
-Example 1 and have your code print each intermediate value.
+Three steps, in this order. Reject the pair if either side-test product is positive. Reject it
+if cross(v1, v2) is 0. Otherwise compute t and return a1 + t·v1. Work through Example 1 and have
+your code print each intermediate value to compare.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Use ≤ 0 in the side test. With < 0, every touching case (R2) gives `none`.
-- Without the side test you get the crossing of two infinite lines, which can lie outside the
+- The side test takes ≤ 0. With < 0, every touching case (R2) comes out as `none`.
+- Skip the side test and you get the crossing of two infinite lines, which can lie outside the
   segments (R3).
 - Check cross(v1, v2) before dividing by it. Collinear segments pass the side test, and 0 / 0
   gives `nan`.
-- The order inside `cross` matters: cross(u, v) = −cross(v, u). If you swap the arguments in
-  only one of the two cross products for t, the point lands on the wrong side of a1.
+- Argument order inside `cross` matters: cross(u, v) = −cross(v, u). Swap the arguments in only
+  one of the two cross products for t and the point lands on the wrong side of a1.
 - t belongs to segment A, so the point is a1 + t·v1, not b1 + t·v2.
 </details>
 
@@ -274,7 +272,7 @@ intersect(a1, a2, b1, b2):
 .\check 12 -Dispute <id> "why"           set aside a test you believe is wrong; you won't be blocked
 ```
 
-A failing test looks like this:
+Failing, a test reads:
 
 ```
   R3  Lines that cross outside either segment -> none ......................    0 / 4   FAILED
@@ -288,16 +286,15 @@ A failing test looks like this:
 ## After you pass: compare with the author's code
 
 [The blog's listing](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersections%20of%202%20segments)
-is one function, `segmentsIntersect`, that returns `std::optional<glm::vec2>`. Inside, a
-lambda `region` computes the side value and a lambda `cross` the cross product. `region` uses
-the opposite sign from this page's `side`, which makes no difference to a product. The
-function runs the side test with ≤ 0 as here, then checks the denominator, then returns
-a1 + t·v1.
+is a single function, `segmentsIntersect`, returning `std::optional<glm::vec2>`. Inside it, a
+lambda `region` computes the side value and a lambda `cross` the cross product. `region` takes
+the opposite sign from this page's `side`, which can't change a product. The flow matches: the
+side test with ≤ 0, then the denominator check, then a1 + t·v1.
 
-The parallel check compares |cross(v1, v2)| with an `eps` that the
-listing doesn't define. The author's repository defines it in `Geometry.h` as
-`std::numeric_limits<float>::epsilon()`, about 1.2 × 10⁻⁷. Any small value works for glyph
-outlines, because two edges that aren't parallel have a cross product far from 0. In the blog's
-fill, one of the two segments is the scanline itself, running from x = 0 to the image width.
+The parallel check compares |cross(v1, v2)| with an `eps` that the listing leaves undefined. The
+author's repository sets it in `Geometry.h` to `std::numeric_limits<float>::epsilon()`, about
+1.2 × 10⁻⁷. Any small value works for glyph outlines, since two edges that aren't parallel have
+a cross product far from 0. In the blog's fill, one of the two segments is the scanline itself,
+running from x = 0 to the image width.
 
-The blog names the two segment parameters t and u, where this page writes t and s.
+The blog's names for the two segment parameters are t and u. Here they are t and s.

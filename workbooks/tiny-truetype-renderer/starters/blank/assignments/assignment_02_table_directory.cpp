@@ -11,8 +11,8 @@
 //
 // Your job:
 //   Read the `font` line, read that file's table directory with your `FontParser` code,
-//   and write `tables <numTables>` followed by one `table` line per record. The Output
-//   section gives the format, including the quotes around the tag.
+//   and write `tables <numTables>` followed by one `table` line per record. Output covers
+//   the format, including the quotes around the tag.
 //
 // The other files of this assignment:
 //   You also write src/font/FontParser.h and src/font/FontParser.cpp in this assignment;

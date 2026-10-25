@@ -18,8 +18,8 @@
 //   a quadratic curve (start, control point, end) and two points on an infinite line, and
 //   returns the points where they meet, in increasing t. There can be none, one or two.
 //   Put a dot product helper here too, and a helper that solves a t^2 + b t + c = 0,
-//   including the linear case a = 0. The Boilerplate's `Geometry.h` from assignment 10
-//   already declares the function as `segmentQuadBezierIntersect`.
+//   linear case a = 0 included. The Boilerplate's `Geometry.h` from assignment 10 already
+//   declares the function as `segmentQuadBezierIntersect`.
 //   Include them by their path under src/, e.g. #include "utils/Geometry.h".
 //
 // How to start:

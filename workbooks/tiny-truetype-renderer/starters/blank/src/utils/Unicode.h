@@ -4,8 +4,8 @@
 // Problem: problems/18-render-text.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   It turns UTF-8 text into Unicode code points, the numbers a font's cmap maps to
-//   glyphs. Your `TextRenderer` decodes every line of text with it.
+//   UTF-8 in, Unicode code points out: those are the numbers a font's cmap maps to glyphs.
+//   Your `TextRenderer` decodes each line of text with it.
 //
 // Your job:
 //   Write a function that decodes a string of UTF-8 bytes into a list of code points, for
