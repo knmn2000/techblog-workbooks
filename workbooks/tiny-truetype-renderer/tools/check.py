@@ -311,6 +311,12 @@ class Result:
     reproduce: str = ""
     causes: list = field(default_factory=list)  # requirement ids the difference points to
     images: dict = field(default_factory=dict)  # picture cases: paths of the learner's image and the diff
+    printed: str = ""  # what the program printed (stdout, then stderr): for debugging, never compared
+
+
+def printed_text(*streams) -> str:
+    """What a program printed, from its captured streams (bytes when a run was cut short)."""
+    return "".join(x.decode("utf-8", "replace") if isinstance(x, bytes) else x or "" for x in streams)
 
 
 def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain, timeout) -> Result:
@@ -322,24 +328,31 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
     rel_out = out_path.relative_to(ROOT).as_posix()
     command = typed_here(run_template.format(input=rel_in, output=rel_out))
     try:
-        proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True, timeout=timeout)
-    except subprocess.TimeoutExpired:
-        return Result(case, "timeout", f"Time Limit Exceeded (over {timeout} s)", reproduce=command)
+        proc = subprocess.run(to_args(command), cwd=ROOT, capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        return Result(case, "timeout", f"Time Limit Exceeded (over {timeout} s)", reproduce=command,
+                      printed=printed_text(e.stdout, e.stderr))
     except FileNotFoundError:
         return Result(case, "error", f"could not start `{command}`; check that it built", reproduce=command)
+    printed = printed_text(proc.stdout, proc.stderr)
+
+    def result(*args, **kwargs):
+        return Result(*args, printed=printed, **kwargs)
+
     actual = []
     if how.mode != "image" and out_path.exists():
         actual = out_path.read_text(encoding="utf-8", errors="replace").splitlines()
     stderr = proc.stderr.strip().splitlines()
     if proc.returncode == NOT_IMPLEMENTED_EXIT:
         message = stderr[-1].removeprefix("not implemented: ") if stderr else "a function"
-        return Result(case, "not-implemented", message, reproduce=command)
+        return result(case, "not-implemented", message, reproduce=command)
     if proc.returncode != 0:
         detail = stderr[-1] if stderr else ""
-        return Result(case, "error", f"Runtime Error - {describe_exit(proc.returncode)}"
+        return result(case, "error", f"Runtime Error - {describe_exit(proc.returncode)}"
                       + (f": {clip(detail)}" if detail else ""), actual, command)
     if not out_path.exists():
-        return Result(case, "no-output", f"no output file: your program finished without writing {rel_out} "
+        return result(case, "no-output", f"no output file: your program finished without writing {rel_out} "
                       "(the second argument the checker passed it)", reproduce=command)
     if how.mode == "image":
         diff_path = work / f"{case.id}.diff.png"
@@ -352,19 +365,19 @@ def run_case(case: Case, run_template: str, work: Path, how: Comparison, explain
         actual = [f"(image written to {rel_out})"]
         images = {"actual": rel_out, "diff": diff_path.relative_to(ROOT).as_posix() if diff_path.exists() else None}
         if problem is None:
-            return Result(case, "pass", actual=actual, reproduce=command, images=images)
+            return result(case, "pass", actual=actual, reproduce=command, images=images)
         causes = likely_causes(where, explain) or ([case.requirement] if case.requirement != "E2E" else [])
-        return Result(case, "fail", problem, actual, command, causes, images)
+        return result(case, "fail", problem, actual, command, causes, images)
     elif how.mode == "unordered":
         problem, where = compare_unordered(case.expected, actual, how.fields, how.tolerance)
     else:
         problem, where = compare(case.expected, actual, how.fields, how.tolerance)
     if problem is None:
-        return Result(case, "pass", actual=actual, reproduce=command)
+        return result(case, "pass", actual=actual, reproduce=command)
     causes = likely_causes(where, explain)
     if not causes and case.requirement != "E2E":
         causes = [case.requirement]  # nothing more specific: the requirement this case targets
-    return Result(case, "fail", problem, actual, command, causes)
+    return result(case, "fail", problem, actual, command, causes)
 
 
 # ---- Commands -------------------------------------------------------------------
@@ -598,6 +611,8 @@ def run_and_report(checkpoint, meta, config, case_file, cases_path, option, run_
         else:
             print("\nexpected output:\n  " + "\n  ".join(clip(l, 200) for l in r.case.expected))
         print("\nyour output:\n  " + ("\n  ".join(clip(l, 200) for l in r.actual) or "(nothing)"))
+        if r.printed.strip() and r.status != "not-implemented":
+            print("\nprinted by your program:\n  " + "\n  ".join(clip(l, 200) for l in r.printed.rstrip().splitlines()[:60]))
         print(f"\n{'Passed' if r.status == 'pass' else 'Failed: ' + r.message}")
         for rid in r.causes:
             print(f"likely cause: {rid} - {dict(case_file.requirements).get(rid, '')}")
@@ -676,6 +691,8 @@ def case_json(r: Result, texts: dict, full: bool) -> dict:
                  input=trimmed(r.case.input), expected=trimmed(r.case.expected), actual=trimmed(r.actual))
         if r.case.expected_file:
             d["images"] = {"expected": r.case.expected_file, **r.images}
+        if r.printed.strip() and r.status != "not-implemented":  # that status's only text is its own message
+            d["printed"] = trimmed(r.printed.rstrip().splitlines(), count=60)
     return d
 
 

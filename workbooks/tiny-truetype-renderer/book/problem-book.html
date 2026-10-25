@@ -2259,6 +2259,8 @@ span.CodeMirror-selectedtext { background: none; }
         + diffBlock('Your output', d.yours, 'del') + diffBlock('Expected', d.expected, 'add')
         + `<p class="note muted">Highlighted: what differs${report && report.compare && report.compare.tolerance ? ` (numbers within ${report.compare.tolerance} count as equal)` : ''}${report && report.compare && report.compare.mode === 'unordered' ? '; line order doesn\'t matter here' : ''}.</p>`;
     }
+    if (x.printed && x.printed.length) h += `<div class="field"><div class="field-k">Printed by your program</div><pre class="field-v">${esc(x.printed.join('\n'))}</pre></div>`
+      + '<p class="note muted">Whatever the program wrote to the screen (cout, print), for debugging. The checker never compares it; the answer is the output file.</p>';
     if (x.source) h += `<p class="note muted">Expected values from: ${esc(x.source)}</p>`;
     return h;
   }

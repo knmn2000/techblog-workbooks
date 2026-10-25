@@ -62,6 +62,10 @@ the current file in VS Code, Cursor, Windsurf, VSCodium, Zed or Sublime Text, or
 if none is installed, so your editor's own completion and language server work on it. To use a
 different editor, set `WORKBOOK_EDITOR` to its command before starting the book.
 
+Print whatever you like while you test (`cout`, `print`). The checker compares only the output file
+your program writes, never what it prints, and the book shows that text under the test result as
+"Printed by your program". Use Run on one example to see it.
+
 Each workbook's own README lists what it needs. For TrueType that's g++ with CMake and Ninja, plus
 Python 3.11 or newer. The certificate workbook needs Python 3.11 or newer, and only for fresh test
 sets also `openssl` on your PATH and the `cryptography` package.
