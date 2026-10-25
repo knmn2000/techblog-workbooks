@@ -24,14 +24,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include <fstream>    // std::ifstream and std::ofstream: the input and output files
+#include <iostream>   // std::cerr for usage and error messages
+#include <memory>     // std::unique_ptr: the font's ByteReader, made at the `font` line
+#include <sstream>    // std::istringstream: splitting each input line into words
+#include <stdexcept>  // std::runtime_error for a `glyph` line before the `font` line
+#include <string>     // std::string and std::getline for the input lines
 
-#include "font/GlyphParser.h"
+#include "font/GlyphParser.h"  // readGlyph and Glyph (assignment 07), ByteReader (01)
 
 namespace {
 

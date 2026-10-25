@@ -22,11 +22,11 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <fstream>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
+#include <cstdint>      // uint8_t to int32_t: what the six readers return
+#include <fstream>      // std::ifstream file_: the open file
+#include <stdexcept>    // std::runtime_error under UnexpectedEof; std::logic_error in the TODO
+#include <string>       // std::string: the path the constructor takes
+#include <type_traits>  // std::is_integral_v in readBigEndian's static_assert
 
 // Thrown when a read needs bytes past the end of the file.
 struct UnexpectedEof : std::runtime_error {

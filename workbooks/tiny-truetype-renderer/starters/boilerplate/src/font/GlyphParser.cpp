@@ -19,9 +19,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/GlyphParser.h"
+#include "font/GlyphParser.h"  // readGlyph's declaration (assignment 07)
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error for the "not implemented" TODO
 
 Glyph readGlyph(ByteReader& reader, const uint32_t offset, const uint32_t length) {
   // TODO: decode the record (layout and rules are on the problem page). A simple glyph's

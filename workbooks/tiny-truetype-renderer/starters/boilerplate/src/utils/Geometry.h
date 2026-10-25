@@ -27,9 +27,9 @@
 // Assignment 10: lerp and quadratic Bezier curves. 12: two segments. 13: a line and a curve.
 // 15: the lowest point of a curve.
 
-#include <optional>
-#include <stdexcept>
-#include <vector>
+#include <optional>   // std::optional<Vec2>: segmentsIntersect's answer (assignment 12)
+#include <stdexcept>  // std::logic_error for the "not implemented" TODOs
+#include <vector>     // std::vector<Vec2>: where a line meets a curve (assignment 13)
 
 struct Vec2 {
   double x = 0;

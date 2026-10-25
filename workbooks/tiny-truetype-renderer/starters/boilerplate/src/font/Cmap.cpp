@@ -17,7 +17,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/Cmap.h"
+#include "font/Cmap.h"  // loadUnicodeToGlyphCodeMap (assignment 03), defined here
+
+#include <stdexcept>  // std::logic_error for the "not implemented" TODO
 
 std::unordered_map<uint32_t, uint32_t> loadUnicodeToGlyphCodeMap(ByteReader& reader, const Tables& tables) {
   // TODO: find the subtable, check its format, and expand every group (problem page). Throw

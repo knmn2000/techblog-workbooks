@@ -25,14 +25,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include <fstream>    // std::ifstream: the input file
+#include <iostream>   // std::cerr for the usage line and errors
+#include <memory>     // std::unique_ptr: the font and the canvas, made when their lines arrive
+#include <sstream>    // std::istringstream: splitting each line into words
+#include <stdexcept>  // std::runtime_error when text comes before a font or canvas line
+#include <string>     // std::string for each line, the font path and the text
 
-#include "TextRenderer.h"
+#include "TextRenderer.h"  // TextRenderer (assignment 18), FrameBufferCanvas and RGB (06)
 
 int main(int argc, char** argv) {
   if (argc != 3) {

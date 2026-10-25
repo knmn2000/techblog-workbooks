@@ -17,9 +17,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "FrameBufferCanvas.h"
-#include "GlyphComponent.h"
-#include "render/Placement.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas and RGB (assignment 06): what the fill paints
+#include "GlyphComponent.h"     // GlyphComponent (assignment 07): the outline to fill
+#include "render/Placement.h"   // Placement (assignment 08): where the outline goes in pixels
 
 // Fills every pixel whose centre is inside the outline: a point is inside when the edges a
 // ray from it crosses don't cancel out, counting +1 for an edge going down, -1 going up.

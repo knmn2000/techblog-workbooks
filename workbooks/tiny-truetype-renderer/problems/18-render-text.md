@@ -3,9 +3,9 @@
 **Difficulty:** Hard · **Assignment** 18 of 18 · **Check:** `.\check 18`
 
 **Tags**
-- *Language:* UTF-8 decoding · organising a larger program · reusing your own code
-- *Library:* `std::ifstream` (binary) · `std::unordered_map` · `std::vector`
-- *Concepts:* the whole pipeline: table directory, cmap, loca, hmtx, simple and compound glyphs, non-zero filling, advance widths
+- *Language:* [UTF-8 decoding](#primer/utf-8) · [organising a larger program](#primer/header-files) · [reusing your own code](#primer/include)
+- *Library:* [`std::ifstream`](#primer/fstream) (binary) · [`std::unordered_map`](#primer/unordered-map) · [`std::vector`](#primer/vector)
+- *Concepts:* the whole pipeline: [table directory](#primer/table-directory), [cmap](#primer/cmap), [loca](#primer/loca), [hmtx](#primer/hmtx), [simple](#primer/glyf) and [compound glyphs](#primer/compound-glyph), [non-zero filling](#primer/nonzero), [advance widths](#primer/hmtx)
 
 ## Read in the blog first
 
@@ -13,6 +13,23 @@ You can pass using this page alone. In this assignment you reach the blog's goal
 loads a Unicode font, draws any string with it and saves the result as a PNG. Skim the
 [Goal](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Goal) section and the final
 pictures in the [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule) section.
+
+## What you need
+
+- [UTF-8](#primer/utf-8): `utf8ToCodepoints` in `utils/Unicode.h` turns the bytes of each `text`
+  line into code points, and the R1 tests use 2-, 3- and 4-byte characters.
+- [Glyph 0 and `.notdef`](#primer/notdef): `glyphFor` in `TextRenderer.cpp` returns 0 for a code
+  point the cmap doesn't map, so U+0378 in test `18-R2-unmapped` draws as a box with a slash.
+- [Variable fonts](#primer/variable-font): your `TextRenderer` reads Noto Sans JP's `glyf`
+  outlines and `hmtx` advances and skips its `gvar` and `HVAR` tables, which gives the font's
+  default instance, its Thin weight.
+- [Font units and the em](#primer/font-units): each `pen` line gives the scale in pixels per font
+  unit, and `main.cpp` works one out from a pixel height and the font's ascent and descent.
+- [Running a program from the terminal](#primer/command-line): once you build the `tiny_ttf`
+  target, `tiny_ttf <font.ttf> "<text>" <out.png>` draws your own text, in quotes when it has
+  spaces.
+- [Git and GitHub](#primer/git): after this assignment `solutions/` is a complete C++ project with
+  its own `README.md` and `.gitignore`, ready to commit and put on GitHub.
 
 ## Source material
 
@@ -62,8 +79,10 @@ A PNG (or binary PPM) `width` pixels wide and `height` pixels high. For each cha
    their full transforms (offsets, scales, 2 x 2 matrices, nested compound glyphs: assignment 09's
    rules, your `font/CompoundGlyph`). An empty glyph (such as space) gives nothing. Fill every
    component outline; filling them one by one or merged gives the same picture for these fonts.
-   Noto Sans JP is a variable font: use the outlines stored in `glyf` and ignore its variation
-   tables.
+   Noto Sans JP is a [variable font](#primer/variable-font): use the outlines stored in `glyf`
+   and ignore its variation tables. Its weight axis runs from 100 to 900 with a default of 100,
+   so `glyf` holds the Thin weight, and the tests and their expected pictures draw Noto Sans JP
+   at that weight.
 4. Fill it with the non-zero rule (your `render/NonZero` from assignment 17), placed with
    glyph point (x, y) at pixel position (penX + scale·x, baseline − scale·y). Paint a pixel when
    its centre is inside.

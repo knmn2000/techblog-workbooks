@@ -18,12 +18,12 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <map>
-#include <string>
-#include <vector>
+#include <cstdint>  // uint32_t: checkSum, offset and length
+#include <map>      // std::map behind Tables, the records by tag
+#include <string>   // std::string: the tag, and the path FontParser opens
+#include <vector>   // std::vector<TableRecord>, what readTableDirectory returns
 
-#include "font/ByteReader.h"
+#include "font/ByteReader.h"  // ByteReader (assignment 01): what the directory is read with
 
 // One entry of the table directory: where a table is in the file.
 struct TableRecord {

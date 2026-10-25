@@ -22,11 +22,11 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/CompoundGlyph.h"
+#include "font/CompoundGlyph.h"  // resolveGlyph's declaration (assignment 09)
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error for the "not implemented" TODO
 
-#include "font/GlyphParser.h"
+#include "font/GlyphParser.h"  // readGlyph (assignment 07): decodes the simple parts
 
 std::vector<GlyphComponent> resolveGlyph(ByteReader& reader, const std::map<uint32_t, GlyphLocation>& locations,
                                          const uint32_t glyphId) {

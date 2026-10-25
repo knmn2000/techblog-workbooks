@@ -18,9 +18,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <string>
-#include <vector>
+#include <cstdint>  // uint8_t: one byte per colour channel in RGB
+#include <string>   // std::string: the path writePng writes to
+#include <vector>   // std::vector<RGB>: the pixels, row by row
 
 struct RGB {
   uint8_t r = 0, g = 0, b = 0;

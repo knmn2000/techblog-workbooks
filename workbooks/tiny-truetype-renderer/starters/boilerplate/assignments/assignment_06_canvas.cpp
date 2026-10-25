@@ -23,14 +23,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include <fstream>    // std::ifstream: the test input
+#include <iostream>   // std::cerr for usage and errors; std::istream, which readColor reads
+#include <optional>   // std::optional<FrameBufferCanvas>: no canvas until the `canvas` line
+#include <sstream>    // std::istringstream splits each command into its words and numbers
+#include <stdexcept>  // std::runtime_error for a bad input; std::exception in main's catch
+#include <string>     // std::string and std::getline: the commands, one line at a time
 
-#include "FrameBufferCanvas.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas and RGB (assignment 06)
 
 namespace {
 

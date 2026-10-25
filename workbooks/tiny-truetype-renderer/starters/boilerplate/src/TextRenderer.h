@@ -18,15 +18,15 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <map>
-#include <string>
-#include <unordered_map>
+#include <cstdint>        // uint32_t: code points and glyph ids
+#include <map>            // std::map: glyph locations by id, the form resolveGlyph takes
+#include <string>         // std::string: the font path and the text
+#include <unordered_map>  // std::unordered_map: the cmap, code point to glyph id
 
-#include "FrameBufferCanvas.h"
-#include "font/FontParser.h"
-#include "font/Loca.h"
-#include "font/Metrics.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas and RGB (assignment 06), for drawText
+#include "font/FontParser.h"    // FontParser (assignment 02): the open font and its tables
+#include "font/Loca.h"          // GlyphLocation (assignment 04): where each glyph is
+#include "font/Metrics.h"       // HorizontalMetrics (assignment 05): advances, ascent, descent
 
 class TextRenderer {
  public:

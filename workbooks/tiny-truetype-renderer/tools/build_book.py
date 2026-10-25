@@ -13,6 +13,10 @@ fenced code, images (embedded as data URIs), links, **bold**, *italic*, `code`, 
 blocks, and raw <figure>/<svg>/<div> blocks. Sections are recognised by their names (see
 ROLES); any other section is shown in the statement under its own heading.
 
+The primer (primer/*.md, see tools/primer.py) becomes the book's Primer view. Each page's
+"What you need" list links into it, split into the entries the assignment introduces and the
+ones known from earlier assignments; links written as (#primer/<id>) open the entry.
+
 Starters: each of an assignment's own files has a blank starter (starters/blank/<path>, made by
 tools/blank_starters.py) and usually a boilerplate (starters/boilerplate/<path>). The Editorial
 shows the reference project as it stands after the assignment (see tools/project.py).
@@ -27,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check import VERIFIED, fingerprint, reference_sources  # noqa: E402
+import primer  # noqa: E402
 import project  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,7 +53,7 @@ ROLES = {
     "read in the blog first": "read", "prerequisite material": "read", "read first": "read",
     "where this fits": "context", "the problem": "problem",
     "requirements": "requirements", "examples": "examples", "source material": "sources",
-    "hints": "hints", "checking your solution": "checking",
+    "hints": "hints", "checking your solution": "checking", "what you need": "need",
 }
 
 
@@ -63,15 +68,23 @@ def inline(text: str) -> str:
 
     text = re.sub(r"`([^`]+)`", keep_code, text)
     text = html.escape(text, quote=False)
-    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)",
-                  lambda m: f'<a href="{html.escape(m.group(2))}" target="_blank" rel="noopener">{m.group(1)}</a>', text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, text)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", text)
     return re.sub(r"\x00(\d+)\x00", lambda m: codes[int(m.group(1))], text)
 
 
+def link(m) -> str:
+    """A Markdown link: in-book links (#p07, #primer/<id>) stay in the page, others open a tab."""
+    href = m.group(2)
+    if href.startswith("#"):
+        return f'<a href="{html.escape(href)}">{m.group(1)}</a>'
+    return f'<a href="{html.escape(href)}" target="_blank" rel="noopener">{m.group(1)}</a>'
+
+
 def plain(text: str) -> str:
     """Markdown inline text without its markup, for search and filters."""
+    text = re.sub(r"\[([^\]]+)\]\([^)\s]+\)", r"\1", text)
     return re.sub(r"[`*]", "", text).strip()
 
 
@@ -278,6 +291,26 @@ def hints(body) -> list:
     return out
 
 
+def needs(body) -> list:
+    """The "What you need" list: [{"id", "title", "note"}], one per item that links to an entry.
+    An item reads `[title](#primer/<id>): how this assignment uses it`."""
+    items = []
+    for line in body:
+        if re.match(r"^\s*[-*]\s+", line):
+            items.append(re.sub(r"^\s*[-*]\s+", "", line))
+        elif line.strip() and items:
+            items[-1] += " " + line.strip()
+    out = []
+    for item in items:
+        m = re.search(r"\[([^\]]+)\]\(#primer/([a-z0-9-]+)\)", item)
+        if not m:
+            WARNINGS.append(f"a What you need item doesn't link to the primer: {item[:60]}")
+            continue
+        note = re.sub(r"^\s*[:–—-]?\s*", "", item[m.end():])
+        out.append({"id": m.group(2), "title": inline(m.group(1)), "note": inline(note) if note else ""})
+    return out
+
+
 def indent_unit(code: str, default: int) -> int:
     """The starter's indent width: the smallest one used on at least three code lines."""
     widths = {}
@@ -361,7 +394,7 @@ def checkpoint(cid: str, meta: dict, config: dict) -> dict:
             sections[-1][1].append(line)
 
     data = {"read": "", "readTitle": "", "context": "", "sources": "", "checking": "", "hints": [],
-            "examples": [], "editorial": None}
+            "examples": [], "editorial": None, "need": []}
     body = []
     for name, lines in sections:
         low = name.lower()
@@ -372,6 +405,8 @@ def checkpoint(cid: str, meta: dict, config: dict) -> dict:
                 data["readTitle"] = name  # "Read in the blog first", or "Prerequisite material"
         elif role == "hints":
             data["hints"] = hints(lines)
+        elif role == "need":
+            data["need"] = needs(lines)
         elif role == "editorial":
             heading = re.sub(r"^after you pass\s*[:-]?\s*", "", name, flags=re.I) or name
             data["editorial"] = {"title": heading[:1].upper() + heading[1:], "html": blocks(lines)}
@@ -411,6 +446,41 @@ def project_data(config: dict) -> dict:
             "run": spec.get("run", ""), "author": spec.get("author"), "layout": layout}
 
 
+def primer_data(config: dict, cps: list) -> list:
+    """The Primer view's groups and entries, each with the assignments that use it. Also turns each
+    assignment's "need" list into {"new": entries it introduces, "earlier": entries it uses that an
+    earlier assignment introduced, with that assignment}."""
+    groups = primer.load()
+    if not groups:
+        for c in cps:
+            c["need"] = {"new": [], "earlier": []}
+        return []
+    known = primer.entries(groups)
+    group_of = {e["id"]: g["title"] for g in groups for e in g["entries"]}
+    use = primer.usage(config, groups)
+    first, per = use["first"], use["assignments"]
+    for c in cps:
+        for n in c["need"]:
+            n["group"] = group_of.get(n["id"], "")
+        listed = {n["id"]: n for n in c["need"]}
+        a = per.get(c["id"], {"used": set()})
+        new = [dict(n, **{"from": c["id"]}) for n in c["need"] if first.get(n["id"]) == c["id"]]
+        again = [i for i in listed if first.get(i, c["id"]) < c["id"]]
+        again += sorted((i for i in a["used"] if i not in listed and first.get(i, c["id"]) < c["id"]),
+                        key=lambda i: (first[i], i))
+        earlier = [dict(listed.get(i) or {"id": i, "title": inline(known[i]["title"]), "note": ""}, **{"from": first[i]})
+                   for i in again if i in known]
+        c["need"] = {"new": new, "earlier": earlier}
+        for i in listed:
+            if i not in known:
+                WARNINGS.append(f"{c['id']}: What you need links to #primer/{i}, which isn't a primer entry")
+    used_in = {i: sorted(cid for cid, a in per.items() if i in a["used"] or i in a["listed"]) for i in known}
+    return [{"title": g["title"], "intro": blocks(g["intro"]),
+             "entries": [{"id": e["id"], "title": inline(e["title"]), "plain": plain(e["title"]), "also": e["also"],
+                          "html": blocks(e["lines"]), "from": first.get(e["id"]), "usedIn": used_in[e["id"]]}
+                         for e in g["entries"]]} for g in groups]
+
+
 def build_page() -> str:
     """The whole book as one HTML string (tools/serve.py serves this directly)."""
     WARNINGS.clear()
@@ -425,6 +495,7 @@ def build_page() -> str:
         # Shown as "run the checker in <folder>"; the folder's name unless workbook.json says otherwise,
         # so a shared book doesn't carry the author's local path.
         "folder": book.get("folder") or ROOT.name, "check": book.get("checkCommand", ".\\check {id}"), "shell": book.get("shell", "PowerShell"),
+        "primer": primer_data(config, cps),
         "checkpoints": cps,
         "project": project_data(config),
     }

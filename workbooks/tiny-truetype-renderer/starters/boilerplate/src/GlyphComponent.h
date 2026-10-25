@@ -18,7 +18,7 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <vector>
+#include <vector>  // std::vector: an outline's contour ends and its points
 
 struct GlyphPoint {
   double x = 0;  // font units; x grows to the right

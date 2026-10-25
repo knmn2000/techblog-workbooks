@@ -23,14 +23,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include <fstream>    // std::ifstream and std::ofstream: the test input and the output file
+#include <iomanip>    // std::setprecision: 14 decimals for an F2Dot14 value in decimal()
+#include <iostream>   // std::cerr for usage and errors; std::ostream, where run() writes
+#include <sstream>    // std::istringstream splits a line; std::ostringstream in decimal()
+#include <stdexcept>  // std::runtime_error for a bad line; std::exception in main's catch
+#include <string>     // std::string and std::getline: the input, one line at a time
 
-#include "font/ByteReader.h"
+#include "font/ByteReader.h"  // ByteReader (assignment 01); UnexpectedEof, caught to write eof
 
 namespace {
 

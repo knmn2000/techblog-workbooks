@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 3 of 18 · **Check:** `.\check 03`
 
 **Tags**
-- *Language:* 32-bit unsigned integers · hexadecimal · nested loops · exceptions
-- *Library:* `std::ifstream` in binary mode (`seekg`) · `std::unordered_map` (or `std::map`, or a sorted `std::vector` with binary search)
-- *Concepts:* Unicode code points (U+XXXX) beyond the BMP · glyph ids · the `cmap` table · encoding records · format 12 range groups · big-endian byte order
+- *Language:* [32-bit unsigned integers](#primer/cstdint) · [hexadecimal](#primer/hex-literals) · [nested loops](#primer/loops) · [exceptions](#primer/exceptions)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode (`seekg`) · [`std::unordered_map`](#primer/unordered-map) (or [`std::map`](#primer/map), or a sorted [`std::vector`](#primer/vector) with binary search)
+- *Concepts:* [Unicode code points](#primer/code-point) (U+XXXX) beyond the BMP · [glyph ids](#primer/glyph-id) · [the `cmap` table](#primer/cmap) · [encoding records](#primer/cmap) · [format 12 range groups](#primer/cmap) · [big-endian byte order](#primer/big-endian)
 
 ## Read in the blog first
 
@@ -13,6 +13,29 @@ You can pass using this page alone. For the background, read the blog's
 [cmap table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=cmap%20table)
 section through the paragraph that starts "In the implementation, simply loop". The author's
 code follows that paragraph.
+
+## What you need
+
+- [Unicode code points](#primer/code-point): each `lookup` line names a code point such as
+  `U+1F600`, and the ones above U+FFFF are why the map's keys are `uint32_t`.
+- [Hexadecimal](#primer/hex-literals): the program reads the digits after `U+` as a base-16
+  number with `std::stoul(..., nullptr, 16)`.
+- [Glyphs and glyph ids](#primer/glyph-id): the number each code point maps to, which
+  assignment 04 turns into the place of the glyph's outline.
+- [The `cmap` table](#primer/cmap): `src/font/Cmap.cpp` finds the encoding record with platform
+  0 and encoding 4, checks that its subtable is format 12, and expands its groups.
+- [`<unordered_map>`](#primer/unordered-map): `loadUnicodeToGlyphCodeMap` returns a
+  `std::unordered_map<uint32_t, uint32_t>` from code point to glyph id, and the program answers
+  `count` with its `size()`.
+- [Iterators](#primer/iterators): the program answers a `lookup` with `glyphFor.find(...)` and
+  writes `none` when the result equals `glyphFor.end()`.
+- [`<optional>`](#primer/optional): one way to remember "no (0, 4) record found yet" while
+  you scan the encoding records, without a made-up offset.
+- [Deriving from a class](#primer/inheritance): `UnsupportedCmap` in `Cmap.h` derives from
+  `std::runtime_error` and takes its constructors with a `using` line, and the program catches
+  it by name to write `unsupported`.
+- [`std::size_t`](#primer/size-t): the program finds the quotes around the font's path with
+  `line.find('"')`, which returns a `std::size_t`, or `std::string::npos` when there is none.
 
 ## Source material
 
@@ -284,7 +307,7 @@ its glyph id. `count` is then the size of the map.
 <details><summary>Hint 4: pseudocode</summary>
 
 ```
-cmap = tables["cmap"].offset
+cmap = tables.at("cmap").offset           # tables is const: at() or find(), not []
 seek(cmap); skip(2)                        # version
 n = read_u16()
 subtable = none

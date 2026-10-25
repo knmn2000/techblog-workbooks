@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 11 of 18 · **Check:** `.\check 11`
 
 **Tags**
-- *Language:* walking a circular list with an index modulo its length · a small 2D vector struct · floating-point arithmetic, rounding only at the end
-- *Library:* your `FrameBufferCanvas` from assignment 06 (`drawLine`, `drawRect`, `writePng`)
-- *Concepts:* quadratic Bézier curves · on-curve and off-curve points · implied on-curve points · flattening a curve into short lines
+- *Language:* walking a circular list with an [index modulo its length](#primer/integer-division) · a small [2D vector](#primer/vector-2d) struct · floating-point arithmetic, [rounding only at the end](#primer/float-to-int)
+- *Library:* your [`FrameBufferCanvas`](#primer/framebuffer) from assignment 06 (`drawLine`, `drawRect`, `writePng`)
+- *Concepts:* [quadratic Bézier curves](#primer/bezier) · [on-curve and off-curve points](#primer/on-off-curve) · [implied on-curve points](#primer/implied-point) · [flattening a curve](#primer/flattening) into short lines
 
 ## Read in the blog first
 
@@ -13,6 +13,21 @@ You can pass using this page alone. For the background, read the blog's
 "Renderer: Curve Rendering" section through
 [TrueType Bézier curves](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=TrueType%20B%C3%A9zier%20curves)
 and stop at the sentence that introduces the code. The author's code follows it.
+
+## What you need
+
+- [On-curve and off-curve points](#primer/on-off-curve): the walk ends a straight line at an
+  on-curve point and uses an off-curve point as a curve's control point, where assignment 08
+  joined both kinds with lines.
+- [Implied on-curve points](#primer/implied-point): between two off-curve points in a row,
+  `renderGlyphCurves` ends one curve and starts the next at their midpoint, which gets a blue
+  marker.
+- [Flattening a curve](#primer/flattening): each curve becomes n short lines between points from
+  your `bezierLerp`, with n = max(1, ceil(|P1 - P0| + |P2 - P1|)) in pixels.
+- [Integer division and `%`](#primer/integer-division): index a contour's points modulo its
+  length, so the point after the last is the first and the walk can go all the way round.
+- [`<cmath>`](#primer/cmath): `std::hypot` measures the two legs of the control polygon for n,
+  and `std::ceil` rounds their sum up.
 
 ## Source material
 

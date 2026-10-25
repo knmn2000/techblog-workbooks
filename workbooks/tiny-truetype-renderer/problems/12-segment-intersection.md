@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 12 of 18 · **Check:** `.\check 12`
 
 **Tags**
-- *Language:* floating-point arithmetic (`double`) · `std::optional` for "no answer" · small structs
-- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`)
-- *Concepts:* 2D cross product · which side of a line a point is on · parametric form of a segment · parallel and collinear lines · closed segments (endpoints included)
+- *Language:* [floating-point arithmetic](#primer/floating-point) (`double`) · [`std::optional`](#primer/optional) for "no answer" · small [structs](#primer/struct-class)
+- *Library:* none for the maths itself · the boilerplate's input and output code uses [`std::istringstream`](#primer/sstream), [`std::snprintf`](#primer/cstdio) and [`std::isnan`/`std::isinf`](#primer/cmath)
+- *Concepts:* [2D cross product](#primer/cross-product) · [which side of a line a point is on](#primer/cross-product) · [parametric form of a segment](#primer/segment-intersection) · [parallel and collinear lines](#primer/segment-intersection) · [closed segments](#primer/segment-intersection) (endpoints included)
 
 ## Read in the blog first
 
@@ -15,6 +15,19 @@ You can pass using this page alone. For the background, in the blog's
 and then [intersection of line segments](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=intersection%20of%20line%20segments).
 Stop after the formula for t. The author's code (the listing "Function to find a
 intersections of 2 segments") follows it.
+
+## What you need
+
+- [The 2D cross product and the side test](#primer/cross-product): write `cross` and a `side`
+  helper in `utils/Geometry.h`, and reject a pair in Step 1 when either product of side values is
+  positive.
+- [Intersecting two segments](#primer/segment-intersection): `segmentsIntersect` works out
+  t = cross(b1 - a1, v2) / cross(v1, v2) and returns a1 + t·v1.
+- [Floating-point tolerances](#primer/epsilon): the coordinates are multiples of 0.25, so the
+  parallel test `cross(v1, v2) == 0` has no rounding error here, and a tolerance such as `1e-9`
+  passes too.
+- [`<optional>`](#primer/optional): `segmentsIntersect` returns a `std::optional<Vec2>`, and the
+  program writes `none` when it comes back empty.
 
 ## Source material
 

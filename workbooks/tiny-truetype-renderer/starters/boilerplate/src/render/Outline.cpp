@@ -19,9 +19,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "render/Outline.h"
+#include "render/Outline.h"  // the two drawing functions (assignments 08 and 11)
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error for the "not implemented" TODOs
 
 void renderGlyphOutline(FrameBufferCanvas& canvas, const GlyphComponent& outline, const Placement& place,
                         const OutlineStyle& style, const RGB color) {

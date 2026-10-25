@@ -14,6 +14,10 @@ progress, and for each assignment the statement, what it adds to your project, h
 order, an Editorial with a solution proven to pass every test, an editor with the assignment's
 files, and the example test cases.
 
+If C++ or fonts are new to you, start with the book's Primer (`primer/` here). It explains each
+language feature, standard header, font and drawing term and tool the assignments use, with links
+to learn more, and each assignment's What you need list links to the entries it needs.
+
 | # | Assignment | # | Assignment |
 |---|---|---|---|
 | 01 | Read big-endian numbers | 10 | Lerp and quadratic Bezier curves |
@@ -34,6 +38,11 @@ on Windows or `study.command` on macOS (or run `.\study` in PowerShell, `./study
 Linux): the book opens with Run and Submit working, and offers to create the C++ project if there
 isn't one yet. Leave its window open while you work, or use the book's Exit button when you're
 done. If a tool is missing, it tells you which.
+
+To do it from a terminal instead, run `py -P tools/project.py setup` in this folder once: it
+creates the C++ project in `solutions/`. Then `.\check 01` creates assignment 01's files,
+starting as the Boilerplate, and the next `.\check 01` builds and tests them. The primer's
+Building and checking entries say how to install g++, CMake, Ninja and Python on Windows.
 
 ## Your project
 
@@ -129,6 +138,7 @@ To check a one-off program without changing anything, run
 | Path | What it is |
 |---|---|
 | `problems/` | Problem statements (`tools/build_book.py` makes the book from these) |
+| `primer/` | The primer: the C++, font, drawing and tool terms the assignments use, explained (the book's Primer view) |
 | `solutions/` | Your project, created when you set the workbook up (see above) |
 | `starters/project/` | What your project starts with: the build file, README and `.gitignore` |
 | `starters/blank/`, `starters/boilerplate/` | Each assignment's files, blank and with the input/output done |
@@ -140,6 +150,7 @@ To check a one-off program without changing anything, run
 | `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
 | `tools/gen_pNN.py` | Each assignment's test generator (used by `-Fresh`) |
 | `tools/build_book.py` | Builds `book/problem-book.html` (the page design is `tools/book_template.html`) |
+| `tools/primer_check.py` | Checks that the primer covers what each assignment uses (`--links` also tests its links) |
 | `fonts/` | JetBrains Mono Bold (Nerd Font build) and Noto Sans JP (variable font), both SIL Open Font License (see `fonts/README.md`). The post uses `JetBrainsMono-Bold.ttf` and `NotoSansJP-Regular.ttf`, so a glyph id or offset the post quotes can differ here; the problem pages say where it matters |
 | `third_party/` | stb_image_write, under its own licence (see `third_party/README.md`) |
 | `docs/authoring-guide.md` | How to write the assignments and their tests |

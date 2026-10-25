@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 7 of 18 · **Check:** `.\check 07`
 
 **Tags**
-- *Language:* bit flags and masks · signed vs unsigned integers (`int16`, `uint8`) · running sums · binary file I/O (`seekg`, `get`)
-- *Library:* `std::ifstream` in binary mode · `std::vector`
-- *Concepts:* glyph outlines · contours · on-curve and off-curve points · delta encoding · run-length encoding · big-endian byte order
+- *Language:* [bit flags and masks](#primer/bit-operations) · [signed vs unsigned integers](#primer/integer-types) (`int16`, `uint8`) · [running sums](#primer/delta-encoding) · [binary file I/O](#primer/fstream) (`seekg`, `get`)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode · [`std::vector`](#primer/vector)
+- *Concepts:* [glyph outlines](#primer/glyf) · [contours](#primer/contour) · [on-curve and off-curve points](#primer/on-off-curve) · [delta encoding](#primer/delta-encoding) · [run-length encoding](#primer/glyph-flags) · [big-endian byte order](#primer/big-endian)
 
 ## Read in the blog first
 
@@ -14,6 +14,31 @@ You can pass using this page alone. For the background, read the blog's
 [Parsing glyf tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Parsing%20glyf%20tables)
 through the list of flag rules under "Simple glyph". Stop at the paragraph that starts
 "Implementation.", before the author's code.
+
+## What you need
+
+- [The `glyf` table](#primer/glyf): each `glyph` line points at one record in it, and
+  `readGlyph` reads the record's 10-byte header first.
+- [Contours and `endPtsOfContours`](#primer/contour): the contour ends fill
+  `GlyphComponent::endPtsOfContours` and the `ends` line, and the last one + 1 is the point count.
+- [Hinting instructions](#primer/hinting): `readGlyph` reads `instructionLength` and skips that
+  many bytes to reach the flags.
+- [Simple glyph flags](#primer/glyph-flags): expand each REPEAT run so that every point has its
+  own flag byte before you read any coordinate.
+- [Delta-encoded coordinates](#primer/delta-encoding): each point's x and y come out of a running
+  sum of 0-, 1- or 2-byte deltas, and the `points` line prints the sums.
+- [On-curve and off-curve points](#primer/on-off-curve): bit 0 of a point's flag sets
+  `GlyphPoint::onCurve`, which the program prints as `on` or `off`.
+- [Bit shifts and bitwise operators](#primer/bit-operations): `flag & 0x08` tests one bit of a
+  flag, where assignment 01 used shifts to join bytes.
+- [Hexadecimal literals](#primer/hex-literals): the masks `0x01` to `0x20` from the flags table
+  go into your bit tests as written.
+- [`constexpr`](#primer/constexpr): name each mask once at the top of `GlyphParser.cpp`, such as
+  `REPEAT_FLAG`, so a bit test says what it checks.
+- [`enum class`](#primer/enum-class): `Glyph::Kind` in `Glyph.h` is `Empty`, `Simple` or
+  `Compound`, and the program prints `empty` or `compound` from it.
+- [`<memory>`](#primer/memory): the program holds the font as a `std::unique_ptr<ByteReader>`,
+  empty until the first `font` line creates it.
 
 ## Source material
 

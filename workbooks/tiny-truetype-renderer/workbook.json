@@ -40,7 +40,7 @@
       "src/font/ByteReader.cpp": "This file implements the reader: it opens the font, moves the position and turns bytes into numbers. Every later assignment that reads the font runs this code, so a bug here makes their tests fail too.",
       "src/font/FontParser.h": "This header declares the code that opens a font and reads its table directory: the tag, checksum, offset and length of each table (`cmap`, `glyf`, `loca`, ...). Assignments 03 to 05 find their tables by tag in these records, and assignment 18 opens the font through it.",
       "src/font/FontParser.cpp": "This file reads the table directory from the first bytes of the font through your `ByteReader`. Each later assignment that needs a table looks up its offset in these records.",
-      "src/font/Cmap.h": "This header declares your reader for the `cmap` table, the font's map from each character to the glyph that draws it. It reads the format 12 subtable, which covers the full Unicode range, and assignment 18 looks up every character of a line of text in the result.",
+      "src/font/Cmap.h": "This header declares your reader for the `cmap` table, the font's map from each character to the glyph that draws it. It reads the format 12 subtable stored for platform 0, encoding 4, which covers the full Unicode range, and assignment 18 looks up every character of a line of text in the result.",
       "src/font/Cmap.cpp": "This file reads the platform 0 / encoding 4 subtable of `cmap` into a map from character to glyph. Assignment 18 builds this map once per font.",
       "src/font/Loca.h": "This header declares your reader for the `loca` table, which gives the position and size in bytes of each glyph's record, by glyph id. Assignment 09 uses it to find the parts of a compound glyph, and assignment 18 to find the glyph of every character.",
       "src/font/Loca.cpp": "This file reads `maxp`, `head` and `loca` and works out one location per glyph id. Assignments 09 and 18 look glyphs up in its result.",
@@ -106,7 +106,7 @@
       "jobs": {
         "assignments/assignment_01_byte_readers.cpp": "Read the `file` line and open that file with your `ByteReader`, then run the other lines in order: `jump` and `skip` move the reader, and each read writes `<op> <value>`. If a read runs out of bytes, write `eof` and stop. The Output section gives the format, including the tolerance for F2Dot14 values.",
         "src/font/ByteReader.h": "Declare a reader that opens a binary file and keeps a current position. Give it functions to jump to an absolute offset, skip forward, read each of the six integer types (`u8` to `i32`) big-endian, and read an F2Dot14 as a floating-point number. Also declare how a read reports that it ran out of bytes, such as an exception type.",
-        "src/font/ByteReader.cpp": "Open the file in binary mode, move the position for jumps and skips, and build each number from its bytes, most significant first, with two's complement for the signed types. If a read needs a byte past the end of the file, report it the way your header declares and return no value."
+        "src/font/ByteReader.cpp": "Open the file in binary mode, move the position for jumps and skips, and build each number from its bytes, most significant first, with two's complement for the signed types. If a read needs a byte past the end of the file, throw the error your header declares (`UnexpectedEof` in the Boilerplate) instead of returning a value."
       },
       "problem": "problems/01-byte-readers.md",
       "cases": "tests/01/cases.txt",
@@ -125,7 +125,7 @@
       "jobs": {
         "assignments/assignment_02_table_directory.cpp": "Read the `font` line, read that file's table directory with your `FontParser` code, and write `tables <numTables>` followed by one `table` line per record. The Output section gives the format, including the quotes around the tag.",
         "src/font/FontParser.h": "Declare a record for one table (its 4-character tag, `checkSum`, `offset` and `length`), a function that reads the whole directory through your `ByteReader`, and a collection of records that assignments 03 to 05 can search by tag. Assignment 18 also uses one object that opens a font and holds its reader and tables. You can declare it now or when you reach assignment 18.",
-        "src/font/FontParser.cpp": "Read `numTables` from the 12-byte header and skip the other header fields, then read one 16-byte record per table and keep each tag's 4 bytes as the font stores them. If you declared a font object, have it open the file and load the directory once."
+        "src/font/FontParser.cpp": "Read `numTables` from the 12-byte header and skip the other header fields, then read one 16-byte record per table and keep each tag's 4 bytes as the font stores them. The Boilerplate's `FontParser` constructor already opens the file and loads the directory; from scratch, a font object like it is up to you."
       },
       "problem": "problems/02-table-directory.md",
       "cases": "tests/02/cases.txt",

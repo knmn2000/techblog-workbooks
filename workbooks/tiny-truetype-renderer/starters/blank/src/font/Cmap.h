@@ -5,9 +5,9 @@
 //
 // Why this file exists:
 //   This header declares your reader for the `cmap` table, the font's map from each
-//   character to the glyph that draws it. It reads the format 12 subtable, which covers
-//   the full Unicode range, and assignment 18 looks up every character of a line of text
-//   in the result.
+//   character to the glyph that draws it. It reads the format 12 subtable stored for
+//   platform 0, encoding 4, which covers the full Unicode range, and assignment 18 looks
+//   up every character of a line of text in the result.
 //
 // Your job:
 //   Declare a function that reads a font's character map, given your `ByteReader` and the

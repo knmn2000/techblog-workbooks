@@ -21,9 +21,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "render/Scanline.h"
+#include "render/Scanline.h"  // the declarations this file implements
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error: the "not implemented" stubs
 
 std::vector<EdgePiece> edgePieces(const GlyphComponent& outline, const Placement& place) {
   // TODO: walk each contour as in assignment 11, making implied on-curve points explicit, and

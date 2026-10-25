@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>{{TITLE}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -632,11 +633,52 @@ span.CodeMirror-selectedtext { background: none; }
 .cm-meta { color: var(--syn-meta); }
 .cm-error, .cm-invalidchar { color: var(--bad); }
 .cm-strong { font-weight: 700; } .cm-em { font-style: italic; } .cm-link { text-decoration: underline; }
+
+/* ---- Primer: every term, header and tool the assignments use, one entry each */
+.nav-link { color: var(--text-2); font-weight: 500; font-size: 14px; }
+.nav-link:hover { color: var(--text); text-decoration: none; }
+.primer-wrap { max-width: 920px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 28px; }
+.primer-head { display: grid; gap: 10px; }
+.primer-head h1 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 600; text-wrap: balance; }
+.primer-head p { margin: 0; color: var(--text-2); max-width: 70ch; }
+.primer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.primer-tools .search { flex: 1 1 240px; }
+.pgroup { display: grid; gap: 12px; scroll-margin-top: 72px; }
+.pgroup > h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.pgroup > .flow { color: var(--text-2); }
+.pentry { background: var(--layer); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px;
+  min-width: 0; scroll-margin-top: 72px; }
+.pentry.hit { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand); }
+.pentry h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.pentry h3 code, .peek-title code { font-size: .92em; }
+.pentry > .flow { color: var(--text-2); min-width: 0; }
+.used { margin: 0; font-size: 12.5px; color: var(--text-3); display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; }
+.used a { padding: 0 6px; border-radius: 999px; background: var(--fill); color: var(--text-2); }
+.used a:hover { background: var(--fill-hover); text-decoration: none; }
+.pempty { color: var(--text-3); }
+.need-h { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.need-g { margin: 6px 0 -4px; font-size: 13px; font-weight: 600; color: var(--text); }
+.need-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.need-list li { display: grid; gap: 2px; margin: 0; }
+.need-list a { font-weight: 500; }
+.flow .need-list a code, .flow .used a code, .flow .tg-items a code { color: var(--link); }  /* a code title still reads as a link */
+.need-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.need-chips .chip { color: var(--text); }
+.need-chips .chip:hover { background: var(--fill-hover); text-decoration: none; }
+.tg-items .chip a { color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 2px; }
+.panel.left { position: relative; }
+.peek { position: absolute; inset: 0; z-index: 3; background: var(--layer); display: flex; flex-direction: column; min-height: 0; }
+.peek-head { flex: none; height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 8px 0 4px;
+  background: var(--layer-head); border-bottom: 1px solid var(--line); font-size: 13px; }
+.peek-head .linkish, .peek-head a { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 6px; }
+.peek-body { flex: 1; min-height: 0; overflow: auto; padding: 18px 20px 28px; }
+.peek-title { font-size: 18px !important; margin: 0; }
 </style>
 
 <div id="list-view">
   <header class="nav"><div class="nav-in gutter">
     <a class="brand" href="#home"><span class="logo" data-logo></span><span id="book-name"></span></a>
+    <a class="nav-link" href="#primer" data-primer-link hidden>Primer</a>
     <span class="nav-src" id="nav-src"></span>
     <button class="exit-btn" id="exit-list" type="button" hidden title="Save, stop the book and close it">Exit</button>
   </div></header>
@@ -659,11 +701,20 @@ span.CodeMirror-selectedtext { background: none; }
   </div>
 </div>
 
+<div id="primer-view" hidden>
+  <header class="nav"><div class="nav-in gutter">
+    <a class="brand" href="#home"><span class="logo" data-logo></span><span data-book-name></span></a>
+    <a class="nav-link" href="#home">Problem list</a>
+  </div></header>
+  <div class="primer-wrap gutter" id="primer"></div>
+</div>
+
 <div id="ide-view" class="ide gutter" hidden>
   <header class="topbar">
     <div class="tb-left">
       <a class="logo" data-logo href="#home" aria-label="Problem list"></a>
       <a class="tb-link" href="#home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span>Problem list</span></a>
+      <a class="tb-link" href="#primer" data-primer-link hidden><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13M8 7h7M8 11h5"/></svg><span>Primer</span></a>
       <button class="icon-btn" id="prev" type="button" aria-label="Previous assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
       <button class="icon-btn" id="next" type="button" aria-label="Next assignment"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
     </div>
@@ -683,6 +734,10 @@ span.CodeMirror-selectedtext { background: none; }
       </div>
       <div class="panel-body" id="desc" role="tabpanel"></div>
       <div class="panel-body" id="editorial" role="tabpanel" hidden></div>
+      <aside class="peek" id="primer-peek" aria-label="Primer entry" hidden>
+        <div class="peek-head"><button class="linkish" type="button" id="primer-peek-close">&larr; Back to the problem</button><a href="#primer" id="primer-peek-open" data-full>Open in the primer</a></div>
+        <div class="peek-body flow" id="primer-peek-body"></div>
+      </aside>
     </section>
 
     <div class="splitter v" id="split-v" role="separator" aria-orientation="vertical" aria-label="Resize the problem and code panels" tabindex="0"></div>
@@ -757,15 +812,24 @@ span.CodeMirror-selectedtext { background: none; }
   // creates, and earlier files it adds to.
   const PROJECT = DATA.project;
   const PROJECT_DIR = PROJECT.dir + '/';
-  // workbook.json writes commands for Windows, with {exe} where a program's name ends in .exe there.
-  // Show this computer's form: ./check.sh, ./study.sh and no .exe on macOS and Linux.
+  // workbook.json writes program names with {exe}, which ends them in .exe on Windows. Show this
+  // computer's form of every command: .\check, PowerShell and .exe on Windows; ./check.sh, a
+  // terminal and no .exe on macOS and Linux.
   const SYSTEM = /Win/i.test(navigator.platform || navigator.userAgent) ? 'windows'
     : /Mac/i.test(navigator.platform || navigator.userAgent) ? 'mac' : 'linux';
-  if (SYSTEM !== 'windows' && DATA.check.startsWith('.\\check ')) {
-    DATA.check = './check.sh ' + DATA.check.slice('.\\check '.length);
+  const CHECK_WIN = '.\\check ', CHECK_SH = './check.sh ';
+  if (SYSTEM !== 'windows' && DATA.check.startsWith(CHECK_WIN)) {
+    DATA.check = CHECK_SH + DATA.check.slice(CHECK_WIN.length);
     if (DATA.shell === 'PowerShell') DATA.shell = 'a terminal';
+  } else if (SYSTEM === 'windows' && DATA.check.startsWith(CHECK_SH)) {
+    DATA.check = CHECK_WIN + DATA.check.slice(CHECK_SH.length);
+    if (DATA.shell === 'a terminal') DATA.shell = 'PowerShell';
   }
-  PROJECT.run = (PROJECT.run || '').replace('{exe}', SYSTEM === 'windows' ? '.exe' : '');
+  // Workbooks made before {exe} wrote .exe after the program's name; macOS and Linux leave it out.
+  const native = (cmd) => (SYSTEM === 'windows' ? (cmd || '').split('{exe}').join('.exe')
+    : (cmd || '').split('{exe}').join('').replace(/^("?[^\s"]+?)\.exe(?="?(\s|$))/i, '$1'));
+  PROJECT.build = native(PROJECT.build);
+  PROJECT.run = native(PROJECT.run);
   const STUDY_HOW = SYSTEM === 'windows' ? 'double-click <code>study.cmd</code>, or run <code>.\\study</code>'
     : SYSTEM === 'mac' ? 'double-click <code>study.command</code>, or run <code>./study.sh</code>' : 'run <code>./study.sh</code>';
   const shortName = (path) => (path.startsWith(PROJECT_DIR) ? path.slice(PROJECT_DIR.length) : path);
@@ -785,7 +849,13 @@ span.CodeMirror-selectedtext { background: none; }
     link: icon('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', 15),
     map: icon('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', 15),
     book: icon('<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 0 2 2h13"/>', 15),
+    learn: icon('<path d="m2 9 10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v5"/>', 15),
   };
+
+  // The primer: entries by id, and which assignment introduces each one.
+  const PRIMER = DATA.primer || [];
+  const ENTRY = {};
+  PRIMER.forEach((g) => g.entries.forEach((e) => { ENTRY[e.id] = e; }));
 
   let current = null;          // assignment id on screen, or null for the list
   let caseIndex = 0;           // selected test case in the bottom panel
@@ -803,6 +873,8 @@ span.CodeMirror-selectedtext { background: none; }
   function renderListShell() {
     $$('[data-logo]').forEach((el) => { el.textContent = DATA.title.trim().charAt(0).toUpperCase(); });
     $('#book-name').textContent = DATA.title;
+    $$('[data-book-name]').forEach((el) => { el.textContent = DATA.title; });
+    $$('[data-primer-link]').forEach((el) => { el.hidden = !PRIMER.length; });
     $('#nav-src').innerHTML = `Built on <a href="${esc(DATA.sourceUrl)}" target="_blank" rel="noopener">“${esc(DATA.sourceTitle)}”</a> by ${esc(DATA.author)}`;
     $('#hero').innerHTML = `<span class="over">${CPS.length} assignments · any language</span><h1>${esc(DATA.headline)}</h1><p>${esc(DATA.lede)}</p>`;
     $('#credits').textContent = DATA.credits;
@@ -842,6 +914,7 @@ span.CodeMirror-selectedtext { background: none; }
         <div class="bars">${bars}</div>
       </div>
       <div class="card how"><h2>Using the book</h2><ol>
+        ${PRIMER.length ? `<li><span>When a term, a library or a tool is new to you, look it up in the <a href="#primer">primer</a>. Each assignment's What you need list links to the entries it needs.</span></li>` : ''}
         <li><span>You build one ${esc(PROJECT.label)} project, in <code>${esc(PROJECT_DIR)}</code>. Each assignment adds files to it, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
         <li><span>Write the code here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
         ${LOCAL ? `<li><span>The Run button checks the selected example, and Submit runs every test. The verdict appears in the Test result tab, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
@@ -907,6 +980,7 @@ span.CodeMirror-selectedtext { background: none; }
   function showList() {
     current = null;
     $('#ide-view').hidden = true;
+    $('#primer-view').hidden = true;
     $('#list-view').hidden = false;
     document.body.classList.remove('in-ide');
     renderSide();
@@ -941,6 +1015,22 @@ span.CodeMirror-selectedtext { background: none; }
   });
 
   // ---------------------------------------------------------------- problem view
+  // "What you need": the primer entries this assignment introduces, each with how it's used here,
+  // then the ones known from earlier assignments (with a note when the page gives one).
+  function needHtml(need) {
+    const item = (n) => `<li><a href="#primer/${esc(n.id)}">${n.title}</a>${n.note ? `<span>${n.note}</span>` : ''}</li>`;
+    const noted = need.earlier.filter((n) => n.note), rest = need.earlier.filter((n) => !n.note);
+    // A long list (the first assignment introduces most of the language) reads better by group.
+    const groups = [...new Set(need.new.map((n) => n.group || ''))];
+    const fresh = need.new.length > 8 && groups.length > 1
+      ? groups.map((g) => `<p class="need-g">${esc(g)}</p><ul class="need-list">${need.new.filter((n) => (n.group || '') === g).map(item).join('')}</ul>`).join('')
+      : `<ul class="need-list">${need.new.map(item).join('')}</ul>`;
+    return (need.new.length ? `<p class="need-h">New in this assignment</p>${fresh}` : '')
+      + (need.earlier.length ? `<p class="need-h">From earlier assignments</p>` : '')
+      + (noted.length ? `<ul class="need-list">${noted.map(item).join('')}</ul>` : '')
+      + (rest.length ? `<div class="need-chips">${rest.map((n) => `<a class="chip" href="#primer/${esc(n.id)}" title="Introduced in assignment ${esc(BY[n.from] ? BY[n.from].num : n.from)}">${n.title}</a>`).join('')}</div>` : '');
+  }
+
   function renderDesc(c) {
     const opened = Number(store.get(c.id + ':hints') || 0);
     const acc = (id, iconHtml, title, body) => `<div class="acc" ${id ? `id="${id}"` : ''}><button class="acc-btn" type="button" aria-expanded="false">${iconHtml}<span>${title}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${body}</div></div>`;
@@ -949,6 +1039,9 @@ span.CodeMirror-selectedtext { background: none; }
       return `<div class="acc hint" data-n="${n}"><button class="acc-btn" type="button" aria-expanded="false"${locked ? ' disabled' : ''}>${I.bulb}<span>${esc(h.title)}<span class="acc-sub">${h.sub}</span></span>`
         + `<span class="acc-lock" ${locked ? '' : 'hidden'} title="Open hint ${n - 1} first">${I.lock}</span><span class="chev">${I.down}</span></button><div class="acc-body flow" hidden>${h.html}</div></div>`;
     }).join('');
+    const need = c.need || { new: [], earlier: [] };
+    const needCount = need.new.length + need.earlier.length;
+    const needSub = [need.new.length ? `${need.new.length} new` : '', need.earlier.length ? `${need.earlier.length} from earlier` : ''].filter(Boolean).join(' · ');
     const tags = c.tags.map((g) => `<div class="tg"><span class="tg-label">${esc(g.label)}</span><div class="tg-items">${g.items.map((t) => `<span class="chip">${t}</span>`).join('')}</div></div>`).join('');
 
     $('#desc').innerHTML = `
@@ -961,7 +1054,7 @@ span.CodeMirror-selectedtext { background: none; }
         <span class="chip" title="The checker compares only what your program writes, so you can use any structure, language or library.">Any language</span>
       </div>
       ${c.read ? `<div class="callout">${I.book}<div><p class="callout-title">${esc(c.readTitle || 'Read in the blog first')}</p>${c.read}</div></div>` : ''}
-      ${c.sources ? `<div class="accs accs-top">${acc('acc-sources', I.link, 'Source material', c.sources)}</div>` : ''}
+      ${c.sources || needCount ? `<div class="accs accs-top">${needCount ? acc('acc-need', I.learn, `What you need<span class="acc-sub">${needSub}</span>`, needHtml(c.need)) : ''}${c.sources ? acc('acc-sources', I.link, 'Source material', c.sources) : ''}</div>` : ''}
       ${startCard(c)}
       <div class="flow">${c.body}</div>
       <div class="accs">
@@ -2207,12 +2300,81 @@ span.CodeMirror-selectedtext { background: none; }
     });
   }
 
+  // ---- the primer: a page of its own, and a peek over the problem panel inside an assignment
+  const usedIn = (e) => (e.usedIn.length === CPS.length && CPS.length > 1 ? '<p class="used">Used in every assignment</p>'
+    : e.usedIn.length ? `<p class="used">Used in ${e.usedIn.map((cid) =>
+    `<a href="#p${esc(cid)}" title="${esc(BY[cid] ? BY[cid].title : '')}">${esc(BY[cid] ? BY[cid].num : cid)}</a>`).join('')}</p>` : '');
+  let primerDrawn = false;
+  function renderPrimer() {
+    const groups = PRIMER.map((g, k) => `<section class="pgroup" id="pg-${k}"><h2>${esc(g.title)}</h2>${g.intro ? `<div class="flow">${g.intro}</div>` : ''}`
+      + g.entries.map((e) => `<article class="pentry" id="pe-${esc(e.id)}"><h3>${e.title}</h3><div class="flow">${e.html}</div>${usedIn(e)}</article>`).join('')
+      + '</section>').join('');
+    $('#primer').innerHTML = `<div class="primer-head"><h1>Primer</h1>
+        <p>The terms, libraries and tools the ${CPS.length} assignments use, each explained in a few paragraphs, with where the workbook uses it and links to learn more. Each assignment's What you need list links to the entries it needs.</p></div>
+      <div class="primer-tools"><label class="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="pq" placeholder="Search the primer" aria-label="Search the primer"></label>
+        ${PRIMER.map((g, k) => `<button class="chip" type="button" data-pgroup="${k}">${esc(g.title)}</button>`).join('')}</div>
+      ${groups}<p class="pempty" id="pempty" hidden>No entries match.</p>`;
+    $$('#primer .pentry').forEach((el) => {
+      const e = ENTRY[el.id.slice(3)];
+      el.dataset.search = [e.plain, ...e.also, el.textContent].join(' ').toLowerCase();
+    });
+    $('#pq').addEventListener('input', (ev) => {
+      const q = ev.target.value.trim().toLowerCase();
+      let shown = 0;
+      $$('#primer .pentry').forEach((el) => { el.hidden = !!q && !el.dataset.search.includes(q); shown += el.hidden ? 0 : 1; });
+      $$('#primer .pgroup').forEach((g) => { g.hidden = !$$('.pentry', g).some((el) => !el.hidden); });
+      $('#pempty').hidden = shown > 0;
+    });
+    $('#primer').addEventListener('click', (ev) => {
+      const b = ev.target.closest('[data-pgroup]');
+      if (b) $('#pg-' + b.dataset.pgroup).scrollIntoView({ block: 'start' });
+    });
+    primerDrawn = true;
+  }
+  function showPrimer(id) {
+    if (LOCAL && current) saveAll();
+    current = null;
+    $('#ide-view').hidden = true;
+    $('#list-view').hidden = true;
+    $('#primer-view').hidden = false;
+    document.body.classList.remove('in-ide');
+    if (!primerDrawn) renderPrimer();
+    $$('#primer .pentry.hit').forEach((el) => el.classList.remove('hit'));
+    const el = id && $('#pe-' + id);
+    if (el) el.classList.add('hit');
+    // After layout (and after the browser restores the scroll position on a reload).
+    requestAnimationFrame(() => { if (el) el.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0); });
+  }
+  function openPeek(id) {
+    const e = ENTRY[id];
+    if (!e) return;
+    $('#primer-peek-body').innerHTML = `<h2 class="peek-title">${e.title}</h2>${e.html}${usedIn(e)}`;
+    $('#primer-peek-open').setAttribute('href', '#primer/' + id);
+    $('#primer-peek').hidden = false;
+    $('#primer-peek-body').scrollTop = 0;
+  }
+  const closePeek = () => { $('#primer-peek').hidden = true; };
+  $('#primer-peek-close').addEventListener('click', closePeek);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#primer-peek').hidden) closePeek(); });
+  // Inside an assignment, a primer link opens the entry over the problem panel, so the editor stays.
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#primer/"]');
+    if (!a || e.defaultPrevented || a.hasAttribute('data-full') || !a.closest('#ide-view')) return;
+    const id = a.getAttribute('href').slice('#primer/'.length);
+    if (!ENTRY[id]) return;
+    e.preventDefault();
+    openPeek(id);
+  });
+
   // ---- navigation between assignments
   function openCheckpoint(id) {
     const c = BY[id];
     const changed = current !== id;
     if (LOCAL && current && changed) saveAll();  // don't lose the last keystrokes
     current = id;
+    closePeek();
+    $('#primer-view').hidden = true;
     $('#list-view').hidden = true;
     $('#ide-view').hidden = false;
     document.body.classList.add('in-ide');
@@ -2238,10 +2400,12 @@ span.CodeMirror-selectedtext { background: none; }
 
   let routed = null;
   function route(hash) {
-    if (hash === routed && (current || !$('#list-view').hidden)) return;
+    if (hash === routed && (current || !$('#list-view').hidden || !$('#primer-view').hidden)) return;
     routed = hash;
+    const pm = /^primer(?:\/([a-z0-9-]+))?$/.exec(hash || '');
     const m = /^p(.+)$/.exec(hash || '');
-    if (m && BY[m[1]]) openCheckpoint(m[1]); else showList();
+    if (pm && PRIMER.length) showPrimer(pm[1]);
+    else if (m && BY[m[1]]) openCheckpoint(m[1]); else showList();
   }
   function go(hash) {
     try { history.pushState(null, '', '#' + hash); } catch (e) {}

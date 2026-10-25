@@ -19,13 +19,13 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <map>
-#include <vector>
+#include <cstdint>  // uint32_t for glyph ids
+#include <map>      // std::map: where each glyph's record is, by glyph id
+#include <vector>   // std::vector<GlyphComponent>: one outline per simple part
 
-#include "GlyphComponent.h"
-#include "font/ByteReader.h"
-#include "font/Loca.h"
+#include "GlyphComponent.h"   // GlyphComponent (assignment 07): the outline of each part
+#include "font/ByteReader.h"  // ByteReader (assignment 01): big-endian reads from the font
+#include "font/Loca.h"        // GlyphLocation (assignment 04): a record's offset and length
 
 // The simple glyphs `glyphId` is drawn with, every point in the glyph's own coordinates
 // (font units). A simple glyph gives itself; an empty one gives nothing.

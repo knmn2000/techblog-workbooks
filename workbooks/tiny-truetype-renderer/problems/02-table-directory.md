@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 2 of 18 · **Check:** `.\check 02`
 
 **Tags**
-- *Language:* structs · fixed-width unsigned integers (`uint16_t`, `uint32_t`) · strings built from bytes · binary file I/O (`seekg`, `get`)
-- *Library:* `std::ifstream` in binary mode · `std::vector` · `std::string` · `std::unordered_map` (optional)
-- *Concepts:* the sfnt container · table tags · offsets from the start of the file · big-endian byte order
+- *Language:* [structs](#primer/struct-class) · [fixed-width unsigned integers](#primer/cstdint) (`uint16_t`, `uint32_t`) · [strings built from bytes](#primer/char) · [binary file I/O](#primer/fstream) (`seekg`, `get`)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode · [`std::vector`](#primer/vector) · [`std::string`](#primer/string) · [`std::map`](#primer/map)
+- *Concepts:* [the sfnt container](#primer/table-directory) · [table tags](#primer/table-tag) · [offsets from the start of the file](#primer/file-offset) · [big-endian byte order](#primer/big-endian)
 
 ## Read in the blog first
 
@@ -13,6 +13,38 @@ You can pass using this page alone. For the background, read the blog's
 [Offset table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Offset%20table)
 section through the paragraph that starts "This is the structure of the". The author's code
 follows that paragraph.
+
+## What you need
+
+- [TrueType and OpenType fonts](#primer/truetype): the first 4 bytes of the file are the scaler
+  type, which says the font has TrueType outlines; `readTableDirectory` reads them and moves on.
+- [The table directory](#primer/table-directory): the 12-byte header and the 16-byte records
+  that `readTableDirectory` in `src/font/FontParser.cpp` reads.
+- [Table tags](#primer/table-tag): the 4-byte name at the start of each record, which you keep
+  with its trailing spaces and write between quotes.
+- [`char` and `unsigned char`](#primer/char): the tag's 4 bytes come from your `ByteReader` as
+  numbers, and `TableRecord::tag` is a `std::string`, so each byte has to become a `char`.
+- [`<vector>`](#primer/vector): `readTableDirectory` returns the records in file order as a
+  `std::vector<TableRecord>`, and the program writes one `table` line per element.
+- [`<map>`](#primer/map): `Tables` in `src/font/FontParser.h` is a
+  `std::map<std::string, TableRecord>` keyed by tag; `FontParser` fills it, and assignments 03
+  to 05 look tables up in it with `at`.
+- [Range-based `for`](#primer/range-for): the program writes the records with
+  `for (const TableRecord& t : tables)`, and `FontParser`'s constructor copies them into the map
+  with the same kind of loop.
+- [The `nodiscard` attribute](#primer/nodiscard): `FontParser::tables()` in `FontParser.h`
+  carries it, so the compiler warns about a call that throws the result away.
+- [Compiling and linking](#primer/compile-and-link): from now on the build compiles several
+  `.cpp` files, `ByteReader.cpp` and `FontParser.cpp` among them, and links them into each
+  program; the checker reports a failure in either step as a Compile Error.
+- [Compiler warnings](#primer/compiler-warnings): the checker lists the build's warnings before
+  the tests; a signed and unsigned mix-up often shows up there first.
+- [Ninja](#primer/ninja): CMake hands the build to Ninja, which recompiles only the files you
+  changed since the last check.
+- [The `build` folder](#primer/build-folder): the programs land in `build/solutions/`, and each
+  test's input and your output in `build/cases/NN/`.
+- [The study server](#primer/study-server): with `.\study` running, the book's Run and Submit
+  buttons check your code without the terminal.
 
 ## Source material
 

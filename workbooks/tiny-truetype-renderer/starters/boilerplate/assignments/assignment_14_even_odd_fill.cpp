@@ -25,15 +25,15 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <fstream>    // std::ifstream: the input file
+#include <iostream>   // std::cerr for the usage line and errors
+#include <memory>     // std::unique_ptr: the canvas, made when its line arrives
+#include <sstream>    // std::istringstream: splitting each line into words
+#include <stdexcept>  // std::runtime_error when the input has no canvas line
+#include <string>     // std::string for each line and its keyword
+#include <vector>     // std::vector<GlyphComponent>: the outlines from the input
 
-#include "render/EvenOdd.h"
+#include "render/EvenOdd.h"  // renderGlyphByEvenOdd (assignment 14), canvas and outline types
 
 int main(int argc, char** argv) {
   if (argc != 3) {

@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 1 of 18 · **Check:** `.\check 01`
 
 **Tags**
-- *Language:* fixed-width integers (`uint8_t` ... `int32_t`) · bit shifts and OR · two's complement · templates (optional) · exceptions
-- *Library:* `std::ifstream` in binary mode (`get`, `seekg`) · `std::char_traits<char>::eof()`
-- *Concepts:* big-endian byte order · signed vs unsigned integers · fixed-point numbers (F2Dot14) · file offsets
+- *Language:* [fixed-width integers](#primer/cstdint) (`uint8_t` ... `int32_t`) · [bit shifts and OR](#primer/bit-operations) · [two's complement](#primer/twos-complement) · [templates](#primer/templates) (optional) · [exceptions](#primer/exceptions)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode (`get`, `seekg`) · [`std::char_traits<char>::eof()`](#primer/string)
+- *Concepts:* [big-endian byte order](#primer/big-endian) · [signed vs unsigned integers](#primer/integer-types) · [fixed-point numbers](#primer/f2dot14) (F2Dot14) · [file offsets](#primer/file-offset)
 
 ## Read in the blog first
 
@@ -13,6 +13,99 @@ You can pass using this page alone. For the background, read the blog's
 "What is TrueType?" section, then
 [Reading .ttf files](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Reading%20.ttf%20files).
 That section has one paragraph, and the author's code follows it, below a link card.
+
+## What you need
+
+- [Header and source files](#primer/header-files): `ByteReader.h` declares the reader, and
+  `ByteReader.cpp` defines its member functions as `ByteReader::jumpTo` and so on.
+- [`#include`](#primer/include): the program includes the standard headers in angle brackets and
+  your reader as `"font/ByteReader.h"`, by its path under `src/`. Each include's comment says
+  what the file uses it for.
+- [`main`, `argc` and `argv`](#primer/main): the program's `main` takes the input and output file
+  names from `argv[1]` and `argv[2]`.
+- [Namespaces and `std::`](#primer/namespaces): the program keeps its helpers `decimal` and `run`
+  in an unnamed namespace, and standard names such as `std::string` carry the `std::` prefix.
+- [Integer types](#primer/integer-types): the six readers return signed and unsigned types of 8,
+  16 and 32 bits, and `get()` returns a plain `int`.
+- [Two's complement](#primer/twos-complement): `readInt8`, `readInt16` and `readInt32` call your
+  `readBigEndian` with a signed type, so it has to turn the value negative when the top bit is
+  set. The entry shows how to do that without the arithmetic wrapping.
+- [Integer promotion](#primer/integer-promotion): the program prints `+reader.readUint8()` so the
+  byte comes out as a number, and a small type becomes an `int` before a shift.
+- [Integer overflow](#primer/integer-overflow): a `jump` followed by `skip`s can pass 4294967295,
+  more than a `uint32_t` holds.
+- [Bit shifts and bitwise operators](#primer/bit-operations): you build each number from its
+  bytes with shifts and OR.
+- [`double` and floating point](#primer/floating-point): `readF2Dot14` returns a `double`, and
+  `decimal` in the program turns it into text.
+- [Integer division](#primer/integer-division): an F2Dot14 value is its 16-bit integer divided by
+  16384, and dividing two integers in C++ drops the fraction.
+- [`const`](#primer/const): parameters such as `const uint32_t offset` in `ByteReader.cpp` can't
+  change inside the function.
+- [References and `const` references](#primer/references): the constructor takes
+  `const std::string& path`, and `run` takes `ByteReader& reader` because a read moves the
+  reader's position.
+- [Pointers and arrays](#primer/pointers): `argv` in the program's `main` is a `char**`, a list of
+  C strings.
+- [`auto`](#primer/auto): `run` keeps its `line` helper in an `auto` variable, and `line` takes
+  `const auto& value` so it prints any of the read types.
+- [Lambdas](#primer/lambdas): `line` is a lambda that writes `<op> <value>` to the output file.
+- [Loops](#primer/loops): the program reads its input line by line with `std::getline`, and
+  `readBigEndian` reads one byte per pass.
+- [The conditional operator `?:`](#primer/conditional-operator): `decimal` returns `"0"` in place
+  of `"-0"` with `?:`.
+- [Structs and classes](#primer/struct-class): `ByteReader` is a class with a private
+  `std::ifstream file_`, and `UnexpectedEof` is a struct.
+- [Constructors and initializer lists](#primer/constructors): `ByteReader`'s constructor opens
+  `file_` in its initializer list and throws when the file doesn't open.
+- [`explicit`](#primer/explicit): `ByteReader(const std::string& path)` is `explicit`, so a string
+  can't turn into a reader by accident.
+- [Deriving from a class](#primer/inheritance): `UnexpectedEof` derives from `std::runtime_error`,
+  and the program catches it by its own type before the general `std::exception`.
+- [Exceptions](#primer/exceptions): `nextByte` throws `UnexpectedEof` at the end of the file, and
+  the program catches it to write `eof` and stop.
+- [Function templates](#primer/templates): `readBigEndian<T>` in `ByteReader.h` is one function
+  for all six integer types.
+- [`static_assert`](#primer/static-assert): `readBigEndian` starts with one that stops the build
+  for a type that isn't an integer or is wider than 4 bytes.
+- [`sizeof`](#primer/sizeof): the TODO in `readBigEndian` reads `sizeof(T)` bytes: 1, 2 or 4.
+- [`<fstream>`](#primer/fstream): `ByteReader` reads the font through a `std::ifstream` opened in
+  binary mode. You move it with `seekg` and read a byte with `get()`.
+- [`<iostream>`](#primer/iostream): the program writes its usage line and errors to `std::cerr`,
+  and `run` writes answers to the `std::ostream&` it is given.
+- [`<string>`](#primer/string): the program reads each input line with `std::getline` and trims
+  zeros with `find_last_not_of`, and `std::char_traits<char>::eof()` is what `get()` returns at
+  the end.
+- [`<sstream>`](#primer/sstream): the program splits each line into an operation and its number
+  with a `std::istringstream`, and `decimal` writes into a `std::ostringstream`.
+- [`<stdexcept>`](#primer/stdexcept): `UnexpectedEof` derives from `std::runtime_error`, and each
+  TODO throws `std::logic_error("not implemented: ...")`.
+- [`<exception>`](#primer/exception): `main` catches any other error as `std::exception`, which
+  comes in with `<stdexcept>`, so the program doesn't include `<exception>` itself.
+- [`<iomanip>`](#primer/iomanip): `decimal` prints an F2Dot14 value with `std::setprecision(14)`,
+  then trims the trailing zeros.
+- [`<cstdint>`](#primer/cstdint): the readers return `uint8_t` to `int32_t`, and a wider type
+  gives you room to build a number before you know its sign.
+- [`<type_traits>`](#primer/type-traits): the `static_assert` in `readBigEndian` tests
+  `std::is_integral_v<T>`, and the same header can tell you whether `T` is signed.
+- [Big-endian byte order](#primer/big-endian): each read puts the first byte on top, so `ff fe`
+  is the `u16` 65534.
+- [File offsets](#primer/file-offset): `jumpTo` counts its offset from byte 0 of the file, and
+  `skipBytes` counts from the current position.
+- [Fixed-point numbers and F2Dot14](#primer/f2dot14): `readF2Dot14` turns a signed 16-bit value
+  into a fraction.
+- [The C++ compiler](#primer/compiler): `.\check 01` needs g++ on your `PATH` to build the
+  project. The entry says how to install it.
+- [CMake](#primer/cmake): your first check configures the project with CMake, which turns
+  `assignments/assignment_01_byte_readers.cpp` into the program `assignment_01`.
+- [Python and `py -P`](#primer/python): `.\check 01` runs `tools/check.py`, so it needs Python
+  3.11 or newer.
+- [Running a program from the terminal](#primer/command-line): type `.\check 01` in the workbook
+  folder, and paste a failing test's `reproduce:` line to run `assignment_01.exe` on that input.
+- [The checker](#primer/checker): the first `.\check 01` creates this assignment's three files
+  and stops, and later runs check your code against the 28 tests.
+- [Exit codes](#primer/exit-codes): while a TODO still throws, the program exits with 99 and the
+  checker names the function, such as `readBigEndian`, that you haven't written yet.
 
 ## Source material
 
@@ -268,7 +361,7 @@ read_big_endian(T):
         value = (value << 8) | c
     n = 8 * size_of(T)
     if T is signed and value >= 2^(n-1):
-        return value - 2^n                  # as a signed number
+        return value - 2^n                  # subtract in a signed type (int64), then convert to T
     return value
 
 read_f2dot14():  return read_big_endian(int16) / 16384.0

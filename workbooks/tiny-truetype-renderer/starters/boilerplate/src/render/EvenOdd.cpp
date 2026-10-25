@@ -17,11 +17,11 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "render/EvenOdd.h"
+#include "render/EvenOdd.h"  // the declaration this file implements
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error: the "not implemented" stub
 
-#include "render/Scanline.h"
+#include "render/Scanline.h"  // edgePieces, forEachRow, fillSpan (assignment 14)
 
 void renderGlyphByEvenOdd(FrameBufferCanvas& canvas, const GlyphComponent& outline, const Placement& place,
                           const RGB color) {

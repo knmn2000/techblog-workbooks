@@ -10,16 +10,16 @@
 // Your job:
 //   Open the file in binary mode, move the position for jumps and skips, and build each
 //   number from its bytes, most significant first, with two's complement for the signed
-//   types. If a read needs a byte past the end of the file, report it the way your header
-//   declares and return no value. The Boilerplate gives you the declarations; fill in each
-//   TODO.
+//   types. If a read needs a byte past the end of the file, throw the error your header
+//   declares (`UnexpectedEof` in the Boilerplate) instead of returning a value. The
+//   Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/ByteReader.h"
+#include "font/ByteReader.h"  // ByteReader (assignment 01): the class this file defines
 
 ByteReader::ByteReader(const std::string& path) : file_(path, std::ios::binary) {
   if (!file_) throw std::runtime_error("cannot open " + path);

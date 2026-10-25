@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 6 of 18 · **Check:** `.\check 06`
 
 **Tags**
-- *Language:* structs · `std::vector` as a 2D grid · integer division · `std::swap` · converting a float to an int (rounding vs truncating)
-- *Library:* `stbi_write_png` from stb_image_write (the Boilerplate already calls it)
-- *Concepts:* framebuffer · row-major pixel layout · clipping · line rasterization along the longer axis · drawing order
+- *Language:* [structs](#primer/struct-class) · [`std::vector`](#primer/vector) as a 2D grid · [integer division](#primer/integer-division) · [`std::swap`](#primer/utility) · [converting a float to an int](#primer/float-to-int) (rounding vs truncating)
+- *Library:* [`stbi_write_png`](#primer/stb-image-write) from stb_image_write (the Boilerplate already calls it)
+- *Concepts:* [framebuffer](#primer/framebuffer) · [row-major pixel layout](#primer/framebuffer) · [clipping](#primer/clipping) · [line rasterization along the longer axis](#primer/line-drawing) · [drawing order](#primer/framebuffer)
 
 ## Read in the blog first
 
@@ -13,6 +13,51 @@ You can pass using this page alone. For the background, read the blog's
 [Preparation of a renderer](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Preparation%20of%20a%20renderer)
 section up to and including the paragraph that starts "The line drawing algorithm", and stop
 before the author's code that follows it.
+
+## What you need
+
+- [Pixels and RGB colour](#primer/pixel): `RGB` in `src/FrameBufferCanvas.h` holds one
+  `uint8_t` per channel, and each `point`, `rect` and `line` command ends in a colour as `r g b`.
+- [Framebuffer](#primer/framebuffer): `FrameBufferCanvas` keeps its pixels in `pixels_`, a
+  `std::vector<RGB>` stored row by row, so pixel (x, y) is at index `y * width + x`.
+- [Clipping](#primer/clipping): `set` ignores coordinates outside the canvas, and `drawRect`
+  starts and stops its loops at the canvas edges.
+- [Drawing a line](#primer/line-drawing): `drawLine` steps along the longer axis, works out the
+  other coordinate from a `double` slope, and stamps a square at each step.
+- [PNG files](#primer/png): `writePng` saves the canvas as a PNG, the format of the expected
+  pictures and of the diff pictures the checker writes.
+- [Binary PPM files](#primer/ppm): the format you can write instead of a PNG, with an
+  `std::ofstream` in binary mode and no library.
+- [`stb_image_write.h`](#primer/stb-image-write): the Boilerplate's `writePng` passes
+  `pixels_.data()` to `stbi_write_png` with 3 channels and `width * 3` bytes per row.
+- [`#define` and `#pragma`](#primer/preprocessor): `src/FrameBufferCanvas.cpp` defines
+  `STB_IMAGE_WRITE_IMPLEMENTATION` before it includes the stb header, and turns off that
+  header's warnings with `#pragma GCC diagnostic`.
+- [Operator overloading](#primer/operator-overloading): `RGB` declares a defaulted
+  `operator==`, so two colours compare channel by channel.
+- [`<cmath>`](#primer/cmath): `std::lround` rounds a point of your line to the nearest pixel.
+- [Converting a float to an int](#primer/float-to-int): rounding with `std::lround` and
+  truncating with `static_cast<int>` both pass here, because the checker forgives an edge that
+  moves by one pixel.
+- [`<algorithm>`](#primer/algorithm): `std::min` and `std::max` help when `drawRect` has to
+  keep a square that hangs over the edge inside the canvas.
+- [`<utility>`](#primer/utility): `std::swap` trades two values, which a line-drawing loop
+  that always steps in one direction can use.
+- [`<cstdlib>`](#primer/cstdlib): `std::abs` gives the size of a difference, which tells a
+  steep line from a flat one.
+- [`<optional>`](#primer/optional): the program declares
+  `std::optional<FrameBufferCanvas> canvas` and builds it with `canvas.emplace(w, h)` once it
+  has read the `canvas` line.
+- [Integer division](#primer/integer-division): `cx - w / 2` in `drawRect` rounds down on
+  purpose, while the line's slope needs a `double` division.
+- [`static_assert`](#primer/static-assert): `FrameBufferCanvas.cpp` checks
+  `sizeof(RGB) == 3` when it compiles, the 3 bytes per pixel that `stbi_write_png` reads.
+- [Debug builds](#primer/debug-build): the checker builds in Debug with GCC's bounds checks, so
+  writing a pixel outside the canvas's vector stops the program instead of corrupting memory.
+- [`static_cast`](#primer/static-cast): the program turns each colour's `int` into a `uint8_t`
+  with `static_cast`, and the canvas converts `width` to `std::size_t` before it multiplies.
+- [Brace initialization](#primer/brace-init): the program builds a colour as
+  `RGB{r, g, b}`, one value per member in order.
 
 ## Source material
 

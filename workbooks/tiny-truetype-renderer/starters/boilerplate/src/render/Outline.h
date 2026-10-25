@@ -17,9 +17,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "FrameBufferCanvas.h"
-#include "GlyphComponent.h"
-#include "render/Placement.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas and RGB (assignment 06): the picture
+#include "GlyphComponent.h"     // GlyphComponent (assignment 07): the outline to draw
+#include "render/Placement.h"   // Placement (assignment 08): x0, baseline and scale
 
 struct OutlineStyle {
   int lineThickness = 1;  // passed to FrameBufferCanvas::drawLine

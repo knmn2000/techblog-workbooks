@@ -5,9 +5,9 @@
 //
 // Why this file exists:
 //   This header declares your reader for the `cmap` table, the font's map from each
-//   character to the glyph that draws it. It reads the format 12 subtable, which covers
-//   the full Unicode range, and assignment 18 looks up every character of a line of text
-//   in the result.
+//   character to the glyph that draws it. It reads the format 12 subtable stored for
+//   platform 0, encoding 4, which covers the full Unicode range, and assignment 18 looks
+//   up every character of a line of text in the result.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs
@@ -18,12 +18,12 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <stdexcept>
-#include <unordered_map>
+#include <cstdint>        // uint32_t: code points and glyph ids
+#include <stdexcept>      // std::runtime_error, the base of UnsupportedCmap
+#include <unordered_map>  // std::unordered_map: the map from code point to glyph id
 
-#include "font/ByteReader.h"
-#include "font/FontParser.h"
+#include "font/ByteReader.h"  // ByteReader (assignment 01): the reader cmap is read through
+#include "font/FontParser.h"  // Tables (assignment 02): the record that gives cmap's offset
 
 // The font has no format 12 subtable for the full Unicode range (platform 0, encoding 4).
 struct UnsupportedCmap : std::runtime_error {

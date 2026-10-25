@@ -9,8 +9,9 @@
 //
 // Your job:
 //   Read `numTables` from the 12-byte header and skip the other header fields, then read
-//   one 16-byte record per table and keep each tag's 4 bytes as the font stores them. If
-//   you declared a font object, have it open the file and load the directory once.
+//   one 16-byte record per table and keep each tag's 4 bytes as the font stores them. The
+//   Boilerplate's `FontParser` constructor already opens the file and loads the directory;
+//   from scratch, a font object like it is up to you.
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

@@ -17,11 +17,11 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <vector>
+#include <cstdint>  // uint32_t offset and length; uint16_t numGlyphs
+#include <vector>   // std::vector<GlyphLocation>: one location per glyph id
 
-#include "font/ByteReader.h"
-#include "font/FontParser.h"
+#include "font/ByteReader.h"  // ByteReader (assignment 01): the reader the tables are read through
+#include "font/FontParser.h"  // Tables (assignment 02): the records of maxp, head, loca and glyf
 
 struct GlyphLocation {
   uint32_t offset = 0;  // from the start of the file

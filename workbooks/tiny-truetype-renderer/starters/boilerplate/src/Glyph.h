@@ -18,9 +18,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <vector>
+#include <vector>  // std::vector<GlyphComponent>: a glyph's outlines
 
-#include "GlyphComponent.h"
+#include "GlyphComponent.h"  // GlyphPoint and GlyphComponent (assignment 07): the outline types
 
 struct BoundingRect {
   int xMin = 0, yMin = 0, xMax = 0, yMax = 0;

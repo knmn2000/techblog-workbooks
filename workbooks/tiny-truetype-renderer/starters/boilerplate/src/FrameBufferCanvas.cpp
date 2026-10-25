@@ -20,16 +20,16 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "FrameBufferCanvas.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas (assignment 06), whose functions this file defines
 
-#include <stdexcept>
+#include <stdexcept>  // std::runtime_error if the PNG can't be written; std::logic_error
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wextra"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#include "stb_image_write.h"
+#include "stb_image_write.h"  // stbi_write_png, its code compiled here (the #define above)
 #pragma GCC diagnostic pop
 
 static_assert(sizeof(RGB) == 3, "RGB must be 3 tightly packed bytes for the PNG writer");

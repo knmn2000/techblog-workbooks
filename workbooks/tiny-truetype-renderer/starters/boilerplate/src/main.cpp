@@ -24,12 +24,12 @@
 // The picture fits the text, with white glyphs on black; pixel-height (default 64) is the
 // distance from the font's ascent to its descent.
 
-#include <cmath>
-#include <exception>
-#include <iostream>
-#include <string>
+#include <cmath>      // std::ceil, std::lround: the picture size and margin in pixels
+#include <exception>  // std::exception: catching any error to print it
+#include <iostream>   // std::cout for the "wrote" line, std::cerr for errors
+#include <string>     // std::string, std::stod: the arguments and the pixel height
 
-#include "TextRenderer.h"
+#include "TextRenderer.h"  // TextRenderer (assignment 18), FrameBufferCanvas and RGB (06)
 
 int main(int argc, char** argv) {
   if (argc < 4 || argc > 5) {

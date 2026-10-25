@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 15 of 18 · **Check:** `.\check 15`
 
 **Tags**
-- *Language:* floating-point arithmetic (`double`) · avoiding a division by zero · `nan`
-- *Library:* `std::min` (`<algorithm>`)
-- *Concepts:* quadratic Bezier curve as a polynomial in t · turning point of a parabola · minimum over a closed interval · straight and flat curves · screen coordinates with y pointing down
+- *Language:* [floating-point arithmetic](#primer/floating-point) (`double`) · [avoiding a division by zero](#primer/floating-point) · [`nan`](#primer/floating-point)
+- *Library:* [`std::min`](#primer/algorithm) (`<algorithm>`)
+- *Concepts:* [quadratic Bezier curve as a polynomial in t](#primer/bezier) · [turning point of a parabola](#primer/curve-min-y) · [minimum over a closed interval](#primer/curve-min-y) · [straight and flat curves](#primer/curve-min-y) · [screen coordinates](#primer/screen-coordinates) with y pointing down
 
 ## Read in the blog first
 
@@ -15,6 +15,17 @@ You can pass using this page alone. For the background, in the blog's
 up to the formula for the t where the curve turns. The author's code (the listing "Find a
 minimum curve of a quad Bézier curve") comes right after it. Assignment 10 covers the curve
 itself.
+
+## What you need
+
+- [Lowest point of a quadratic curve](#primer/curve-min-y): `getBezierMinY` in
+  `utils/Geometry.h` returns min(y1, y3), lowered to y(t*) when a > 0 and 0 < t* < 1.
+- [Floating-point tolerances](#primer/epsilon): decimal inputs such as 0.1 can leave a at 1e-17
+  where it should be 0, and testing a > 0 and 0 < t* < 1 before you use t* makes an `a == 0`
+  comparison unnecessary.
+- [Font coordinates and screen coordinates](#primer/screen-coordinates): test `15-E2E-screen-S`
+  gives 'S' flipped into screen coordinates, where the smallest y is the curve's highest point
+  on screen and the rule stays the same.
 
 ## Source material
 

@@ -27,16 +27,16 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cmath>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <optional>
-#include <sstream>
-#include <stdexcept>
-#include <string>
+#include <cmath>      // std::isnan and std::isinf: number() prints nan and inf by name
+#include <cstdio>     // std::snprintf: number() formats a coordinate with "%.4f"
+#include <fstream>    // std::ifstream and std::ofstream: the input and output files
+#include <iostream>   // std::cerr for errors; std::istream, which readPoint reads
+#include <optional>   // std::optional<Vec2>: the meeting point, or empty for `none`
+#include <sstream>    // std::istringstream: splitting each input line into words
+#include <stdexcept>  // std::runtime_error for an unknown line or bad numbers
+#include <string>     // std::string and std::getline for the input lines
 
-#include "utils/Geometry.h"
+#include "utils/Geometry.h"  // Vec2 (assignment 10) and segmentsIntersect (12)
 
 namespace {
 

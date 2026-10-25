@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 8 of 18 · **Check:** `.\check 08`
 
 **Tags**
-- *Language:* nested loops over index ranges · wrapping an index back to the start · `std::lround`
-- *Library:* your `FrameBufferCanvas` from assignment 06 (`drawLine`, `drawRect`, `writePng`)
-- *Concepts:* glyph outlines and contours · font units vs pixels · flipping the y axis · scale and offset (a simple transform)
+- *Language:* [nested loops](#primer/loops) over index ranges · [wrapping an index back to the start](#primer/conditional-operator) · [`std::lround`](#primer/float-to-int)
+- *Library:* your [`FrameBufferCanvas`](#primer/framebuffer) from assignment 06 (`drawLine`, `drawRect`, `writePng`)
+- *Concepts:* [glyph outlines and contours](#primer/contour) · [font units](#primer/font-units) vs pixels · [flipping the y axis](#primer/screen-coordinates) · [scale and offset](#primer/screen-coordinates) (a simple transform)
 
 ## Read in the blog first
 
@@ -13,6 +13,23 @@ You can pass using this page alone. For the background, read the blog's
 [Render outlines as straight lines](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Render%20outlines%20as%20straight%20lines)
 section up to and including the paragraph that starts "The glyph coordinates are", and stop
 before the author's code that follows it.
+
+## What you need
+
+- [Font coordinates and screen coordinates](#primer/screen-coordinates): `Placement` in
+  `render/Placement.h` holds a `place` line's x0, baseline and scale, and a point lands on pixel
+  (x0 + scale * x, baseline - scale * y).
+- [The baseline and the pen](#primer/baseline): the baseline is the pixel row where font y = 0
+  lands, so a descender such as the tail of `g` comes out below it.
+- [Contours and `endPtsOfContours`](#primer/contour): `renderGlyphOutline` splits the points
+  into contours at the `ends` values and closes each contour back to its own first point.
+- [The conditional operator `?:`](#primer/conditional-operator): which point follows a point
+  depends on whether it is its contour's last one, and `?:` chooses between two values in one
+  expression.
+- [Converting a floating-point number to an integer](#primer/float-to-int): round each pixel
+  position with `std::lround`, because a cast turns -2.7 into -2.
+- [Drawing a line](#primer/line-drawing): each side of a contour is one call to your `drawLine`
+  from assignment 06, with thickness `lineThickness`.
 
 ## Source material
 

@@ -21,14 +21,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "TextRenderer.h"
+#include "TextRenderer.h"  // the class this file implements
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error: the "not implemented" stubs
 
-#include "font/Cmap.h"
-#include "font/CompoundGlyph.h"
-#include "render/NonZero.h"
-#include "utils/Unicode.h"
+#include "font/Cmap.h"           // loadUnicodeToGlyphCodeMap (assignment 03): the cmap
+#include "font/CompoundGlyph.h"  // resolveGlyph (assignment 09): any glyph as simple outlines
+#include "render/NonZero.h"      // renderGlyphByNonZero (assignments 16, 17) for each outline
+#include "utils/Unicode.h"       // utf8ToCodepoints (assignment 18): decoding the text
 
 TextRenderer::TextRenderer(const std::string& fontPath) : parser_(fontPath) {
   // TODO: load the cmap (03), the glyph locations (04) and the metrics (05) once, here.

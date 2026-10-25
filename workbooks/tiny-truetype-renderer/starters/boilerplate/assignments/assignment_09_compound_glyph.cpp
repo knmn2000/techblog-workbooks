@@ -24,18 +24,18 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cmath>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <cmath>      // std::abs, std::round and std::llround: number() spots whole numbers
+#include <cstdio>     // std::snprintf: number() formats a fraction with "%.4f"
+#include <fstream>    // std::ifstream and std::ofstream: the input and output files
+#include <iostream>   // std::cerr for usage and error messages
+#include <map>        // std::map: each glyph id's offset and length, from the `glyph` lines
+#include <memory>     // std::unique_ptr: the font's ByteReader, made at the `font` line
+#include <sstream>    // std::istringstream: splitting each input line into words
+#include <stdexcept>  // std::runtime_error for a `decode` line before the `font` line
+#include <string>     // std::string, std::getline and std::to_string
+#include <vector>     // std::vector<GlyphComponent>: the parts resolveGlyph returns
 
-#include "font/CompoundGlyph.h"
+#include "font/CompoundGlyph.h"  // resolveGlyph (assignment 09), GlyphLocation (04)
 
 namespace {
 

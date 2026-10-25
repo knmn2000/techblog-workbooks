@@ -10,8 +10,8 @@
 // Your job:
 //   Open the file in binary mode, move the position for jumps and skips, and build each
 //   number from its bytes, most significant first, with two's complement for the signed
-//   types. If a read needs a byte past the end of the file, report it the way your header
-//   declares and return no value.
+//   types. If a read needs a byte past the end of the file, throw the error your header
+//   declares (`UnexpectedEof` in the Boilerplate) instead of returning a value.
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

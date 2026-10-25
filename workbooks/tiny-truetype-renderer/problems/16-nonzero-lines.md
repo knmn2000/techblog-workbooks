@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 16 of 18 · **Check:** `.\check 16`
 
 **Tags**
-- *Language:* sorting pairs · signed counters
-- *Library:* `std::vector` · `std::sort`
-- *Concepts:* the non-zero winding rule · edge direction · scanline filling · half-open intervals
+- *Language:* [sorting pairs](#primer/algorithm) · [signed counters](#primer/integer-types)
+- *Library:* [`std::vector`](#primer/vector) · [`std::sort`](#primer/algorithm)
+- *Concepts:* [the non-zero winding rule](#primer/nonzero) · [edge direction](#primer/nonzero) · [scanline filling](#primer/scanline) · [half-open intervals](#primer/half-open)
 
 ## Read in the blog first
 
@@ -13,6 +13,14 @@ You can pass using this page alone. For the background, read the blog's
 [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
 section up to the sentence about considering only line segments for now. The author's code comes
 right after it.
+
+## What you need
+
+- [The non-zero winding rule](#primer/nonzero): `renderGlyphByNonZero` in `render/NonZero.cpp`
+  walks each row's crossings with a running count, +1 for an edge going down the screen and −1
+  going up, and fills where the count isn't 0.
+- [Half-open edges](#primer/half-open): the rule from assignment 14 now also has to give a vertex
+  on a scanline its crossing with the right direction (R5).
 
 ## Source material
 

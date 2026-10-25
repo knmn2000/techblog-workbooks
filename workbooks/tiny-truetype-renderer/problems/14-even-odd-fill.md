@@ -3,9 +3,9 @@
 **Difficulty:** Hard · **Assignment** 14 of 18 · **Check:** `.\check 14`
 
 **Tags**
-- *Language:* sorting · floating-point comparisons · solving a quadratic equation
-- *Library:* `std::vector` · `std::sort` · `std::sqrt`
-- *Concepts:* scanline filling · the even-odd rule · quadratic Bézier curves · implied on-curve points · half-open intervals
+- *Language:* [sorting](#primer/algorithm) · [floating-point comparisons](#primer/epsilon) · [solving a quadratic equation](#primer/quadratic-equation)
+- *Library:* [`std::vector`](#primer/vector) · [`std::sort`](#primer/algorithm) · [`std::sqrt`](#primer/cmath)
+- *Concepts:* [scanline filling](#primer/scanline) · [the even-odd rule](#primer/even-odd) · [quadratic Bézier curves](#primer/bezier) · [implied on-curve points](#primer/implied-point) · [half-open intervals](#primer/half-open)
 
 ## Read in the blog first
 
@@ -14,6 +14,28 @@ You can pass using this page alone. For the background, read the blog's
 section through [Removal of fill errors](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Removal%20of%20fill%20errors),
 skipping the code blocks if you want to work it out yourself. The blog builds this in two steps,
 a first version and then a fix for errors at vertices; this assignment covers both.
+
+## What you need
+
+- [Scanline filling](#primer/scanline): `render/Scanline` holds the steps both fill rules share.
+  `edgePieces` turns an outline into edges in pixels, `forEachRow` gives each row its crossings
+  sorted by x, and `fillSpan` paints one stretch of a row.
+- [`<functional>`](#primer/functional): `forEachRow` in `render/Scanline.h` takes the work for
+  each row as a `std::function`, so the even-odd fill here and the non-zero fill in assignment 16
+  each pass it their own lambda.
+- [The even-odd rule](#primer/even-odd): `renderGlyphByEvenOdd` in `render/EvenOdd.cpp` fills
+  from the 1st crossing to the 2nd, the 3rd to the 4th, and so on, which leaves the middle of the
+  star in test `14-R5-star` empty.
+- [Half-open edges](#primer/half-open): an edge counts at a row when min(y0, y1) ≤ y < max(y0, y1),
+  so a vertex on a pixel centre, as in test `14-R4-diamond-half`, leaves no stray line.
+- [Splitting a curve where y turns](#primer/curve-turning-point): `edgePieces` splits each curve
+  at t = (y0 − y1) / (y0 − 2·y1 + y2), so each piece crosses a row at most once.
+- [Solving a quadratic equation](#primer/quadratic-equation): for each curve piece you solve
+  y(t) = row and keep the one root closest to [0, 1], clamped, where assignment 13 kept every
+  root in [0, 1].
+- [Converting a floating-point number to an integer](#primer/float-to-int): `fillSpan` turns a
+  crossing's x into a column, and you clamp x to the canvas first, because C++ doesn't define
+  the conversion of a `double` too large for an `int`.
 
 ## Source material
 

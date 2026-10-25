@@ -18,9 +18,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/Metrics.h"
+#include "font/Metrics.h"  // loadHorizontalMetrics (assignment 05), defined here
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error, which the TODO throws
 
 HorizontalMetrics loadHorizontalMetrics(ByteReader& reader, const Tables& tables) {
   // TODO: ascent, descent and numberOfHMetrics from hhea, then hmtx (see the problem page).

@@ -24,14 +24,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <fstream>    // std::ifstream and std::ofstream: the test input and the output file
+#include <iostream>   // std::cerr for usage and errors
+#include <sstream>    // std::istringstream splits the `font` line into its two words
+#include <stdexcept>  // std::exception, caught at the end of main
+#include <string>     // std::string and std::getline: the input, one line at a time
+#include <vector>     // std::vector<TableRecord>: the records readTableDirectory returns
 
-#include "font/FontParser.h"
+#include "font/FontParser.h"  // readTableDirectory, TableRecord (02); ByteReader (01)
 
 int main(int argc, char** argv) {
   if (argc != 3) {

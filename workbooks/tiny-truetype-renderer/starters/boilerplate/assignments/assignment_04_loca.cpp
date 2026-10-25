@@ -24,14 +24,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <fstream>    // std::ifstream and std::ofstream: the test input and the output file
+#include <iostream>   // std::cerr for usage and errors
+#include <sstream>    // std::istringstream splits each line and reads a table's numbers
+#include <stdexcept>  // std::runtime_error for a bad line or a missing glyph; std::exception
+#include <string>     // std::string, std::getline, and std::to_string for an error message
+#include <vector>     // std::vector<uint32_t>: the requested glyph ids, in input order
 
-#include "font/Loca.h"
+#include "font/Loca.h"  // loadGlyphLocations, GlyphLocations (04); Tables (02)
 
 namespace {
 

@@ -17,9 +17,9 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/Loca.h"
+#include "font/Loca.h"  // loadGlyphLocations (assignment 04), defined here
 
-#include <stdexcept>
+#include <stdexcept>  // std::logic_error, which the TODO throws
 
 GlyphLocations loadGlyphLocations(ByteReader& reader, const Tables& tables) {
   // TODO: numGlyphs from maxp, the offset format from head, then loca (see the problem page).

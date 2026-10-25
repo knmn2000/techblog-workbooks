@@ -24,14 +24,14 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <fstream>    // std::ifstream and std::ofstream: the test input and the output file
+#include <iostream>   // std::cerr for usage and errors
+#include <sstream>    // std::istringstream splits each line and reads a table's numbers
+#include <stdexcept>  // std::runtime_error for a bad table line; std::exception in main's catch
+#include <string>     // std::string, std::getline, and std::stoul for the hex digits after U+
+#include <vector>     // std::vector<std::string>: the count and lookup lines, kept for later
 
-#include "font/Cmap.h"
+#include "font/Cmap.h"  // loadUnicodeToGlyphCodeMap, UnsupportedCmap (03); Tables (02)
 
 namespace {
 

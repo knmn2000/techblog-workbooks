@@ -22,13 +22,13 @@
 // line through its pixel centres, and splits the outline's edges into pieces that don't turn
 // back in y, so each piece crosses a row at most once.
 
-#include <functional>
-#include <vector>
+#include <functional>  // std::function: the work forEachRow does for each row
+#include <vector>      // std::vector of edge pieces and of crossings
 
-#include "FrameBufferCanvas.h"
-#include "GlyphComponent.h"
-#include "render/Placement.h"
-#include "utils/Geometry.h"
+#include "FrameBufferCanvas.h"  // FrameBufferCanvas and RGB (assignment 06), for fillSpan
+#include "GlyphComponent.h"     // GlyphComponent (assignment 07): the outline edgePieces reads
+#include "render/Placement.h"   // Placement (assignment 08): font units to pixels
+#include "utils/Geometry.h"     // Vec2 (assignment 10): the points of an EdgePiece
 
 // A straight edge (curve == false) or a quadratic curve p0 -> c -> p1, in pixels.
 struct EdgePiece {

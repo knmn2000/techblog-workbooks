@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 5 of 18 · **Check:** `.\check 05`
 
 **Tags**
-- *Language:* signed vs unsigned integers (`int16_t`, `uint16_t`) · structs · `std::vector`
-- *Library:* `std::ifstream` in binary mode (`seekg`)
-- *Concepts:* font units · ascent and descent · advance width · left side bearing · the `hhea`, `hmtx` and `maxp` tables · big-endian byte order
+- *Language:* [signed vs unsigned integers](#primer/integer-types) (`int16_t`, `uint16_t`) · [structs](#primer/struct-class) · [`std::vector`](#primer/vector)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode (`seekg`)
+- *Concepts:* [font units](#primer/font-units) · [ascent and descent](#primer/hhea) · [advance width](#primer/hmtx) · [left side bearing](#primer/hmtx) · the [`hhea`](#primer/hhea), [`hmtx`](#primer/hmtx) and [`maxp`](#primer/maxp) tables · [big-endian byte order](#primer/big-endian)
 
 ## Read in the blog first
 
@@ -13,6 +13,17 @@ You can pass using this page alone. For the background, read the blog's
 [hhea, hmtx tables](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=hhea%2C%20hmtx%20tables)
 section through the paragraph that starts "The hmtx table contains information for". The
 author's code follows that paragraph.
+
+## What you need
+
+- [Font units and the em](#primer/font-units): the ascent, descent, advances and side
+  bearings the program writes are in font units, and both real fonts have 1000 of them per em.
+- [The `hhea` table](#primer/hhea): `src/font/Metrics.cpp` reads `ascent` and `descent` at
+  `hhea` + 4 and + 6, and `numberOfHMetrics` at + 34.
+- [The `hmtx` table](#primer/hmtx): `Metrics.cpp` reads `numberOfHMetrics` full records, then
+  one lsb for each remaining glyph, which takes the last record's advance.
+- [Integer types](#primer/integer-types): `ascent`, `descent` and each lsb are signed int16
+  values and `advanceWidth` an unsigned uint16, and `GlyphMetric` holds both kinds in an `int`.
 
 ## Source material
 

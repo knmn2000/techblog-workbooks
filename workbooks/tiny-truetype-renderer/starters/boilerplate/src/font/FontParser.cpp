@@ -9,16 +9,19 @@
 //
 // Your job:
 //   Read `numTables` from the 12-byte header and skip the other header fields, then read
-//   one 16-byte record per table and keep each tag's 4 bytes as the font stores them. If
-//   you declared a font object, have it open the file and load the directory once. The
-//   Boilerplate gives you the declarations; fill in each TODO.
+//   one 16-byte record per table and keep each tag's 4 bytes as the font stores them. The
+//   Boilerplate's `FontParser` constructor already opens the file and loads the directory;
+//   from scratch, a font object like it is up to you. The Boilerplate gives you the
+//   declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include "font/FontParser.h"
+#include "font/FontParser.h"  // readTableDirectory and FontParser (assignment 02), defined here
+
+#include <stdexcept>  // std::logic_error for the "not implemented" TODO
 
 std::vector<TableRecord> readTableDirectory(ByteReader& reader) {
   // TODO: read the header, then one record per table (layout on the problem page).

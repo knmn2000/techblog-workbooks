@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 13 of 18 · **Check:** `.\check 13`
 
 **Tags**
-- *Language:* floating-point arithmetic (`double`) · returning a list of results (`std::vector`) · sorting
-- *Library:* `std::sqrt`, `std::sort`
-- *Concepts:* quadratic Bezier curve as a polynomial · normal vector and dot product · quadratic equations and the discriminant · the degenerate (linear) case · tangent lines · curve parameter t
+- *Language:* [floating-point arithmetic](#primer/floating-point) (`double`) · returning a list of results ([`std::vector`](#primer/vector)) · [sorting](#primer/algorithm)
+- *Library:* [`std::sqrt`](#primer/cmath), [`std::sort`](#primer/algorithm)
+- *Concepts:* [quadratic Bezier curve](#primer/bezier) as a polynomial · [normal vector and dot product](#primer/vector-2d) · [quadratic equations and the discriminant](#primer/quadratic-equation) · [the degenerate (linear) case](#primer/quadratic-equation) · [tangent lines](#primer/quadratic-equation) · [curve parameter t](#primer/bezier)
 
 ## Read in the blog first
 
@@ -15,6 +15,20 @@ You can pass using this page alone. For the background, in the blog's
 up to the quadratic equation in t. The author's code (the listing "Function to find a
 intersections of a segment and a quadratic Bezier curve") follows it. Assignment 10 covers
 the curve itself.
+
+## What you need
+
+- [Solving a quadratic equation](#primer/quadratic-equation): `segmentQuadBezierIntersect` in
+  `utils/Geometry.h` comes down to a t² + b t + c = 0. Your helper for it has to handle a = 0,
+  which a horizontal line gives whenever the control point's y is halfway between the ends' y.
+- [Quadratic Bézier curves](#primer/bezier): you multiply out the curve from assignment 10 into
+  A t² + B t + C, with one set of A, B and C for x and one for y.
+- [2D vectors and the dot product](#primer/vector-2d): the line becomes K · (X − l1) = 0, with K
+  the line's normal vector, and you add a dot product helper to `utils/Geometry.h` to compute
+  a, b and c.
+- [Floating-point tolerances](#primer/epsilon): the test coordinates are multiples of 0.25, so a
+  and D come out as 0 with no rounding error in the linear and tangent cases, and `== 0` or a tolerance such as
+  1e-9 both pass.
 
 ## Source material
 

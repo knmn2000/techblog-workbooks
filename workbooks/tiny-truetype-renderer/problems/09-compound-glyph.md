@@ -3,9 +3,9 @@
 **Difficulty:** Hard · **Assignment** 9 of 18 · **Check:** `.\check 09`
 
 **Tags**
-- *Language:* recursion · affine transforms as six numbers · signed bytes (`int8`) · fixed-point numbers
-- *Library:* `std::ifstream` (binary) · `std::map` · `std::vector`
-- *Concepts:* compound glyphs · component records · F2Dot14 · composing transforms · depth-first traversal
+- *Language:* [recursion](#primer/recursion) · [affine transforms](#primer/affine-transform) as six numbers · [signed bytes](#primer/integer-types) (`int8`) · [fixed-point numbers](#primer/f2dot14)
+- *Library:* [`std::ifstream`](#primer/fstream) (binary) · [`std::map`](#primer/map) · [`std::vector`](#primer/vector)
+- *Concepts:* [compound glyphs](#primer/compound-glyph) · [component records](#primer/component-flags) · [F2Dot14](#primer/f2dot14) · [composing transforms](#primer/component-transform) · [depth-first traversal](#primer/recursion)
 
 ## Read in the blog first
 
@@ -13,6 +13,27 @@ You can pass using this page alone. For the background, read the blog's
 [Compound glyph](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Compound%20glyph)
 section up to the transformation matrix. Stop at the paragraph that starts "Implementation.
 As compound glyphs are nested", before the author's code.
+
+## What you need
+
+- [Compound glyphs](#primer/compound-glyph): `resolveGlyph` turns a glyph into the outlines of
+  the simple glyphs inside it, depth first, and leaves out empty ones.
+- [Component records and their flags](#primer/component-flags): after the header,
+  `CompoundGlyph.cpp` reads `flags`, `glyphIndex` and two arguments per record, and stops after
+  the record with MORE_COMPONENTS clear.
+- [Component transforms](#primer/component-transform): a record's scale flags give a, b, c and d,
+  its arguments give the offset, and SCALED_COMPONENT_OFFSET puts the offset through a, b, c, d.
+- [Affine transforms and 2 x 2 matrices](#primer/affine-transform): a nested component takes its
+  own transform first and then its parent's, so its points go through two transforms in that
+  order.
+- [Recursion](#primer/recursion): a component can be compound itself, so the resolver calls
+  itself for each component, with simple and empty glyphs as the base cases.
+- [Fixed-point numbers and F2Dot14](#primer/f2dot14): the scales are stored as F2Dot14, which your
+  `readF2Dot14` from assignment 01 turns into a `double` (`40 00` is 1.0).
+- [Integer types](#primer/integer-types): 1-byte arguments are signed, so read them with
+  `readInt8`, and the byte `e2` gives -30.
+- [`<cstdio>`](#primer/cstdio): the program's `number()` writes a fractional coordinate with
+  `std::snprintf` and `"%.4f"`, then drops the trailing zeros.
 
 ## Source material
 

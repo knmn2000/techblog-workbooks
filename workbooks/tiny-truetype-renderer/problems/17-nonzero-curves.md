@@ -3,9 +3,9 @@
 **Difficulty:** Hard · **Assignment** 17 of 18 · **Check:** `.\check 17`
 
 **Tags**
-- *Language:* sorting · solving a quadratic equation · floating-point care
-- *Library:* `std::vector` · `std::sort` · `std::sqrt`
-- *Concepts:* the non-zero winding rule · quadratic Bézier curves · implied on-curve points · curve direction · splitting curves at their y extremes
+- *Language:* [sorting](#primer/algorithm) · [solving a quadratic equation](#primer/quadratic-equation) · [floating-point care](#primer/epsilon)
+- *Library:* [`std::vector`](#primer/vector) · [`std::sort`](#primer/algorithm) · [`std::sqrt`](#primer/cmath)
+- *Concepts:* [the non-zero winding rule](#primer/nonzero) · [quadratic Bézier curves](#primer/bezier) · [implied on-curve points](#primer/implied-point) · [curve direction](#primer/nonzero) · [splitting curves at their y extremes](#primer/curve-turning-point)
 
 ## Read in the blog first
 
@@ -13,6 +13,19 @@ You can pass using this page alone. For the background, read the blog's
 [Non-zero Rule](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=Non-zero%20Rule)
 section to the end, including the two cases where a scanline crosses one curve twice. Skip the
 code blocks if you want to work it out yourself.
+
+## What you need
+
+- [Splitting a curve where y turns](#primer/curve-turning-point): the pieces `edgePieces` makes
+  in assignment 14 now also give each crossing its direction, from the piece's end y minus its
+  start y.
+- [The non-zero winding rule](#primer/nonzero): at the bottom of a `U` one curve crosses a row
+  twice, going down at one crossing and up at the other, so the running count changes by +1 at
+  one and by −1 at the other.
+- [Half-open edges](#primer/half-open): a row that touches a curve's extreme counts it twice with
+  opposite directions or not at all, and neither changes the fill (R5).
+- [Variable fonts](#primer/variable-font): test `17-R3-a-hiragana` draws あ from Noto Sans JP, a
+  variable font whose strokes overlap, and the non-zero rule fills the overlaps.
 
 ## Source material
 

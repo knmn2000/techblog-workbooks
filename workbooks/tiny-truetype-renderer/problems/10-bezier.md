@@ -3,9 +3,9 @@
 **Difficulty:** Easy · **Assignment** 10 of 18 · **Check:** `.\check 10`
 
 **Tags**
-- *Language:* floating-point arithmetic (`double`) · small structs with `+`, `-` and `*` operators
-- *Library:* none needed (the boilerplate's input/output uses `std::istringstream`)
-- *Concepts:* linear interpolation (lerp) · quadratic Bezier curves · control points · de Casteljau's algorithm · curve parameter t
+- *Language:* [floating-point arithmetic](#primer/floating-point) (`double`) · small structs with [`+`, `-` and `*` operators](#primer/operator-overloading)
+- *Library:* none for the maths itself · the boilerplate's input and output code uses [`std::istringstream`](#primer/sstream), [`std::snprintf`](#primer/cstdio) and [`std::isnan`/`std::isinf`](#primer/cmath)
+- *Concepts:* [linear interpolation (lerp)](#primer/lerp) · [quadratic Bezier curves](#primer/bezier) · [control points](#primer/on-off-curve) · [de Casteljau's algorithm](#primer/bezier) · [curve parameter t](#primer/bezier)
 
 ## Read in the blog first
 
@@ -16,6 +16,21 @@ and [De Casteljau's algorithm](https://yayo1.com/en/blog/tiny-truetype-renderer/
 Stop at the sentence that introduces the code. The author's code (the listing "Lerp for a
 segment and a quadratic Bézier curve") follows it. "TrueType Bézier curves" belongs to
 assignment 11.
+
+## What you need
+
+- [2D vectors and the dot product](#primer/vector-2d): `Vec2` in `utils/Geometry.h` holds a point
+  as `double` x and y, and the program reads each pair of numbers on a line into one.
+- [Operator overloading](#primer/operator-overloading): the `+`, `-` and `*` that `Geometry.h`
+  declares for `Vec2` let `lerp` read like its formula, `a + (b - a) * t`.
+- [`inline` functions](#primer/inline): the project has no `Geometry.cpp`, so `lerp` and
+  `bezierLerp` are defined in the header and marked `inline`.
+- [Linear interpolation (lerp)](#primer/lerp): a `lerp` line asks for the point a fraction t of
+  the way from a to b.
+- [Quadratic Bézier curves](#primer/bezier): a `bezier` line gives the start, the control point
+  and the end, and `bezierLerp` finds the point at t with three lerps.
+- [`<cmath>`](#primer/cmath): the program's `number()` tests a result with `std::isnan` and
+  `std::isinf` and writes `nan` or `inf` in place of a number.
 
 ## Source material
 

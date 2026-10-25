@@ -18,10 +18,10 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <cstdint>    // uint32_t: one code point
+#include <stdexcept>  // std::logic_error: the "not implemented" stub
+#include <string>     // std::string: the UTF-8 bytes to decode
+#include <vector>     // std::vector<uint32_t>: the decoded code points
 
 // UTF-8 bytes to code points. A malformed byte becomes U+FFFD, the replacement character.
 inline std::vector<uint32_t> utf8ToCodepoints(const std::string& text) {

@@ -27,16 +27,16 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cmath>
-#include <cstdio>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <cmath>      // std::isnan, std::isinf: printing nan and inf in number()
+#include <cstdio>     // std::snprintf: rounding to 4 decimals in number()
+#include <fstream>    // std::ifstream, std::ofstream: the input and output files
+#include <iostream>   // std::cerr for the usage line and errors
+#include <sstream>    // std::istringstream: splitting each line into words
+#include <stdexcept>  // std::runtime_error for an unknown or malformed line
+#include <string>     // std::string for each line and each printed number
+#include <vector>     // std::vector<Vec2>: the meeting points your function returns
 
-#include "utils/Geometry.h"
+#include "utils/Geometry.h"  // Vec2 (assignment 10), segmentQuadBezierIntersect (assignment 13)
 
 namespace {
 

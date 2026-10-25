@@ -17,10 +17,10 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <cstdint>
+#include <cstdint>  // uint32_t for the record's offset and length
 
-#include "Glyph.h"
-#include "font/ByteReader.h"
+#include "Glyph.h"            // Glyph (assignment 07): what readGlyph returns
+#include "font/ByteReader.h"  // ByteReader (assignment 01): big-endian reads from the font
 
 // The glyph whose record starts at `offset` (a length of 0 means no outline). A compound
 // glyph comes back with its kind and bounds only; see resolveGlyph for its parts.

@@ -33,15 +33,15 @@
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
 
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <fstream>    // std::ifstream: the input file
+#include <iostream>   // std::cerr for usage and error messages
+#include <memory>     // std::unique_ptr: the canvas, made at the `canvas` line
+#include <sstream>    // std::istringstream: splitting each input line into words
+#include <stdexcept>  // std::runtime_error for a missing canvas or an unknown line
+#include <string>     // std::string, std::getline, std::stoi and std::stod
+#include <vector>     // std::vector<std::string>: the words after a line's keyword
 
-#include "render/Outline.h"
+#include "render/Outline.h"  // renderGlyphCurves (assignment 11) and the types it takes
 
 namespace {
 

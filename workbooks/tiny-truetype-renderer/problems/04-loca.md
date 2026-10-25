@@ -3,9 +3,9 @@
 **Difficulty:** Medium · **Assignment** 4 of 18 · **Check:** `.\check 04`
 
 **Tags**
-- *Language:* unsigned arithmetic (`uint16_t`, `uint32_t`) · signed `int16_t` · off-by-one reasoning · `std::vector`
-- *Library:* `std::ifstream` in binary mode (`seekg`)
-- *Concepts:* glyph ids · the `maxp`, `head`, `loca` and `glyf` tables · short and long offset formats · empty glyphs · big-endian byte order
+- *Language:* [unsigned arithmetic](#primer/integer-promotion) (`uint16_t`, `uint32_t`) · [signed `int16_t`](#primer/integer-types) · off-by-one reasoning · [`std::vector`](#primer/vector)
+- *Library:* [`std::ifstream`](#primer/fstream) in binary mode (`seekg`)
+- *Concepts:* [glyph ids](#primer/glyph-id) · the [`maxp`](#primer/maxp), [`head`](#primer/head), [`loca`](#primer/loca) and `glyf` tables · [short and long offset formats](#primer/loca) · [empty glyphs](#primer/loca) · [big-endian byte order](#primer/big-endian)
 
 ## Read in the blog first
 
@@ -13,6 +13,20 @@ You can pass using this page alone. For the background, read the blog's
 [loca table](https://yayo1.com/en/blog/tiny-truetype-renderer/#:~:text=loca%20table)
 section through the paragraph that starts "Additionally, a minor point is". The author's
 code follows that paragraph.
+
+## What you need
+
+- [The `maxp` table](#primer/maxp): `src/font/Loca.cpp` reads `numGlyphs` at `maxp` + 4 and
+  reads one more `loca` entry than that.
+- [The `head` table](#primer/head): the int16 `indexToLocFormat` at `head` + 50 says whether
+  `loca` holds short or long entries.
+- [The `loca` table](#primer/loca): `Loca.cpp` turns each pair of neighbouring entries into a
+  glyph's offset in the file and its length.
+- [Integer promotion](#primer/integer-promotion): in C++, `2 * entry` on a `uint16_t` entry is
+  worked out as an `int`, so a doubled offset above 65535 comes out right. The danger is
+  storing the result back in a `uint16_t`, which cuts it to 16 bits; keep it in a `uint32_t`.
+- [Variable fonts](#primer/variable-font): the workbook's Noto Sans JP is a variable build,
+  which is why its space is glyph 1, unlike the static font in the blog's example.
 
 ## Source material
 
