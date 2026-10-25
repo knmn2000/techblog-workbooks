@@ -147,7 +147,7 @@ To check a one-off program without changing anything, run
 | `starters/blank/`, `starters/boilerplate/` | Each assignment's files, blank and with the input/output and signatures done |
 | `tests/NN/` | Test inputs and expected outputs |
 | `study.cmd`, `study.command`, `study.ps1`, `study.sh` | Open the book with Run and Submit working (they start `tools/serve.py`) |
-| `tools/serve.py` | The study server: only reachable from this computer; loads and saves your project's files and runs the checker |
+| `tools/serve.py` | The study server: only reachable from this computer; loads and saves your project's files, opens them in your editor and runs the checker |
 | `tools/check.py` | The checker (`check.ps1`, `check.cmd` and `check.sh` call it) |
 | `tools/run_py.py` | Runs an assignment's program with your package on the import path |
 | `tools/project.py` | Sets up your project and starts assignments (`setup`, `start NN`, `status`) |
