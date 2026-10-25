@@ -57,7 +57,10 @@ project's `solutions/` folder. New files start as the Boilerplate: the input/out
 declarations, with TODOs where your work goes. If you'd rather write the includes, the design, the
 input reading and the output writing yourself, pick From scratch in the editor, and each file
 starts as a comment saying what belongs there. You can also work in your own editor and check from
-a terminal with `.\check 01`; the book picks up what you save.
+a terminal with `.\check 01`; the book picks up what you save. The button above the code opens
+the current file in VS Code, Cursor, Windsurf, VSCodium, Zed or Sublime Text, or your default app
+if none is installed, so your editor's own completion and language server work on it. To use a
+different editor, set `WORKBOOK_EDITOR` to its command before starting the book.
 
 Each workbook's own README lists what it needs. For TrueType that's g++ with CMake and Ninja, plus
 Python 3.11 or newer. The certificate workbook needs Python 3.11 or newer, and only for fresh test

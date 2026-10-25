@@ -15,6 +15,7 @@ import json
 import os
 import re
 import secrets
+import shlex
 import shutil
 import subprocess
 import sys
@@ -41,6 +42,16 @@ CASE_ID = re.compile(r"^[\w.+-]+$")
 SOURCE_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hpp", ".py", ".js", ".mjs", ".ts", ".rs", ".go", ".lua",
                ".java", ".kt", ".cs", ".md", ".txt", ".json", ".toml", ".cmake"}
 SKIP_DIRS = {"build", ".git", "node_modules", "target", "__pycache__", ".cache"}  # never listed or served
+# Editors the "Open in your editor" button looks for: name, shell command, how it is told to open a
+# file at a line, and where a Mac app keeps the same command when it was never put on PATH.
+EDITORS = [
+    ("VS Code", "code", ["-g", "{file}:{line}"], "Visual Studio Code.app/Contents/Resources/app/bin/code"),
+    ("Cursor", "cursor", ["-g", "{file}:{line}"], "Cursor.app/Contents/Resources/app/bin/cursor"),
+    ("Windsurf", "windsurf", ["-g", "{file}:{line}"], "Windsurf.app/Contents/Resources/app/bin/windsurf"),
+    ("VSCodium", "codium", ["-g", "{file}:{line}"], "VSCodium.app/Contents/Resources/app/bin/codium"),
+    ("Zed", "zed", ["{file}:{line}"], "Zed.app/Contents/MacOS/cli"),
+    ("Sublime Text", "subl", ["{file}:{line}"], "Sublime Text.app/Contents/SharedSupport/bin/subl"),
+]
 
 
 class Workbook:
@@ -121,6 +132,36 @@ def file_state(target: Path) -> dict:
         return {"path": path, "text": None, "mtime": "0"}
     return {"path": path, "mtime": str(target.stat().st_mtime_ns),
             "text": target.read_text(encoding="utf-8", errors="replace")}
+
+
+def open_in_editor(target: Path, line: int):
+    """Opens a file in the learner's own editor, so its language server (completion, go to definition)
+    works on it. Returns the editor's name, or None when nothing could open it. WORKBOOK_EDITOR
+    (a command; the file is added to the end) wins, then the first editor above that is installed,
+    then the system's default app for the file."""
+    file = str(target)
+
+    def launch(argv) -> bool:
+        try:
+            subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             start_new_session=os.name != "nt")
+            return True
+        except OSError:
+            return False
+
+    custom = shlex.split(os.environ.get("WORKBOOK_EDITOR", ""))
+    if custom and launch(custom + [file]):
+        return custom[0]
+    for name, command, args, mac_app in EDITORS:
+        found = shutil.which(command)
+        if not found and sys.platform == "darwin":
+            found = next((str(p) for d in (Path("/Applications"), Path.home() / "Applications") if (p := d / mac_app).exists()), None)
+        if found and launch([found] + [a.format(file=file, line=line) for a in args]):
+            return name
+    if os.name == "nt":
+        os.startfile(file)  # type: ignore[attr-defined]
+        return "your default app"
+    return "your default app" if launch(["open" if sys.platform == "darwin" else "xdg-open", file]) else None
 
 
 class Server(ThreadingHTTPServer):
@@ -226,6 +267,13 @@ class Handler(BaseHTTPRequestHandler):
             options = self.body()
         except ValueError as e:
             return self.reply(400, {"error": str(e)})
+        if path == "/api/open":  # the book's "Open in your editor" button
+            target = wb.learner_file(str(options.get("path", "")))
+            if target is None or not target.is_file():
+                return self.reply(404, {"error": "not a file you can open here"})
+            line = options.get("line")
+            editor = open_in_editor(target, line if isinstance(line, int) and line > 0 else 1)
+            return self.reply(200, {"editor": editor}) if editor else self.reply(501, {"error": "couldn't find an editor to open it in"})
         if path == "/api/setup":  # the book's "Set up the project" button
             created = project.setup(wb.config)
             wb.setup_error = first_time_setup(wb)

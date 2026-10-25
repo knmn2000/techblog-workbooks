@@ -770,6 +770,7 @@ span.CodeMirror-selectedtext { background: none; }
             <span class="confirm" id="confirm" hidden><span id="confirm-text"></span> <button class="btn" type="button" id="confirm-yes">Replace</button><button class="btn" type="button" id="confirm-no">Cancel</button></span>
             <button class="icon-btn vim-btn" type="button" id="vim" aria-pressed="false" title="Vim keys: Normal, Insert and Visual modes, / to search, :w to save">Vim</button>
             <button class="icon-btn" type="button" id="reset" aria-label="Reset to the starter code" title="Reset to the starter code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+            <button class="icon-btn" type="button" id="open-editor" aria-label="Open in your editor" title="Open this file in your own editor, with your own language server for completion and go to definition" hidden><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></button>
             <button class="icon-btn" type="button" id="copy-code" aria-label="Copy the code" title="Copy the code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
           </div>
         </div>
@@ -930,7 +931,7 @@ span.CodeMirror-selectedtext { background: none; }
       <div class="card how"><h2>Using the book</h2><ol>
         ${PRIMER.length ? `<li><span>When a term, a library or a tool is new to you, look it up in the <a href="#primer">primer</a>. Each assignment's Learning material links to the entries it needs.</span></li>` : ''}
         <li><span>You build one ${esc(PROJECT.label)} project, in <code>${esc(PROJECT_DIR)}</code>. Each assignment adds files to it, and later assignments include them, so work through them in order. At the end, the project builds on its own and you can put it on GitHub.</span></li>
-        <li><span>Write the code here or in your own editor. An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
+        <li><span>Write the code here or in your own editor (the button above the code opens the current file in it, so your editor's completion works). An assignment's files open with the Boilerplate: the input/output code and the declarations, with TODOs for you. Choose From scratch above the editor to start from empty files.</span></li>
         ${LOCAL ? `<li><span>The Run button checks the selected example, and Submit runs every test. The verdict appears in the Test result tab, and Accepted marks the assignment solved. The book saves your files as you type.</span></li>`
           : HOST ? `<li><span>Once the workbook is set up on your computer, Run and Submit check your code there. This copy shows the problems and the starter code. <button type="button" class="linkish" data-run-local>See how</button></span></li>`
           : `<li><span>The Submit button copies your code. Paste it into the solution file and run <code>${esc(command(first))}</code> in ${esc(DATA.shell)}, in the workbook folder:<br><span class="path">${esc(DATA.folder)}</span></span></li>
@@ -1922,6 +1923,17 @@ span.CodeMirror-selectedtext { background: none; }
   if (LOCAL) {
     live.timer = setInterval(watchDisk, 2000);
     document.addEventListener('visibilitychange', () => { if (document.hidden) saveAll(); });
+    // Open in your editor: the file goes to the editor installed on this computer, which brings its own
+    // language server. Edits made there come back through watchDisk.
+    $('#open-editor').hidden = false;
+    $('#open-editor').addEventListener('click', async () => {
+      if (!live.active) return;
+      await saveAll();
+      try {
+        const r = await api('/api/open', { method: 'POST', body: JSON.stringify({ path: live.active, line: cm ? cm.getCursor().line + 1 : 1 }) });
+        $('#saved').textContent = `Opened in ${r.editor}`;
+      } catch (e) { $('#saved').textContent = e.message; }
+    });
   }
 
   // ---- No project yet (a workbook cloned but not set up): say how to make one

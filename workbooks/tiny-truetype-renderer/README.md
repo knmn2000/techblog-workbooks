@@ -138,7 +138,7 @@ To check a one-off program without changing anything, run
 | `starters/blank/`, `starters/boilerplate/` | Each assignment's files, once blank and once with the input/output filled in |
 | `tests/NN/` | Test inputs and expected outputs (`cases.txt`, plus data files and expected pictures) |
 | `study.cmd`, `study.command`, `study.ps1`, `study.sh` | Open the book with Run and Submit working (they start `tools/serve.py`) |
-| `tools/serve.py` | The study server. Reachable only from this computer; it loads and saves your project's files and runs the checker |
+| `tools/serve.py` | The study server. Reachable only from this computer; it loads and saves your project's files, opens them in your editor and runs the checker |
 | `tools/check.py` | The checker (`check.ps1`, `check.cmd` and `check.sh` call it) |
 | `tools/project.py` | Sets up your project and starts assignments (`setup`, `start NN`, `status`) |
 | `tools/blank_starters.py` | Writes the blank starters from `workbook.json` |
