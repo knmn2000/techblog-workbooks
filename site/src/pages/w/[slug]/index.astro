@@ -61,8 +61,8 @@ const first = w.checkpoints[0];
       {w.project && (
         <section class="card proj" aria-labelledby="proj">
           <div class="proj-head">
-            <h2 id="proj">The project you build</h2>
-            <p>The {w.language} project you end up with, in <code>{w.project.dir}/</code>. The number beside a file is the {w.unit} where you create it; a <code>+</code> lists the later ones that come back to extend it.</p>
+            <h2 id="proj">Project structure</h2>
+            <p>Each file shows the {w.unit} that creates it. A <code>+</code> lists the later ones that add to it.</p>
           </div>
           <div class="tree">
             {w.project.folders.map((f) => (
