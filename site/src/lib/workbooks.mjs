@@ -58,26 +58,36 @@ function projectTree(json) {
   for (const [id, c] of Object.entries(json.checkpoints)) {
     for (const p of c.extends ?? []) files.get(p)?.adds.push(id);
   }
-  const folders = new Map();
+  const root = { name: `${spec.dir ?? 'solutions'}/`, files: [], dirs: [] };
   for (const f of files.values()) {
-    const cut = f.path.lastIndexOf('/');
-    const dir = cut < 0 ? '' : f.path.slice(0, cut + 1);
-    if (!folders.has(dir)) folders.set(dir, []);
+    const parts = f.path.split('/');
+    let node = root;
+    for (const part of parts.slice(0, -1)) {
+      let next = node.dirs.find((d) => d.name === `${part}/`);
+      if (!next) node.dirs.push((next = { name: `${part}/`, files: [], dirs: [] }));
+      node = next;
+    }
     // purposeHtml turns `code` spans into <code>; purpose stays plain text for tooltips.
     const escaped = f.purpose.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    folders.get(dir).push({
+    node.files.push({
       ...f,
-      name: f.path.slice(cut + 1),
+      name: parts.at(-1),
       purpose: f.purpose.replace(/`/g, ''),
       purposeHtml: escaped.replace(/`([^`]+)`/g, '<code>$1</code>'),
     });
   }
+  // A folder that holds only one folder joins it ("src/pkiaudit/"), as editors show it.
+  const squash = (n) => {
+    while (!n.files.length && n.dirs.length === 1) n = { ...n.dirs[0], name: n.name + n.dirs[0].name };
+    return { ...n, dirs: n.dirs.map(squash).sort((a, b) => a.name.localeCompare(b.name)) };
+  };
+  root.dirs = root.dirs.map(squash).sort((a, b) => a.name.localeCompare(b.name));
   const programs = Object.keys(json.checkpoints).length;
   return {
     dir: spec.dir ?? 'solutions',
     name: spec.name ?? '',
     run: spec.run ?? '',
-    folders: [...folders.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([dir, list]) => ({ dir, files: list })),
+    tree: root,
     programs,
   };
 }
