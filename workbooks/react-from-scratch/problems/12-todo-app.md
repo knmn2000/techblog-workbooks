@@ -9,16 +9,16 @@
 
 ## Read in the blog first
 
-Jongeneel's article builds a [todo application](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=6.%20Building%20a%20sample%20application) on his library in section 6, just before the conclusion: a controlled form component and a list component that contains it. Read the section's first paragraph and stop before the listings. The app below is a different one: items can be removed, there is a count and a page title, ids never repeat, new items go to the front, and the components are functions with hooks instead of classes. His code is a picture of the idea and not a model to follow. This page is complete without the article.
+Jongeneel's article builds a [todo application](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=6.%20Building%20a%20sample%20application) on his library in section 6, the one before the conclusion: a controlled form component and a list component that contains it. Read the first paragraph and stop before the listings. The app you write is another one. Items can be removed, there is a count and a page title, ids never repeat, new items go in front, and the components are functions with hooks rather than classes. His code sketches the idea. It is not a model to follow. Nothing below depends on having read it.
 
 ## Learning material
 
-- [Controlled inputs](#primer/react-controlled-inputs): the input shows the draft you keep in state, and typing updates that state.
-- [document.title](#primer/dom-document-title): the page title is the one piece of the page outside the tree, which makes it a job for an effect.
-- [Serving index.html locally](#primer/static-server): `src/main.js` is the only file here that needs a browser, and a browser needs a server for module imports.
-- [Inputs, the input and submit events](#primer/dom-form-inputs): used in a new way. The scenarios `type` into the input and `submit` the form.
-- [Keys](#primer/react-keys): used in a new way. A key is an item's id, and the tests look for the nodes that stay.
-- [useEffect: after the DOM is updated](#primer/react-effects) and [useState and the rules of hooks](#primer/react-state): used in a new way, by application code and not by a catalog component.
+- [Controlled inputs](#primer/react-controlled-inputs): the input displays the draft held in state, and typing updates that state.
+- [document.title](#primer/dom-document-title): the title is the one piece of the page that sits outside the tree, which makes it an effect's job.
+- [Serving index.html locally](#primer/static-server): `src/main.js` is the one file here that needs a browser, and a browser needs a server for module imports.
+- [Inputs, the input and submit events](#primer/dom-form-inputs): the scenario lines `type` and `submit` dispatch these events.
+- [Keys](#primer/react-keys): each item's key is its id, and the tests check which nodes stay put.
+- [useEffect: after the DOM is updated](#primer/react-effects) and [useState and the rules of hooks](#primer/react-state): this time they are called from application code instead of a catalog component.
 
 ## Source material
 
@@ -27,20 +27,20 @@ Jongeneel's article builds a [todo application](https://itnext.io/creating-our-o
 
 ## Where this fits
 
-Eleven assignments built a library, and this one is the first program that uses it. `TodoApp` imports `createElement`, `useState` and `useEffect` from your library the way an application imports them from React, and never touches fibers or commits. There is a second file, `src/main.js`, that the checker cannot run, because it needs a browser: see the end of the problem.
+After eleven assignments of library code, this is the first program that uses it: `TodoApp` imports `createElement`, `useState` and `useEffect` from your library the way an application imports them from React, and never sees a fiber or a commit. There is a second file, `src/main.js`. The checker cannot run it, because it needs a browser. More at the end.
 
 ## The problem
 
-Write the todo list as a function component on your own `Didact`. A scenario renders `<TodoApp/>`, types into its input, submits its form, clicks its buttons and dumps the page, and the checker compares what you print with what the same app written in React prints.
+Write a todo list as a function component on your own `Didact`. Scenarios render `<TodoApp/>`, type into its input, submit its form, click its buttons and dump the page. What your program prints is held against the output of the same app written in React.
 
 ### Input
 
-The checker runs `node assignments/assignment_12_todo_app.js <input-file> <output-file>`. The program imports `../harness/env.js` first, then `Didact` from `../src/didact/index.js` and the named export `TodoApp` from `../src/app/TodoApp.js`, and ends with `await runScenarioFile(process.argv[2], process.argv[3], { ...Didact, components: { TodoApp } })`. The `components` entry is how `<TodoApp/>` in a scenario finds your function. The Boilerplate has the program finished; from a blank start you write it yourself. The lines a scenario holds:
+`node assignments/assignment_12_todo_app.js <input-file> <output-file>` starts the entry program. It imports `../harness/env.js` first, then `Didact` from `../src/didact/index.js` and the named export `TodoApp` from `../src/app/TodoApp.js`. Its last line is `await runScenarioFile(process.argv[2], process.argv[3], { ...Didact, components: { TodoApp } })`, and the `components` entry is how `<TodoApp/>` in a scenario finds your function. The Boilerplate comes with the program written; starting blank, you write it. Scenario lines:
 
 | Line | What the harness does |
 |---|---|
 | `tree <name> <markup>` | Names a tree. `tree t <TodoApp/>` is the usual one; the markup may also hold plain elements around it. |
-| `render <name>` | `Didact.render(tree, container)`. It schedules the work and does none of it. |
+| `render <name>` | Schedules the render with `Didact.render(tree, container)`. None of the work runs yet. |
 | `flush` | Runs idle periods until nothing is left, effects included. |
 | `type #<id> <text>` | Sets the element's `value` to the rest of the line, everything after the one space that follows the id, dispatches a bubbling `input` event, then flushes. `type #<id>` alone types the empty string. |
 | `submit #<id>` | Dispatches a bubbling, cancelable `submit` event, then flushes. |
@@ -58,7 +58,7 @@ text <depth> "<text>"
 title "<document.title>"
 ```
 
-A `node` line gives the tag in lower case and the props that differ from their defaults (`className`, `id`, `value` of an input) sorted by name. A value with a space, a double quote or a percent sign is percent-encoded in a prop: `value=buy%20milk`. In a `text` line only `"` and `%` are encoded (`%22`, `%25`), so a text with spaces reads as it is. The label is a letter given to an element the first time a dump shows it and kept in every later dump, so the same letter means the same DOM node. The tests use that to see which nodes your app keeps and which it rebuilds.
+A `node` line has the tag in lower case and the props that differ from their defaults (`className`, `id`, and an input's `value`), sorted by name. In a prop, a value containing a space, a double quote or a percent sign is percent-encoded: `value=buy%20milk`. A `text` line encodes only `"` and `%` (`%22`, `%25`), so spaces in a text stay as they are. Labels work as in the earlier dumps. A letter given to an element at its first appearance in a dump stays with it, which makes one letter one DOM node. The tests read that to tell which nodes your app keeps and which it rebuilds.
 
 ### The page
 
@@ -81,30 +81,30 @@ The root of your app produces this tree, with one `li` for each item, the newest
 </div>
 ```
 
-The `<TodoApp/>` element itself has no props. Its dump for an empty list is the first `div` down to `text 2 "0 left"`, followed by `title "0 left"`.
+`<TodoApp/>` takes no props. For an empty list the dump runs from the first `div` down to `text 2 "0 left"` and ends with `title "0 left"`.
 
 ### The behaviour
 
-`TodoApp` is a function component without props, exported by name from `src/app/TodoApp.js` (`export function TodoApp`). It imports what it needs from `../didact/index.js`; the primer's examples rename `createElement` to `h` on import, which is a habit and not a rule. The state of the app is the list of items, the draft in the input and the id the next item gets. Your `Didact`'s setters take an updater function, `setItems((current) => ...)`, and a plain value is not supported, so write `setDraft(() => value)` and not `setDraft(value)`. The rules:
+`TodoApp` is a function component without props, exported by name from `src/app/TodoApp.js` (`export function TodoApp`), and imports what it needs from `../didact/index.js`. The primer's examples rename `createElement` to `h` on import. That is a habit and nothing more. The app's state is the list of items, the draft in the input and the id the next item will get. Your `Didact`'s setters take an updater function, `setItems((current) => ...)`, and do not support a plain value: write `setDraft(() => value)`, never `setDraft(value)`. The rules:
 
 - The input is controlled: its `value` prop is the draft, and its `onInput` handler stores `event.target.value` as the new draft.
-- The form's `onSubmit` handler calls `event.preventDefault()`. If the draft with its leading and trailing spaces cut off is empty, nothing else happens: no item, no id used, and the draft stays as typed. Otherwise a new item is added at the front of the list, with that trimmed text, not done, and an id; then the draft is emptied. The input shows the empty draft after an add.
-- Ids count from 1 in the order items are added. An id is never used again, not even after the item that had it is removed.
-- The toggle button flips its item between `todo` and `done`: the button's text says which, and the label's `className` is `done` while the item is done and empty otherwise.
+- `onSubmit` on the form calls `event.preventDefault()`. When the draft is empty once leading and trailing spaces are cut off, nothing else happens: no item, no id used, and the draft stays as typed. Otherwise a new item goes at the front of the list with the trimmed text, not done, and an id, and the draft is emptied. After an add the input shows the empty draft.
+- Ids count up from 1 in the order items are added. Once used, an id stays used, even after its item is removed.
+- The toggle button flips its item between `todo` and `done`. Its text shows the current one, and the label's `className` is `done` while the item is done and empty otherwise.
 - The remove button deletes its item and nothing else.
-- `n` in the count paragraph is the number of items that are not done. The paragraph holds the text `<n> left`, in however many text nodes you like.
-- After every step `document.title` is `<n> left`. Set it from an effect whose dependency list is `[n]`, `n` being the count of items not done, so it runs when the count changes. The tests see only the result, in the `title` line of the next dump.
-- Each `li` is keyed by its item's id. Adding, toggling, removing and typing leave the nodes of the other items, and the input, the form and the list, where they are.
+- The count paragraph holds the text `<n> left`, in as many text nodes as you like, where `n` is the number of items that are not done.
+- After every step `document.title` reads `<n> left`. Set it from an effect with the dependency list `[n]`, where `n` is the count of items not done, so that it runs when the count changes. The tests see only the result, in the `title` line of the next dump.
+- Each `li` is keyed by its item's id. Adding, toggling, removing and typing all leave the other items' nodes where they are, along with the input, the form and the list.
 
-A case file cuts trailing spaces off every line, so a scenario cannot type a draft that is only spaces, or one that ends in a space. The tests type an empty draft for the empty case, and one test types a draft that starts with three spaces and expects the item text without them. Trim before the emptiness test all the same.
+Case files lose trailing spaces on every line, which rules out a scenario typing a draft of only spaces, or one ending in a space. The tests type an empty draft for the empty case, and one types a draft with three leading spaces and expects the item text without them. Trim before the emptiness test anyway.
 
 ### The part the checker cannot see
 
-`src/main.js` renders `<TodoApp/>` into the `#root` element of `index.html`, the way an entry program renders it for the tests but into a real page. The checker never runs it. To see the app, serve the project folder and open `index.html`, with the book's Run button or with `python -m http.server 8000 --directory solutions` from the workbook folder, then browse to `http://localhost:8000/`. A browser needs the server because it refuses module imports from a file URL. Nothing about `main.js` is tested, so a typo there passes the checker, and the page stays blank.
+`src/main.js` renders `<TodoApp/>` into the `#root` element of `index.html`, as an entry program does for the tests but into a real page. The checker never runs it. To see the app, serve the project folder and open `index.html`, either with the book's Run button or with `python -m http.server 8000 --directory solutions` from the workbook folder, then browse to `http://localhost:8000/`. The server is needed because a browser refuses module imports from a file URL. Nothing in `main.js` is tested: a typo there passes the checker and leaves you a blank page.
 
 ## Requirements
 
-The report groups the tests by these ids. A failure can also name a likely cause: the requirement that the first wrong line points at.
+Tests are grouped in the report by these ids. A failure may also name a likely cause, the requirement the first wrong line points at.
 
 - **R1** A fresh app renders the tree above with no items, the count `0 left` and the title `0 left`, also when it is a child of other elements.
 - **R2** `type` stores what was typed as the draft, and the input's `value` shows it (an empty draft shows no `value`).
@@ -148,7 +148,7 @@ output:  dump 1
          title "1 left"
 ```
 
-The input has no `value` in the dump: the draft was emptied by the add. Typing alone would have shown `value=buy%20milk`. The title says `1 left` because the effect ran inside the last flush, before the dump.
+No `value` on the input. The add emptied the draft, and after the `type` alone it would show `value=buy%20milk`. The title reads `1 left` because the effect ran inside the last flush, ahead of the dump.
 
 ### Example 2: ids are not recycled (test `12-R6-ids-never-reused`)
 
@@ -194,7 +194,7 @@ output:  dump 1
          title "2 left"
 ```
 
-Two items exist at the end, yet the ids are 4 and 3. A counter that is the length of the list plus one would have given `item-3` twice at some point, and the id of a removed item is gone for good. That is why the next id is state of its own.
+Two items are left and their ids are 4 and 3. An id taken as the length of the list plus one would have handed out `item-2` to three different items along the way. A removed item's id is gone for good. That is why the next id is state of its own.
 
 ### Example 3: older items keep their nodes (test `12-R9-front-insert-keeps-nodes`)
 
@@ -286,34 +286,34 @@ output:  dump 1
          title "3 left"
 ```
 
-In the second dump the new item comes first, with the new labels `k` to `n`, and item 1 follows with its old labels `f` to `i`. The third dump does the same again: item 3 is first with labels `o` to `r`, and items 2 and 1 keep theirs. Keyed by id, your list inserts one node in front of the old ones. Keyed by position, it would rewrite item 1's node into item 2, put a new node at the end, and the labels would say so.
+Dump 2 puts the new item first under fresh labels `k` to `n`, and item 1 follows with its old `f` to `i`. Dump 3 repeats the move: item 3 leads with `o` to `r`, and items 2 and 1 keep theirs. With ids as keys the list inserts one new node in front. The old ones stay as they are. Keyed by position, it would rewrite item 1's node into item 2 and add a new node at the end, and the labels would show it.
 
 ## Constraints
 
-The 41 tests are the cases of each requirement, two scripted sessions (the long one has about 50 steps) and five seeded random ones, which `-Fresh` replaces. A session has at most 78 scenario lines. Item texts are short, may hold spaces, double quotes and percent signs, and never end in a space. A correct app answers each test in a fraction of a second, against a limit of 10.
+Expect 41 tests: the cases of each requirement, two scripted sessions (the long one has about 50 steps) and five seeded random ones, which `-Fresh` replaces. Sessions stay short: none has more than 78 scenario lines. Item texts are short, can hold spaces, double quotes and percent signs, and never end in a space. A correct app answers a test in a fraction of a second, and the limit is 10 seconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-List what the page depends on. The items, the draft and the next id each change on their own schedule, so each of the three gets its own `useState`. Derived values (the count, the title) are not state: compute it from the items on each render. Only the title is an effect, because it is the one thing outside the tree.
+Start by listing what the page depends on. Items, draft and next id each change on their own schedule, and each gets its own `useState`. The count and the title are derived values and not state: compute them from the items on every render. Only the title needs an effect, being the one thing outside the tree.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Write `TodoApp` with three `useState` calls and a `useEffect` on the count, and let it return the tree in the contract. Pull one item out into a function component of its own if the list gets hard to read. Every handler uses the updater form of the setter, `setItems((current) => ...)`, which is what your `useState` supports. Pass an item's id through its handlers instead of its position, and give the element of each item a `key` that is the id.
+`TodoApp` gets three `useState` calls, a `useEffect` on the count, and a return value that is the tree from the contract. If the list gets hard to read, pull one item out into a function component of its own. Handlers use the updater form of the setter, `setItems((current) => ...)`, which is what your `useState` supports. Pass an item's id to its handlers rather than its position, and give each item's element a `key` that is the id.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - Trim the draft before you test it for emptiness, and store the trimmed text.
 - The new item goes in front of the others: build the next list as `[newItem, ...current]`.
-- Take the new id from state of its own. The length of the list plus one repeats an id once something has been removed.
+- The new id comes from state of its own. The length of the list plus one repeats an id once anything has been removed.
 - Clear the draft after an add, or the input keeps showing it.
-- Key by id. A key that is the index makes every insert at the front look like a change to all items, and the nodes get rewritten.
-- A `key` needs to sit on the element that is a child of the `ul`. If items are function components, put it on the component's element.
-- `className` is `done` or an empty string. A prop left out and a prop set to `""` read the same in a dump.
-- The count paragraph shows the number of items that are not done, not the number of items.
+- Key by id. With the index as key, an insert at the front looks like a change to every item, and the nodes are rewritten.
+- The `key` belongs on the element that is a child of the `ul`. If items are function components, put it on the component's element.
+- `className` is `done` or an empty string, and a dump reads a missing prop and a prop set to `""` the same way.
+- The count paragraph shows how many items are not done. All items would be the wrong number.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -351,7 +351,7 @@ TodoApp():
 .\check 12 -Dispute <id> "why"      set a test aside when you are sure it is wrong
 ```
 
-An app that forgets to clear the input after an add fails like this:
+Forget to clear the input after an add and you get this:
 
 ```
   R3  Submitting a non-empty draft adds an item at the front of the lis... .    0 / 5   FAILED
@@ -364,8 +364,8 @@ An app that forgets to clear the input after an add fails like this:
 
 ## After you pass: compare with the author's code
 
-Jongeneel's [`ToDoComponent` and `NewItemForm`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=6.%20Building%20a%20sample%20application) are class components with state objects: `NewItemForm` keeps the draft and calls the `addItem` prop on submit, and `ToDoComponent` keeps the items and renders the list. The items are `li` elements keyed by their index, each with a button that flips its `done` flag, and event handlers are lower-case properties such as `onsubmit` and `oninput`.
+Jongeneel's [`ToDoComponent` and `NewItemForm`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=6.%20Building%20a%20sample%20application) are class components with state objects. `NewItemForm` keeps the draft and calls the `addItem` prop on submit, and `ToDoComponent` keeps the items and renders the list. Items are `li` elements keyed by index, each with a button that flips its `done` flag, and event handlers are lower-case properties such as `onsubmit` and `oninput`.
 
-His app differs from the spec above in these ways: a new item goes at the end, where yours goes first. Its key is the index, so every item is matched by its position, and a removal or a front insert would rewrite the nodes of the items after it where the tests expect each item to keep its own (his app only appends and has no removal, so the index key does no harm there). Submitting an empty draft adds an item with an empty label, since nothing trims or checks the draft. It has no remove button, no count, no ids and no title, and its toggle button reads `-` for an open item where yours reads `todo`. The draft lives in the form component, and a submit makes two `setState` calls, one in `addItem` and one that clears the draft, which each render at once where your handler's three updates give one render. His `renderDOM` also swaps the `#root` element itself for the app, where your `render` fills it. The tests take the other side on each of these points.
+His app departs from the spec in several places. A new item goes at the end, where yours goes first. He keys by index, so each item is matched by position, and a removal or a front insert would rewrite the nodes of the items after it, where the tests expect every item to keep its own. His app only appends and has no removal, which is why the index key does no harm there. Submitting an empty draft adds an item with an empty label, since nothing trims or checks the draft. There is no remove button, no count, no ids and no title, and the toggle button reads `-` for an open item where yours reads `todo`. The draft lives in the form component, and a submit makes two `setState` calls, one in `addItem` and one that clears the draft. Each renders at once, where your handler's three updates give one render. His `renderDOM` also swaps the `#root` element itself for the app, where your `render` fills it. The tests side with the spec on all of these points.
 
-For React 19 as well as the post, [React today](docs/react-today.md) lists the "Events" row: handlers are named `onSubmit`, `onInput` and `onClick` here, as in React, and your `updateDom` turns them into listeners.
+The "Events" row of [React today](docs/react-today.md) covers React 19 as well as the post: handlers are named `onSubmit`, `onInput` and `onClick` here, as in React, and your `updateDom` turns them into listeners.

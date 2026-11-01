@@ -3,10 +3,10 @@
 // Problem: problems/12-todo-app.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The finished program: mounts the todo app into the page's `#root`.
+//   Where the finished program starts: it mounts the todo app into the page's `#root`.
 //
 // Your job:
-//   Mount `TodoApp` into the page's `#root`, so `index.html` shows a working app. The
+//   Mount `TodoApp` into the page's `#root`; `index.html` then shows a working app. The
 //   Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:

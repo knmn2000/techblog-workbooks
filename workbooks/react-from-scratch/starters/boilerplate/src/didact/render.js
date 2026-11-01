@@ -3,13 +3,13 @@
 // Problem: problems/04-fibers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   `render` and the work loop: units of work that the browser can interrupt, one fiber at
-//   a time. Later, assignments 05, 06, 09 and 10 add to this file.
+//   `render` and the work loop behind it: one fiber per unit of work, and the browser can
+//   interrupt between units. Later, assignments 05, 06, 09 and 10 add to this file.
 //
 // Your job:
-//   Write `render`, `workLoop` and `performUnitOfWork`. `render` only schedules the work.
-//   Each idle period runs fibers until `timeRemaining()` falls below 1, one fiber per unit
-//   of work. The Boilerplate gives you the declarations; fill in each TODO.
+//   Build `render`, `workLoop` and `performUnitOfWork`. `render` only schedules the work;
+//   each idle period then runs fibers, one per unit of work, until `timeRemaining()` falls
+//   below 1. The Boilerplate gives you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

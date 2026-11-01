@@ -43,17 +43,17 @@
     ],
     "author": null,
     "purposes": {
-      "src/didact/createElement.js": "What JSX compiles to: a plain `{ type, props }` object with the children inside `props`. Every other file in the library passes these around.",
-      "src/didact/dom.js": "The two places the library touches a real DOM node: making one from an element, and bringing its properties and listeners in line with new props.",
-      "src/didact/renderSync.js": "The first draft of `render`: walk the tree recursively and append nodes as you go. Assignment 4 replaces it with a work loop; the file stays so you can compare.",
-      "src/didact/state.js": "The library's shared bookkeeping (what to work on next, the tree under construction) in one object, because an ES module can't share a variable that other modules reassign.",
-      "src/didact/render.js": "`render` and the work loop: units of work that the browser can interrupt, one fiber at a time.",
-      "src/didact/reconcile.js": "Decides which fibers a parent's children become. It starts by making a fresh fiber for every child and grows into the comparison with the previous render.",
-      "src/didact/index.js": "The `Didact` object an app imports: `createElement` and `render`, then the hooks as they arrive.",
-      "src/didact/commit.js": "Applies a finished fiber tree to the DOM in one pass, so nobody sees half a render.",
-      "src/didact/hooks.js": "`useState` and `useEffect`: state and effects that belong to a component and survive its re-renders, kept on the fiber.",
-      "src/app/TodoApp.js": "The todo list, written the way an application would write it, on top of your Didact.",
-      "src/main.js": "The finished program: mounts the todo app into the page's `#root`."
+      "src/didact/createElement.js": "What JSX compiles to: a plain `{ type, props }` object, with the children inside `props`.",
+      "src/didact/dom.js": "Two jobs on a single DOM node: build it from an element, and bring its properties and listeners in line with new props.",
+      "src/didact/renderSync.js": "A first draft of `render`: recurse through the tree and append nodes as you go. Assignment 4 replaces it with a work loop. The file stays for comparison.",
+      "src/didact/state.js": "Shared bookkeeping in one object: what to work on next, and the tree under construction. It has to be an object, because an ES module can't share a variable for other modules to reassign.",
+      "src/didact/render.js": "`render` and the work loop behind it: one fiber per unit of work, and the browser can interrupt between units.",
+      "src/didact/reconcile.js": "Decides which fibers a parent's children become. At first that means a fresh fiber for every child, then a comparison with the previous render.",
+      "src/didact/index.js": "What an app imports: one `Didact` object carrying `createElement` and `render`, with the hooks joining it as you write them.",
+      "src/didact/commit.js": "Applies a finished fiber tree to the DOM in a single pass, which keeps half a render from ever showing.",
+      "src/didact/hooks.js": "State and effects that belong to a component and outlive its re-renders, stored on the fiber: `useState` and `useEffect`.",
+      "src/app/TodoApp.js": "A todo list written the way an application would write it, as function components on your own Didact.",
+      "src/main.js": "Where the finished program starts: it mounts the todo app into the page's `#root`."
     }
   },
   "build": "python -P tools/run_js.py --compile solutions",
@@ -82,8 +82,8 @@
     "sourceTitle": "Build your own React",
     "author": "Rodrigo Pombo",
     "headline": "Learn what React does by writing it",
-    "lede": "Rebuild React's core in JavaScript, one assignment at a time: elements, a work loop over fibers, the commit phase, reconciliation by position and by key, function components, useState, useEffect, and a todo app that runs on your own library. Your code runs on a small DOM, and the checker compares what it draws with real React 19.3.1 on jsdom. Where the two posts this follows disagree with React as it is today, the tests follow React.",
-    "credits": "Expected outputs come from React 19.3.1 running on jsdom 30.1.3, plus small independent models for counts of work. The book keeps your progress in this browser only.",
+    "lede": "Rebuild React's core in JavaScript: elements, a work loop over fibers, the commit phase, reconciliation by position and by key, function components, useState, useEffect, and a todo app running on your own library. Your code runs on a small DOM, and what it draws is compared with real React 19.3.1 on jsdom. Where the two posts this follows differ from React as it is today, the tests follow React.",
+    "credits": "Expected outputs come from React 19.3.1 running on jsdom 30.1.3, with small independent models covering the counts of work. The book saves your progress in this browser and nowhere else.",
     "checkCommand": ".\\check {id}",
     "shell": "PowerShell"
   },
@@ -100,8 +100,8 @@
       "cases": "tests/01/cases.txt",
       "generator": "python -P tools/gen_p01.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_01_create_element.js": "Hand the scenario file to `runScenarioFile` from the harness, together with your `createElement`; it builds each element the scenario lists and prints it.",
-        "src/didact/createElement.js": "Write `createElement(type, props, ...children)` and `createTextElement(text)`. An element is `{ type, props }` with every child inside `props.children`, and a string or number child becomes a text element."
+        "assignments/assignment_01_create_element.js": "Call `runScenarioFile` from the harness with the scenario file and your `createElement`. It builds each element the scenario lists and prints it.",
+        "src/didact/createElement.js": "Write `createElement(type, props, ...children)`, returning `{ type, props }` with every child inside `props.children`, and `createTextElement(text)`, which builds the text element a string or number child becomes."
       }
     },
     "02": {
@@ -116,8 +116,8 @@
       "cases": "tests/02/cases.txt",
       "generator": "python -P tools/gen_p02.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_02_dom_props.js": "Pass your `createDom` and `updateDom` to `runScenarioFile`; the scenario creates one node, updates it a few times and clicks it.",
-        "src/didact/dom.js": "Write `createDom` and `updateDom(dom, prevProps, nextProps)`. `createDom` makes the node for an element. `updateDom` writes only what changed: new and changed properties, removed ones cleared, and a listener swapped when its handler changed."
+        "assignments/assignment_02_dom_props.js": "Give `runScenarioFile` your `createDom` and `updateDom`. The scenario creates one node, updates it a few times and clicks it.",
+        "src/didact/dom.js": "Make `createDom` return the node for an element, and `updateDom(dom, prevProps, nextProps)` write only what changed. New and changed properties get set, removed ones get cleared, and a listener is swapped when its handler changed."
       }
     },
     "03": {
@@ -134,8 +134,8 @@
       "cases": "tests/03/cases.txt",
       "generator": "python -P tools/gen_p03.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_03_first_render.js": "Pass your `render` from `renderSync.js` to `runScenarioFile`; the scenario renders a tree and dumps the container.",
-        "src/didact/renderSync.js": "Write `render(element, container)`: create the DOM for the element, do the same for its children, and append everything to the container."
+        "assignments/assignment_03_first_render.js": "Hand `runScenarioFile` the `render` from `renderSync.js`. The scenario renders a tree and dumps the container.",
+        "src/didact/renderSync.js": "Implement `render(element, container)`: build the DOM for the element and for each child below it, and append the result to the container."
       }
     },
     "04": {
@@ -156,11 +156,11 @@
       "cases": "tests/04/cases.txt",
       "generator": "python -P tools/gen_p04.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_04_fibers.js": "Pass your `Didact` object to `runScenarioFile`; the scenario renders a tree, runs idle periods of a size it picks, and dumps the container.",
-        "src/didact/state.js": "Create the shared state object, holding the next unit of work and the root of the tree being built.",
-        "src/didact/render.js": "Write `render`, `workLoop` and `performUnitOfWork`. `render` only schedules the work. Each idle period runs fibers until `timeRemaining()` falls below 1, one fiber per unit of work.",
-        "src/didact/reconcile.js": "Write `reconcileChildren(wipFiber, elements)`: give every element a fiber of its own and link the fibers with `child`, `sibling` and `parent`.",
-        "src/didact/index.js": "Export a `Didact` object with `createElement` and `render`."
+        "assignments/assignment_04_fibers.js": "Run `runScenarioFile` with your `Didact` object. The scenario renders a tree, runs idle periods of a size it picks, and dumps the container.",
+        "src/didact/state.js": "Create one `state` object to hold the next unit of work and the root of the tree being built.",
+        "src/didact/render.js": "Build `render`, `workLoop` and `performUnitOfWork`. `render` only schedules the work; each idle period then runs fibers, one per unit of work, until `timeRemaining()` falls below 1.",
+        "src/didact/reconcile.js": "Give every element a fiber of its own in `reconcileChildren(wipFiber, elements)`, and link the fibers with `child`, `sibling` and `parent`.",
+        "src/didact/index.js": "Export a `Didact` object carrying `createElement` and `render`."
       }
     },
     "05": {
@@ -182,9 +182,9 @@
       "cases": "tests/05/cases.txt",
       "generator": "python -P tools/gen_p05.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_05_commit.js": "Pass your `Didact` object to `runScenarioFile`; the scenario now dumps the container between idle periods.",
-        "src/didact/commit.js": "Write `commitRoot` and `commitWork`: once the last unit is done, append the finished tree to the container in a single pass.",
-        "src/didact/render.js": "Stop attaching DOM nodes while units run. Keep the tree under construction as `wipRoot`, and call `commitRoot` after the last unit."
+        "assignments/assignment_05_commit.js": "Wire your `Didact` object into `runScenarioFile`; the scenario dumps the container between idle periods.",
+        "src/didact/commit.js": "Define `commitRoot` and `commitWork`. Once the last unit is done, they append the finished tree to the container in a single pass.",
+        "src/didact/render.js": "Stop attaching DOM nodes while units run. Hold the tree under construction in `wipRoot`, and call `commitRoot` after the last unit."
       }
     },
     "06": {
@@ -204,11 +204,11 @@
       "cases": "tests/06/cases.txt",
       "generator": "python -P tools/gen_p06.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_06_reconcile.js": "Pass your `Didact` object to `runScenarioFile`; the scenario renders a second tree into the container that already holds the first.",
-        "src/didact/state.js": "Add `currentRoot`, the last tree you committed, and `deletions`, the fibers to remove.",
-        "src/didact/render.js": "Point the new root's `alternate` at `currentRoot`, the tree you committed last time, and reset `deletions` on every `render`.",
-        "src/didact/reconcile.js": "Rewrite `reconcileChildren` to compare each element with the old fiber at the same position. Same type reuses the old DOM node and updates it, a different type gets a new node, and an old fiber with no element left is queued for deletion.",
-        "src/didact/commit.js": "Act on what reconciliation decided: put a new node before the next sibling that already has a DOM node, so it keeps its position, call `updateDom` for an update, and remove each deleted node exactly once."
+        "assignments/assignment_06_reconcile.js": "Pass your `Didact` object to `runScenarioFile`. The scenario renders a second tree into the container that already holds the first.",
+        "src/didact/state.js": "Track the last tree you committed in `currentRoot`, and the fibers waiting for removal in `deletions`.",
+        "src/didact/render.js": "On every `render`, point the new root's `alternate` at `currentRoot` (the tree you committed last time) and reset `deletions`.",
+        "src/didact/reconcile.js": "Rewrite `reconcileChildren` to compare each element with the old fiber at the same position. The same type keeps its DOM node and gets updated, a different type gets a fresh node, and an old fiber left without an element is queued for deletion.",
+        "src/didact/commit.js": "Carry out what reconciliation decided. A new node goes before the next sibling that already has a DOM node, which keeps its position; an updated one goes through `updateDom`; each deleted node is removed once."
       }
     },
     "07": {
@@ -226,8 +226,8 @@
       "cases": "tests/07/cases.txt",
       "generator": "python -P tools/gen_p07.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_07_keys.js": "Pass your `Didact` object to `runScenarioFile`; the scenario re-renders lists whose children carry keys.",
-        "src/didact/reconcile.js": "Match a child to the old child with the same `key`, wherever the old one stood, as long as the keys that both lists share keep their order. Children without a key still match by position."
+        "assignments/assignment_07_keys.js": "Point `runScenarioFile` at your `Didact` object. The scenario re-renders lists whose children carry keys.",
+        "src/didact/reconcile.js": "Pair each child with the old child that has the same `key`, wherever that one stood, as long as the keys both lists share stay in the same order. Children without a key still match by position."
       }
     },
     "08": {
@@ -245,9 +245,9 @@
       "cases": "tests/08/cases.txt",
       "generator": "python -P tools/gen_p08.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_08_reorder.js": "Pass your `Didact` object to `runScenarioFile`; the scenario shuffles keyed lists.",
-        "src/didact/reconcile.js": "Let a key match its old child even when the order of the shared keys changed.",
-        "src/didact/commit.js": "Move the existing DOM node of a reordered child instead of recreating it, so it keeps its state."
+        "assignments/assignment_08_reorder.js": "Feed `runScenarioFile` your `Didact` object and let the scenario shuffle keyed lists.",
+        "src/didact/reconcile.js": "Let a key keep matching its old child when the shared keys come in a different order.",
+        "src/didact/commit.js": "Move the DOM node of a reordered child instead of recreating it; a node that lives on keeps its state."
       }
     },
     "09": {
@@ -266,9 +266,9 @@
       "cases": "tests/09/cases.txt",
       "generator": "python -P tools/gen_p09.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_09_function_components.js": "Pass your `Didact` object to `runScenarioFile`; the scenario renders trees that contain the catalog's function components.",
-        "src/didact/render.js": "Branch in `performUnitOfWork`: a fiber whose type is a function has no DOM node, and its children are whatever calling the function returns.",
-        "src/didact/commit.js": "Find the parent DOM node by walking up through fibers that have none, and the node to remove by walking down through them."
+        "assignments/assignment_09_function_components.js": "Use `runScenarioFile` with your `Didact` object to render trees that contain the catalog's function components.",
+        "src/didact/render.js": "Teach `performUnitOfWork` about fibers whose type is a function: they have no DOM node, and their children are whatever calling the function returns.",
+        "src/didact/commit.js": "Teach `commitWork` and the removal code about fibers that have no DOM node. The DOM parent to append into, and the DOM node to remove, can each be more than one fiber away."
       }
     },
     "10": {
@@ -290,11 +290,11 @@
       "cases": "tests/10/cases.txt",
       "generator": "python -P tools/gen_p10.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_10_use_state.js": "Pass your `Didact` object to `runScenarioFile`; the scenario clicks buttons in catalog components and dumps the result.",
-        "src/didact/hooks.js": "Write `useState(initial)`: state kept on the fiber, found again on the next render by hook index. The setter takes an updater function, queues it, and schedules a new render from the root.",
-        "src/didact/state.js": "Add `wipFiber` and `hookIndex`.",
-        "src/didact/render.js": "Before you call a function component, set `wipFiber`, give it an empty `hooks` array and reset `hookIndex`.",
-        "src/didact/index.js": "Export `useState` on `Didact`."
+        "assignments/assignment_10_use_state.js": "Your `Didact` object goes to `runScenarioFile`; the scenario clicks buttons in catalog components and dumps the result.",
+        "src/didact/hooks.js": "Give function components memory with `useState(initial)`, keeping the state on the fiber and finding it again on the next render by hook index. The setter takes an updater function, queues it and schedules a new render from the root.",
+        "src/didact/state.js": "Add `wipFiber` and `hookIndex`. The first is the fiber of the component being rendered, the second the position of the next hook call.",
+        "src/didact/render.js": "Before a function component is called, point `wipFiber` at its fiber, give that fiber an empty `hooks` array and reset `hookIndex`.",
+        "src/didact/index.js": "Expose `useState` on the `Didact` object."
       }
     },
     "11": {
@@ -314,10 +314,10 @@
       "cases": "tests/11/cases.txt",
       "generator": "python -P tools/gen_p11.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_11_use_effect.js": "Pass your `Didact` object to `runScenarioFile`; the scenario mounts, updates and removes catalog components that log from their effects.",
-        "src/didact/hooks.js": "Write `useEffect(effect, deps)`: remember the effect and its dependencies on the fiber, and keep whatever cleanup function the effect returned.",
-        "src/didact/commit.js": "After the DOM is updated, run the cleanups of effects that run again, then the effects that are new or whose dependencies changed. Run a removed component's cleanups too.",
-        "src/didact/index.js": "Export `useEffect` on `Didact`."
+        "assignments/assignment_11_use_effect.js": "Send your `Didact` object through `runScenarioFile`. The scenario mounts, updates and removes catalog components that log from their effects.",
+        "src/didact/hooks.js": "Write `useEffect(effect, deps)`: store the effect on its fiber, along with its dependencies and whatever cleanup function the effect returned.",
+        "src/didact/commit.js": "Once the DOM is up to date, run the cleanups of effects that run again, then the effects that are new or whose dependencies changed. A removed component's cleanups run too.",
+        "src/didact/index.js": "Export `useEffect` on the `Didact` object next to `useState`."
       }
     },
     "12": {
@@ -335,9 +335,9 @@
       "cases": "tests/12/cases.txt",
       "generator": "python -P tools/gen_p12.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_12_todo_app.js": "Pass your `Didact` object and your `TodoApp` to `runScenarioFile`; the scenario types into the form, adds items, toggles and removes them.",
-        "src/app/TodoApp.js": "Write `TodoApp` with function components on your Didact: a form with a controlled input, a list of keyed items, and a toggle and a remove button on each item.",
-        "src/main.js": "Mount `TodoApp` into the page's `#root`, so `index.html` shows a working app."
+        "assignments/assignment_12_todo_app.js": "Supply `runScenarioFile` with your `Didact` object and your `TodoApp`. The scenario types into the form, adds items, toggles and removes them.",
+        "src/app/TodoApp.js": "Compose `TodoApp` from function components on your Didact: a form with a controlled input, a list of keyed items, and a toggle and a remove button on each item.",
+        "src/main.js": "Mount `TodoApp` into the page's `#root`; `index.html` then shows a working app."
       }
     }
   },

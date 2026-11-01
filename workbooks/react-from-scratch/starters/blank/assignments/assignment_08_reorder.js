@@ -10,13 +10,13 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `Didact` object to `runScenarioFile`; the scenario shuffles keyed lists.
+//   Feed `runScenarioFile` your `Didact` object and let the scenario shuffle keyed lists.
 //
 // The other files of this assignment:
-//   It adds to src/didact/reconcile.js, which you started earlier: Let a key match its old
-//   child even when the order of the shared keys changed.
-//   It adds to src/didact/commit.js, which you started earlier: Move the existing DOM node
-//   of a reordered child instead of recreating it, so it keeps its state.
+//   It adds to src/didact/reconcile.js, which you started earlier: Let a key keep matching
+//   its old child when the shared keys come in a different order.
+//   It adds to src/didact/commit.js, which you started earlier: Move the DOM node of a
+//   reordered child instead of recreating it; a node that lives on keeps its state.
 //   Earlier files you can use: src/didact/render.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import * as reconcile from '../src/didact/reconcile.js'

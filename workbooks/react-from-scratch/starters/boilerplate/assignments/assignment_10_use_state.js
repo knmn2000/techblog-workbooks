@@ -17,11 +17,13 @@
 //   You also write src/didact/hooks.js in this assignment; each one gives its job at the
 //   top.
 //   It adds to src/didact/state.js, which you started earlier: Add `wipFiber` and
-//   `hookIndex`.
-//   It adds to src/didact/render.js, which you started earlier: Before you call a function
-//   component, set `wipFiber`, give it an empty `hooks` array and reset `hookIndex`.
-//   It adds to src/didact/index.js, which you started earlier: Export `useState` on
-//   `Didact`.
+//   `hookIndex`. The first is the fiber of the component being rendered, the second the
+//   position of the next hook call.
+//   It adds to src/didact/render.js, which you started earlier: Before a function
+//   component is called, point `wipFiber` at its fiber, give that fiber an empty `hooks`
+//   array and reset `hookIndex`.
+//   It adds to src/didact/index.js, which you started earlier: Expose `useState` on the
+//   `Didact` object.
 //   Earlier files you can use: src/didact/commit.js and src/didact/reconcile.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import * as hooks from '../src/didact/hooks.js'

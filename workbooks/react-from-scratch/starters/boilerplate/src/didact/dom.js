@@ -3,14 +3,14 @@
 // Problem: problems/02-dom-props.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The two places the library touches a real DOM node: making one from an element, and
-//   bringing its properties and listeners in line with new props.
+//   Two jobs on a single DOM node: build it from an element, and bring its properties and
+//   listeners in line with new props.
 //
 // Your job:
-//   Write `createDom` and `updateDom(dom, prevProps, nextProps)`. `createDom` makes the
-//   node for an element. `updateDom` writes only what changed: new and changed properties,
-//   removed ones cleared, and a listener swapped when its handler changed. The Boilerplate
-//   gives you the declarations; fill in each TODO.
+//   Make `createDom` return the node for an element, and `updateDom(dom, prevProps,
+//   nextProps)` write only what changed. New and changed properties get set, removed ones
+//   get cleared, and a listener is swapped when its handler changed. The Boilerplate gives
+//   you the declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

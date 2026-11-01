@@ -10,13 +10,14 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `Didact` object to `runScenarioFile`; the scenario re-renders lists whose
+//   Point `runScenarioFile` at your `Didact` object. The scenario re-renders lists whose
 //   children carry keys.
 //
 // The other files of this assignment:
-//   It adds to src/didact/reconcile.js, which you started earlier: Match a child to the
-//   old child with the same `key`, wherever the old one stood, as long as the keys that
-//   both lists share keep their order. Children without a key still match by position.
+//   It adds to src/didact/reconcile.js, which you started earlier: Pair each child with
+//   the old child that has the same `key`, wherever that one stood, as long as the keys
+//   both lists share stay in the same order. Children without a key still match by
+//   position.
 //   Earlier files you can use: src/didact/dom.js and src/didact/render.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import * as reconcile from '../src/didact/reconcile.js'

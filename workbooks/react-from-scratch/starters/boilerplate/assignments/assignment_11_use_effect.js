@@ -15,13 +15,13 @@
 //
 // The other files of this assignment:
 //   It adds to src/didact/hooks.js, which you started earlier: Write `useEffect(effect,
-//   deps)`: remember the effect and its dependencies on the fiber, and keep whatever
+//   deps)`: store the effect on its fiber, along with its dependencies and whatever
 //   cleanup function the effect returned.
-//   It adds to src/didact/commit.js, which you started earlier: After the DOM is updated,
-//   run the cleanups of effects that run again, then the effects that are new or whose
-//   dependencies changed. Run a removed component's cleanups too.
-//   It adds to src/didact/index.js, which you started earlier: Export `useEffect` on
-//   `Didact`.
+//   It adds to src/didact/commit.js, which you started earlier: Once the DOM is up to
+//   date, run the cleanups of effects that run again, then the effects that are new or
+//   whose dependencies changed. A removed component's cleanups run too.
+//   It adds to src/didact/index.js, which you started earlier: Export `useEffect` on the
+//   `Didact` object next to `useState`.
 //   Earlier files you can use: src/didact/render.js and src/didact/state.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import * as hooks from '../src/didact/hooks.js'

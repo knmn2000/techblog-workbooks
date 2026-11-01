@@ -10,8 +10,8 @@
 //   Submit in the book.
 //
 // Your job:
-//   Hand the scenario file to `runScenarioFile` from the harness, together with your
-//   `createElement`; it builds each element the scenario lists and prints it.
+//   Call `runScenarioFile` from the harness with the scenario file and your
+//   `createElement`. It builds each element the scenario lists and prints it.
 //
 // The other files of this assignment:
 //   You also write src/didact/createElement.js in this assignment; each one gives its job

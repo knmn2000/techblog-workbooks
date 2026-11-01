@@ -14,12 +14,12 @@
 //   assignment's other files.
 //
 // The other files of this assignment:
-//   It adds to src/didact/render.js, which you started earlier: Branch in
-//   `performUnitOfWork`: a fiber whose type is a function has no DOM node, and its
-//   children are whatever calling the function returns.
-//   It adds to src/didact/commit.js, which you started earlier: Find the parent DOM node
-//   by walking up through fibers that have none, and the node to remove by walking down
-//   through them.
+//   It adds to src/didact/render.js, which you started earlier: Teach `performUnitOfWork`
+//   about fibers whose type is a function: they have no DOM node, and their children are
+//   whatever calling the function returns.
+//   It adds to src/didact/commit.js, which you started earlier: Teach `commitWork` and the
+//   removal code about fibers that have no DOM node. The DOM parent to append into, and
+//   the DOM node to remove, can each be more than one fiber away.
 //   Earlier files you can use: src/didact/reconcile.js and src/didact/createElement.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import { render } from '../src/didact/render.js'

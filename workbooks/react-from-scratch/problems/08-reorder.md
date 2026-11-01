@@ -9,15 +9,15 @@
 
 ## Read in the blog first
 
-Neither post has this step. Jongeneel's article states that its key matching cannot reorder: a key that shows up in a different order is removed and built again, which costs a stateful component its state. Pombo's [Step VI](https://pomb.us/build-your-own-react/#step-vi-reconciliation) has an aside that React detects children that change places, and his [epilogue](https://pomb.us/build-your-own-react/#epilogue) lists reconciliation by key among the features you can add. This assignment therefore follows React, and the workbook, not a post, is its author. The page holds all you need, and [Rendering lists](https://react.dev/learn/rendering-lists) on react.dev gives the user's side of the same behaviour. If you read Jongeneel's [section 3.2, Creating the diff for the children](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=3.2%20Creating%20the%20diff%20for%20the%20children) first, the last figure of the section shows keys in a new order, the case this assignment is about. The post builds its B again, and here B keeps its node.
+Neither post has this step. Jongeneel's article states that its key matching cannot reorder: a key that shows up in a different order is removed and built again, and a stateful component loses its state with it. Pombo's [Step VI](https://pomb.us/build-your-own-react/#step-vi-reconciliation) has an aside saying React detects children that change places, and his [epilogue](https://pomb.us/build-your-own-react/#epilogue) lists reconciliation by key among the features you can add. This assignment follows React instead, and the workbook, not a post, is its author. The page holds all you need, and [Rendering lists](https://react.dev/learn/rendering-lists) on react.dev shows the same behaviour from the user's side. If you read Jongeneel's [section 3.2, Creating the diff for the children](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=3.2%20Creating%20the%20diff%20for%20the%20children) first, the last figure of the section shows keys in a new order, which is the case here. The post builds its B again. Here B keeps its node.
 
 ## Learning material
 
-- [Reordering without recreating](#primer/react-moving-nodes): how a node can change places without being thrown away, and why that keeps its typed text.
-- [`appendChild`, `insertBefore`, `removeChild`](#primer/dom-tree-editing): used in a new way. Inserting a node that already has a parent moves it.
+- [Reordering without recreating](#primer/react-moving-nodes): how a node changes places without being thrown away, and why its typed text comes along.
+- [`appendChild`, `insertBefore`, `removeChild`](#primer/dom-tree-editing): a new use for it. Inserting a node that already has a parent moves it.
 - [Keys](#primer/react-keys): used in a new way. A key now finds its child wherever it stood.
-- [`Map` and `Set`](#primer/js-maps-sets): used in a new way. With keys out of order, walking the old list in step with the new one no longer works, and a table from key to old fiber does.
-- [Inputs: `value` and the `input` event](#primer/dom-form-inputs): used in a new way. The tests type before a reorder and read the text afterwards.
+- [`Map` and `Set`](#primer/js-maps-sets): a different use this time. With the keys out of order, walking the old list beside the new one stops working. A table from key to old fiber doesn't care about order.
+- [Inputs: `value` and the `input` event](#primer/dom-form-inputs): put to new use. The tests type before a reorder and read the text afterwards.
 
 ## Source material
 
@@ -27,26 +27,26 @@ Neither post has this step. Jongeneel's article states that its key matching can
 
 ## Where this fits
 
-With 07 a key finds its old child only while the shared keys keep their order. Any order is allowed now. `reconcile.js` has to find a partner anywhere in the old list and notice which kept children ended up out of order, and `commit.js` has to put those nodes where they now belong without building new ones.
+07 finds an old child by key only while the shared keys keep their order. Now any order goes. `reconcile.js` has to find a partner anywhere in the old list and notice which kept children ended up out of order. `commit.js` then puts those nodes where they now belong without building new ones.
 
 ## The problem
 
-Let a keyed list change order. A scenario renders a list, renders a permutation of it (often with items added and dropped in the same step), types into inputs here and there, and dumps the page. The checker compares each dump with React's and counts the nodes your program built and removed.
+Let a keyed list change order. A scenario renders a list, then a permutation of it, often with items added and dropped in the same step. It types into inputs here and there and dumps the page. Each dump is compared with React's, and the checker counts the nodes your program built and removed.
 
 ### Input
 
-The program that runs is `node assignments/assignment_08_reorder.js <input-file> <output-file>`. In a blank start it is yours to write, and it takes three steps: load `../harness/env.js` before anything else, import the default `Didact` export of `src/didact/index.js`, and `await` the harness function `runScenarioFile` (from `../harness/scenario.js`) with the two file names from `process.argv` and `Didact`. The Boilerplate comes with it done. These are the scenario lines this assignment relies on.
+Each scenario goes through `node assignments/assignment_08_reorder.js <input-file> <output-file>`. From a blank start that program is yours to write, in three steps: load `../harness/env.js` before anything else, import the default `Didact` export of `src/didact/index.js`, and `await` the harness function `runScenarioFile` (from `../harness/scenario.js`) with the two file names from `process.argv` and `Didact`. The Boilerplate comes with it done. These are the scenario lines this assignment relies on.
 
 | Line | Effect |
 |---|---|
 | `tree <name> <markup>` | Remembers a one-root tree under a name. `key="a"` is a string attribute and arrives as `props.key`. |
-| `render <name>` | Calls `Didact.render(tree, container)` and returns; nothing is drawn yet. |
-| `flush` | Runs idle periods until the loop has nothing left. A `flush` always follows a `render`. |
+| `render <name>` | Calls `Didact.render(tree, container)` and returns. Nothing is drawn yet. |
+| `flush` | Runs idle periods until the loop has nothing left. A `render` is always followed by a `flush`. |
 | `type #<id> <text>` | Writes the rest of the line into the `value` of the element with that id, fires a bubbling `input` event and flushes. |
 | `dump` | Prints the container, as described next. |
 | `ops create remove` | Prints the harness DOM's counters of `create` and `remove` since the last `ops` line or since the start. |
 
-Inputs have an id and no `value` attribute. Sibling keys are unique. The same key may appear in two different lists of one tree, and in this assignment the keys of a later render may be in any order.
+Inputs carry an id and no `value` attribute. Sibling keys are unique, though one tree may use the same key in two different lists. The keys of a later render can come in any order.
 
 ### Output
 
@@ -56,25 +56,25 @@ node <depth> <label> <tag> "<props>"
 text <depth> "<text>"
 ```
 
-A dump prints the container's content from the top, one `node` line per element and one `text` line per run of text, a parent before its children, and the container itself left out. The props field lists `className`, `id`, `title` and (on inputs) `value` when they are not at their defaults, sorted by name, with spaces, quotes and `%` percent-encoded.
+A dump prints the container's content from the top: one `node` line per element, one `text` line per run of text, a parent before its children, and the container itself left out. The props field lists `className`, `id`, `title` and (on inputs) `value` when they are off their defaults, sorted by name, with spaces, quotes and `%` percent-encoded.
 
-Labels give a node an identity across dumps. The first time a dump shows an element, it takes the next unused name from `a`, `b`, ... `z`, `aa`, ..., and that name stays with the node for the rest of the scenario. Equal labels in two dumps are one DOM node. A node moved to another place keeps its label, which is how the tests see that it was moved and not rebuilt. The order of the lines is the order of the nodes in the page.
+A label is a node's identity across dumps. The first time a dump shows an element it takes the next unused name from `a`, `b`, ... `z`, `aa`, ..., and it keeps that name for the rest of the scenario. Equal labels in two dumps are one DOM node. A node moved to another place keeps its label, which is how the tests tell a move from a rebuild. Lines come in page order.
 
-`ops <creates> <removes>` counts calls: `createElement` plus `createTextNode` for the first number, `removeChild` for the second. Moving a node is neither, and the move counter is left out of the line.
+`ops <creates> <removes>` counts calls: `createElement` plus `createTextNode` for the first number, `removeChild` for the second. A move is neither, and the line leaves the move counter out.
 
 ### What has to be true after a render
 
 - Every new child with a key continues the old child with the same key and the same type, wherever the old child stood. The old node is kept. A key is `String(props.key)` as in 07, and a missing, `null` or `undefined` key means no key.
 - The children of every parent end up in the new list's order, a new child at its own place.
 - A kept child gets its new props and text, whether or not its node moved. Its own children are matched by the same rules.
-- A new child with a key that no old child has, or a key whose old child has another type, gets a new node. Old children that no new child continues are removed, one `removeChild` each for the child's own node.
+- A new child whose key no old child has, or whose key has an old child of another type, gets a new node. Old children that no new child continues are removed, one `removeChild` each for the child's own node.
 - Children without a key are matched by position, as in 06. Swapping their texts changes the texts in the same nodes and never moves a node. The tests do not mix keyed and unkeyed children in one list.
 - Keys are exact strings: `""`, `"0"`, `"1"` and `"01"` are four keys, and none of them is "no key".
-- Which nodes you move, and how many, is up to you. Any set of moves that ends with the right order and builds nothing new passes, and a permutation of the same keys therefore costs `ops 0 0`.
+- Which nodes you move, and how many, is up to you. Any set of moves that ends in the right order without building anything new passes, so a permutation of the same keys costs `ops 0 0`.
 
 ## Requirements
 
-Every test is tied to one requirement, and the report counts passes per requirement.
+Each test is filed under one requirement, and the report tallies the passes for each.
 
 - **R1** The same keys in a new order (swap, reverse, rotate) put the nodes in that order, and every node is a kept one.
 - **R2** A reorder in the same render as new and removed keys: the kept children keep their nodes in the new order, new ones are built, missing ones are removed.
@@ -127,7 +127,7 @@ output:  dump 1
          ops 2 1
 ```
 
-Item `d` moved from last to first, and `a` and `c` stayed behind it in their old order. In the second dump the labels `e`, `b` and `d` are the old `li`s of `d`, `a` and `c`. Item `x` is `f`, a new node, and `b`'s node is gone. The counters: one new `li` with its text is two creates, one dropped `li` is one remove. Nothing for the three that were reordered.
+Item `d` went from last to first, and `a` and `c` stayed behind it in their old order. In the second dump the labels `e`, `b` and `d` are the old `li`s of `d`, `a` and `c`. Item `x` is `f`, a new node. The node of item `b` is gone. The counters: one new `li` with its text is two creates, one dropped `li` is one remove. The three reordered items cost nothing.
 
 ### Example 2: two inputs trade places (test `08-R3-bare-inputs-swap`)
 
@@ -168,7 +168,7 @@ output:  dump 1
          node 1 b input "id=ia value=left"
 ```
 
-The text lives on the nodes, not in anything your library stores, so it goes wherever the node goes: node `c` is first in dump 3 and still reads `right`. The last `type` finds `ib` through the page and writes to the node that is now first. A library that built two new inputs would print empty values in dump 3 and labels `d` and `e`.
+Typed text lives on the nodes and nowhere in your library, so it travels with the node. `c` comes first in dump 3 and still reads `right`. The last `type` looks `ib` up in the page and writes to whichever node is first now. A library that built two new inputs would show the labels `d` and `e` in dump 3, both empty.
 
 ### Example 3: moved nodes still get their new props (test `08-R4-moved-props-change`)
 
@@ -204,33 +204,37 @@ output:  dump 1
          ops 0 0
 ```
 
-All three nodes moved, or stayed in the middle, and all three also changed: `a` swaps `className=x title=t` for `className=y`, `b` loses its id and gains a title, `c` gains a class. A program that treats "moved" as the whole story for a node and skips the prop comparison prints the old props here.
+Whether a node moved or stayed, its props changed too. `a` swaps `className=x title=t` for `className=y`, `b` loses its id and gains a title, `c` gains a class. A program that treats "moved" as the whole story for a node and skips the prop comparison prints the old props here.
 
 ## Constraints
 
-Scenarios have at most 74 lines, at most 11 renders and at most 10 children per list. The 42 tests contain cases for each requirement, two longer sessions and seven seeded random runs: shuffles with inserts and removals, sometimes with inputs and typing in between, and a fresh seed gives seven new ones. The limit per case is 10 seconds, and a correct program needs a small fraction of that.
+No scenario goes past 74 lines, 11 renders or 10 children in a list. The 42 tests hold cases for each requirement, two longer sessions and seven seeded random runs: shuffles with inserts and removals, some with inputs and typing in between. A fresh seed gives seven new ones. Each case has a limit of 10 seconds, and a correct program needs a small fraction of that.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-In 07 you walked the old list in step with the new one. A reorder breaks that: the partner of the next new child can lie before the old child you are looking at. Replace the walk with a lookup that does not care where the old child stood, and treat the second job, getting the nodes into the new order, as a problem of its own.
+In 07 you walked the old list in step with the new one. A reorder breaks that, because the partner of the next new child can lie before the old child you are looking at. Replace the walk with a lookup that doesn't care where the old child stood. Then there is the second job, getting the nodes into the new order. Treat it as a problem of its own.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Put the old children in a table by key. Go through the new elements in order and take the partner out of the table: same key, same type means a kept fiber that carries the old node, anything else means a new node. Whatever is left in the table is removed. For the order, give every fiber its position in its list and compare each kept child's old position with the highest old position of the kept children before it in the new list. If it is lower, the child has been passed by a later one and its node has to move; if it is higher, it stays and becomes the new highest. The children that stay form an increasing run of old positions. To move as few nodes as possible you would keep a longest such run in place, and this rule keeps a run that is not always the longest, which the tests accept. In the commit, a moved node and a new node go through the same insertion: put it in front of the first later sibling that already stands in the right place, or at the end. Insertion of a node that has a parent moves it. Moved nodes still need their props updated.
+Put the old children in a table by key. Go through the new elements in order and take each partner out of the table: same key and same type means a kept fiber that carries the old node, anything else means a new node. Whatever is left in the table is removed.
+
+For the order, give every fiber its position in its list. Compare each kept child's old position with the highest old position among the kept children before it in the new list. If it is lower, a later child has passed it and its node has to move. If it is higher, the child stays. It becomes the new highest. The children that stay form an increasing run of old positions. Moving as few nodes as possible would mean keeping a longest such run in place; this rule keeps a run that is not always the longest, and the tests accept that.
+
+In the commit, a moved node and a new node go through the same insertion: put it in front of the first later sibling that already stands in the right place, or at the end. Insertion of a node that has a parent moves it. Moved nodes still get their props updated.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
 - A moved fiber is a kept one. Give it the old node and the old fiber as its alternate, and tag it for placement as well.
 - A new node and a moved node both go before the first later sibling that is already settled. A sibling that is new or moving itself is not settled yet, and it may not be in the page at all.
-- Update the props of a moved node too. The commit step for placement must not replace the update.
+- Update a moved node's props too. The commit step for placement must not replace the update.
 - Removed children are the ones left in the table. Do not remove a child that you matched and moved.
-- The unkeyed children of a list have no key to look up. Match them by position. Reverse `<li>A</li><li>B</li><li>C</li>` and the result is three text updates, not a remove and an insert.
-- A key of `""` is falsy, and `"0"` is not. Test whether a child has a key with `== null`, not with `if (key)`.
-- The old position of each fiber has to be remembered across renders: store it on the fiber when you make it.
+- Children without a key have nothing to look up, so match them by position. Reverse `<li>A</li><li>B</li><li>C</li>` and the result is three text updates, not a remove and an insert.
+- The key `""` is falsy and `"0"` is not. Test whether a child has a key with `== null`, not with `if (key)`.
+- Each fiber's old position has to survive from one render to the next, so store it on the fiber when you make it.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -270,7 +274,7 @@ commitWork(fiber):
 .\check 08 -Dispute <id> "why"      set aside a test you are sure is wrong
 ```
 
-A reconciler that deals with a key in the wrong place by removing the old node and building a new one, as Jongeneel's does, fails like this:
+A reconciler that answers an out-of-place key by removing the old node and building a new one, which is what Jongeneel's does, fails like this:
 
 ```
   R1  Rendering the same keys in a new order puts the nodes in that ord... .    0 / 7   FAILED
@@ -283,8 +287,8 @@ A reconciler that deals with a key in the wrong place by removing the old node a
 
 ## After you pass: compare with the author's code
 
-[Jongeneel's `childsDiff`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=3.2%20Creating%20the%20diff%20for%20the%20children) has no operation for moving a node. It speaks in update, replace, skip, remove and insert. A key that the new list reaches before the old list does is inserted as a brand new node, and its old node is removed when the walk gets there. His second figure, `A, B, C` to `B, A, C`, becomes insert B, update A, remove B, update C: one node built and one thrown away, and a stateful component in it would start over. The article calls this a simplified implementation and says reordering is not supported. Replayed by his `applyChildrenDiff`, that list also hits the front-insert problem described in 07, and the page ends up reading `A, B, B`. Here the same keys cost no node at all (R1, R5), and typed text survives (R3). His loop `while (nextUpdateKey)` also stops on a falsy key, which R7 asks about again with moves involved.
+[Jongeneel's `childsDiff`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=3.2%20Creating%20the%20diff%20for%20the%20children) has no operation for moving a node. Its vocabulary is update, replace, skip, remove and insert. A key that the new list reaches before the old list does is inserted as a brand new node, and its old node is removed when the walk gets there. His second figure, `A, B, C` to `B, A, C`, becomes insert B, update A, remove B, update C: one node built and one thrown away, and a stateful component in it would start over. The article calls this a simplified implementation and says reordering is not supported. Replayed by his `applyChildrenDiff`, the list also hits the front-insert problem described in 07, and the page ends up reading `A, B, B`. Here the same keys cost no node at all (R1, R5). Typed text survives (R3). His loop `while (nextUpdateKey)` also stops on a falsy key, which R7 asks about again with moves involved.
 
-[Pombo's `reconcileChildren`](https://pomb.us/build-your-own-react/#step-vi-reconciliation) compares by position and ignores `key`, and an aside in the post says React also uses keys, which lets it detect children that change places. Position matching is still the rule for children without a key, and R8 tests that: reverse a list that has no keys and the nodes stay put while their texts change.
+[Pombo's `reconcileChildren`](https://pomb.us/build-your-own-react/#step-vi-reconciliation) compares by position and ignores `key`, although an aside in the post says React also uses keys, which lets it detect children that change places. Position matching is still the rule for children without a key. R8 tests that. Reverse a list that has no keys and the nodes stay put while their texts change.
 
-React keeps every key that is in both lists as the same node and moves only some of them. It remembers the highest old index among the children it has matched so far and moves a child whose old index is lower, which is the rule in Hint 2. The tests do not count moves, so a program that moves every kept child in turn passes as well. In [React today](docs/react-today.md), the row on keys says that reordering moves DOM nodes, which is what this assignment asks of you.
+React keeps every key that is in both lists as the same node and moves only some of them: it remembers the highest old index among the children matched so far and moves a child whose old index is lower, which is the rule in Hint 2. The tests don't count moves, so a program that moves every kept child in turn passes as well. In [React today](docs/react-today.md), the row on keys says that reordering moves DOM nodes, which is what this assignment asks of you.

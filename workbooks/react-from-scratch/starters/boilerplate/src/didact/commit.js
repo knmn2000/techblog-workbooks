@@ -3,13 +3,13 @@
 // Problem: problems/05-commit.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   Applies a finished fiber tree to the DOM in one pass, so nobody sees half a render.
-//   Later, assignments 06, 08, 09 and 11 add to this file.
+//   Applies a finished fiber tree to the DOM in a single pass, which keeps half a render
+//   from ever showing. Later, assignments 06, 08, 09 and 11 add to this file.
 //
 // Your job:
-//   Write `commitRoot` and `commitWork`: once the last unit is done, append the finished
-//   tree to the container in a single pass. The Boilerplate gives you the declarations;
-//   fill in each TODO.
+//   Define `commitRoot` and `commitWork`. Once the last unit is done, they append the
+//   finished tree to the container in a single pass. The Boilerplate gives you the
+//   declarations; fill in each TODO.
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

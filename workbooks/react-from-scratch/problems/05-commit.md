@@ -9,15 +9,15 @@
 
 ## Read in the blog first
 
-This page is enough to pass. If you want Pombo's version, read [Step V: Render and Commit Phases](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases). It is six short paragraphs with the code frames in between: why attaching a node in every unit is a problem, what `wipRoot` is, and how a finished tree gets appended. Read the paragraphs and leave the frames until you have a solution of your own.
+Pombo's version is [Step V: Render and Commit Phases](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases). Six short paragraphs with code frames between them cover why attaching a node in every unit is a problem, what `wipRoot` is, and how a finished tree gets appended. Read the paragraphs. Save the frames for after you have a solution of your own. The post is optional, and the page below is enough.
 
 ## Learning material
 
-- [The render phase and the commit phase](#primer/react-render-commit): the units build the tree and leave the page alone, and one uninterrupted pass then attaches it.
-- [`appendChild`, `insertBefore`, `removeChild`](#primer/dom-tree-editing): attaching a node to a parent. The harness counts an `insert` for a node that has no parent yet and a `move` for one that already has one.
-- [Fibers](#primer/react-fibers): the commit walks the finished fiber tree through `child` and `sibling`, and each fiber carries the node to attach.
-- [Module-level state and why `state.js` is an object](#primer/js-global-state): `render.js` leaves the finished root where `commit.js` can find it.
-- [The harness and scenario files](#primer/workbook-harness): `dump` now sits between idle periods, and `ops` reads the page's counters.
+- [The render phase and the commit phase](#primer/react-render-commit): units build the tree and never touch the page; one uninterrupted pass then attaches it.
+- [`appendChild`, `insertBefore`, `removeChild`](#primer/dom-tree-editing): how a node gets attached to a parent. The harness scores a node with no parent yet as an `insert` and one that already has a parent as a `move`.
+- [Fibers](#primer/react-fibers): the commit walks the finished tree by `child` and `sibling`, and every fiber holds the node it will attach.
+- [Module-level state and why `state.js` is an object](#primer/js-global-state): `render.js` leaves the finished root in it for `commit.js` to pick up.
+- [The harness and scenario files](#primer/workbook-harness): `dump` can now come between idle periods, and `ops` reads the page's counters.
 
 ## Source material
 
@@ -28,36 +28,36 @@ This page is enough to pass. If you want Pombo's version, read [Step V: Render a
 
 ## Where this fits
 
-In 04 a unit could append its node, as the post's does, so the page could grow while the browser was free to paint it. This one closes that gap. You add `src/didact/commit.js` and change the loop in `render.js`. The walk, `reconcile.js` and `state.js` are the 04 versions.
+In 04 a unit was allowed to append its node, as the post's does. The page could grow piece by piece while the browser was free to paint it. This one closes that gap. The new file is `src/didact/commit.js`, and `render.js` changes. The walk, `reconcile.js` and `state.js` stay as 04 left them.
 
 ## The problem
 
-Build the tree without showing any of it, and put the whole tree on the page in one pass at the end. A scenario renders a tree, runs idle periods of its own choosing, dumps the container after some of them, and asks the harness how many nodes your code has attached.
+Build the tree without showing any of it. Then put the whole thing on the page in one pass at the end. A scenario renders a tree, runs idle periods of its own choosing, dumps the container after some of them, and asks the harness for counts of what your code has attached.
 
 ### The modules
 
 | File | Export | What it is |
 |---|---|---|
 | `src/didact/commit.js` | `commitRoot()` | Attaches the finished tree to the container and clears the tree under construction. |
-| `src/didact/commit.js` | `commitWork(fiber)` | Attaches one fiber's node to the node of its parent fiber and goes on to the fibers below it. |
-| `src/didact/render.js` | `workLoop`, `performUnitOfWork` | The 04 loop and unit, changed: no unit touches the page, and the loop calls `commitRoot` when the work is done. |
+| `src/didact/commit.js` | `commitWork(fiber)` | Attaches one fiber's node to the node of its parent fiber, then goes on to the fibers below it. |
+| `src/didact/render.js` | `workLoop`, `performUnitOfWork` | The 04 loop and unit, with two changes: no unit touches the page, and the loop calls `commitRoot` when the work is done. |
 
-`state` keeps the fields it had in 04, and you may add more.
+`state` keeps its 04 fields, and you can add more.
 
 ### Input
 
-The checker runs `node assignments/assignment_05_commit.js <input-file> <output-file>`. The file has the shape it had in 04: `../harness/env.js` is imported first, because the loop needs `requestIdleCallback` as soon as `render.js` loads; then `Didact` comes in from `../src/didact/index.js` and `runScenarioFile` from `../harness/scenario.js`; the last line awaits `runScenarioFile(process.argv[2], process.argv[3], Didact)`. The Boilerplate has it finished, and a from-scratch start has to write it. A scenario renders one tree onto the empty container and never renders again.
+Tests run `node assignments/assignment_05_commit.js <input-file> <output-file>`, a file shaped like 04's: `../harness/env.js` first, because the loop wants `requestIdleCallback` the moment `render.js` loads, then `../src/didact/index.js` for `Didact`, `../harness/scenario.js` for `runScenarioFile`, and a last line that awaits `runScenarioFile(process.argv[2], process.argv[3], Didact)`. The Boilerplate includes the file. From scratch, you write it. A scenario renders one tree onto the empty container and never renders again.
 
 | Line | What the harness does |
 |---|---|
-| `tree <name> <markup>` | Defines a tree from one line of HTML-like text, for instance `<ul id=l><li>one</li><li>two</li></ul>`. Prints nothing. |
-| `render <name>` | Calls `Didact.render(element, container)`. Prints nothing and runs no work. |
-| `idle <k>` | One idle period. `timeRemaining()` returns 1 until call number `k`, then 0 (with `inf`, always 1). Prints the number of calls. `k` is 1 or more, or `inf`. |
-| `flush` | Keeps running unlimited periods until one finds nothing to do, meaning a period that never reads the clock. No output. |
+| `tree <name> <markup>` | Registers a tree from one line of HTML-like text, for instance `<ul id=l><li>one</li><li>two</li></ul>`. No output. |
+| `render <name>` | `Didact.render(element, container)` on that tree. No output, and no work runs. |
+| `idle <k>` | An idle period in which `timeRemaining()` answers 1 until call number `k` and 0 from then on (with `inf`, always 1). Prints the number of calls. `k` is 1 or more, or `inf`. |
+| `flush` | Unlimited periods in a row, stopping after the first that finds nothing to do, meaning a period that never reads the clock. No output. |
 | `dump` | Prints the container's contents. |
-| `ops insert move remove` | Prints three counters, then sets all counters back to 0. |
+| `ops insert move remove` | Prints three counters, then zeroes all of them. |
 
-The three counters measure your code's calls on DOM nodes since the previous `ops` or the start of the scenario. `insert` counts `appendChild` and `insertBefore` calls whose node had no parent yet. `move` counts the same calls when the node already had a parent. `remove` counts `removeChild` and `remove` calls. No other counter is asked for here, so how many nodes you create and how many properties you write is your own business.
+The counters tally your code's calls on DOM nodes since the previous `ops`, or since the scenario began. `insert` is the `appendChild` and `insertBefore` calls whose node had no parent yet, `move` the same calls on a node that already had one, and `remove` the `removeChild` and `remove` calls. No other counter is asked for here, so how many nodes you create and how many properties you write is up to you.
 
 ### Output
 
@@ -69,25 +69,27 @@ text <depth> "<text>"
 ops <insert> <move> <remove>
 ```
 
-`idle <n>` is how many times `timeRemaining()` was called in the period. A `dump` prints `dump <i>`, numbering the dumps of the run from 1, and then the children of the container in document order, indented by depth from 0, each element as a `node` line and each text as a `text` line. Nothing follows the `dump` line when the container is empty. Elements are labelled `a`, `b`, `c` and onwards in the order a dump first meets them. The quoted `<props>` at the end of a `node` line list what differs from the defaults, as `name=value`, in alphabetical order. Five props can show: `className`, `id` and `title` when not empty, `disabled` on buttons, inputs and textareas (as `disabled=true`), and `value` on inputs and textareas when not empty. Values with whitespace, `"` or `%` in them go through `encodeURIComponent`, so a space is `%20`. Nothing to list means `""`. In a `text` line, `%`, `"` and line breaks are encoded and spaces stay.
+`idle <n>` is the number of `timeRemaining()` calls in that period. A `dump` prints `dump <i>`, counting dumps from 1, then what the container holds, in document order and indented by depth from 0: a `node` line per element, a `text` line per text node; an empty container gets the `dump` line and nothing after it. Elements are labelled `a`, `b`, `c` and on, in the order a dump first meets them.
+
+The quoted `<props>` on a `node` line lists what differs from the defaults, as `name=value`, alphabetically, and five props can appear: `className`, `id` and `title` when not empty; `disabled` on buttons, inputs and textareas, written `disabled=true`; and `value` on inputs and textareas when not empty. A value with whitespace, `"` or `%` in it goes through `encodeURIComponent`, so a space becomes `%20`. Nothing to list prints `""`. In a `text` line, line breaks and the characters `%` and `"` are encoded; spaces stay.
 
 ### While the units run
 
-Units are counted as in assignment 04: the root fiber, then one per element and one per text node, so a tree with `E` elements and `T` text pieces takes `1 + E + T` units. A period with budget `k` does `k` units if that many are waiting, and all of them otherwise. It reads `timeRemaining()` once after each unit, the last unit of the tree included, and not at all when there is nothing to do.
+Units count the way they did in assignment 04: the root fiber, then one per element and one per text node, `1 + E + T` for a tree with `E` elements and `T` text pieces. A period with budget `k` does `k` units if that many are waiting, and all of them otherwise. It reads `timeRemaining()` once after each, the last unit of the tree included. With nothing to do it reads nothing.
 
-The page is what changes. A unit may create the node of its fiber and set its props, but it may not attach anything to the container or to another node. A `dump` taken after a period that leaves units undone shows an empty container, and `ops insert move remove` shows `0 0 0`.
+What changes is the page. A unit may create its fiber's node and set its props, but it may not attach anything to the container or to another node, which means a `dump` after a period that leaves units undone shows an empty container and `ops insert move remove` prints `0 0 0`.
 
 ### The period that ends the work
 
-The period whose last unit finishes the tree also commits: right after that unit, in the same call of the loop, every element and text node of the finished tree is attached to its parent's node. When `idle` returns, the container holds the whole tree. The pass does not count as a unit and does not call `timeRemaining()`, so `idle` prints what it printed in 04.
+The period whose last unit finishes the tree commits as well. Straight after that unit, in the same call of the loop, every element and text node of the finished tree is attached to its parent's node, and by the time `idle` returns the container holds the whole tree. The pass is not a unit and does not call `timeRemaining()`, so `idle` prints what it printed in 04.
 
-When a period uses up the last of the work with its final unit, as `idle 9` does on a tree of 9 units, the commit still happens in that period. There is no extra period for it.
+That holds even when the last unit also uses up the budget: `idle 9` on a tree of 9 units commits in that period. No extra period.
 
-The pass attaches each node once, so the three counters read `N 0 0` for the period of the commit, where `N` is the number of elements plus text nodes (the root fiber has no node of its own to attach, so `N` is one less than the units). The order in which the pass visits the fibers is not visible to the checker, so a parent may go in before or after its children and the walk may be recursive or a loop. It has to reach every fiber, siblings included, and the siblings of one parent have to be attached in their tree order, or the children end up in the wrong order.
+Each node is attached once, and the counters read `N 0 0` for the period of the commit. `N` is the number of elements plus text nodes; the root fiber has no node of its own to attach, which makes `N` one less than the units. The checker can't see in what order you visit the fibers, so a parent may go in before or after its children and the walk may be recursive or a loop. It does have to reach every fiber, siblings included, and attach the children of one parent in tree order. Otherwise they land in the wrong order.
 
 ### After the commit
 
-The tree is on the page, so later periods, and `flush`, have nothing to do. They print 0, leave the container alone, and the counters stay at 0. A loop that forgets to clear its finished root commits again on every period, and its `move` counter shows it.
+With the tree on the page, later periods and `flush` have nothing to do. They print 0, leave the container alone and keep the counters at 0. A loop that forgets to clear its finished root commits again every period, and the `move` counter gives it away.
 
 ## Requirements
 
@@ -102,8 +104,8 @@ The tree is on the page, so later periods, and `flush`, have nothing to do. They
 
 ### Example 1: dumping after every period (test `05-R1-empty-between-periods`)
 
-input:
 ```
+input:
 tree a <div><h1>title<p>para</p><a>link</a></h1><h2>sub</h2></div>
 render a
 idle 3
@@ -112,9 +114,8 @@ idle 3
 dump
 idle 3
 dump
-```
+
 output:
-```
 idle 3
 dump 1
 idle 3
@@ -123,21 +124,20 @@ idle 3
 dump 3
 ```
 
-Ten units, and three periods of three leave one undone. Nothing has been committed, so all three dumps stop after their header line. Nodes may already exist, since the units create them, and they are all detached.
+Ten units. Three periods of three leave one undone, so nothing has been committed and all three dumps end after their header line. Nodes may already exist, because units create them, but every one is detached.
 
 ### Example 2: the period that commits (test `05-R2-last-period-of-three`)
 
-input:
 ```
+input:
 tree a <div><section><article><span><em><b><div></div></b></em></span></article></section></div>
 render a
 idle 3
 idle 3
 idle 3
 dump
-```
+
 output:
-```
 idle 3
 idle 3
 idle 2
@@ -151,12 +151,12 @@ node 5 f b ""
 node 6 g div ""
 ```
 
-The chain has seven elements and a root fiber, so eight units. The third period has two units left. It does them, prints 2 (no ninth read for the commit), and has the whole chain on the page by the time `dump` runs. A solution that commits at the start of the next period prints the same numbers and then dumps an empty container.
+Seven elements and the root fiber make eight units. Two are left for the third period. It does them, prints 2 (no ninth read for the commit) and leaves the whole chain on the page before `dump` runs. A solution that commits at the start of the next period prints the same numbers and then dumps an empty container. Right numbers, wrong page.
 
 ### Example 3: counting inserts (test `05-R4-insert-at-commit`)
 
-input:
 ```
+input:
 tree a <div><h1>title<p>para</p><a>link</a></h1><h2>sub</h2></div>
 render a
 idle 4
@@ -165,9 +165,8 @@ idle 4
 ops insert move remove
 idle 4
 ops insert move remove
-```
+
 output:
-```
 idle 4
 ops 0 0 0
 idle 4
@@ -176,33 +175,33 @@ idle 2
 ops 9 0 0
 ```
 
-The tree has 5 elements and 4 text pieces. Nine nodes go in at the commit, in one period, and none of them has been in the DOM before, so every call counts as an `insert`. A `move` would mean you appended a node that already had a parent, which is what attaching in the unit and again in the commit does.
+5 elements and 4 text pieces make nine nodes. All nine are attached in the commit, in a single period, and none was in the DOM before, so each call counts as an `insert`. A `move` would mean a node that already had a parent was appended again. That is what happens when a unit attaches its node and the commit attaches it again.
 
 ## Constraints
 
-The trees hold between 2 and 60 units of plain elements and text, with no handlers, components or keys, and each scenario renders one tree. Budgets are whole numbers from 1 up or `inf`. An `ops` line always names `insert move remove`. There are 44 tests: hand-picked trees for every requirement, two whole scenarios and five seeded random ones, two of which dump after each period; `-Fresh` draws five new ones. A test may take 10 seconds; a correct solution finishes in milliseconds.
+Trees have 2 to 60 units of plain elements and text, with no handlers, components or keys, and a scenario renders one tree with budgets that are whole numbers from 1 up or `inf`, and an `ops` line that always names `insert move remove`. The 44 tests are hand-picked trees for every requirement, two whole scenarios and five seeded random ones, two of which dump after each period. `-Fresh` draws five new ones. A test may take 10 seconds; a correct solution finishes in milliseconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Take a scenario that dumps after each period and look at 04's loop: the only thing that has to go from the unit is the line that puts a node into its parent. Then ask what is left after the last unit, and where in the loop you would learn that the work is over.
+Picture a scenario that dumps after every period and read your 04 loop with it in mind. The only thing that has to leave the unit is the line that puts a node into its parent. Then ask what is left to do after the last unit, and where in the loop you find out the work is over.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Let `render` remember the root fiber it creates, as the tree under construction, next to the fiber to work on. A unit stops attaching. After the `while` loop in `workLoop`, if no fiber is left to do and there is a tree under construction, commit it: walk from the root's first child, attach each fiber's node to the node of its parent fiber, then do its children and its siblings. Clear the remembered root at the end so a later period does not do it again.
+Have `render` keep the root fiber it creates, as the tree under construction, beside the fiber to work on next. Units stop attaching. After the `while` loop in `workLoop`, check whether a fiber is left and whether a tree under construction exists. With no fiber left and the tree there, commit it. Start at the root's first child, attach each fiber's node to its parent fiber's node, then do its children and its siblings. Clear the kept root at the end, so a later period does not do it all again.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- Leave nothing in the unit that attaches. Even one `appendChild` in a unit makes the dump after the first period non-empty.
-- Commit inside the same call that did the last unit. Checking at the top of the next call is one period late.
-- The commit is not a unit: no extra read of `timeRemaining()`, and no waiting for the clock before committing.
-- Walk the siblings as well as the children. A walk that follows only `child` attaches the first branch and nothing else.
-- Skip the root fiber: its node is the container, and it is not attached to anything. The walk starts at its child.
-- Clear the finished root after the commit. Otherwise every later period, even an idle one, appends the whole tree again.
-- The commit needs the tree under construction and the next fiber to work on in the same state object `render.js` writes to.
+- No attaching may stay in the unit. A single `appendChild` there makes the dump after the first period non-empty.
+- Commit in the call that ran the last unit. Checking at the top of the next call is a period late.
+- The commit is not a unit. It adds no read of `timeRemaining()` and does not wait for the clock.
+- Follow the siblings as well as the children; a walk that follows only `child` attaches the first branch and stops.
+- Skip the root fiber. Its node is the container and nothing attaches it. The walk starts at its child.
+- Clear the finished root after the commit, or every later period, even an idle one, appends the whole tree again.
+- `commit.js` reads the tree under construction and the next fiber to work on from the same state object `render.js` writes to.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -240,7 +239,7 @@ commitWork(fiber):
 .\check 05 -Dispute <id> "why"     set aside a test you think is wrong
 ```
 
-A loop that commits at the start of the next period instead of at the end of this one fails like this:
+If the commit waits for the next period instead of running at the end of this one, the report reads:
 
 ```
   R2  the period that runs the last unit also commits: a dump right aft... .    0 / 7   FAILED
@@ -253,8 +252,8 @@ A loop that commits at the start of the next period instead of at the end of thi
 
 ## After you pass: compare with the author's code
 
-[Pombo's Step V](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases) is the fix for the half-drawn page of Step IV. It keeps the root of the tree under construction in `wipRoot`, removes the node attachment from `performUnitOfWork`, and calls `commitRoot()` from `workLoop` when there is no next unit of work and `wipRoot` is set. `commitRoot` calls `commitWork(wipRoot.child)` and clears `wipRoot`. `commitWork` appends `fiber.dom` to `fiber.parent.dom`, so a parent goes in before the fibers below it, and then recurses into `child` and `sibling`. That is the shape the tests assume, including the commit in the call of the last unit, although they accept the other order of parent and children as well. In the post all of this shares a file with the loop and reads `wipRoot` as a variable; here `commit.js` reads it from `state`.
+[Pombo's Step V](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases) repairs the half-drawn page of Step IV. The root of the tree under construction goes in `wipRoot`, `performUnitOfWork` loses its attaching line, and `workLoop` calls `commitRoot()` when there is no next unit of work and `wipRoot` is set. `commitRoot` calls `commitWork(wipRoot.child)` and clears `wipRoot`, and `commitWork` appends `fiber.dom` to `fiber.parent.dom`, a parent before the fibers below it, and then recurses into `child` and `sibling`. The tests assume that shape, including the commit in the call of the last unit. They accept the other order of parent and children too. In the post it all shares a file with the loop and `wipRoot` is a plain variable; here `commit.js` reads it from `state`.
 
-Two things in the post's commit go beyond what the checker needs, and neither is exercised here. The post's `commitWork` recurses along `sibling`, so a parent with enough children can overflow the call stack (a test of the post's Step V code on Node 26 passed at fifteen thousand siblings and overflowed at twenty thousand; the limit depends on the engine); the trees here have a few dozen nodes at most. And the whole tree is walked in the commit. The post's epilogue says React keeps a linked list of the fibers that have effects and visits only those, and [React today](docs/react-today.md) says when React can pause a render at all.
+Two things in the post's commit go beyond what the checker needs, and neither is exercised here. First, the post's `commitWork` recurses along `sibling`, so a parent with enough children can overflow the call stack. A test of the post's Step V code on Node 26 passed at fifteen thousand siblings and overflowed at twenty thousand. The limit depends on the engine, and the trees here have a few dozen nodes at most. Second, the commit walks the whole tree, where the post's epilogue says React keeps a linked list of the fibers that have effects and visits only those. [React today](docs/react-today.md) says when React can pause a render at all.
 
-The commit runs inside `workLoop`, ahead of the final `requestIdleCallback(workLoop)`, so an exception thrown by it ends the loop for good, as one thrown in a unit does. No test throws from the commit, and 06 names a bug in the post that does.
+The commit runs inside `workLoop`, ahead of the closing `requestIdleCallback(workLoop)`, so an exception from it ends the loop for good, as one from a unit does. No test throws from the commit. 06 names a bug in the post that does.

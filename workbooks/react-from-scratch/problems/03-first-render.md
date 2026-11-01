@@ -9,14 +9,14 @@
 
 ## Read in the blog first
 
-The page is complete without the post. For Pombo's version, read the start of [Step II: The render Function](https://pomb.us/build-your-own-react/#step-ii-the-render-function), the paragraphs about creating a node from the element type and doing the same for each child, and stop before the paragraph about the props, because `createDom` from assignment 02 already does that part. The opening of [Step III](https://pomb.us/build-your-own-react/#step-iii-concurrent-mode) explains what is wrong with a recursion like this one. You can leave it for assignment 04.
+Nothing here depends on the post. For Pombo's version, take the start of [Step II: The render Function](https://pomb.us/build-your-own-react/#step-ii-the-render-function), the paragraphs on creating a node from the element type and doing the same for each child. Stop before the one about props: `createDom` from assignment 02 already covers that. The opening of [Step III](https://pomb.us/build-your-own-react/#step-iii-concurrent-mode) explains what is wrong with a recursion like this one, and it can wait for 04.
 
 ## Learning material
 
-- [Loops: for, for...of and while](#primer/js-loops): an element has any number of children, and each has to be visited.
-- [appendChild, insertBefore and removeChild](#primer/dom-tree-editing): a node joins a parent's list of children when you append it, and the order of the appends is the order on the page.
-- [Trees of elements, and the "virtual DOM"](#primer/react-tree): the children of an element are elements, so a tree is handled by doing one thing to the root and then the same thing to each child.
-- [ES modules: import and export](#primer/js-modules): used in a new way. This file imports from a module you wrote, with a relative path that ends in `.js`.
+- [Loops: for, for...of and while](#primer/js-loops): an element can have any number of children, and every one needs a visit.
+- [appendChild, insertBefore and removeChild](#primer/dom-tree-editing): appending puts a node into its parent's list of children, and the order of the appends becomes the order on the page.
+- [Trees of elements, and the "virtual DOM"](#primer/react-tree): the children of an element are elements too, so a tree is elements inside elements, and handling it means doing one thing to the root and then the same thing to each child.
+- [ES modules: import and export](#primer/js-modules): the new part is importing a file of your own, by a relative path that ends in `.js`.
 
 ## Source material
 
@@ -26,19 +26,19 @@ The page is complete without the post. For Pombo's version, read the start of [S
 
 ## Where this fits
 
-The two earlier files build an element and put props on one node. This one walks a whole tree of elements and uses both, with `createDom` from `src/didact/dom.js` doing the work on each node. It is a first draft: one recursive call that cannot stop halfway, which assignment 04 replaces with a loop. You write `src/didact/renderSync.js`, and nothing imports it after 04.
+Elements exist (01) and a node can be given its props (02). This assignment walks a whole tree of them, with `createDom` from `src/didact/dom.js` doing the work on each node. It is a first draft: one recursive call that cannot stop halfway, and 04 swaps it for a loop. You write `src/didact/renderSync.js`. After 04 nothing imports it.
 
 ## The problem
 
-Write `render(element, container)`. Given an element tree and an empty DOM node, it builds the nodes for the whole tree and puts them under that node, using the `createDom` you wrote in assignment 02. A scenario renders a tree, dumps the container, and clicks things to see whether the handlers arrived.
+Write `render(element, container)`. It receives an element tree and an empty DOM node, builds the nodes for the whole tree with your `createDom` from 02, and puts them under that node. A scenario renders a tree, dumps the container, and clicks things to find out whether the handlers made it.
 
 ### The module
 
-`src/didact/renderSync.js` exports `render(element, container)`. It returns nothing, and by the time it returns the whole tree is in the container. The elements it receives are `{ type, props }` objects in the format of assignment 01: `props.children` is always an array, and a string child is a text element.
+`src/didact/renderSync.js` exports `render(element, container)`. It returns nothing, and when it returns the whole tree is in the container. Elements arrive as `{ type, props }` objects in the format of assignment 01: `props.children` is always an array, and a string child is already a text element.
 
 ### Input
 
-The checker runs `node assignments/assignment_03_first_render.js <input-file> <output-file>`. The entry program gives the harness a single function: it imports `render` from your `renderSync.js` and `runScenarioFile` from `../harness/scenario.js`, then awaits `runScenarioFile(process.argv[2], process.argv[3], { render })`. The Boilerplate has it finished; if you started from scratch, put it in place before you test anything. The lines of a scenario are:
+For each test the checker launches `node assignments/assignment_03_first_render.js <input-file> <output-file>`. The entry program hands the harness one function. It imports `render` from your `renderSync.js` and `runScenarioFile` from `../harness/scenario.js`, then awaits `runScenarioFile(process.argv[2], process.argv[3], { render })`. The Boilerplate includes it finished, and a from-scratch start needs it before the first test. A scenario is made of these lines:
 
 | Line | What the harness does |
 |---|---|
@@ -49,7 +49,7 @@ The checker runs `node assignments/assignment_03_first_render.js <input-file> <o
 | `click #<id>` | Dispatches a bubbling `click` on the element with that id, which has to be in the container. |
 | `log` | Prints the handler calls recorded since the last `log`. |
 
-The markup is one line of HTML-like text: `<tag name="value" other=value flag onClick=@hit>text <b>nested</b></tag>`. Values are strings, and a bare name such as `disabled` means `true`. `@hit` is a handler: it is one function that records the word `hit` in the log when it runs, and one name is one function. Text between tags keeps its inner spaces. A piece of text that is only whitespace is dropped, so it does not appear in a tree. `input`, `br`, `hr` and `img` need no closing tag. The harness builds the elements with its own copy of `createElement`, so the tree does not depend on your assignment 01.
+The markup is one line of HTML-like text: `<tag name="value" other=value flag onClick=@hit>text <b>nested</b></tag>`. Values are strings; a bare name such as `disabled` means `true`. `@hit` is a handler, one function that records the word `hit` in the log whenever it runs, and one name always means one function. Text between tags keeps its inner spaces, but whitespace-only text is dropped before it reaches the tree. `input`, `br`, `hr` and `img` take no closing tag. The harness builds the elements with its own copy of `createElement`, so your assignment 01 is not involved.
 
 ### Output
 
@@ -60,15 +60,15 @@ node <depth> <label> <tag> "<props>"
 text <depth> "<text>"
 ```
 
-The container itself is not printed, so its first child has depth 0 and each level down adds 1. A label is the next free name (`a`, `b`, ..., `z`, `aa`, ...) the first time a dump shows an element, so in a single dump they run in document order. `<tag>` is lower case. `<props>` lists the values that differ from the default for `className`, `disabled` (on `button`, `input` and `textarea`), `id`, `title` and `value` (on `input` and `textarea`), sorted by name and joined with single spaces. A value with whitespace, a double quote or `%` is percent-encoded, and a boolean prints as `true`. Props that the dump does not list, `lang` for example, do not show. A text line shows the node's text with `%`, double quotes and line breaks encoded; spaces stay. Neighbouring text nodes print as one line. An empty container prints only the `dump <n>` line, and no `title` line appears in this assignment: `document.title` stays empty.
+The container itself is left out, so its first child sits at depth 0 and every level below adds 1. An element gets the next free label (`a`, `b`, ..., `z`, `aa`, ...) the first time a dump shows it, which makes labels run in document order within a single dump. `<tag>` is lower case. `<props>` lists the values that differ from the default for `className`, `disabled` (on `button`, `input` and `textarea`), `id`, `title` and `value` (on `input` and `textarea`), sorted by name and joined with single spaces. A value with whitespace, a double quote or `%` is percent-encoded, and a boolean prints as `true`. Props outside that list, `lang` for example, do not show. A text line shows the node's text with `%`, double quotes and line breaks encoded, and spaces left alone. Neighbouring text nodes print as one line. An empty container prints only the `dump <n>` line. No `title` line appears in these scenarios, because `document.title` stays empty.
 
-`log` prints `log <name>` for each handler call, in order.
+Each handler call is printed as `log <name>`, in order.
 
 ### What `render` builds
 
-Every element becomes one node of its tag, and every text element becomes one text node holding the text. A node's children are the nodes of the element's children, in the order the element lists them, and they are inside that node, not beside it. The top element's node becomes the container's only child. Props and handlers get onto each node the way `createDom` puts them there. A click on a node runs its handlers, then those of its parent, and so on up through the container.
+Every element becomes one node of its tag, and every text element one text node holding the text. A node's children are the nodes of the element's children, in the order the element lists them, and they sit inside that node, not beside it. The top element's node becomes the container's only child. Props and handlers reach each node the way `createDom` puts them there. A click on a node runs its handlers, then its parent's, and so on up through the container.
 
-Each scenario calls `render` once, onto an empty container, so there is nothing to update, replace or clear.
+Each scenario calls `render` once, onto an empty container: nothing to update, replace or clear.
 
 ## Requirements
 
@@ -84,15 +84,14 @@ Each scenario calls `render` once, onto an empty container, so there is nothing 
 
 ### Example 1: the last child has children (test `03-R3-last-is-deep`)
 
-input:
 ```
+input:
 tree t <div><h1></h1><h2></h2><section><h3></h3><h4></h4></section></div>
 render t
 flush
 dump
-```
+
 output:
-```
 dump 1
 node 0 a div ""
 node 1 b h1 ""
@@ -102,19 +101,18 @@ node 2 e h3 ""
 node 2 f h4 ""
 ```
 
-The depth column carries the structure. `h1`, `h2` and `section` are all at depth 1, so they are siblings under the `div`, and `h3` and `h4` at depth 2 sit inside the `section`. An implementation that renders children into the container instead of into their parent prints every node at depth 0, with the `div` last.
+The depth column carries the structure. `h1`, `h2` and `section` are all at depth 1, siblings under the `div`; `h3` and `h4` at depth 2 sit inside the `section`. An implementation that renders children into the container instead of into their parent prints everything at depth 0, with the `div` last.
 
 ### Example 2: text on both sides of an element (test `03-R4-text-element-text`)
 
-input:
 ```
+input:
 tree t <p>hello <b>big</b> world</p>
 render t
 flush
 dump
-```
+
 output:
-```
 dump 1
 node 0 a p ""
 text 1 "hello "
@@ -123,12 +121,12 @@ text 2 "big"
 text 1 " world"
 ```
 
-The `p` has three children: a text node, the `b`, and another text node. The two texts print as separate lines because the `b` sits between them, and each keeps the space next to the element, which the quotes make visible. The word `big` is one level deeper, inside the `b`.
+The `p` has three children: text, the `b`, more text. The two texts print on separate lines because the `b` is between them, and each keeps the space beside the element, which the quotes make visible. `big` is a level deeper, inside the `b`.
 
 ### Example 3: a click rises through the ancestors (test `03-R6-bubbling`)
 
-input:
 ```
+input:
 tree t <div id="outer" onClick=@outer><button id="inner" onClick=@inner></button></div>
 render t
 flush
@@ -136,40 +134,39 @@ click #inner
 log
 click #outer
 log
-```
+
 output:
-```
 log inner
 log outer
 log outer
 ```
 
-The first click lands on the button, so `inner` runs first, and then the click goes on to the `div`, where `outer` runs. That is two lines for one click. The second click is on the `div` itself, and the button is not an ancestor, so only `outer` runs. The scenario has no `dump`: it only checks what clicks do.
+The first click lands on the button, so `inner` runs, and then the click goes on to the `div`, where `outer` runs: two lines for one click. The second click is on the `div` itself. The button is no ancestor of the `div`, so only `outer` runs. There is no `dump` in this scenario; it only checks what clicks do.
 
 ## Constraints
 
-Scenarios have at most 10 lines. Every tag is lower case, so each element is a plain host element with a string for its type, and no component appears before assignment 09. A tree has at most about 200 nodes, elements and texts together, and none is deeper than 10 levels. Ids that a scenario clicks are unique inside their tree. The 46 tests are the cases of each requirement, two scripted pages and seven seeded random trees (`-Fresh` gives seven new ones). A correct solution takes milliseconds, and each test is allowed 10 seconds.
+Scenarios run to 10 lines at most. Every tag is lower case, which makes each element a plain host element with a string type, and no component appears before assignment 09. A tree has at most about 200 nodes (elements and texts together) and none is deeper than 10 levels. The ids a scenario clicks are unique within their tree. The 46 tests are each requirement's cases, two scripted pages and seven seeded random trees (`-Fresh` gives seven new ones). A correct solution finishes in milliseconds, and a test gets 10 seconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Handle the smallest tree first: a single element with no children. Then ask what changes when it has one child. The child is an element too, so whatever you did for the first one is what you do for the second.
+Do the smallest tree first, a single element with no children. Then give it one child and see what changes. The child is an element too, so whatever worked on the first one works on the second.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-`render` takes a node to put things under, and for the top element that node is the container. Make the node for the element, then call `render` for each child, with the new node as its container, and then attach the new node to the container you were given. The recursion handles any depth. Text elements need no special case here, because `createDom` already knows what to make of them.
+`render` takes a node to put things under, and for the top element that node is the container. Make the node for the element, call `render` on each child with the new node as the container, then attach the new node to the container you were given. Recursion copes with any depth. Text elements need no special case, since `createDom` already knows what to do with them.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- A child goes into its parent's node. Pass the container of the call you are in, and the children land beside the parent instead.
-- Keep the children's order. Appending in list order is enough, and putting each node at the front of the container turns the order around.
-- Visit every child. Stopping after the first, or skipping the text elements, drops nodes without any error.
-- Use `createDom` for props. Assigning props yourself makes `id` and `className` work, and a handler such as `onClick` then ends up as a property that nothing listens to.
-- `element.props.children` is an array for every element, text elements included.
-- Do not clear the container or reuse nodes: each scenario renders once, into an empty container.
+- Children go into their parent's node. Hand them the container of your own call and they land beside the parent.
+- Appending in list order keeps the children's order. Put each node at the front of the container and the list comes out reversed.
+- Visit every child. Stop after the first, or skip the text elements, and nodes vanish without an error.
+- Let `createDom` set the props. Do it yourself and `id` and `className` work, but a handler such as `onClick` ends up as a property that nothing listens to.
+- Every element has an array in `element.props.children`, text elements included.
+- No need to clear the container or reuse nodes. Each scenario renders once, into an empty one.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -203,12 +200,12 @@ A `render` that puts each node in front of the container's first child turns eve
           reproduce: py -P tools/run_js.py build/bugs/03/siblings-reversed 03 build/cases/03/03-R3-three-tags.in build/cases/03/03-R3-three-tags.out
 ```
 
-The requirements build on each other, so when several fail, start with the first one in the list.
+Requirements build on one another. When several fail, start with the first.
 
 ## After you pass: compare with the author's code
 
-[Pombo's `render`](https://pomb.us/build-your-own-react/#step-ii-the-render-function) makes a text node for a `TEXT_ELEMENT` and an ordinary node otherwise, assigns the props, calls itself for every child with the new node as the container, and appends the node to its container last. Children are therefore attached to a node before the node is attached to its parent. Attaching the parent first and filling it afterwards gives the same page, and passes too.
+[Pombo's `render`](https://pomb.us/build-your-own-react/#step-ii-the-render-function) makes a text node for a `TEXT_ELEMENT` and an ordinary node for anything else, assigns the props, calls itself on every child with the new node as the container, and appends the node to its own container last. Children are therefore attached to a node before the node is attached to its parent. Do it the other way round, parent first and filled afterwards, and you get the same page. That passes too.
 
-The post assigns the props with a loop of its own, every prop that is not `children` as a property (`key` included), and that loop is the part that differs here. A handler such as `onClick` ends up as a property of that name, which no browser looks at, so in the post's Step II no handler works until the listeners arrive in Step VI. This assignment sends the props through your `updateDom`, so a click works from the first render on, and R6 tests that. The post's Step III then says that a recursion like this one keeps the main thread busy until the tree is done, which is why 04 takes it apart.
+The post assigns props with a loop of its own: every prop except `children` becomes a property (`key` included), and this loop is where the two versions differ. A handler such as `onClick` ends up as a property of that name, which no browser looks at, so no handler works in the post's Step II until the listeners arrive in Step VI. Here the props go through your `updateDom`, clicks work from the first render, and R6 tests for it. The post's Step III then says that a recursion like this one keeps the main thread busy until the tree is done, which is why 04 takes it apart.
 
-Neither the post nor this page clears what is already in the container, while React empties it on a first render, and the tests render into an empty container. A call to React's `root.render` also finishes later than your `render`. The row on mounting in [React today](docs/react-today.md) says that your `render` plays the part of `root.render`.
+Neither the post nor this page clears what is already in the container. React empties it on a first render, but the tests render into an empty container and the difference stays hidden. React's `root.render` also finishes later than your `render` does. The row on mounting in [React today](docs/react-today.md) says that your `render` plays the part of `root.render`.

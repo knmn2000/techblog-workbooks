@@ -10,8 +10,8 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `Didact` object to `runScenarioFile`; the scenario renders a tree, runs idle
-//   periods of a size it picks, and dumps the container.
+//   Run `runScenarioFile` with your `Didact` object. The scenario renders a tree, runs
+//   idle periods of a size it picks, and dumps the container.
 //
 // The other files of this assignment:
 //   You also write src/didact/state.js, src/didact/render.js, src/didact/reconcile.js and

@@ -14,19 +14,19 @@
 //   assignment's other files.
 //
 // The other files of this assignment:
-//   It adds to src/didact/state.js, which you started earlier: Add `currentRoot`, the last
-//   tree you committed, and `deletions`, the fibers to remove.
-//   It adds to src/didact/render.js, which you started earlier: Point the new root's
-//   `alternate` at `currentRoot`, the tree you committed last time, and reset `deletions`
-//   on every `render`.
+//   It adds to src/didact/state.js, which you started earlier: Track the last tree you
+//   committed in `currentRoot`, and the fibers waiting for removal in `deletions`.
+//   It adds to src/didact/render.js, which you started earlier: On every `render`, point
+//   the new root's `alternate` at `currentRoot` (the tree you committed last time) and
+//   reset `deletions`.
 //   It adds to src/didact/reconcile.js, which you started earlier: Rewrite
 //   `reconcileChildren` to compare each element with the old fiber at the same position.
-//   Same type reuses the old DOM node and updates it, a different type gets a new node,
-//   and an old fiber with no element left is queued for deletion.
-//   It adds to src/didact/commit.js, which you started earlier: Act on what reconciliation
-//   decided: put a new node before the next sibling that already has a DOM node, so it
-//   keeps its position, call `updateDom` for an update, and remove each deleted node
-//   exactly once.
+//   The same type keeps its DOM node and gets updated, a different type gets a fresh node,
+//   and an old fiber left without an element is queued for deletion.
+//   It adds to src/didact/commit.js, which you started earlier: Carry out what
+//   reconciliation decided. A new node goes before the next sibling that already has a DOM
+//   node, which keeps its position; an updated one goes through `updateDom`; each deleted
+//   node is removed once.
 //   Earlier files you can use: src/didact/dom.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
 //       import { state } from '../src/didact/state.js'

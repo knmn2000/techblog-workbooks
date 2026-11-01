@@ -3,8 +3,8 @@
 // Problem: problems/04-fibers.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The `Didact` object an app imports: `createElement` and `render`, then the hooks as
-//   they arrive. Later, assignments 10 and 11 add to this file.
+//   What an app imports: one `Didact` object carrying `createElement` and `render`, with
+//   the hooks joining it as you write them. Later, assignments 10 and 11 add to this file.
 //
 // Your job:
 //   The Boilerplate gives you this file finished: the declarations. You fill in the TODOs

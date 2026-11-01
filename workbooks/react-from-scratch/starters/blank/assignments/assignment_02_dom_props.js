@@ -10,7 +10,7 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `createDom` and `updateDom` to `runScenarioFile`; the scenario creates one
+//   Give `runScenarioFile` your `createDom` and `updateDom`. The scenario creates one
 //   node, updates it a few times and clicks it.
 //
 // The other files of this assignment:

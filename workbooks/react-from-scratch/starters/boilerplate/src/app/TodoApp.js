@@ -3,10 +3,11 @@
 // Problem: problems/12-todo-app.md (and in the problem book, with its Start here card)
 //
 // Why this file exists:
-//   The todo list, written the way an application would write it, on top of your Didact.
+//   A todo list written the way an application would write it, as function components on
+//   your own Didact.
 //
 // Your job:
-//   Write `TodoApp` with function components on your Didact: a form with a controlled
+//   Compose `TodoApp` from function components on your Didact: a form with a controlled
 //   input, a list of keyed items, and a toggle and a remove button on each item. The
 //   Boilerplate gives you the declarations; fill in each TODO.
 //

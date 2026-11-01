@@ -10,8 +10,8 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `Didact` object and your `TodoApp` to `runScenarioFile`; the scenario types
-//   into the form, adds items, toggles and removes them.
+//   Supply `runScenarioFile` with your `Didact` object and your `TodoApp`. The scenario
+//   types into the form, adds items, toggles and removes them.
 //
 // The other files of this assignment:
 //   You also write src/app/TodoApp.js and src/main.js in this assignment; each one gives

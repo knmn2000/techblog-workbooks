@@ -9,15 +9,15 @@
 
 ## Read in the blog first
 
-The page below is complete on its own. If you want Pombo's version first, read the opening of [Step VIII: Hooks](https://pomb.us/build-your-own-react/#step-viii-hooks), the four paragraphs that turn the example into a click counter, and stop before "We need to initialize some global variables". The rest of the step walks through the author's code, and writing that code is your job.
+Everything you need is below. If you want Pombo's version first, read the start of [Step VIII: Hooks](https://pomb.us/build-your-own-react/#step-viii-hooks): the four paragraphs that turn the example into a click counter. Stop at "We need to initialize some global variables". After that comes the author's code, and writing it is your job.
 
 ## Learning material
 
-- [useState and the rules of hooks](#primer/react-state): what a hook is, why a component can call `useState` several times, and why the calls have to happen in the same order on every render.
-- [Several updates, one render](#primer/react-batching): the counter with id `d` queues two updaters per click, and both must land in a single render.
-- [Arrow functions and closures](#primer/js-functions-closures): a setter is a closure over the state it belongs to, and the tests call it long after the render that made it.
-- [Reconciliation by type and position](#primer/react-reconciliation): used in a new way. The old fiber that your reconciler pairs with a new one now hands over a component's state along with its DOM node.
-- [Keys](#primer/react-keys): used in a new way. Keyed counters keep their counts when the list is reordered.
+- [useState and the rules of hooks](#primer/react-state): what a hook is, why one component can call `useState` several times, and why the calls must come in the same order on every render.
+- [Several updates, one render](#primer/react-batching): the counter with id `d` queues two updaters per click, and both have to land in a single render.
+- [Arrow functions and closures](#primer/js-functions-closures): a setter closes over the state it belongs to, and the tests call it long after the render that made it.
+- [Reconciliation by type and position](#primer/react-reconciliation): the pairing of an old fiber with a new one used to decide which DOM node survives. It now decides whose state a component gets as well.
+- [Keys](#primer/react-keys): counters with keys keep their counts when the list is reordered.
 
 ## Source material
 
@@ -27,26 +27,26 @@ The page below is complete on its own. If you want Pombo's version first, read t
 
 ## Where this fits
 
-Until now a function component started from nothing on every render, so a counter could not count. Here each component gets a memory that lives on its fiber. You add `hooks.js` with `useState`, the shared `wipFiber` and `hookIndex` in `state.js`, and a few lines in `render.js` and `index.js` to hook it up. Assignment 11 puts `useEffect` into the same `hooks.js`.
+Until now a function component began from nothing on every render, which is why a counter could not count. That ends here, with a memory that lives on each component's fiber. `hooks.js` is new and holds `useState`, the shared `wipFiber` and `hookIndex` go in `state.js`, and `render.js` and `index.js` get a few lines of wiring.
 
 ## The problem
 
-Give `Didact` a `useState`. A scenario builds trees out of the catalog's stateful components, clicks their buttons and dumps the page; your program prints what the page looks like at each dump, and the checker compares that with what React prints for the same scenario.
+Give `Didact` a `useState`. Scenarios build trees from the catalog's stateful components, click their buttons and dump the page. Your program prints the page at each dump, and the checker holds that against what React prints for the same scenario.
 
 ### Input
 
-The checker runs your entry program as `node assignments/assignment_10_use_state.js <input-file> <output-file>`. The program has three jobs. It imports `../harness/env.js` first, so that `document` and a controllable `requestIdleCallback` exist before your library loads. It imports `Didact` from `../src/didact/index.js`. And it ends with `await runScenarioFile(process.argv[2], process.argv[3], Didact)`, which reads the scenario file, runs it against your library and writes the output file. The Boilerplate has it finished; from a blank start, you write those lines yourself. The scenario file has these kinds of lines:
+Your entry program is started as `node assignments/assignment_10_use_state.js <input-file> <output-file>`. It does three things, in this order. It imports `../harness/env.js`, which has to come first because it puts `document` and a controllable `requestIdleCallback` in place before your library loads. It imports `Didact` from `../src/didact/index.js`. And it finishes with `await runScenarioFile(process.argv[2], process.argv[3], Didact)`, which reads the scenario, runs it on your library and writes the output file. The Boilerplate has all three. Starting blank, type them yourself. A scenario file is made of these lines:
 
 | Line | What the harness does |
 |---|---|
 | `tree <name> <markup>` | Defines a tree of one root element. A capitalised tag such as `<Counter id=a start=3/>` is a catalog component, and attribute values are strings. |
-| `render <name>` | Calls `Didact.render(tree, container)`. It does not run any work. |
-| `flush` | Runs idle periods until the work loop has nothing left to do. |
+| `render <name>` | Calls `Didact.render(tree, container)` and runs none of the work. |
+| `flush` | Runs idle periods until the work loop is out of work. |
 | `click #<id>` | Dispatches a bubbling `click` on the element with that id, then flushes. |
 | `poke` | Calls the setter that the first `Keeper` of the run handed out, with `n => n + 1`, then flushes. |
 | `dump` | Prints the page, as described below. |
 
-Every `render` in the tests is followed by a `flush` before anything else happens, so the page is complete when the next line runs. `poke` only ever happens while the first `Keeper` is still on the page; what a poke does after that `Keeper` has been removed is not tested.
+In every test a `render` is followed straight away by a `flush`, and the page is complete before the next line runs. `poke` is only used while the first `Keeper` is still on the page. What it does once that `Keeper` is gone is not tested.
 
 ### Output
 
@@ -60,11 +60,11 @@ text <depth> "<text>"
 
 The container itself is not printed, so its first child sits at depth 0. A `node` line gives the tag in lower case and the properties that differ from their defaults, sorted by name and separated by spaces: `className`, `id`, `title` and, for inputs, `value` (a value with a space, a double quote or a percent sign is percent-encoded). Neighbouring text nodes print as one `text` line, and a number child prints as its digits.
 
-The label is the part that matters here. The first time a dump shows an element it gets the next unused letter (`a`, `b`, `c`, ... `z`, `aa`, ...), in document order, and it keeps that letter in every later dump. Two dumps that show the same label show the same DOM node. A node your library threw away and rebuilt gets a new letter even if it looks identical, so the labels are how the tests tell a kept node from a replaced one.
+Labels are what these tests are about. Each element is labelled the first time it appears in a dump, with the next unused letter (`a`, `b`, `c`, ... `z`, `aa`, ...) in document order, and it keeps that label from then on. Same label, same DOM node. If your library throws a node away and builds an identical one, the new node gets a new letter. That is how a test tells a node that was kept from one that was replaced.
 
 ### The components the scenarios use
 
-These live in the harness (`harness/catalog.js`), so you can read them. They call `useState` with a number or a boolean and handlers that always use the updater form:
+The catalog is in `harness/catalog.js` and worth a read. Its components call `useState` with a number or a boolean, and their handlers always pass an updater:
 
 ```js
 const [count, setCount] = useState(Number(start));
@@ -81,19 +81,19 @@ onClick: () => setCount((c) => c + 1)
 
 ### What `useState` does
 
-You write `useState(initial)` in `src/didact/hooks.js` and export it on the `Didact` object. It is called from inside a component's function, and it returns `[state, setState]`. The setter takes an updater, a function from the previous state to the next one (Pombo calls it an action). Plain values are not tested.
+`useState(initial)` goes in `src/didact/hooks.js`, exported on the `Didact` object. A component's function calls it and gets `[state, setState]` back. The setter takes an updater, a function from the previous state to the next (Pombo calls it an action). A plain value in place of an updater is not tested.
 
-State lives with the fiber of the component that called `useState`. While a component's function runs, every `useState` call gets the next slot of that component, counting from 0, and nothing is shared with other components. For a component that already existed in the last committed tree, slot n holds what the same call left there on the last run, state and pending updates included. A component that did not exist (it is new at its position, or the type at its position changed) starts every slot from its `initial`.
+State belongs to the fiber of the component that called `useState`. As a component's function runs, each call takes the next slot of that component, counting from 0. No slot is shared between components. If the component was already in the last committed tree, slot n holds what the same call left there on the previous run, pending updates included. A component that was not there (new at its position, or a different type from the one that was there) starts every slot from its `initial`.
 
-`setState(updater)` changes nothing on the page. It records the updater and schedules a new render that starts at the root of the tree, as `render` does. The updater runs during that render, when the component asks for its state again. Updaters recorded before the next render all run, oldest first, in that one render. The setter handed out by the first render is as good as the one from the latest render: an update sent through it must not be lost, however many renders have happened since.
+Calling `setState(updater)` does nothing to the page. It records the updater and schedules a new render from the root of the tree, the way `render` does. The updater runs during that render, when the component asks for its state again. Several updaters recorded before the next render all run in that one render, oldest first. The setter from the first render stays as good as the latest one: however many renders have passed, an update sent through it must not be lost.
 
-The state belongs to the position in the tree and the type there, or to the key when there is one. Rendering the same tree again, re-rendering from a parent whose props changed, and re-rendering because a neighbour's setter ran all keep it, and a prop such as `start` is read only on the first render. Moving a component to another position (a new sibling in front of it) makes it a new component. Without keys, two counters that swap places in the tree swap props but not state. With keys, the state follows the key.
+Whose state it is depends on the position in the tree and the type there, or on the key when there is one. Rendering the same tree again keeps it. So does re-rendering from a parent whose props changed, or because a neighbour's setter ran. A prop like `start` is read on the first render only. Move a component to another position (a new sibling in front of it, say) and it is a new component. Two unkeyed counters that trade places trade props, but the state stays at the position. With keys the state follows the key.
 
-`Toggle` shows what a changing root does. Its function returns a `div` and then a `section`, so every click replaces its root node and everything below. Its state is not on that node, so the count of `on` and `off` carries on, and the new `button` answers clicks.
+`Toggle` is the case of a root that changes. Its function returns a `div` while the state is off and a `section` while it is on, so every click replaces the root node and everything below it. The state does not live on that node, which is why the on/off cycle carries on and the new `button` still answers clicks.
 
 ## Requirements
 
-Every test is aimed at one of these, and a failing run lists its failures under that requirement.
+Each test targets one requirement, and a failing run groups its failures under it.
 
 - **R1** `useState(initial)` returns `[state, setState]`, and on the first render of a component the state is `initial`.
 - **R2** After a setter call and the flush that follows, the component has re-rendered with `updater(previous state)` as its state and the dump shows it. The elements that exist before and after are the same nodes.
@@ -132,7 +132,7 @@ output:  dump 1
          text 2 "on"
 ```
 
-The second dump uses labels `d`, `e` and `f`: the `div` became a `section`, and a different type is a different node, so the old three nodes are gone and three new ones stand in their place. The state did not reset (the component says `on`), which is why this case sits next to the state requirements.
+Dump 2 has the labels `d`, `e` and `f`. The `div` became a `section`, a different type and so a different node, and all three old nodes are gone with three new ones in their place. The component still says `on`. Its state survived the swap, and that is why this case sits with the state requirements.
 
 ### Example 2: two counters trade places (test `10-R7-swap-positions`)
 
@@ -190,7 +190,7 @@ output:  dump 1
          text 3 "1"
 ```
 
-Nothing in the tree says which `Counter` is which except the `id` prop, and `id` is an ordinary prop. The first `Counter` slot still holds the 3, so after the swap the counter with id `b` shows 3 and the one with id `a` shows 1. Labels `b` to `g` are unchanged between dumps 1 and 2 because both are the same nodes, rewritten in place. The last click proves the handlers followed their elements: `#b-inc` is now the first counter's button.
+The only thing telling the two `Counter`s apart is their `id`, and `id` is an ordinary prop. The state at the first position is still 3, so after the swap the counter with id `b` shows 3 and the one with id `a` shows 1. Labels `b` to `g` stay put between dumps 1 and 2. Same nodes, rewritten in place. The last click checks that the handlers followed their elements, since `#b-inc` is now the first counter's button.
 
 ### Example 3: a setter from the first render (test `10-R8-poke-four-times`)
 
@@ -221,32 +221,32 @@ output:  dump 1
          text 1 "4"
 ```
 
-`poke` uses the setter from the first render every time, and each poke is followed by a render. The first poke goes through the setter of the latest render by luck. At the second poke that setter is one render old, at the third two, at the fourth three, and the update must still arrive.
+Every `poke` calls the setter from the first render, and every poke triggers a render. The first one happens to use the latest setter. By the second it is a render old, by the third two renders, by the fourth three. The update has to get through each time.
 
 ## Constraints
 
-Scenarios are short: the longest has 54 lines and no tree has more than 8 components. Texts are single words or numbers, and every `render` is followed by a `flush`. The 46 tests are the cases of each requirement, two long scripted sessions and five seeded random ones (a fresh seed gives five new sessions), with at most a few hundred output lines each. A correct solution takes well under a second per test; the limit is 10 seconds.
+The longest scenario is 54 lines and no tree has more than 8 components. Texts are single words or numbers. That makes 46 tests: per-requirement cases, two long scripted sessions, and five random sessions drawn from a seed (a fresh seed gives five new sessions), each with at most a few hundred lines of output. A correct solution runs a test in well under a second. The limit is 10 seconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Ask where a counter's number can live between two runs of its function. Not in the function: its locals are gone when it returns. Not in the DOM: the span is rewritten from the number, not the other way round. The fiber tree survives a render, and the previous fiber for the same component is reachable from the new one.
+Think about where a counter's number can live between two runs of its function. The function's locals are gone once it returns. The DOM is downstream of the number: the span is written from it and never read back. What survives a render is the fiber tree, and the previous fiber for the same component can be reached from the new one.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Give every function-component fiber a list of hook records, empty at the start of each run of its function. `useState` takes the next slot: it looks at the same slot of the old fiber, reuses that record if there is one, and otherwise makes a new record from `initial`. A record holds the state and a queue of updaters that the setter fills. Share one record per slot across renders: the next render picks up the record the old fiber had, so the setter you handed out earlier still points at the record that the next render reads. The setter schedules a render from the root, using the tree you last committed. Next time `useState` reads a slot, it runs the queue on the state before returning it. `wipFiber` and `hookIndex` have to be set before the component function is called, because `useState` has no other way to know which component is calling.
+Each function-component fiber carries a list of hook records, emptied at the start of every run of its function. `useState` takes the next slot, looks at the same slot on the old fiber and reuses the record found there, or builds a new one from `initial` when there is none. A record holds the state and a queue of updaters, which the setter fills. Share one record per slot across renders. Then the next render reads the record the old fiber had, and the setter you handed out earlier still points at it. The setter schedules a render from the root, on the tree you last committed. When `useState` reads a slot again, it runs the queue over the state before returning it. Set `wipFiber` and `hookIndex` before calling the component function; `useState` has no other way to find out who is calling.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- The hook index starts at 0 for every component, not once per render. Two `Counter`s side by side would otherwise look in each other's slots.
-- A setter that closes over a record from one render queues updates on that record. If the next render makes a new record, those updates are never read. Make sure the setter and every later render use the same record, or that updates reach the record a later render will read.
-- The queue is emptied when it has been applied. Applying it twice adds twice.
-- Apply every queued updater, in order. A handler that calls the setter twice must advance the state twice.
-- Starting from `initial` on every render makes the page look right until the first click.
-- Several setter calls before the next render restart the same render. Do not lose the tree you were about to commit when that happens.
+- Reset the hook index to 0 for every component. One reset per render sends two `Counter`s side by side into each other's slots.
+- A setter closes over the record of the render that made it. If the next render builds a fresh record, whatever was queued on the old one is never read. Either every render shares the one record, or updates have another way to reach the record a later render will read.
+- Empty the queue after applying it. Apply it twice and every update counts twice.
+- Apply every queued updater, in order. A handler that calls the setter twice has to move the state twice.
+- A `useState` that starts from `initial` on every render looks right until the first click.
+- Several setter calls before the next render restart the same render. Keep the tree you were about to commit when that happens.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -282,7 +282,7 @@ schedule a render from the root:
 .\check 10 -Dispute <id> "why"      set aside a test you are sure is wrong
 ```
 
-A solution whose setter works only for the render that made it fails like this:
+A setter that only works for the render that made it fails like this:
 
 ```
   R8  A setter from an earlier render still works: nothing is lost when... .    1 / 4   FAILED
@@ -295,14 +295,14 @@ A solution whose setter works only for the render that made it fails like this:
 
 ## After you pass: compare with the author's code
 
-[Pombo's hooks](https://pomb.us/build-your-own-react/#step-viii-hooks) go through `updateFunctionComponent`, which sets `wipFiber`, empties the fiber's `hooks` array and resets `hookIndex` before calling the component. `useState` then looks up `oldHook` in `wipFiber.alternate.hooks[hookIndex]`, copies its state into a new hook with a new queue, replays the old queue's actions on it, and returns the state with a `setState` that pushes onto that hook's queue.
+In [Pombo's hooks](https://pomb.us/build-your-own-react/#step-viii-hooks), `updateFunctionComponent` sets `wipFiber`, empties the fiber's `hooks` array and resets `hookIndex` before it calls the component. `useState` then finds `oldHook` at `wipFiber.alternate.hooks[hookIndex]`, copies its state into a new hook with a new queue, replays the old queue's actions onto it, and returns that state with a `setState` that pushes onto that hook's queue.
 
-The post makes a new hook object on every render, and its `setState` closes over the hook of the render that created it. An update sent through a setter from an earlier render lands in a queue that no later render reads, so Pombo's code loses it. R8 is that case: poke a `Keeper` four times through its first setter and the post's code shows 1 after every poke: the first update arrives and the other three are lost. React hands out one stable setter, and R8 asks the same of you.
+The post builds a new hook object on every render, and each `setState` closes over the hook from the render that made it. Send an update through a setter from an earlier render and it lands in a queue that no later render reads. Pombo's code drops it. That is R8: poke a `Keeper` four times through its first setter and the post's code shows 1 after every poke. The first update arrives, the other three vanish. React hands out one stable setter, and R8 wants the same from yours.
 
-The post differs from React in three smaller ways, and the tests touch none of them. Its `setState` throws when `currentRoot` is still `null`, because it builds the new root from the committed tree. It accepts functions only, and a plain value breaks the next render, where React takes it as the new state. And `useState` stores `initial` as given, so a function passed as the initial value is kept rather than called.
+Pombo's code differs from React in three smaller ways, none of them tested. Its `setState` throws while `currentRoot` is still `null`, since it builds the new root from the committed tree. It accepts functions only, and a plain value breaks the next render, where React takes it as the new state. And `useState` stores `initial` as given, so a function passed as the initial value is kept rather than called.
 
-Two failures in the post's code end its work loop for good. One is the plain value above, which raises in the next render. The other is removing a component that returned `null`: it renders, with a null child fiber, and `commitDeletion` later reads `dom` of that null. `workLoop` asks for its next idle callback in its last statement, so an exception inside a unit or a commit leaves nothing registered, and the `render` and `setState` calls that follow schedule work that never runs. The tests cover neither.
+Two failures in the post's code stop its work loop for good. One is the plain value above, which raises in the next render. The other is removing a component that returned `null`: the component renders with a null child fiber, and `commitDeletion` later reads `dom` from that null. `workLoop` requests its next idle callback in its last statement, so an exception inside a unit or a commit leaves nothing registered, and every later `render` or `setState` schedules work that never runs. Neither is tested.
 
-Jongeneel's `Component` keeps its state on a class instance, and its [`setState`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=5.4%20Updating%20components%20with%20setState) applies the updater, renders, diffs and patches the DOM before it returns. Three calls in a handler render three times, where your `useState` and React render once. His [`getUpdateDiff`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=5.3%20Updating%20a%20component) meets the situation `Toggle` creates, a component whose root element is replaced. The callback meant to point `mountedElement` at the new element is written in the post as an arrow function that nothing assigns or calls, so the component keeps the old, detached node, and every later `setState` patches a node that is no longer in the page. The post's tag comparison also never reports a changed tag, so with the post exactly as written this happens when a root turns from an element into text; the repository fixes both. R9 asks for the repository's behaviour: after a root changes, the next click reaches the live node.
+Jongeneel's `Component` keeps its state on a class instance. Its [`setState`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=5.4%20Updating%20components%20with%20setState) applies the updater, renders, diffs and patches the DOM before it returns, so three calls in a handler render three times, where your `useState` and React render once. His [`getUpdateDiff`](https://itnext.io/creating-our-own-react-from-scratch-82dd6356676d#:~:text=5.3%20Updating%20a%20component) runs into the situation `Toggle` creates, a component whose root element is replaced. The callback meant to point `mountedElement` at the new element is written in the post as an arrow function that nothing assigns or calls. The component keeps the old, detached node, and every later `setState` patches a node that is no longer in the page. The post's tag comparison also never reports a changed tag, so in the post as written this happens when a root turns from an element into text. The repository fixes both, and R9 asks for the repository's behaviour: after a root changes, the next click reaches the live node.
 
-[React today](docs/react-today.md) lists where React 19 departs from the posts; its "Setter identity", "Updater argument" and "Batching" rows are the ones this assignment touches.
+[React today](docs/react-today.md) lists where React 19 departs from the posts. The rows to read for this assignment are "Setter identity", "Updater argument" and "Batching".

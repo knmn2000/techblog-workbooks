@@ -10,8 +10,8 @@
 //   Submit in the book.
 //
 // Your job:
-//   Pass your `render` from `renderSync.js` to `runScenarioFile`; the scenario renders a
-//   tree and dumps the container.
+//   Hand `runScenarioFile` the `render` from `renderSync.js`. The scenario renders a tree
+//   and dumps the container.
 //
 // The other files of this assignment:
 //   You also write src/didact/renderSync.js in this assignment; each one gives its job at

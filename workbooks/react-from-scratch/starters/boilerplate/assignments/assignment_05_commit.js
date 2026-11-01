@@ -17,7 +17,7 @@
 //   You also write src/didact/commit.js in this assignment; each one gives its job at the
 //   top.
 //   It adds to src/didact/render.js, which you started earlier: Stop attaching DOM nodes
-//   while units run. Keep the tree under construction as `wipRoot`, and call `commitRoot`
+//   while units run. Hold the tree under construction in `wipRoot`, and call `commitRoot`
 //   after the last unit.
 //   Earlier files you can use: src/didact/state.js, src/didact/dom.js,
 //   src/didact/reconcile.js and src/didact/index.js.

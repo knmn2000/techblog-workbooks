@@ -9,16 +9,16 @@
 
 ## Read in the blog first
 
-You can pass with this page alone. Pombo's account has two parts worth reading. [Step III: Concurrent Mode](https://pomb.us/build-your-own-react/#step-iii-concurrent-mode) explains why one long render hurts and introduces `requestIdleCallback`. Stop where the text announces the first unit of work and a `performUnitOfWork` that returns the next one, because code frames follow. [Step IV: Fibers](https://pomb.us/build-your-own-react/#step-iv-fibers) has the picture of the fiber tree and the paragraphs on how to find the next fiber: child, sibling, the parent's sibling, and further up until the root. Stop before the code frames that come after them.
+You can skip the post and still pass. If you do read Pombo, two parts pay off. [Step III: Concurrent Mode](https://pomb.us/build-your-own-react/#step-iii-concurrent-mode) says why one long render hurts and brings in `requestIdleCallback`; stop where the text announces the first unit of work and a `performUnitOfWork` that returns the next one, because code frames follow. [Step IV: Fibers](https://pomb.us/build-your-own-react/#step-iv-fibers) has the picture of the fiber tree and the paragraphs on finding the next fiber: child, sibling, the parent's sibling, then further up until the root. Stop before the code frames that come after them.
 
 ## Learning material
 
-- [Fibers](#primer/react-fibers): one fiber for each element and text node, plus one for the container, linked by `parent`, `child` and `sibling`. Each fiber is one unit of work.
-- [Units of work and the work loop](#primer/react-work-loop): the loop that does a unit, checks the clock and stops when the time is up.
-- [`requestIdleCallback` and `timeRemaining()`](#primer/dom-idle-callback): the harness plays the browser with a stand-in you drive by hand, and `idle` prints how often you read the clock.
+- [Fibers](#primer/react-fibers): the tree you walk. A fiber for every element and text node, one more for the container, tied together with `parent`, `child` and `sibling`. Each fiber is one unit of work.
+- [Units of work and the work loop](#primer/react-work-loop): do a unit, look at the clock, quit when it says time is up.
+- [`requestIdleCallback` and `timeRemaining()`](#primer/dom-idle-callback): the harness has a stand-in for the browser that you drive by hand, and `idle` prints how often your code read the clock.
 - [Module-level state and why `state.js` is an object](#primer/js-global-state): `render.js` and `reconcile.js` have to see the same "next fiber".
-- [Optional chaining `?.` and `??`](#primer/js-optional-chaining): the end of the work is a missing link, and the walk meets it often.
-- [Elements, and what JSX turns into](#primer/react-elements): the children array and the `TEXT_ELEMENT` shape from 01 decide how many fibers a tree gets.
+- [Optional chaining `?.` and `??`](#primer/js-optional-chaining): the end of the work is a missing link, and the walk meets one often.
+- [Elements, and what JSX turns into](#primer/react-elements): the children array and the `TEXT_ELEMENT` shape from 01 settle how many fibers a tree gets.
 - [The harness and scenario files](#primer/workbook-harness): `idle` and `flush` are new here.
 
 ## Source material
@@ -30,44 +30,44 @@ You can pass with this page alone. Pombo's account has two parts worth reading. 
 
 ## Where this fits
 
-Assignment 03 drew a whole tree in one recursive call, and nothing can stop a recursion halfway. Here the same job becomes a loop over small pieces. `renderSync.js` stays on the shelf. The new library starts with four files, `state.js`, `render.js`, `reconcile.js` and `index.js`, and borrows only `createDom` from `dom.js`.
+Assignment 03 drew a whole tree in one recursive call, and a recursion can't be paused halfway. Here the same job turns into a loop over small pieces. `renderSync.js` stays on the shelf. The new library starts with four files, `state.js`, `render.js`, `reconcile.js` and `index.js`, and takes only `createDom` from `dom.js`.
 
 ## The problem
 
-Write the half of a renderer that can stop partway. `render` queues a job and returns. Whenever the browser is idle it calls `workLoop`, which builds the tree one fiber at a time and hands the thread back when time is up. A scenario plays the browser: it decides how many units of work each idle period may do, and looks at the container before and after.
+Write the half of a renderer that can stop partway. `render` queues a job and returns. When the browser is idle it calls `workLoop`, which builds the tree one fiber at a time and gives the thread back once time runs out. In the tests a scenario plays the browser: it sets how many units of work each idle period may do, and looks at the container before and after.
 
 ### The modules
 
 | File | Export | What it is |
 |---|---|---|
-| `src/didact/state.js` | `state` | One shared object. It holds the fiber to work on next and the root of the tree under construction. Name the fields as you like. |
+| `src/didact/state.js` | `state` | One shared object holding the fiber to work on next and the root of the tree under construction. The field names are yours. |
 | `src/didact/render.js` | `render(element, container)` | Queues the job. Does no work and touches nothing. |
 | `src/didact/render.js` | `workLoop(deadline)` | The idle callback. Register it when the module loads, and again at the end of every call. |
-| `src/didact/render.js` | `performUnitOfWork(fiber)` | Does the work of one fiber and returns the fiber to do next, or nothing after the last fiber. |
+| `src/didact/render.js` | `performUnitOfWork(fiber)` | Does one fiber's work and returns the fiber to do next, or nothing after the last one. |
 | `src/didact/reconcile.js` | `reconcileChildren(wipFiber, elements)` | Gives `wipFiber` one new child fiber per element, linked in order. |
 | `src/didact/index.js` | default `Didact` | `{ createElement, render }`, the object the entry program hands to the harness. Exporting the same two names as named exports too is fine. |
 
-A fiber is a plain object with `type`, `props`, `dom`, `parent`, `child` and `sibling`. A link that leads nowhere (the root's `parent` and `sibling`, a leaf's `child`) may be `null` or `undefined`; nothing looks at the difference. The root fiber has no type: its `dom` is the container and its `props.children` is `[element]`. An element is `{ type, props }` with `props.children` always an array, and a text piece is `{ type: "TEXT_ELEMENT", props: { nodeValue, children: [] } }`. The scenarios build their elements with the harness's own `h`, so your `createElement` is not involved. To make a DOM node, call `createDom` from `dom.js`; it accepts a fiber, since a fiber has a `type` and `props`.
+A fiber is a plain object with `type`, `props`, `dom`, `parent`, `child` and `sibling`. A link that goes nowhere (the root's `parent` and `sibling`, a leaf's `child`) can be `null` or `undefined`; nothing tells them apart. The root fiber has no type. Its `dom` is the container and its `props.children` is `[element]`. Elements are `{ type, props }` with `props.children` always an array, and a text piece is `{ type: "TEXT_ELEMENT", props: { nodeValue, children: [] } }`. The scenarios build their elements with the harness's own `h`, so your `createElement` is not involved. For a DOM node, call `createDom` from `dom.js`. It takes a fiber without complaint, since a fiber has a `type` and `props`.
 
 ### Input
 
-The checker runs `node assignments/assignment_04_fibers.js <input-file> <output-file>`. That file is short. It imports `../harness/env.js` before anything else, so that `document` and `requestIdleCallback` exist by the time `render.js` loads. It imports your `Didact` from `../src/didact/index.js` and `runScenarioFile` from `../harness/scenario.js`, and it finishes with `await runScenarioFile(process.argv[2], process.argv[3], Didact)`, which reads the scenario, runs it against your library and writes the output. The Boilerplate has it finished; from scratch, write those lines yourself.
+Each test runs `node assignments/assignment_04_fibers.js <input-file> <output-file>`. The file is short. It imports `../harness/env.js` first, which gives you `document` and `requestIdleCallback` before `render.js` loads. Then come your `Didact` from `../src/didact/index.js` and `runScenarioFile` from `../harness/scenario.js`, and a last line, `await runScenarioFile(process.argv[2], process.argv[3], Didact)`, which reads the scenario, runs it against your library and writes the output. The Boilerplate ships it complete. Starting from scratch, you write those lines yourself.
 
 | Line | What the harness does |
 |---|---|
-| `tree <name> <markup>` | Defines a tree. Prints nothing. |
-| `render <name>` | Calls `Didact.render(element, container)` with the element built from the tree and the page's `#root` div as the container. Prints nothing. |
-| `idle <k>` | Runs one idle period with budget `k`, a whole number from 1 up or the word `inf`, and prints one line. |
-| `flush` | Runs periods with an unlimited budget until one of them never calls `timeRemaining()`. Prints nothing. |
+| `tree <name> <markup>` | Names a tree for later. No output. |
+| `render <name>` | `Didact.render(element, container)` on the named tree, with the page's `#root` div as the container. No output. |
+| `idle <k>` | One idle period with budget `k`, a whole number from 1 up or the word `inf`. Prints one line. |
+| `flush` | Idle periods with an unlimited budget, repeated until one never calls `timeRemaining()`. No output. |
 | `dump` | Prints what the container holds. |
 
-Trees are one line of HTML-like text, as in `<div id=a className="big one">text <b>bold</b></div>`. Attribute values are strings, a bare name stands for `true`, and text keeps its inner spaces. Whitespace between two tags is ignored, and `input`, `br` and `hr` take no closing tag. Every text piece becomes a text element and everything in angle brackets becomes an element.
+A tree is one line of HTML-like text, like `<div id=a className="big one">text <b>bold</b></div>`. Attribute values are strings and a bare name means `true`. Text keeps its inner spaces; whitespace between two tags is dropped. `input`, `br` and `hr` have no closing tag. Each piece of text becomes a text element, and each thing in angle brackets an element.
 
-An idle period works like this:
+One idle period goes like this:
 
-- It calls each callback that is registered when it starts, handing every one the same deadline, `{ didTimeout: false, timeRemaining() }`. A callback registered while the period runs waits for the next period.
-- `timeRemaining()` counts its calls during the period. It returns 1 until the call whose number is `k`, and from that call on it returns 0. With `inf` it always returns 1.
-- The period prints the number of calls it counted.
+- Every callback registered when the period starts is called with the same deadline, `{ didTimeout: false, timeRemaining() }`. A callback registered during the period waits for the next one.
+- `timeRemaining()` counts the calls made during the period. Calls before number `k` return 1, and call `k` and every later call return 0. With `inf` it returns 1 every time.
+- The period prints how many calls it counted.
 
 ### Output
 
@@ -78,9 +78,9 @@ node <depth> <label> <tag> "<props>"
 text <depth> "<text>"
 ```
 
-`idle <n>` is the number of times your code called `timeRemaining()` during the period. `dump <i>` counts the dumps of the run from 1, and the lines after it describe the container's children in document order, the container itself left out, children indented by depth, starting at 0. An empty container prints the `dump` line alone.
+`idle <n>` is how many times your code called `timeRemaining()` during that period. `dump <i>` numbers the dumps of the run from 1, and the lines under it describe the container's children in document order, indented by depth from 0. The container itself is not listed. An empty container prints the `dump` line and nothing else.
 
-A `node` line gives the element's tag in lower case and a label. The first element a dump shows is `a`, the next `b`, and so on through `z` and then `aa`, `ab`. Between the quotes go the props that have left their defaults, each as `name=value`, alphabetically, one space apart. Only these five can appear:
+A `node` line carries the element's tag in lower case and a label. The first element a dump shows is `a`, then `b`, on through `z`, then `aa`, `ab`. Between the quotes sit the props that differ from their defaults, written `name=value`, alphabetical, one space apart. Only these five can appear:
 
 | Prop | Shown when |
 |---|---|
@@ -88,19 +88,19 @@ A `node` line gives the element's tag in lower case and a label. The first eleme
 | `disabled` | it is true, on a `button`, `input` or `textarea`; printed `disabled=true` |
 | `value` | the value is not empty, on an `input` or `textarea` |
 
-Run a value through `encodeURIComponent` when it contains whitespace, a `"` or a `%`: `big one` turns into `big%20one`. An element with nothing to show prints `""`. A `text` line shows the text with `%`, `"` and line breaks encoded and spaces kept. Text nodes that touch print as one line, and an empty text node prints nothing.
+A value containing whitespace, a `"` or a `%` goes through `encodeURIComponent`, so `big one` prints as `big%20one`. An element with nothing to show gets `""`. A `text` line encodes `%`, `"` and line breaks and leaves spaces alone. Text nodes that touch print as one line, and an empty text node prints nothing.
 
 ### Units of work
 
-A unit of work is one fiber, and a render consists of these fibers:
+A unit of work is one fiber. A render has these:
 
 - the root fiber, for the container,
 - one for every element in the tree,
 - one for every text node.
 
-A tree with `E` elements and `T` text pieces takes `1 + E + T` units. `<p>hello</p>` takes 3: the root, `p` and the text. The root counts although it has no node to make, and a text piece counts although it has no children.
+With `E` elements and `T` text pieces, a tree takes `1 + E + T` units. `<p>hello</p>` takes 3: the root, `p` and the text. The root counts even though it has no node to make, and a text piece counts even though it has no children.
 
-Doing a unit has three steps. First, give the fiber its node by calling `createDom`, unless it has one (the root has: it is the container). Second, give it its children: a fiber for each element in `fiber.props.children`, in order, each pointing back with `parent`, with `child` set to the first and `sibling` chaining the rest, and none of them holding a node yet. Third, pick the fiber to do next.
+Doing a unit takes three steps. One: give the fiber its node with `createDom`, unless it already has one (the root does; its node is the container). Two: make its children, a fiber for each element in `fiber.props.children`, in order. Each points back with `parent`, `child` goes to the first, `sibling` chains the rest, and none of them holds a node yet. Three: choose the fiber to do next.
 
 The next fiber is the first match in this list:
 
@@ -109,17 +109,17 @@ The next fiber is the first match in this list:
 3. the `sibling` of its parent (the post calls it the uncle), and if the parent has none, the sibling of the grandparent, and so on up the `parent` chain
 4. nothing, once the climb has passed the root: the render is finished.
 
-For `div > (h1 > (p, a), h2)` the units go root, `div`, `h1`, `p`, `a`, `h2`. After `a` there is no child and no sibling, so the walk climbs to `h1` and takes its sibling `h2`.
+Take `div > (h1 > (p, a), h2)`. The units go root, `div`, `h1`, `p`, `a`, `h2`. After `a` there is no child and no sibling: the walk climbs to `h1` and takes its sibling `h2`.
 
 ### Reading the clock
 
-`workLoop` does a unit, then calls `timeRemaining()` once. If the value is below 1 it stops, otherwise it does the next unit. A period with budget `k` therefore does `k` units when `k` or more are waiting, and all of them when fewer are. Since the period prints the number of reads, `idle k` prints the smaller of `k` and the units left.
+`workLoop` does one unit, calls `timeRemaining()` once, and stops if the value is below 1; otherwise it does another unit. With budget `k` that means `k` units when at least `k` are waiting, and all of them when fewer are. The period prints its number of reads, which makes `idle k` print the smaller of `k` and the units left.
 
-The loop reads the clock after every unit, the last one of the tree included, and never when there is no unit to do. At the end of every call it registers itself for the next period, whether or not it did anything. A loop that forgets stops being called, and a `render` after a quiet period would never run.
+The read comes after every unit, the last unit of the tree included, and never when there is no unit to do. At the end of every call the loop registers itself for the next period, whether or not it did anything. Forget that and it stops being called; a `render` that arrives after a quiet period never runs.
 
 ### What may be on the page
 
-`render` leaves the container alone and does not run a unit. This assignment leaves open when a unit attaches its node to the page. Attaching in each unit, as the post does, and attaching the whole tree after the last unit both pass; assignment 05 asks for the second. A scenario can therefore look at the container at two moments only. Before the first period has run it must be empty, and after `flush` it must hold the whole tree in order. Each scenario calls `render` at most once.
+`render` leaves the container alone and runs no unit. When a unit attaches its node to the page is left open here. Attaching in every unit, as the post does, passes, and so does attaching the whole tree after the last unit, which is what 05 asks for. A scenario can therefore look at the container at two moments only: before the first period has run, when it must be empty, and after `flush`, when it must hold the whole tree in order. A scenario calls `render` at most once.
 
 ## Requirements
 
@@ -135,25 +135,24 @@ The loop reads the clock after every unit, the last one of the tree included, an
 
 ### Example 1: six units without any text (test `04-R2-units-post-shape`)
 
-input:
 ```
+input:
 tree a <div><h1><p></p><a></a></h1><h2></h2></div>
 render a
 idle inf
 idle inf
-```
+
 output:
-```
 idle 6
 idle 0
 ```
 
-The fibers are the root, `div`, `h1`, `p`, `a` and `h2`. The unlimited period reads the clock once after each, which makes 6, and the second period has nothing left and reads nothing. If your first line says 5, the root was not counted, or the walk stopped at `a` instead of climbing to `h2`.
+Six fibers: the root, `div`, `h1`, `p`, `a` and `h2`. The unlimited period reads the clock after each of them, which makes 6, and the second period finds nothing and reads nothing. A first line saying 5 means the root went uncounted, or the walk stopped at `a` instead of climbing to `h2`.
 
 ### Example 2: periods of three (test `04-R3-budget-3-post-text`)
 
-input:
 ```
+input:
 tree a <div><h1>title<p>para</p><a>link</a></h1><h2>sub</h2></div>
 render a
 idle 3
@@ -161,9 +160,8 @@ idle 3
 idle 3
 idle 3
 idle 3
-```
+
 output:
-```
 idle 3
 idle 3
 idle 3
@@ -171,21 +169,20 @@ idle 1
 idle 0
 ```
 
-The tree has 5 elements and 4 text pieces, so 10 units with the root. Three periods use up 9. The fourth has one unit left, does it, reads the clock once, and finds no more work. The fifth finds none from the start and prints 0.
+5 elements, 4 text pieces and the root make 10 units, and three periods use up 9 of them. The fourth does the last unit, reads the clock once and finds nothing more. The fifth has nothing from the start and prints 0.
 
 ### Example 3: stop, then flush (test `04-E2E-resume-after-periods`)
 
-input:
 ```
+input:
 tree a <div><div><div><p>a</p><p>b</p></div><p>c</p></div><p>d</p></div>
 render a
 idle 4
 idle 1
 flush
 dump
-```
+
 output:
-```
 idle 4
 idle 1
 dump 1
@@ -202,33 +199,33 @@ node 1 g p ""
 text 2 "d"
 ```
 
-Twelve units in all. Five are done after the two periods, and the next fiber is waiting in `state` while the browser has the thread. `flush` carries on from there, and it must pick up the walk where it stopped. The `dump` is the first one in the scenario, so it is number 1.
+Twelve units in all. After the two periods five are done, and the next fiber waits in `state` while the browser has the thread. `flush` has to pick the walk up where it stopped. This is the first `dump` of the scenario, so it is number 1.
 
 ## Constraints
 
-The trees have between 2 and 60 units and consist of plain elements and text, with no handlers, components or keys. Each scenario renders at most once. Budgets are whole numbers from 1 up, or `inf`, and `idle 0` does not occur. Dumps come only right after `render` or after `flush`. The 47 tests are examples of each requirement on hand-picked trees, three whole scenarios and six seeded random ones, three of them on period sizes and three on whole trees; `-Fresh` replaces the random ones. Each test gets 10 seconds, and a correct solution takes a few milliseconds.
+Trees run from 2 to 60 units and hold plain elements and text only: no handlers, components or keys. A scenario renders at most once. Budgets are whole numbers from 1 up, or `inf`; `idle 0` never appears. A `dump` comes only right after `render` or after `flush`. The 47 tests are examples of each requirement on hand-picked trees, three whole scenarios and six seeded random ones, three on period sizes and three on whole trees. `-Fresh` replaces the random ones. Each test gets 10 seconds, and a correct solution takes a few milliseconds.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Get the count right before you worry about the page. Make `render` store a root fiber, write the loop around a `performUnitOfWork` that only returns the next fiber, and try `render a`, `idle inf` on the tree `<br>`. It has to print `idle 2`. The `idle` lines depend on the loop alone, so you can check them while the rest is still a stub.
+Count first, page later. Have `render` store a root fiber, write the loop around a `performUnitOfWork` that does nothing except return the next fiber, and run `render a`, `idle inf` on the tree `<br>`. It has to print `idle 2`. The `idle` lines depend on the loop alone, which lets you check them while everything else is still a stub.
 </details>
 
 <details><summary>Hint 2: the approach</summary>
 
-Put the next fiber to do in the shared state. `render` sets it to a fresh root fiber and returns. The loop takes the fiber, performs it, stores what comes back, reads the clock, and goes round again while the stored fiber exists and the clock allows. Performing a fiber means making its node, asking `reconcileChildren` for its children, and walking to the next one: child first, then sibling, then up the parents until one has a sibling. Register the loop once when `render.js` loads, and again at the end of each call.
+Keep the next fiber to do in the shared state. `render` sets it to a fresh root fiber and returns. The loop takes that fiber, performs it, stores what comes back, reads the clock, and goes round again while a fiber is stored and the clock allows. To perform a fiber, make its node, ask `reconcileChildren` for its children and walk to the next fiber: the child first, then the sibling, then up through the parents until one has a sibling. Register the loop once when `render.js` loads, and again at the end of each call.
 </details>
 
 <details><summary>Hint 3: the traps</summary>
 
-- The root fiber is a unit like any other. It already holds a node, the container, so it must not get another one.
-- Text pieces are fibers. Their `props.children` is an empty array, which is no reason to skip them.
-- Read the clock once, after the unit. Two units per read, or a read before the unit, changes what `idle` prints; so does a read in a call that had no work.
-- Call `requestIdleCallback(workLoop)` at the end of every call, including the ones that found nothing to do.
-- A fiber with no child and no sibling is not the end. Climb through `parent` until you find a sibling, and stop only when the climb runs out.
-- `render` must not run anything, not even the root's unit. A `dump` right after it has to be empty.
-- Assign to `state.nextUnitOfWork`, not to an imported variable, which a module may not reassign.
+- Count the root fiber as a unit like the rest. Its node is already there, the container, so don't make it another.
+- Text pieces are fibers too. An empty `props.children` is no reason to skip one.
+- One read per unit, taken after it. Two units per read, a read before the unit, or a read in a call that had no work all change what `idle` prints.
+- End every call with `requestIdleCallback(workLoop)`, the ones that found nothing to do included.
+- No child and no sibling does not mean the end. Climb through `parent` to the first fiber that has a sibling; the walk is over only when the climb runs out.
+- `render` runs nothing, not even the root's unit. A `dump` straight after it has to be empty.
+- Assign to `state.nextUnitOfWork`. A module may not reassign an imported variable.
 </details>
 
 <details><summary>Hint 4: pseudocode</summary>
@@ -269,7 +266,7 @@ next fiber:
 .\check 04 -Dispute <id> "why"     set a test aside that you are sure is wrong
 ```
 
-A walk that never climbs past a fiber without a sibling fails like this:
+With a walk that never climbs past a fiber without a sibling, the report looks like this:
 
 ```
   R2  one unit of work per fiber: the root fiber, every element and eve... .    4 / 8   FAILED
@@ -282,8 +279,8 @@ A walk that never climbs past a fiber without a sibling fails like this:
 
 ## After you pass: compare with the author's code
 
-[Pombo's Step IV](https://pomb.us/build-your-own-react/#step-iv-fibers) builds the same machine from `render`, `workLoop`, `performUnitOfWork` and `createDom`. `render` sets `nextUnitOfWork` to a root fiber whose `dom` is the container, the loop reads `timeRemaining()` after each unit, and `performUnitOfWork` creates the node, makes one fiber per child, and returns the child, the sibling or the uncle. The loop in the post is `workLoop(deadline)` with a `shouldYield` flag, which is what the tests expect, including the read after the last unit. The post's own unit creates its node and attaches it to `fiber.parent.dom` in the same step, so the page fills up while the work runs. That is allowed here and is what 05 changes ([Step V](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases)).
+[Pombo's Step IV](https://pomb.us/build-your-own-react/#step-iv-fibers) builds this same machine out of `render`, `workLoop`, `performUnitOfWork` and `createDom`. `render` points `nextUnitOfWork` at a root fiber whose `dom` is the container. `performUnitOfWork` creates the node, makes one fiber per child, and returns the child, the sibling or the uncle. The post's `workLoop(deadline)` carries a `shouldYield` flag and reads `timeRemaining()` after each unit, the last one included, which is what the tests expect. Its unit also attaches its node to `fiber.parent.dom` in the same step, and the page fills up while the work runs. That is allowed here, and 05 is where it changes ([Step V](https://pomb.us/build-your-own-react/#step-v-render-and-commit-phases)).
 
-The post keeps `nextUnitOfWork` as a variable of its single file, and an ES module cannot reassign a variable it imported, so this library keeps it in `state`, together with `wipRoot`, which the post introduces only in Step V. In the post the loop over a fiber's children sits inside `performUnitOfWork` until Step VI pulls it out as `reconcileChildren`; here that function exists from the start, so that 06 can replace it. The post has nothing that counts units: the harness counts your `timeRemaining()` reads, which equal the units because the loop reads once per unit.
+The post keeps `nextUnitOfWork` as a variable in its one file. An ES module cannot reassign a variable it imported, so here it lives in `state`, beside `wipRoot`, which the post brings in only at Step V. In the post the loop over a fiber's children sits inside `performUnitOfWork` until Step VI pulls it out as `reconcileChildren`. That function exists from the start here, to give 06 something to replace. Nothing in the post counts units. The harness counts your `timeRemaining()` reads instead, and they equal the units because the loop reads once per unit.
 
-The post's loop ends with `requestIdleCallback(workLoop)` as its last statement, so an exception inside a unit means the loop is never scheduled again. Registering the callback from a `finally` block keeps the loop alive after an error. No test throws from a unit, and 06 names a bug in the post that ends the loop this way. The post also says React no longer uses `requestIdleCallback`, and [React today](docs/react-today.md) lists what it uses instead and when a render can pause.
+In the post, `requestIdleCallback(workLoop)` is the loop's last statement, so an exception inside a unit means it is never scheduled again. Registering it from a `finally` block keeps the loop alive after an error. No test throws from a unit, and 06 names a bug in the post that ends the loop this way. The post also says React no longer uses `requestIdleCallback`. [React today](docs/react-today.md) lists what it uses instead and when a render can pause.
