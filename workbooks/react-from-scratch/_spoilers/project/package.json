@@ -1,0 +1,10 @@
+{
+  "name": "didact",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A small React, built step by step with the Build React yourself workbook",
+  "engines": {
+    "node": ">=26"
+  }
+}

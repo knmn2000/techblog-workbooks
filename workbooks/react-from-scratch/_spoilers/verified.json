@@ -1,0 +1,241 @@
+{
+  "01": {
+    "files": {
+      "_spoilers/project/assignments/assignment_01_create_element.js": "1c4491f14a22d8c66b80eb22121d2a396aaeb1c96fc63a2f246218699c90caed",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971"
+    },
+    "passed": 48,
+    "total": 48,
+    "date": "2026-11-01"
+  },
+  "02": {
+    "files": {
+      "_spoilers/project/assignments/assignment_02_dom_props.js": "cda23338b4ee11761bbd4cf9e79c4b523c5b6e6ed82b97399b0116dcb2b44a11",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971"
+    },
+    "passed": 50,
+    "total": 50,
+    "date": "2026-11-01"
+  },
+  "03": {
+    "files": {
+      "_spoilers/project/assignments/assignment_03_first_render.js": "4529c1f389fdca11309e93a9db023bf22704c0b9aa863cea30eadfc89096b06b",
+      "_spoilers/project/src/didact/renderSync.js": "4e2a4d85e3eeb4212305a744ff991cce23146698049e0b8f4512f12aedd217f5",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971"
+    },
+    "passed": 46,
+    "total": 46,
+    "date": "2026-11-01"
+  },
+  "04": {
+    "files": {
+      "_spoilers/project/assignments/assignment_04_fibers.js": "78ea480a879ceff8a06474c932a84449df86e0fa95e0a155062475b6555eb698",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "dbc8cb3d45258782cad18e7e5a1b7d683df053c9dd3650e66a59ca4dec6e0964",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "357e8f3758a610094e9034df56419654313e21395087509374d43386c720c415",
+      "_spoilers/project/src/didact/state.js": "3e0a315e062e045664e3b8b4a0c7d7d57292a6ec45c304a5dae93fb4fc18bc27"
+    },
+    "passed": 47,
+    "total": 47,
+    "date": "2026-11-01"
+  },
+  "05": {
+    "files": {
+      "_spoilers/project/assignments/assignment_05_commit.js": "ad6931a0c1f4c2529fe45fdddad18b4d2e6937fd827d7213bd8c37f787ef180c",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "bacf0e26792fb5563fb9ddd49c2337b178d473acd43a0cd1cec3b45e013e8109",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "357e8f3758a610094e9034df56419654313e21395087509374d43386c720c415",
+      "_spoilers/project/src/didact/state.js": "3e0a315e062e045664e3b8b4a0c7d7d57292a6ec45c304a5dae93fb4fc18bc27",
+      "_spoilers/project/src/didact/commit.js": "af1768ee997b66387118921c3c8fee02e720cf4fa79e9f0a90f74be26c50e14e"
+    },
+    "passed": 44,
+    "total": 44,
+    "date": "2026-11-01"
+  },
+  "06": {
+    "files": {
+      "_spoilers/project/assignments/assignment_06_reconcile.js": "d0188dff16c9817bf9d3ed0be48c2c76a54bd1e5a50e0426edb1cf669d6bc4a6",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "a07a08350ee71134bcf126bdc126d7780e2cfaccca1717c173a7530aa9259d7d",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "908ebc1937f07131b8910097322d10ae1e3c1c65fa24e4d84d9cf06db768aee4",
+      "_spoilers/project/src/didact/state.js": "55f5b60609da0b482de59311bcbabfe04e7a0c85686c1c3395a59dedd0dac873",
+      "_spoilers/project/src/didact/commit.js": "f285f8a25ee3e24e129348da8aa391160699a94a4a6298ba8a63bcbdff15392f"
+    },
+    "passed": 54,
+    "total": 54,
+    "date": "2026-11-01"
+  },
+  "07": {
+    "files": {
+      "_spoilers/project/assignments/assignment_07_keys.js": "5fb164359cdcffbee30915a6e6990c00f25679f90d2cbe83254f2a13c369c3e5",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "a07a08350ee71134bcf126bdc126d7780e2cfaccca1717c173a7530aa9259d7d",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "0950d9f77ded0ae44f7f76530fe39c1faea9652b861ddb705babb0b8c49912b4",
+      "_spoilers/project/src/didact/state.js": "55f5b60609da0b482de59311bcbabfe04e7a0c85686c1c3395a59dedd0dac873",
+      "_spoilers/project/src/didact/commit.js": "f285f8a25ee3e24e129348da8aa391160699a94a4a6298ba8a63bcbdff15392f"
+    },
+    "passed": 47,
+    "total": 47,
+    "date": "2026-11-01"
+  },
+  "08": {
+    "files": {
+      "_spoilers/project/assignments/assignment_08_reorder.js": "da29a4438723f595817059cdff1160cc0f6a4db5a14961fce66d178bbd7e4c6f",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "a07a08350ee71134bcf126bdc126d7780e2cfaccca1717c173a7530aa9259d7d",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "3d5e991c25dcb43aa421c6fdf4a2a56a5171ac5490783a5abb0b25cf7dea9605",
+      "_spoilers/project/src/didact/state.js": "55f5b60609da0b482de59311bcbabfe04e7a0c85686c1c3395a59dedd0dac873",
+      "_spoilers/project/src/didact/commit.js": "9557f9fee1fe292c3f9baa8feca4d6547c6ea3cb865839a6cdbc3e069cfbd1b3"
+    },
+    "passed": 42,
+    "total": 42,
+    "date": "2026-11-01"
+  },
+  "09": {
+    "files": {
+      "_spoilers/project/assignments/assignment_09_function_components.js": "dff9b6987c8d5bd5476833705bbb893b64ac586449efed48fcf75171d9525cf3",
+      "_spoilers/project/src/didact/index.js": "8b6f03593f56a2a46900010af6b1b1eae88fa0d6f215824110ccdc0a1d157ce4",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/render.js": "a7fc0cc5e95581e5b99ce62fb805495a081d01f8e63d014df74afdc100889912",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "3d5e991c25dcb43aa421c6fdf4a2a56a5171ac5490783a5abb0b25cf7dea9605",
+      "_spoilers/project/src/didact/state.js": "55f5b60609da0b482de59311bcbabfe04e7a0c85686c1c3395a59dedd0dac873",
+      "_spoilers/project/src/didact/commit.js": "5177893634989c048bbbfa2fdb761f96bfa8e79af252a8abb176a92c60110f49"
+    },
+    "passed": 45,
+    "total": 45,
+    "date": "2026-11-01"
+  },
+  "10": {
+    "files": {
+      "_spoilers/project/assignments/assignment_10_use_state.js": "55fe46d3110082f803a4db9e1b2fc1a5a3a586d051a9416cecedc8fab971586c",
+      "_spoilers/project/src/didact/index.js": "e0ea8769aee8ee7fec9965abb6dfce7a1d0183c1ef4e6b5b15afbfc2f1d73470",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/hooks.js": "3469acc40dbc6d86ce8e9886a20aee4358db753fbe6e545c907745729aaf25c0",
+      "_spoilers/project/src/didact/render.js": "43951ee789c7ee8c518018b810522eb40fddb60167315dde0394123a79e9227f",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/state.js": "0a4d422fd0233868c95b551ad42a6de7bc8c2716e074bacde7e407a49ef1af90",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "3d5e991c25dcb43aa421c6fdf4a2a56a5171ac5490783a5abb0b25cf7dea9605",
+      "_spoilers/project/src/didact/commit.js": "5177893634989c048bbbfa2fdb761f96bfa8e79af252a8abb176a92c60110f49"
+    },
+    "passed": 46,
+    "total": 46,
+    "date": "2026-11-01"
+  },
+  "11": {
+    "files": {
+      "_spoilers/project/assignments/assignment_11_use_effect.js": "88142fb4ee8cc176f3256d2e5b1088de12da0bc1df1607d80419a388f0ced865",
+      "_spoilers/project/src/didact/index.js": "f904447d67fb24617230db812316deb6da2399f5fc86cee82e918c477de41b48",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/hooks.js": "65ee02d0324ca252c6ce436247c14e624230c8dabd5be2e0bc4d6b8681618503",
+      "_spoilers/project/src/didact/render.js": "43951ee789c7ee8c518018b810522eb40fddb60167315dde0394123a79e9227f",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/state.js": "0a4d422fd0233868c95b551ad42a6de7bc8c2716e074bacde7e407a49ef1af90",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "3d5e991c25dcb43aa421c6fdf4a2a56a5171ac5490783a5abb0b25cf7dea9605",
+      "_spoilers/project/src/didact/commit.js": "3a896d4e6cb259ba5d388ace7d1482010913980dc46969bff69a8b92126e9228"
+    },
+    "passed": 48,
+    "total": 48,
+    "date": "2026-11-01"
+  },
+  "12": {
+    "files": {
+      "_spoilers/project/assignments/assignment_12_todo_app.js": "b9c907ac5eb96229fad86758cfb144fad96676dbb3a6f8280cc653c36e01bc26",
+      "_spoilers/project/src/didact/index.js": "f904447d67fb24617230db812316deb6da2399f5fc86cee82e918c477de41b48",
+      "_spoilers/project/src/app/TodoApp.js": "049e94e2fb292cfd188fb97f570a768aef1f6eab87136cf7f7895d1a415b737d",
+      "_spoilers/project/harness/scenario.js": "eb65961fa5153c0dc9e58b6ca656c42105eed04f48ab7787ed529cf416228ee5",
+      "_spoilers/project/harness/env.js": "70b2eea0a7bc3411d18e8b77a7e783c08afb59c75cb3e6da6e041dc749a5c971",
+      "_spoilers/project/src/didact/createElement.js": "6d8231afb91a13d102ed17b07ec3405072a032f92ef79221d75102937b402999",
+      "_spoilers/project/src/didact/hooks.js": "65ee02d0324ca252c6ce436247c14e624230c8dabd5be2e0bc4d6b8681618503",
+      "_spoilers/project/src/didact/render.js": "43951ee789c7ee8c518018b810522eb40fddb60167315dde0394123a79e9227f",
+      "_spoilers/project/harness/dump.js": "1281c13eaac7f8b14dff49c175a6280d409333d7c5e0f1f776bad4b363230e63",
+      "_spoilers/project/harness/markup.js": "f7815ec8c7d48392793a80c4b7e89af992b411d9cd3bfbd04947c0ccc7711c41",
+      "_spoilers/project/harness/catalog.js": "53c7f67af5ede42e03a1adf27772e30a58c7ce26a8643e9a69be2ea76c3b9d58",
+      "_spoilers/project/harness/minidom.js": "25c4a367e853b27365b08663e49d67b6b70d072f063e2b46800f61a2616d0ae6",
+      "_spoilers/project/src/didact/state.js": "0a4d422fd0233868c95b551ad42a6de7bc8c2716e074bacde7e407a49ef1af90",
+      "_spoilers/project/src/didact/dom.js": "c237215499c996b0597fa23eb57976bfce0d5c149df0530fd5a9869f10445904",
+      "_spoilers/project/src/didact/reconcile.js": "3d5e991c25dcb43aa421c6fdf4a2a56a5171ac5490783a5abb0b25cf7dea9605",
+      "_spoilers/project/src/didact/commit.js": "3a896d4e6cb259ba5d388ace7d1482010913980dc46969bff69a8b92126e9228",
+      "_spoilers/project/src/main.js": "47cf8fdbc720f9da18e07c90d8aeb97a4e7a9f173a3f98891173308d0b0d4cce"
+    },
+    "passed": 41,
+    "total": 41,
+    "date": "2026-11-01"
+  }
+}

@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normaliseSources } from './sources.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -114,6 +115,7 @@ export function loadWorkbooks() {
     const bookFile = path.join(wdir, 'book', 'problem-book.html');
     const hasBook = fs.existsSync(bookFile);
     const site = json.site ?? {};
+    const sources = normaliseSources(json.book);
 
     const checkpoints = Object.entries(json.checkpoints)
       .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
@@ -137,7 +139,9 @@ export function loadWorkbooks() {
       headline: json.book.headline ?? '',
       lede: json.book.lede ?? '',
       credits: json.book.credits ?? '',
-      source: { url: json.book.sourceUrl, title: json.book.sourceTitle, author: json.book.author },
+      // `source` is the first post (what older pages read); `sources` lists every post the book is built on.
+      source: sources[0],
+      sources,
       language: site.language ?? guessLanguage(json),
       languageNote: site.languageNote ?? '',
       requires: site.requires ?? [],

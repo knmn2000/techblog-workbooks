@@ -14,6 +14,13 @@ Whatever the site needs and the tools don't lives in the `site` block of `workbo
 language label, what to install, how to start the study server on each system, and two optional
 notes, `caveat` for the setup panel and `promptNote` for the AI prompt.
 
+The posts a workbook is built on come from its `book` block. A workbook made from one post names it
+with `sourceUrl`, `sourceTitle` and `author`. One made from several lists them in `sources`, as
+`[{ "url": "...", "title": "...", "author": "..." }]`, and its pages credit every post: "Built on A and
+B" on the workbook page, one entry per post in the table of the home page. The single-post fields stay
+as the fallback for a workbook without a `sources` list, and `src/lib/sources.mjs` reads both. The
+page data has `source` (the first post, for anything that reads one) and `sources` (all of them).
+
 The published book is the workbook's own `book/problem-book.html`. `src/lib/book-inject.mjs`
 switches on the book's hosted mode (`window.WORKBOOK_HOST`), which makes the editor read-only.
 Typing in it, Run, Submit and the Run locally button all open the setup dialog instead. The book
@@ -25,6 +32,7 @@ template draws that dialog itself, so a template change can't break the site.
 npm install
 npm run dev        # http://127.0.0.1:4321/
 npm run build      # writes dist/
+npm test           # node --test: how posts are read from workbook.json
 ```
 
 ## Publishing

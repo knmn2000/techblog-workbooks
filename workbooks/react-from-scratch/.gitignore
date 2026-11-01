@@ -1,0 +1,8 @@
+build/
+__pycache__/
+*.out
+.cache/
+solutions/
+solutions-*/
+# The post and the author's code, read while authoring; never published
+_source/

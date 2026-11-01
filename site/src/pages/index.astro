@@ -34,13 +34,15 @@ const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5',
         </thead>
         <tbody id="rows">
           {workbooks.map((w) => (
-            <tr data-lang={w.language} data-text={[w.title, w.headline, w.source.title, w.source.author, w.language, ...w.topConcepts].join(' ').toLowerCase()}>
+            <tr data-lang={w.language} data-text={[w.title, w.headline, ...w.sources.flatMap((s) => [s.title, s.author]), w.language, ...w.topConcepts].join(' ').toLowerCase()}>
               <td class="main">
                 <a class="name" href={href(`/w/${w.slug}/`)}>{w.title}</a>
                 <div class="sub">{w.headline}</div>
                 <div class="tags">{w.topConcepts.map((t) => <span class="chip">{t}</span>)}</div>
               </td>
-              <td class="hide-sm"><a href={w.source.url} rel="noopener">{w.source.title}</a><div class="sub">{w.source.author}</div></td>
+              <td class="hide-sm">{w.sources.length === 1
+                ? <><a href={w.sources[0].url} rel="noopener">{w.sources[0].title}</a><div class="sub">{w.sources[0].author}</div></>
+                : w.sources.map((s) => <div class="src"><a href={s.url} rel="noopener">{s.title}</a><div class="sub">{s.author}</div></div>)}</td>
               <td class="hide-sm"><span class="lang"><i style={`background:${langColor[w.language] ?? 'var(--text-3)'}`}></i>{w.language}</span></td>
               <td class="cps"><CheckpointMap checkpoints={w.checkpoints} counts={w.counts} unit={w.unit} /></td>
             </tr>
@@ -109,6 +111,7 @@ const langColor: Record<string, string> = { 'C++': '#f34b7d', Python: '#3572a5',
   .name { font-weight: 600; font-size: 16px; letter-spacing: -0.01em; color: var(--text); }
   .name:hover { color: var(--brand-ink); text-decoration: none; }
   .sub { color: var(--text-2); font-size: 13px; margin-top: 3px; max-width: 46ch; }
+  .src + .src { margin-top: 10px; }
   .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
   .lang { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
   .lang i { width: 10px; height: 10px; border-radius: 50%; }

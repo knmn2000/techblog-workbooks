@@ -28,7 +28,7 @@ const tree = w.project && {
   <header class="head">
     <h1>{w.title}</h1>
     <p class="headline">{w.headline}</p>
-    <p class="built">Built on <a href={w.source.url} rel="noopener">{w.source.title}</a> by {w.source.author}. Keep the post open in another tab: each {w.unit} links to the section it covers.</p>
+    <p class="built">Built on {w.sources.map((s, i) => <>{i === 0 ? '' : i === w.sources.length - 1 ? ' and ' : ', '}<a href={s.url} rel="noopener">{s.title}</a> by {s.author}</>)}. Keep the {w.sources.length === 1 ? 'post' : 'posts'} open in another tab: each {w.unit} links to the section it covers.</p>
     <a class="btn run-link" href="#start">Run it locally</a>
   </header>
 
