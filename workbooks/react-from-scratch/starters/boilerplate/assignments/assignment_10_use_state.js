@@ -26,7 +26,7 @@
 //   `Didact` object.
 //   Earlier files you can use: src/didact/commit.js and src/didact/reconcile.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as hooks from '../src/didact/hooks.js'
+//       import { useState } from '../src/didact/hooks.js'
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

@@ -17,12 +17,15 @@
 //   You also write src/didact/dom.js in this assignment; each one gives its job at the
 //   top.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as dom from '../src/didact/dom.js'
+//       import { createDom, updateDom } from '../src/didact/dom.js'
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in
 //   the book (the empty files are in starters/blank/).
 // ======================================================================================
+
+// Test wiring, nothing to change: it hands your createDom and updateDom to the harness, which reads
+// the test file, calls them for each line and writes down what the node looks like.
 
 import { createDom, updateDom } from '../src/didact/dom.js'; // createDom and updateDom (assignment 02): the functions under test
 import { runScenarioFile } from '../harness/scenario.js'; // runScenarioFile: reads the scenario file, runs it against your code, writes the output file

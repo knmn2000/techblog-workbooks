@@ -22,7 +22,7 @@
 //   Earlier files you can use: src/didact/state.js, src/didact/dom.js,
 //   src/didact/reconcile.js and src/didact/index.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as commit from '../src/didact/commit.js'
+//       import { commitRoot } from '../src/didact/commit.js'
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

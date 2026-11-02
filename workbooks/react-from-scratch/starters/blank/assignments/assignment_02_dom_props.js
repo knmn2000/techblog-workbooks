@@ -10,14 +10,17 @@
 //   Submit in the book.
 //
 // Your job:
-//   Give `runScenarioFile` your `createDom` and `updateDom`. The scenario creates one
-//   node, updates it a few times and clicks it.
+//   Test wiring, finished in the Boilerplate: it hands your `createDom` and `updateDom` to
+//   the tests, so there is nothing to design. From scratch it is three lines: import
+//   `createDom` and `updateDom` from `../src/didact/dom.js`, import `runScenarioFile` from
+//   `../harness/scenario.js`, and end with `await runScenarioFile(process.argv[2],
+//   process.argv[3], { createDom, updateDom })`.
 //
 // The other files of this assignment:
 //   You also write src/didact/dom.js in this assignment; each one gives its job at the
 //   top.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as dom from '../src/didact/dom.js'
+//       import { createDom, updateDom } from '../src/didact/dom.js'
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

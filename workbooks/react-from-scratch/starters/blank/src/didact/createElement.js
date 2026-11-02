@@ -7,9 +7,9 @@
 //   `props`.
 //
 // Your job:
-//   Write `createElement(type, props, ...children)`, returning `{ type, props }` with
-//   every child inside `props.children`, and `createTextElement(text)`, which builds the
-//   text element a string or number child becomes.
+//   Write `createElement(type, props, ...children)`, which returns the element `{ type,
+//   props }` with every child inside `props.children`, and `createTextElement(text)`,
+//   which wraps a string or number as the text element that goes there.
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

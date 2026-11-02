@@ -24,7 +24,7 @@
 //   `Didact` object next to `useState`.
 //   Earlier files you can use: src/didact/render.js and src/didact/state.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as hooks from '../src/didact/hooks.js'
+//       import { useState } from '../src/didact/hooks.js'
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

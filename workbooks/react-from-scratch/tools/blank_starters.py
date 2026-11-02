@@ -50,14 +50,15 @@ def listing(paths: list) -> str:
 
 
 def js_import(module: str, importer: str) -> str:
-    """An example import line for a project file, as written in `importer`: a named import when the
-    boilerplate exports something with the file's name (createElement.js), else the whole module."""
+    """An example import line for a project file, as written in `importer`: a named import of what the
+    boilerplate exports (createDom.js style files export several names), else the whole module."""
     name = Path(module).stem
     ups = "../" * importer.count("/")
     source = project.starter("boilerplate", module)
     text = source.read_text(encoding="utf-8") if source.exists() else ""
-    if re.search(rf"^export\s+(?:async\s+)?(?:function|const|let|class)\s+{re.escape(name)}\b", text, re.M):
-        return f"import {{ {name} }} from '{ups}{module}'"
+    names = re.findall(r"^export\s+(?:async\s+)?(?:function|const|let|class)\s+(\w+)", text, re.M)
+    if names:
+        return f"import {{ {', '.join(names[:3])} }} from '{ups}{module}'"
     return f"import * as {name} from '{ups}{module}'"
 
 

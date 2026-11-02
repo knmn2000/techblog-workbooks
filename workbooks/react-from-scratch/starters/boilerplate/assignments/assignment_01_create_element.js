@@ -17,7 +17,7 @@
 //   You also write src/didact/createElement.js in this assignment; each one gives its job
 //   at the top.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import { createElement } from '../src/didact/createElement.js'
+//       import { createElement, createTextElement } from '../src/didact/createElement.js'
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

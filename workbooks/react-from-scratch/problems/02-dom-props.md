@@ -13,10 +13,10 @@ You do not need the post for this one. If you want Pombo's account anyway, there
 
 ## Learning material
 
-- [Arrow functions and closures](#primer/js-functions-closures): the handlers in the scenarios are plain functions. A name always stands for the same function, and that is how an unchanged handler differs from a new one.
+- [Arrow functions and closures](#primer/js-functions-closures): the handlers in the tests are plain functions, and the same function is what tells an unchanged handler from a new one.
 - [Object.keys, Object.entries, Object.hasOwn and in](#primer/js-object-keys): walking the names of a props object, and asking whether a name is still there.
 - [===, Object.is, truthy and falsy](#primer/js-equality): `===` decides whether two values are the same prop. The empty string is falsy, which matters when you ask whether a prop was given.
-- [String methods](#primer/js-string-methods): `onClick` to `click`.
+- [String methods](#primer/js-string-methods): turning `onClick` into `click`.
 - [The DOM tree: elements and text nodes](#primer/dom-tree): a text node has nothing of its own but its text.
 - [createElement and createTextNode](#primer/dom-create): one call per kind of node.
 - [Properties and attributes](#primer/dom-properties): assigning `id`, `className`, `title`, `value`, `disabled` and `nodeValue` as properties.
@@ -35,78 +35,76 @@ Elements from 01 only describe a page. Here Didact first touches a real node. Th
 
 ## The problem
 
-Write the two functions that put props on a DOM node. `createDom(element)` makes the node for an element, and `updateDom(dom, prevProps, nextProps)` moves a node from one set of props to the next, touching as little as it can. A scenario creates a node, updates it, clicks it, then prints the node's state along with a count of what your code did to it.
+Write two functions that connect elements to real DOM nodes. `createDom` builds the node for an element. `updateDom` takes a node that already shows one set of props and changes it to show another, doing as little work on the node as it can.
 
-### The module
+### What a DOM node is
 
-`src/didact/dom.js` exports:
+A DOM node is the browser's object for one thing on a page: an element such as a `<button>`, or a piece of text. You make one with `document.createElement("button")` or `document.createTextNode("hi")`. You change it by assigning properties, as in `node.id = "b"`, and you attach code to it with `node.addEventListener("click", fn)`, which calls `fn` whenever the node is clicked. A node you have just made is not on any page yet. Later assignments attach it.
 
-| Export | Meaning |
-|---|---|
-| `createDom(element)` | `element` is `{ type, props }`. Returns a new node that is not attached to anything: a text node when `type` is `"TEXT_ELEMENT"`, otherwise an element whose tag is `type`. The props are put on it as in `updateDom(dom, {}, element.props)`. |
-| `updateDom(dom, prevProps, nextProps)` | Changes `dom` so that it reflects `nextProps`, given that it reflects `prevProps` already. Returns nothing. |
+Both functions reach the DOM through the global `document`. Read it inside the functions, not at the top of the file: it may be installed after your module loads.
 
-Both reach the DOM through the global `document`. The harness installs it before calling your functions, but possibly after your module has loaded, so read `document` inside the functions and leave the top of the file alone.
+### The two functions
 
-### Input
+| Function | Takes | Returns |
+|---|---|---|
+| `createDom(element)` | an element `{ type, props }` from assignment 01 | a new DOM node, not attached to anything: a text node when `type` is `"TEXT_ELEMENT"`, otherwise an element whose tag is `type` |
+| `updateDom(dom, prevProps, nextProps)` | `dom`, a node; `prevProps`, an object with the props the node shows now; `nextProps`, an object with the props it should show | nothing. It changes `dom` |
 
-Each test is `node assignments/assignment_02_dom_props.js <input-file> <output-file>`, run by the checker. The entry program is built like the one in 01 with a different library object: it imports `createDom` and `updateDom` from your `dom.js` and `runScenarioFile` from `../harness/scenario.js`, then awaits `runScenarioFile(process.argv[2], process.argv[3], { createDom, updateDom })`. The Boilerplate ships it finished. From scratch, write them first. The commands are:
+`createDom` puts the props on its new node the same way `updateDom(dom, {}, element.props)` would, so the rules below are really the rules of `updateDom`.
 
-| Line | What the harness does |
-|---|---|
-| `create <tag\|text> [prop ...]` | Calls `createDom({ type, props })`, with `text` standing for the type `TEXT_ELEMENT`, and keeps the node it returns. Any node kept earlier is dropped. |
-| `update [prop ...]` | Calls `updateDom(node, prev, next)` on the kept node, where `prev` is the props of the last `create` or `update` and `next` is the props on this line. Then `next` becomes `prev`. |
-| `click #<id>` | Dispatches a bubbling `click` on the kept node, which must have that id. The node is not in any document, and the harness finds it anyway. |
-| `dump` | Prints the kept node. |
-| `ops create write addListener removeListener` | Prints four counters, described under Output. |
-| `log` | Prints the handler calls recorded since the last `log`. |
+For example, a button with an id and a click handler:
 
-Props are written like attributes: `id=a`, `title="two words"`, `title='say "hi"'`. Every value is a string, a bare name such as `disabled` means `true`, and `onClick=@one` is a handler, where `@one` is a single function that records the word `one` in the log when it is called (every `@one` in a scenario is that same function). The props object that `create` and `update` hand you carries `children: []` next to the listed props.
+```js
+const dom = createDom({ type: "button", props: { id: "b", onClick: handlerA, children: [] } })
+// dom is a <button> node: dom.id is "b", and a "click" listener handlerA is attached
 
-### Output
-
-`dump` prints `dump <n>`, where `n` counts the dumps, then one line for the kept node:
-
-```
-node 0 <label> <tag> "<props>"
-text 0 "<text>"
+updateDom(dom, { id: "b", onClick: handlerA }, { id: "c", onClick: handlerB })
+// id changed: dom.id = "c".  onClick changed: handlerA comes off the node and handlerB goes on.
 ```
 
-A dump labels the first node it shows `a` and the next new one `b`, and so on; a node keeps its label from then on. `<tag>` is lower case. `<props>` lists the values that differ from the default for `className`, `disabled` (on `button`, `input` and `textarea`), `id`, `title` and `value` (on `input` and `textarea`). They come sorted by name and joined with single spaces, each as `name=value`, with `true` printed for a boolean. A value that contains whitespace, a double quote or `%` is percent-encoded (`encodeURIComponent`), so `two words` prints as `two%20words`. An element with nothing to list prints `""`. Props the dump has never heard of, `lang` for one, do not show. A text node prints its `nodeValue`, with `%`, `"` and line breaks encoded and spaces kept, and prints no line at all while its text is empty.
+### What each prop becomes on a node
 
-After `ops create write addListener removeListener` the output is one line, `ops <create> <write> <addListener> <removeListener>`, and the counters go back to 0. They measure what your code did to DOM objects since the previous `ops` or the start of the scenario:
+| Prop | Example | What you do to the node |
+|---|---|---|
+| `children` and `key` | `children: []` | nothing. They are never put on a node |
+| a name that starts with `on` | `onClick: handlerA` | a listener. Its event type is the rest of the name in lower case, so `onClick` listens for `click`. It is never assigned as a property |
+| anything else | `id: "b"`, `disabled: true`, `value: "hi"` | a property: `dom[name] = value` |
 
-| Counter | Counts |
-|---|---|
-| `create` | calls of `document.createElement` and `document.createTextNode` |
-| `write` | assignments to a property of the node, `nodeValue` and made-up property names included |
-| `addListener` | calls of `addEventListener`, whether or not they change anything |
-| `removeListener` | calls of `removeEventListener`, the same |
+A text element looks like `{ type: "TEXT_ELEMENT", props: { nodeValue: "hello", children: [] } }`. Create the text node empty, then give it its text by assigning `nodeValue`, like any other property. A text node therefore costs one create and one write, even when the text is the empty string, and a later change of the text is a write of `nodeValue` under the same rules.
 
-Each run of a `@name` handler since the last `log` produces one `log <name>` line, in the order they ran.
+### Writing as little as possible
 
-### How props reach a node
+Every name that appears in `prevProps` or `nextProps` falls into one of four groups: new if only `nextProps` has it, gone if only `prevProps` has it, changed if both have it with values that are not `===`, and unchanged otherwise. What each group costs:
 
-Every name in `prevProps` or `nextProps` falls into one of four groups. It is new if only `nextProps` has it, gone if only `prevProps` has it, changed if both have it with values that are not `===`, and unchanged otherwise.
-
-| Kind of name | Rule |
-|---|---|
-| `children` and `key` | Ignored, in every group. |
-| starts with `on` | A handler. Its event type is the rest of the name in lower case (`onClick` listens to `click`). Not assigned as a property. |
-| anything else | A property of the node: `dom[name] = value`. |
-
-What each group costs, for a property and for a handler:
-
-| Group | Property `name` | Handler `onX` with type `x` |
+| Group | A property `name` | A handler `onX` with event type `x` |
 |---|---|---|
 | new | `dom[name] = value` | `addEventListener(x, handler)` |
 | changed | `dom[name] = value` | `removeEventListener(x, oldHandler)`, then `addEventListener(x, newHandler)` |
 | gone | `dom[name] = ""`, which makes the node report its default again | `removeEventListener(x, oldHandler)` |
 | unchanged | nothing | nothing |
 
-A new value that happens to be falsy, `""` say, is still a value and gets written. A handler is unchanged when it is the same function, and the scenario's `@one` is the same function wherever it appears. The props are plain objects with their own names, so to tell that a name is gone, `name in nextProps` and `Object.hasOwn(nextProps, name)` both work.
+Take one call, name by name:
 
-A text element looks like `{ type: "TEXT_ELEMENT", props: { nodeValue, children: [] } }`. Create the text node empty and give it its text by writing `nodeValue`, as you would for any other property. That write is the node's only cost, which makes a text node one create and one write. Later changes to the text are updates of `nodeValue` under the same rules.
+```js
+updateDom(dom,
+  { id: "b", title: "t", value: "v", onClick: handlerA },   // prevProps
+  { id: "b",             value: "w", onClick: handlerB })   // nextProps
+```
+
+| Name | Group | What your code does to `dom` |
+|---|---|---|
+| `id` | unchanged | nothing |
+| `value` | changed | `dom.value = "w"` |
+| `title` | gone | `dom.title = ""` |
+| `onClick` | changed | `removeEventListener("click", handlerA)`, then `addEventListener("click", handlerB)` |
+
+Doing less is the point. The tests count four things your code does to a node: `createElement` and `createTextNode` calls, property assignments (`nodeValue` and made-up names included), `addEventListener` calls and `removeEventListener` calls, each whether or not it changes anything. An update that changes nothing must cost nothing. A falsy new value such as `""` is still a value and gets written. A handler is unchanged when it is the same function; to swap one, remove the old function, which you find in `prevProps`, and add the new one. The props are plain objects with their own names, so to tell that a name is gone, ask `Object.hasOwn(nextProps, name)`. (`name in nextProps` also finds inherited names such as `toString`.)
+
+### What the tests look at
+
+The tests call `createDom` and `updateDom` with props like the ones above (values are strings, `true`, or handler functions), then look at the node: its tag or text, and `id`, `className`, `title`, `value` and `disabled`. They also read the four counts, and click the node to see which handlers run. The entry program that hands your two functions to the tests is finished in the Boilerplate, and the Start here card says what it is if you start from scratch.
+
+Each example below shows the calls in JavaScript. The test itself, in the checker's own text, is in the example's input and output boxes: there `dump` means "show the node" and `ops` means "show the four counts", in the order of the list above.
 
 ## Requirements
 
@@ -119,7 +117,7 @@ A text element looks like `{ type: "TEXT_ELEMENT", props: { nodeValue, children:
 - **R7** A prop that is missing from `nextProps` is cleared with one write, and the node reports its default again.
 - **R8** A changed handler loses its old listener and gets the new one, an unchanged handler is left alone, a removed handler is removed.
 - **R9** `updateDom` on a text node writes a changed `nodeValue` and clears it when it is gone.
-- **E2E** Longer sequences of `create`, `update`, `click` and `ops`.
+- **E2E** End to end: longer sequences of creates, updates and clicks.
 
 ## Examples
 
@@ -137,7 +135,11 @@ text 0 "hello"
 ops 1 1 0 0
 ```
 
-One prop in the scenario, and the counters read one create and one write. The create is the text node. The write is `nodeValue`, assigned once the node exists, like any other prop. Build the node with its text already inside and skip the assignment, and you get `ops 1 0 0 0`. That fails.
+```js
+createDom({ type: "TEXT_ELEMENT", props: { nodeValue: "hello", children: [] } })
+```
+
+The result is a text node holding `hello`, made with one create and one write. The create is the text node. The write is `nodeValue`, assigned once the node exists, like any other prop. Build the node with its text already inside and skip the assignment, and the test sees no write. That fails.
 
 ### Example 2: three props, then none of the two (test `02-R7-input`)
 
@@ -157,7 +159,12 @@ node 0 a input "id=i"
 ops 1 5 0 0
 ```
 
-`ops` comes only at the end, so its counters add up both steps. Creation writes three props, `id`, `value` and `disabled`. The update leaves `id` alone and clears `value` and `disabled` with one write each: three plus two is five. The second dump shows both back at their defaults.
+```js
+const dom = createDom({ type: "input", props: { id: "i", value: "v", disabled: true, children: [] } })
+updateDom(dom, { id: "i", value: "v", disabled: true }, { id: "i" })
+```
+
+The test looks at the node after each call and reads the counts once, at the end. After `createDom` the `<input>` shows its id, value and `disabled` flag. After `updateDom`, `id` is unchanged and costs nothing, while `value` and `disabled` are gone and are cleared with one write each, so the node is back to its defaults. Creation wrote three props and the update wrote two: five writes.
 
 ### Example 3: a handler swapped (test `02-R8-swap`)
 
@@ -179,17 +186,25 @@ ops 0 0 1 1
 log b
 ```
 
-Creation writes `id` and adds a listener, which gives `1 1 1 0` on the first `ops`. The update changes only the handler. `id` is unchanged, and `@a` and `@b` are different functions, and the old listener comes off while the new one goes on: `0 0 1 1`. The second click then calls `b` and nothing else. With `a` still registered, the last `log` would print both.
+```js
+const dom = createDom({ type: "button", props: { id: "b", onClick: handlerA, children: [] } })
+// click the button: handlerA runs. Creation cost one write (id) and one addEventListener.
+
+updateDom(dom, { id: "b", onClick: handlerA }, { id: "b", onClick: handlerB })
+// click the button: only handlerB runs.
+```
+
+`id` is unchanged, and `handlerA` and `handlerB` are different functions, so the update removes one listener and adds one: no writes, one `addEventListener`, one `removeEventListener`. With `handlerA` still attached, the last click would run both handlers.
 
 ## Constraints
 
-Values are ASCII strings, with a leading `@` only on handlers, and the handler props are `onClick`, `onclick`, `onMouseDown` and `onInput`. `click` is only used on a node that has an id and, where it is meant to produce a log line, a click handler. No scenario passes `children` as a listed prop, and no name that starts with `on` gets a value other than a handler. A scenario has 40 lines at most. The 50 tests are each requirement's cases plus two long scripted sequences and six seeded random ones (`-Fresh` draws six new ones). Milliseconds is what a correct solution takes; the limit is 10 seconds per test.
+Values are ASCII strings, `true` or handler functions, and the handler props are `onClick`, `onclick`, `onMouseDown` and `onInput`. No name that starts with `on` gets a value other than a handler. Only nodes with a click handler are clicked. A test is at most 40 steps long. The 50 tests are each requirement's cases plus two long scripted sequences and six seeded random ones (`-Fresh` draws six new ones). Milliseconds is what a correct solution takes; the limit is 10 seconds per test.
 
 ## Hints
 
 <details><summary>Hint 1: where to start</summary>
 
-Start with `create div id=a` and a `dump`. Add an `update` with the same props and a second `ops`, and the right answer is four zeros. Every rule here comes down to which props earn a write and which listeners earn a call. `ops` shows you which.
+Start with a plain element: `createDom({ type: "div", props: { id: "a", children: [] } })`. Then call `updateDom` on it with the same props, and the right amount of work is none. Every rule here comes down to which props earn a write and which listeners earn a call, and the counts in the examples show you which.
 </details>
 
 <details><summary>Hint 2: the approach</summary>

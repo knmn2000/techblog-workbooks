@@ -18,7 +18,7 @@
 //   the top.
 //   Earlier files you can use: src/didact/dom.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as renderSync from '../src/didact/renderSync.js'
+//       import { render } from '../src/didact/renderSync.js'
 //
 // How to start:
 //   This is the Boilerplate. To start from an empty file instead, choose From scratch in

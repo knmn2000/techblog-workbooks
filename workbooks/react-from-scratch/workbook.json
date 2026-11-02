@@ -100,8 +100,8 @@
       "cases": "tests/01/cases.txt",
       "generator": "python -P tools/gen_p01.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_01_create_element.js": "Call `runScenarioFile` from the harness with the scenario file and your `createElement`. It builds each element the scenario lists and prints it.",
-        "src/didact/createElement.js": "Write `createElement(type, props, ...children)`, returning `{ type, props }` with every child inside `props.children`, and `createTextElement(text)`, which builds the text element a string or number child becomes."
+        "assignments/assignment_01_create_element.js": "This is the test wiring, finished in the Boilerplate: it hands your `createElement` to the harness, which calls it and writes down what it returns. From scratch it is three lines, described at the end of the page.",
+        "src/didact/createElement.js": "Write `createElement(type, props, ...children)`, which returns the element `{ type, props }` with every child inside `props.children`, and `createTextElement(text)`, which wraps a string or number as the text element that goes there."
       }
     },
     "02": {
@@ -116,8 +116,8 @@
       "cases": "tests/02/cases.txt",
       "generator": "python -P tools/gen_p02.py --seed {seed} --out {out}",
       "jobs": {
-        "assignments/assignment_02_dom_props.js": "Give `runScenarioFile` your `createDom` and `updateDom`. The scenario creates one node, updates it a few times and clicks it.",
-        "src/didact/dom.js": "Make `createDom` return the node for an element, and `updateDom(dom, prevProps, nextProps)` write only what changed. New and changed properties get set, removed ones get cleared, and a listener is swapped when its handler changed."
+        "assignments/assignment_02_dom_props.js": "Test wiring, finished in the Boilerplate: it hands your `createDom` and `updateDom` to the tests, so there is nothing to design. From scratch it is three lines: import `createDom` and `updateDom` from `../src/didact/dom.js`, import `runScenarioFile` from `../harness/scenario.js`, and end with `await runScenarioFile(process.argv[2], process.argv[3], { createDom, updateDom })`.",
+        "src/didact/dom.js": "Write `createDom(element)`, which builds the DOM node for an element, and `updateDom(dom, prevProps, nextProps)`, which changes a node from one set of props to the next and writes only what differs: new and changed properties are set, removed ones are cleared, and a listener is swapped when its handler changed."
       }
     },
     "03": {

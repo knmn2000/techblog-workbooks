@@ -19,7 +19,7 @@
 //   reordered child instead of recreating it; a node that lives on keeps its state.
 //   Earlier files you can use: src/didact/render.js.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import * as reconcile from '../src/didact/reconcile.js'
+//       import { reconcileChildren } from '../src/didact/reconcile.js'
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the

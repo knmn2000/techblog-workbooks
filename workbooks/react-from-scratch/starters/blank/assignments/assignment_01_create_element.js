@@ -10,14 +10,15 @@
 //   Submit in the book.
 //
 // Your job:
-//   Call `runScenarioFile` from the harness with the scenario file and your
-//   `createElement`. It builds each element the scenario lists and prints it.
+//   This is the test wiring, finished in the Boilerplate: it hands your `createElement` to
+//   the harness, which calls it and writes down what it returns. From scratch it is three
+//   lines, described at the end of the page.
 //
 // The other files of this assignment:
 //   You also write src/didact/createElement.js in this assignment; each one gives its job
 //   at the top.
 //   Import them as ES modules, by a relative path with the .js ending, for example:
-//       import { createElement } from '../src/didact/createElement.js'
+//       import { createElement, createTextElement } from '../src/didact/createElement.js'
 //
 // How to start:
 //   Write it yourself from here, or press Boilerplate in the book's editor to get the
